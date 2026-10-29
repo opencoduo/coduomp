@@ -102,6 +102,17 @@ make client-linux64-package
 make server64
 ```
 
+The dedicated server also has a native CMake build:
+
+```sh
+cmake --preset linux-gcc-64bit
+cmake --build --preset linux-gcc-64bit --parallel
+```
+
+GCC is the recommended Linux compiler because it reproduces the original x87
+floating-point model. `linux-clang-64bit` is an alternative for compile testing;
+see [native Linux build](docs/server-building.md#native-linux-build-cmake).
+
 ### Debian or Ubuntu Linux (32-bit on an x86-64 host)
 
 Enable i386 packages and install the complete 32-bit toolchain and dependency

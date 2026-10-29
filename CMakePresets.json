@@ -1,50 +1,82 @@
 {
   "version": 5,
   "cmakeMinimumRequired": {
-    "major": 4,
-    "minor": 4,
+    "major": 3,
+    "minor": 24,
     "patch": 0
   },
   "configurePresets": [
     {
-      "name": "msvc",
-      "displayName": "MSVC x86 (default)",
+      "name": "windows-msvc-32bit",
+      "displayName": "Windows MSVC 32-bit (recommended for stock fidelity)",
       "description": "32-bit MSVC build with /arch:IA32 for compiler-generated x87 arithmetic.",
       "generator": "Visual Studio 17 2022",
       "architecture": "Win32",
       "binaryDir": "${sourceDir}/.workbench/build/${presetName}"
     },
     {
-      "name": "msvc-x64",
-      "displayName": "MSVC x64 (floating-point differences)",
+      "name": "windows-msvc-64bit",
+      "displayName": "Windows MSVC 64-bit (floating-point differences)",
       "description": "64-bit MSVC build. Compiler-generated arithmetic uses SSE2 or newer instructions and may differ from the original x87 arithmetic.",
-      "inherits": "msvc",
+      "inherits": "windows-msvc-32bit",
       "architecture": "x64"
     },
     {
-      "name": "clang-cl-x64",
-      "displayName": "Clang-cl x64 (explicit native x87)",
+      "name": "windows-clangcl-64bit",
+      "displayName": "Windows clang-cl 64-bit (explicit native x87)",
       "description": "Preferred x64 compiler for existing WIDE_FLOAT/long double x87 paths; ordinary float/double arithmetic remains SSE. Requires Clang 22+.",
-      "inherits": "msvc",
+      "inherits": "windows-msvc-32bit",
       "architecture": "x64",
       "toolset": "ClangCL"
+    },
+    {
+      "name": "linux-gcc-64bit",
+      "displayName": "Linux GCC 64-bit (recommended, faithful x87)",
+      "description": "Native GCC build of the dedicated server and its game module. Requires GCC on x86 or x86-64; the faithful build uses native x87 arithmetic. The Makefile targets remain available for 32-bit builds.",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/.workbench/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUNDLED_LIBS": "ON",
+        "CODUOMP_BUILD_CLIENT": "OFF",
+        "CODUOMP_BUILD_MODULES": "OFF"
+      }
+    },
+    {
+      "name": "linux-clang-64bit",
+      "displayName": "Linux Clang 64-bit (alternative, relaxed float)",
+      "description": "Native Clang build of the dedicated server and its game module. Clang cannot generate the faithful x87 model architecture, so this preset selects the acknowledged relaxed floating-point policy. Use the GCC preset when float-faithful output matters.",
+      "inherits": "linux-gcc-64bit",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CODUO_FP_FAITHFUL": "relaxed"
+      }
     }
   ],
   "buildPresets": [
     {
-      "name": "msvc",
-      "configurePreset": "msvc",
+      "name": "windows-msvc-32bit",
+      "configurePreset": "windows-msvc-32bit",
       "configuration": "Release"
     },
     {
-      "name": "msvc-x64",
-      "configurePreset": "msvc-x64",
+      "name": "windows-msvc-64bit",
+      "configurePreset": "windows-msvc-64bit",
       "configuration": "Release"
     },
     {
-      "name": "clang-cl-x64",
-      "configurePreset": "clang-cl-x64",
+      "name": "windows-clangcl-64bit",
+      "configurePreset": "windows-clangcl-64bit",
       "configuration": "Release"
+    },
+    {
+      "name": "linux-gcc-64bit",
+      "configurePreset": "linux-gcc-64bit"
+    },
+    {
+      "name": "linux-clang-64bit",
+      "configurePreset": "linux-clang-64bit"
     }
   ]
 }

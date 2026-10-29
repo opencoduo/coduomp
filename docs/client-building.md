@@ -92,23 +92,27 @@ can use the same shared-library name with different public record layouts.
 
 ### Windows with clang-cl or MSVC
 
-Clang is the preferred Windows compiler. The `clang-cl-x64` preset supports
-80-bit `WIDE_FLOAT` storage and the existing native x87 arithmetic paths.
-MSVC remains supported, but its `long double` is binary64 on both x86 and x64.
-We accept the resulting narrowing; MSVC builds do not promise extended-precision
-fidelity, even with `/arch:IA32` or optimization disabled.
+The recommended Windows build is the **32-bit MSVC** preset
+(`windows-msvc-32bit`): `/arch:IA32` keeps compiler-generated arithmetic on the
+x87 unit and the 32-bit module matches the shipped module's instruction
+baseline. On **x64**, Clang in clang-cl mode is the better compiler because
+`windows-clangcl-64bit` can keep the existing 80-bit `WIDE_FLOAT` storage and
+native x87 paths. MSVC remains supported, but its `long double` is binary64 on
+both x86 and x64. We accept the resulting narrowing; MSVC builds do not promise
+extended-precision fidelity, even with `/arch:IA32` or optimization disabled.
 
-Use Visual Studio 2022 17.9 or newer with the C++ desktop workload and CMake 4.4 or newer.
+Use Visual Studio 2022 17.9 or newer with the C++ desktop workload and CMake 3.24 or newer.
 The CMake build reads the Makefile source manifests and builds the executable,
 all three modules, and the dedicated server. The dedicated server uses
 `cmake/msvc-posix/` for the POSIX names the MinGW build gets from its C library;
 see `server-building.md`. The checked-in CMake presets generate Visual
-Studio/MSBuild projects. Select the `msvc` preset for a **32-bit x86** build,
-which uses `/arch:IA32` for compiler-generated x87 arithmetic:
+Studio/MSBuild projects. Select the `windows-msvc-32bit` preset for a
+**32-bit x86** build, which uses `/arch:IA32` for compiler-generated x87
+arithmetic:
 
 ```sh
-cmake --preset msvc
-cmake --build --preset msvc --parallel 2
+cmake --preset windows-msvc-32bit
+cmake --build --preset windows-msvc-32bit --parallel 2
 ```
 
 Every Windows build defaults to Miniaudio, regardless of compiler or
@@ -127,8 +131,8 @@ These build settings are shared by `stock` and `master`.
 Explicitly select **64-bit x64** with:
 
 ```sh
-cmake --preset msvc-x64
-cmake --build --preset msvc-x64 --parallel 2
+cmake --preset windows-msvc-64bit
+cmake --build --preset windows-msvc-64bit --parallel 2
 ```
 
 **MSVC x64 cannot generate x87 arithmetic from C/C++.** Its compiler-generated
@@ -141,8 +145,8 @@ expressions**, prefer Clang 22 or newer in clang-cl mode. Install LLVM and
 Visual Studio's Clang tools support, then select the `ClangCL` toolset:
 
 ```sh
-cmake --preset clang-cl-x64
-cmake --build --preset clang-cl-x64 --parallel 2
+cmake --preset windows-clangcl-64bit
+cmake --build --preset windows-clangcl-64bit --parallel 2
 ```
 
 The selected toolset must actually resolve to Clang 22 or newer; CMake checks
