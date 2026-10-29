@@ -14,7 +14,7 @@ enum {
     LAN_FAVORITE_SERVER_CAPACITY = 128,
     CL_MAX_PING_REQUESTS = 16,
     CL_PING_INFO_SIZE = 1024,
-    LAN_SERVER_HOSTNAME_SIZE = 32,
+    LAN_SERVER_HOSTNAME_SIZE = 128,
     LAN_SERVER_MAPNAME_SIZE = 32,
     LAN_SERVER_GAME_SIZE = 24,
     LAN_SERVER_GAMETYPE_SIZE = 18,
@@ -31,10 +31,11 @@ enum {
     CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET = 4
 };
 
-/* Original 152-byte server-browser record. LAN_GetServerInfo at
- * 0x0041ab80 proves every named field below by pairing its exact load width
- * with the info-string key written for that value. The four trailing strings
- * occupy the record without gaps. */
+/* Original 152-byte server-browser record, extended on this line so a colored
+ * hostname is not cut after 31 raw bytes. LAN_GetServerInfo at 0x0041ab80
+ * proves every named field below by pairing its exact load width with the
+ * info-string key written for that value. The four trailing strings occupy the
+ * record without gaps; only hostName is enlarged here. */
 typedef struct lan_server_info_s {
     netadr_t address;              /* +0x00 */
     uint8_t netType;               /* +0x14 */
@@ -58,9 +59,9 @@ typedef struct lan_server_info_s {
     int16_t jeepsAllowed;          /* +0x2a */
     int16_t tanksAllowed;          /* +0x2c */
     char hostName[LAN_SERVER_HOSTNAME_SIZE]; /* +0x2e */
-    char mapName[LAN_SERVER_MAPNAME_SIZE];   /* +0x4e */
-    char game[LAN_SERVER_GAME_SIZE];         /* +0x6e */
-    char gameType[LAN_SERVER_GAMETYPE_SIZE]; /* +0x86 */
+    char mapName[LAN_SERVER_MAPNAME_SIZE];   /* +0xae */
+    char game[LAN_SERVER_GAME_SIZE];         /* +0xce */
+    char gameType[LAN_SERVER_GAMETYPE_SIZE]; /* +0xe6 */
 } lan_server_info_t;
 
 /* Original pending-ping record at 0x04dc4660, with a 0x41c-byte stride.
@@ -174,23 +175,23 @@ _Static_assert(offsetof(lan_server_info_t, jeepsAllowed) == 0x2a,
 _Static_assert(offsetof(lan_server_info_t, tanksAllowed) == 0x2c,
                "original LAN server tanks-allowed offset");
 _Static_assert(offsetof(lan_server_info_t, hostName) == 0x2e,
-               "original LAN server hostname offset");
-_Static_assert(sizeof(((lan_server_info_t *)0)->hostName) == 0x20,
-               "original LAN server hostname extent");
-_Static_assert(offsetof(lan_server_info_t, mapName) == 0x4e,
-               "original LAN server map-name offset");
+               "LAN server hostname offset");
+_Static_assert(sizeof(((lan_server_info_t *)0)->hostName) == 0x80,
+               "LAN server hostname extent");
+_Static_assert(offsetof(lan_server_info_t, mapName) == 0xae,
+               "LAN server map-name offset");
 _Static_assert(sizeof(((lan_server_info_t *)0)->mapName) == 0x20,
-               "original LAN server map-name extent");
-_Static_assert(offsetof(lan_server_info_t, game) == 0x6e,
-               "original LAN server game offset");
+               "LAN server map-name extent");
+_Static_assert(offsetof(lan_server_info_t, game) == 0xce,
+               "LAN server game offset");
 _Static_assert(sizeof(((lan_server_info_t *)0)->game) == 0x18,
-               "original LAN server game extent");
-_Static_assert(offsetof(lan_server_info_t, gameType) == 0x86,
-               "original LAN server game-type offset");
+               "LAN server game extent");
+_Static_assert(offsetof(lan_server_info_t, gameType) == 0xe6,
+               "LAN server game-type offset");
 _Static_assert(sizeof(((lan_server_info_t *)0)->gameType) == 0x12,
-               "original LAN server game-type extent");
-_Static_assert(sizeof(lan_server_info_t) == 0x98,
-               "original LAN server record extent");
+               "LAN server game-type extent");
+_Static_assert(sizeof(lan_server_info_t) == 0xf8,
+               "LAN server record extent");
 #endif
 
 extern cl_ping_t cl_pingList[CL_MAX_PING_REQUESTS];

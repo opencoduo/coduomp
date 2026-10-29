@@ -333,8 +333,9 @@ enum {
 
 /* Complete client-static state cleared by CL_Shutdown. The original i386
  * object occupies 0x04ad3d60..0x04dc464b. Pointer-bearing debug allocation
- * fields widen naturally on modern hosts; the i386 assertions below retain
- * the proven executable layout. */
+ * fields widen naturally on modern hosts. This line enlarges the stored
+ * server hostname, so the i386 assertions below pin the extended layout
+ * rather than the original executable layout. */
 typedef struct clientStatic_s {
     connstate_t state;
     int32_t keyCatchers;
@@ -401,29 +402,29 @@ _Static_assert(offsetof(clientStatic_t, realtime) == 0x120,
 _Static_assert(offsetof(clientStatic_t, logoStartTime) == 0x12c,
                "i386 client-static logo state moved");
 _Static_assert(offsetof(clientStatic_t, localServers) == 0x148,
-               "i386 client-static local-server list moved");
-_Static_assert(offsetof(clientStatic_t, globalServers) == 0x4d50,
-               "i386 client-static global-server list moved");
-_Static_assert(offsetof(clientStatic_t, favoriteServers) == 0x2eb054,
-               "i386 client-static favorite-server list moved");
-_Static_assert(offsetof(clientStatic_t, updateServer) == 0x2efc5c,
-               "i386 client-static update server moved");
-_Static_assert(offsetof(clientStatic_t, updateInfoString) == 0x2f0070,
-               "i386 client-static update info moved");
-_Static_assert(offsetof(clientStatic_t, cdAuthorizeAddress) == 0x2f0470,
-               "i386 client-static authorize server moved");
-_Static_assert(offsetof(clientStatic_t, autoUpdateServer) == 0x2f05c4,
-               "i386 client-static auto-update server moved");
-_Static_assert(offsetof(clientStatic_t, rendererConfig) == 0x2f05d8,
-               "i386 client-static renderer config moved");
-_Static_assert(offsetof(clientStatic_t, debugStringCapacity) == 0x2f0680,
-               "i386 client-static debug state moved");
-_Static_assert(offsetof(clientStatic_t, wwwDownloadDisconnected) == 0x2f06a4,
-               "i386 client-static disconnected WWW-download flag moved");
-_Static_assert(offsetof(clientStatic_t, staticDownload) == 0x2f06a8,
-               "i386 client-static download state moved");
-_Static_assert(sizeof(clientStatic_t) == 0x2f08ec,
-               "i386 client-static clear extent changed");
+               "client-static local-server list offset");
+_Static_assert(offsetof(clientStatic_t, globalServers) == 0x7d50,
+               "client-static global-server list offset");
+_Static_assert(offsetof(clientStatic_t, favoriteServers) == 0x4c2c54,
+               "client-static favorite-server list offset");
+_Static_assert(offsetof(clientStatic_t, updateServer) == 0x4ca85c,
+               "client-static update server offset");
+_Static_assert(offsetof(clientStatic_t, updateInfoString) == 0x4cac70,
+               "client-static update info offset");
+_Static_assert(offsetof(clientStatic_t, cdAuthorizeAddress) == 0x4cb070,
+               "client-static authorize server offset");
+_Static_assert(offsetof(clientStatic_t, autoUpdateServer) == 0x4cb1c4,
+               "client-static auto-update server offset");
+_Static_assert(offsetof(clientStatic_t, rendererConfig) == 0x4cb1d8,
+               "client-static renderer config offset");
+_Static_assert(offsetof(clientStatic_t, debugStringCapacity) == 0x4cb280,
+               "client-static debug state offset");
+_Static_assert(offsetof(clientStatic_t, wwwDownloadDisconnected) == 0x4cb2a4,
+               "client-static disconnected WWW-download flag offset");
+_Static_assert(offsetof(clientStatic_t, staticDownload) == 0x4cb2a8,
+               "client-static download state offset");
+_Static_assert(sizeof(clientStatic_t) == 0x4cb4ec,
+               "client-static clear extent");
 #endif
 
 extern clientActive_t cl;

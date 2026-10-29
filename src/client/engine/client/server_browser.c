@@ -26,7 +26,9 @@ static char cl_serverIPAddress[128];
 enum {
     LAN_SERVER_INFO_STRING_SIZE = MAX_STRING_CHARS,
     LAN_SERVER_PRINT_MESSAGE_CAPACITY = LAN_SERVER_INFO_STRING_SIZE + 1,
-    LAN_SERVER_CACHE_VERSION = 1,
+    /* Version 2 stores the enlarged lan_server_info_t record. A version-1
+     * cache is rejected by both the version and serialized-size checks. */
+    LAN_SERVER_CACHE_VERSION = 2,
     LAN_ADD_SERVER_DUPLICATE = 0,
     LAN_ADD_SERVER_ADDED = 1,
     LAN_ADD_SERVER_LIST_FULL = -1,
@@ -381,6 +383,35 @@ void CL_ServersResponsePacket(msg_t *message)
                parsedCount, globalServerCount);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: copy a display hostname without separating a
+ * color-code caret from the byte that follows it. The original bounded copy
+ * counted raw bytes, so a colored name could end in a dangling '^' (and lose
+ * visible text) once the 31-byte field filled. The destination is always
+ * terminated and the loop never reads past the source terminator. */
+static void LAN_CopyHostName(char *destination, size_t destinationSize,
+                             const char *source)
+{
+    size_t output = 0;
+
+    if (destination == NULL || destinationSize == 0)
+        return;
+    if (source == NULL)
+        source = "";
+
+    while (*source != '\0' && output + 1 < destinationSize) {
+        if (source[0] == '^' && source[1] != '\0') {
+            if (output + 2 >= destinationSize)
+                break;
+            destination[output++] = source[0];
+            destination[output++] = source[1];
+            source += 2;
+        } else {
+            destination[output++] = *source++;
+        }
+    }
+    destination[output] = '\0';
+}
+
 /* Source: CoDUOMP.exe 0x00415180..0x0041537e.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00415180_0041537f.mcode and the exact
  * key strings at 0x0058e7e0/0x00593334..0x005933dc.
@@ -396,9 +427,8 @@ void CL_SetServerInfo(lan_server_info_t *server, const char *info,
     if (info != NULL) {
         server->clients = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "clients"));
 
-        strncpy(server->hostName, Info_ValueForKey(info, "hostname"),
-                sizeof(server->hostName) - 1);
-        server->hostName[sizeof(server->hostName) - 1] = '\0';
+        LAN_CopyHostName(server->hostName, sizeof(server->hostName),
+                         Info_ValueForKey(info, "hostname"));
 
         strncpy(server->mapName, Info_ValueForKey(info, "mapname"),
                 sizeof(server->mapName) - 1);
@@ -1620,8 +1650,7 @@ int32_t LAN_AddServer(lan_server_source_t source, const char *name,
 
     lan_server_info_t *server = &servers[*serverCount];
     server->address = parsedAddress;
-    strncpy(server->hostName, name, sizeof(server->hostName) - 1);
-    server->hostName[sizeof(server->hostName) - 1] = '\0';
+    LAN_CopyHostName(server->hostName, sizeof(server->hostName), name);
     server->dirty = 1;
     ++*serverCount;
 
