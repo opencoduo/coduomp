@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 enum {
     SERVER_DOWNLOAD_FAILURE_BLOCK = 0,
@@ -220,6 +221,47 @@ qboolean SV_CheckFallbackURL(void)
     return qtrue;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: build one redirect URL with exactly one separator.
+ * A configured base URL commonly ends in '/', and the stock concatenation
+ * produced a double separator ("http://host/base//uo/pak.pk3"), which some
+ * HTTP servers reject. Backslashes in the relative pak path are normalized so
+ * the request is a valid URL path. */
+static void coduomp_www_build_redirect_url(
+    const char *baseUrl, const char *pakName, char *out, size_t outSize)
+{
+    char relative[MAX_OSPATH];
+    size_t baseLength;
+    size_t index = 0;
+
+    if (out == NULL || outSize == 0)
+        return;
+    out[0] = '\0';
+    if (baseUrl == NULL || pakName == NULL)
+        return;
+
+    baseLength = strlen(baseUrl);
+    while (baseLength > 0 &&
+           (baseUrl[baseLength - 1] == '/' ||
+            baseUrl[baseLength - 1] == '\\')) {
+        --baseLength;
+    }
+
+    while (*pakName == '/' || *pakName == '\\')
+        ++pakName;
+    while (pakName[index] != '\0' && index + 1 < sizeof(relative)) {
+        relative[index] =
+            pakName[index] == '\\' ? '/' : pakName[index];
+        ++index;
+    }
+    relative[index] = '\0';
+
+    if (baseLength == 0 || relative[0] == '\0')
+        return;
+
+    Com_sprintf(out, outSize, "%.*s/%s", (int)baseLength, baseUrl,
+                relative);
+}
+
 void SV_WriteDownloadToClient(client_t *client, msg_t *message)
 {
     char errorText[MAX_STRING_CHARS];
@@ -282,28 +324,40 @@ void SV_WriteDownloadToClient(client_t *client, msg_t *message)
 
                 if (redirectSize != 0) {
                     FS_FCloseFile(redirectHandle);
-                    Q_strncpyz(client->download.redirectUrl,
-                               va("%s/%s", sv_wwwBaseURL->string,
-                                  client->download.fileName),
-                               sizeof(client->download.redirectUrl));
-                    Com_DPrintf("Redirecting client '%s' to %s\n",
-                                client->name,
-                                client->download.redirectUrl);
-                    client->download.redirectActive = qtrue;
-                    MSG_WriteByte(message, SERVER_SVC_DOWNLOAD);
-                    MSG_WriteShort(message, SERVER_DOWNLOAD_REDIRECT_BLOCK);
-                    MSG_WriteString(message, client->download.redirectUrl);
-                    MSG_WriteLong(message, redirectSize);
-                    MSG_WriteLong(message,
-                                  sv_wwwDlDisconnected->integer != 0);
-                    return;
-                }
+                    coduomp_www_build_redirect_url(
+                        sv_wwwBaseURL->string,
+                        client->download.fileName,
+                        client->download.redirectUrl,
+                        sizeof(client->download.redirectUrl));
+                    if (client->download.redirectUrl[0] != '\0') {
+                        Com_DPrintf("Redirecting client '%s' to %s\n",
+                                    client->name,
+                                    client->download.redirectUrl);
+                        client->download.redirectActive = qtrue;
+                        MSG_WriteByte(message, SERVER_SVC_DOWNLOAD);
+                        MSG_WriteShort(message,
+                                       SERVER_DOWNLOAD_REDIRECT_BLOCK);
+                        MSG_WriteString(message,
+                                        client->download.redirectUrl);
+                        MSG_WriteLong(message, redirectSize);
+                        MSG_WriteLong(
+                            message,
+                            sv_wwwDlDisconnected->integer != 0);
+                        return;
+                    }
 
-                /* NOT_FROM_ORIGINAL_SOURCE: supply both required diagnostic
-                 * values; this affects only local logging. */
-                Com_Printf("ERROR: Client '%s': couldn't extract file size "
-                           "for %s\n",
-                           client->name, client->download.fileName);
+                    Com_Printf(
+                        "Client '%s': empty sv_wwwBaseURL; falling back "
+                        "to direct download\n",
+                        client->name);
+                } else {
+                    /* NOT_FROM_ORIGINAL_SOURCE: supply both required
+                     * diagnostic values; this affects only local logging. */
+                    Com_Printf(
+                        "ERROR: Client '%s': couldn't extract file size "
+                        "for %s\n",
+                        client->name, client->download.fileName);
+                }
             } else {
                 client->download.redirectFailed = qfalse;
                 if (SV_CheckFallbackURL() != qfalse) {
