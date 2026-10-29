@@ -26,6 +26,13 @@ MINGW32_DEP_CPPFLAGS ?=
 MINGW32_DEP_LDFLAGS ?=
 RECOVERY_POLICY_CPPFLAGS :=
 CODUOMP_RENDERER_GPU_PROFILE ?= 0
+# The startup banner reports the checked-out revision. An exported source
+# archive without git metadata reports "unknown" instead of a stale value.
+# These are immediate variables, so they must be defined before
+# MINGW32_CPPFLAGS below expands them.
+CODUOMP_GIT_REVISION ?= $(shell git describe --always --dirty 2>/dev/null || printf unknown)
+CODUOMP_BUILD_IDENTITY_CPPFLAGS := -DCODUOMP_GIT_REVISION='"$(CODUOMP_GIT_REVISION)"'
+CODUOMP_BUILD_IDENTITY_FILES := $(wildcard .git/HEAD .git/index)
 
 ifeq ($(filter $(CODUOMP_RENDERER_GPU_PROFILE),0 1),)
 $(error CODUOMP_RENDERER_GPU_PROFILE must be 1 or 0)
@@ -56,6 +63,7 @@ MINGW32_CPPFLAGS := -Isrc \
 	-iquote src/qcommon/bindings/default \
 	-DCURL_STATICLIB \
 	-DCASE_SENSITIVE_FS=0 \
+	$(CODUOMP_BUILD_IDENTITY_CPPFLAGS) \
 	$(RECOVERY_POLICY_CPPFLAGS) \
 	$(CODUOMP_RENDERER_GPU_PROFILE_CPPFLAGS) \
 	$(if $(MINGW32_DEP_PREFIX),-I$(MINGW32_DEP_PREFIX)/include) \
@@ -169,6 +177,11 @@ $(MINGW32_PROFILE_HOT_C_OBJECTS): \
 $(MINGW32_C_OBJECTS) $(MINGW32_CXX_OBJECTS): \
 	build-mk/client-engine-mingw.mk build-mk/sources/client-engine.mk | \
 	check-mingw32-deps
+
+# The startup banner bakes the revision in at compile time; recompile that
+# translation unit when git moves HEAD or rewrites the index.
+$(filter %/src/client/engine/com_startup.c.o,$(MINGW32_C_OBJECTS)): \
+	$(CODUOMP_BUILD_IDENTITY_FILES)
 
 $(MINGW32_OBJECT_DIR)/%.c.o: %.c
 	@mkdir -p $(dir $@)

@@ -19,6 +19,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 
 ### Mods/Server
 
+- The dedicated server startup banner reports the build date and time plus the source revision (`git describe`, with `-dirty` when the working tree has uncommitted changes) embedded at build time. The main-menu footer shows the same revision and date while keeping the network-compatible `1.51` version.
 - Attached models reload correctly when detached
 - Per-map `<map>_<gametype>.cfg` files load by the visible map name even when the map asset name contains color escapes.
 - **Server configuration:** add `set g_allowGlobalChat 0` to the server config or enter it in the server console to disable player general chat while preserving team, squad, private, scripted, and server-console messages. Set it to `1` to enable general chat again; `1` is the default.

@@ -12,6 +12,7 @@
 #include "../networking/netchan_private.h"
 #include "../server/server_private.h"
 #include "core_runtime_private.h"
+#include "coduomp_build_info.h"
 
 #define COM_INIT_LONGJMP_SAVE_MASK 0
 #define COM_INIT_CVAR_AUTOWRITE_MASK 0x00000001
@@ -42,7 +43,9 @@
 #else
 #define COM_INIT_PLATFORM "linux-" COM_INIT_ARCH
 #endif
-#define COM_INIT_BUILD_DATE "Jul 01 2026"
+#define COM_INIT_BUILD_DATE CODUOMP_BUILD_DATE
+#define COM_INIT_BUILD_TIME CODUOMP_BUILD_TIME
+#define COM_INIT_GIT_REVISION CODUOMP_GIT_REVISION
 #define COM_INIT_VERSION_STRING "1.51"
 #define COM_INIT_PRODUCT_STRING "CoD:UO Recovered Dedicated Engine"
 #define COM_INIT_SAFE_MODE_CONFIG "exec safemode_mp_server.cfg\n"
@@ -76,8 +79,10 @@ int32_t com_frameTime;
 
 void Com_Init(char *commandLine)
 {
-    Com_Printf("%s %s (%s) build %s\n", COM_INIT_PRODUCT_STRING,
-               COM_INIT_VERSION_STRING, COM_INIT_PLATFORM, COM_INIT_BUILD_DATE);
+    Com_Printf("%s %s (%s) build %s %s git %s\n", COM_INIT_PRODUCT_STRING,
+               COM_INIT_VERSION_STRING, COM_INIT_PLATFORM,
+               COM_INIT_BUILD_DATE, COM_INIT_BUILD_TIME,
+               COM_INIT_GIT_REVISION);
 
     if (CODUO_SETJMP(com_frameAbortContext, COM_INIT_LONGJMP_SAVE_MASK) != 0) {
         Com_ErrorCleanup();

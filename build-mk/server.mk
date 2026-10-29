@@ -155,6 +155,26 @@ CPPFLAGS += -iquote $(STANDALONE_DIR)/bindings \
 	-Isrc \
 	-DCODUO_ENABLE_PUNKBUSTER=$(CODUO_ENABLE_PUNKBUSTER) \
 	-DCODUO_DISABLE_SERVER_AUTH=$(CODUO_DISABLE_SERVER_AUTH)
+# NOT_FROM_ORIGINAL_SOURCE: embed the source revision in the startup log. A
+# source tree without git metadata reports "unknown"; "-dirty" marks a build
+# that does not match the recorded commit. Resolve it once while parsing: the
+# compile recipes expand CPPFLAGS for every object, and a repeated git call
+# would serialize a parallel build on the repository index.
+CODUOMP_GIT_REVISION ?= $(shell git describe --always --dirty 2>/dev/null || printf unknown)
+CODUOMP_BUILD_IDENTITY_CPPFLAGS := -DCODUOMP_GIT_REVISION='"$(CODUOMP_GIT_REVISION)"'
+CPPFLAGS += $(CODUOMP_BUILD_IDENTITY_CPPFLAGS)
+# The banner text is compiled into the runtime object, so a plain relink would
+# keep reporting the revision of the last compilation. Recompile that object
+# whenever git moves HEAD or rewrites the index. An exported archive without
+# git metadata leaves the prerequisite list empty.
+CODUOMP_BUILD_IDENTITY_FILES := $(wildcard .git/HEAD .git/index)
+$(BUILD_DIR)/core_runtime/com_init_runtime.o \
+$(EXE_BUILD_DIR)/core_runtime/com_init_runtime.o \
+$(EXE_I386_BUILD_DIR)/core_runtime/com_init_runtime.o \
+$(WINDOWS_I386_BUILD_DIR)/core_runtime/com_init_runtime.o \
+$(WINDOWS_I686_BUILD_DIR)/core_runtime/com_init_runtime.o \
+$(WINDOWS_X86_64_BUILD_DIR)/core_runtime/com_init_runtime.o: \
+	$(CODUOMP_BUILD_IDENTITY_FILES)
 # Stock i386 uses signed plain char, 32-bit enum-backed domains, and wrapping
 # ADD/SUB/IMUL semantics. GCC, Clang, and MinGW support explicit switches for
 # those rules, preventing host defaults or inherited flags from changing them.

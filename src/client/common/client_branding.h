@@ -9,7 +9,16 @@
 #define CODUOMP_DISPLAY_BUILD_DATE __DATE__
 #define CODUOMP_DISPLAY_BUILD_TIME __TIME__
 
+/* The build systems supply the checked-out revision (git describe --always
+ * --dirty). Exported source archives and builds without that definition report
+ * "unknown" rather than a stale hardcoded value. */
+#ifndef CODUOMP_GIT_REVISION
+#define CODUOMP_GIT_REVISION "unknown"
+#endif
+
 #define CODUOMP_DISPLAY_LABEL \
-    CODUOMP_DISPLAY_PRODUCT " " CODUOMP_DISPLAY_VERSION
+    CODUOMP_DISPLAY_PRODUCT " " CODUOMP_DISPLAY_VERSION \
+    " build " CODUOMP_DISPLAY_BUILD_DATE " " CODUOMP_DISPLAY_BUILD_TIME \
+    " git " CODUOMP_GIT_REVISION
 
 #endif
