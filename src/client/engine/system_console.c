@@ -9,6 +9,7 @@
 #include "platform/crt_boundary.h"
 #include "renderer/renderer_cvars.h"
 #include "renderer/platform_display.h"
+#include "renderer/platform_gamma.h"
 #include "client/common/client_video_settings.h"
 #include "server/server.h"
 #include "sound/sound_system.h"
@@ -1282,6 +1283,16 @@ LRESULT CALLBACK MainWndProc(HWND window, UINT message,
         }
         break;
 
+    case WM_SIZE:
+        /* NOT_FROM_ORIGINAL_SOURCE: Windows keeps a display-wide gamma ramp;
+         * restore the desktop mapping as soon as the game window is minimized
+         * and rebuild the game mapping when it becomes visible again. */
+        if (wParam == SIZE_MINIMIZED)
+            coduomp_gamma_focus_changed_compat(qfalse);
+        else if (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED)
+            coduomp_gamma_focus_changed_compat(qtrue);
+        break;
+
     case WM_ACTIVATE:
         AppActivate(
             LOWORD((DWORD_PTR)wParam) != WA_INACTIVE ? qtrue : qfalse,
@@ -1289,6 +1300,9 @@ LRESULT CALLBACK MainWndProc(HWND window, UINT message,
         /* NOT_FROM_ORIGINAL_SOURCE: preserve desktop access when switching
          * away from the optional exclusive display mode. */
         coduomp_glw_exclusive_focus_changed_compat(sysWindowActive);
+        /* NOT_FROM_ORIGINAL_SOURCE: Windows gamma is display-wide; restore the
+         * desktop ramp while inactive and rebuild the game ramp on return. */
+        coduomp_gamma_focus_changed_compat(sysWindowActive);
         break;
 
     case WM_CLOSE:

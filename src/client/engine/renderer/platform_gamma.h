@@ -15,6 +15,10 @@ qboolean coduomp_gamma_output_available(void);
 
 #if !defined(_WIN32)
 void coduomp_gamma_window_focus_changed(qboolean active);
+#else
+/* NOT_FROM_ORIGINAL_SOURCE: keep the desktop readable while another window
+ * has focus and reapply the game mapping when the native game window returns. */
+void coduomp_gamma_focus_changed_compat(qboolean active);
 #endif
 
 #endif

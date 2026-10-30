@@ -37,6 +37,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - Mods that replace the HUD menu file (e.g. Reign of the Undead) are detected and render their HUD and in-game menu screens with the stock full-width presentation so their authored layout stays intact, while the world keeps the widescreen FOV; `cg_modHudPresentation` can force stretched, centered, or anchored HUD presentation.
 - Retina and other high-DPI displays are supported. macOS fullscreen modes avoid oversized drawables caused by scaled Retina backing surfaces.
 - Alt-Tab from fullscreen is enabled by default on Windows.
+- Windows restores the captured desktop gamma ramp when the game window is minimized or loses focus, so other windows no longer keep the game's `r_gamma` brightness.
 - New Apple Silicon profiles default to 2560 x 1440, high graphics settings, and a 250 FPS cap.
 - Apple Silicon defaults to streamed, interleaved vertex uploads (`r_vbo_stream_draw 1` and `r_vbo_interleave 1`); these saved settings take effect on renderer restart. New Apple Silicon profiles also set `r_finish 0` to avoid forcing GPU synchronization each frame.
 - 64-bit clients require at least 256 MiB of hunk memory (`com_hunkMegs`), including when an older saved setting requested less.

@@ -440,6 +440,38 @@ void GLimp_SetGamma(const uint8_t red[GLIMP_GAMMA_ENTRY_COUNT],
 #endif
 }
 
+#if defined(_WIN32)
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): Windows applies gamma as a
+ * display-wide ramp. Restore the ramp captured by GLimp_InitGamma while another
+ * application has focus, then rebuild the renderer mapping when the game window
+ * is active again. Without this the desktop keeps the game's r_gamma mapping
+ * after minimizing in windowed mode. */
+void coduomp_gamma_focus_changed_compat(qboolean active)
+{
+    if (glConfig.deviceSupportsGamma == qfalse)
+        return;
+
+    if (active != qfalse) {
+        R_SetColorMappings();
+        return;
+    }
+
+    HDC deviceContext = coduomp_windows_gamma_device_context;
+    HWND desktopWindow = NULL;
+    if (deviceContext == NULL) {
+        desktopWindow = GetDesktopWindow();
+        deviceContext = GetDC(desktopWindow);
+        if (deviceContext == NULL)
+            return;
+    }
+
+    SetDeviceGammaRamp(deviceContext, rendererOriginalGammaRamp);
+
+    if (desktopWindow != NULL)
+        ReleaseDC(desktopWindow, deviceContext);
+}
+#endif
+
 #if !defined(_WIN32)
 /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): SDL implements window gamma
  * with a display-wide ramp on macOS. Restore the captured desktop mapping
