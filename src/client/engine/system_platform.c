@@ -679,6 +679,31 @@ void coduomp_loading_keepalive(void)
 #endif
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: Windows marks a foreground window that has not
+ * pumped messages for several seconds as "not responding" and offers to close
+ * it through a ghost window. Map loading is a long, deliberately blocking
+ * operation, so disable that host feature and let the load finish; the 2004
+ * client predates it. Look the entry point up dynamically because it is not
+ * available on older Windows versions supported by the stock binaries. */
+void coduomp_disable_windows_ghosting_compat(void)
+{
+#if defined(_WIN32)
+    typedef VOID(WINAPI * coduomp_disable_ghosting_fn)(VOID);
+    HMODULE user32Module = GetModuleHandleA("user32.dll");
+    coduomp_disable_ghosting_fn disableGhosting;
+
+    if (user32Module == NULL)
+        user32Module = LoadLibraryA("user32.dll");
+    if (user32Module == NULL)
+        return;
+
+    disableGhosting = (coduomp_disable_ghosting_fn)(void *)GetProcAddress(
+        user32Module, "DisableProcessWindowsGhosting");
+    if (disableGhosting != NULL)
+        disableGhosting();
+#endif
+}
+
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
 _Noreturn void Sys_Error(const char *format, ...)
 {

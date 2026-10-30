@@ -40,6 +40,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - New Apple Silicon profiles default to 2560 x 1440, high graphics settings, and a 250 FPS cap.
 - Apple Silicon defaults to streamed, interleaved vertex uploads (`r_vbo_stream_draw 1` and `r_vbo_interleave 1`); these saved settings take effect on renderer restart. New Apple Silicon profiles also set `r_finish 0` to avoid forcing GPU synchronization each frame.
 - 64-bit clients require at least 256 MiB of hunk memory (`com_hunkMegs`), including when an older saved setting requested less.
+- Windows no longer shows a ghost window or an "End Now" prompt when a long map load blocks the game window; process ghosting is disabled at startup, and Windows versions without that entry point are unaffected.
 
 ### Servers, mods, and configuration
 

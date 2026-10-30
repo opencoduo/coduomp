@@ -69,6 +69,9 @@ const char *Sys_DefaultBasePath(void);
 const char *Sys_DefaultHomePath(void);
 const char *Sys_DefaultInstallPath(void);
 void coduomp_loading_keepalive(void);
+/* NOT_FROM_ORIGINAL_SOURCE: suppress modern Windows ghost-window handling
+ * during long map loads; the 2004 client predates the feature. */
+void coduomp_disable_windows_ghosting_compat(void);
 _Noreturn void Sys_Error(const char *format, ...);
 _Noreturn void Sys_Quit(void);
 
