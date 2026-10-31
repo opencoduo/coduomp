@@ -108,7 +108,7 @@ void FS_Startup(const char *gameName)
     fs_restrict = Cvar_Get(
         "fs_restrict", "", CVAR_INIT);
     fs_ignoreLocalized = Cvar_Get(
-        "fs_ignoreLozalized", "0",
+        "fs_ignoreLocalized", "0",
         CVAR_LATCH | CVAR_CHEAT);
 
     if (fs_cdpath->string[0] != '\0')
@@ -159,6 +159,46 @@ void FS_Startup(const char *gameName)
     Com_Printf("%d files in pk3 files\n", fs_packFiles);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: the standalone dedicated server has no Windows
+ * registry or client archive to select cl_language. A non-English install
+ * keeps default_mp.cfg inside its localized paks, so when the operator did
+ * not pass an explicit +set cl_language, adopt the installed localized
+ * language that carries the default config instead of failing startup. An
+ * explicit command-line language still wins. */
+static qboolean coduomp_FS_languageWasSpecified;
+
+static qboolean coduomp_FS_LoadDefaultConfig(void)
+{
+    if (FS_ReadFile("default_mp.cfg", NULL) > 0)
+        return qtrue;
+
+    if (cl_language == NULL || coduomp_FS_languageWasSpecified != qfalse ||
+        fs_ignoreLocalized->integer != 0) {
+        return qfalse;
+    }
+
+    const int32_t savedLanguage = cl_language->integer;
+    for (int32_t language = filesystem_compat_language_count() - 1;
+         language >= 0; --language) {
+        if (language == savedLanguage ||
+            FS_LanguageHasAssets(language) == qfalse) {
+            continue;
+        }
+
+        Cvar_SetValue("cl_language", (float)language);
+        if (FS_ReadFile("default_mp.cfg", NULL) > 0) {
+            Com_Printf(
+                "No default_mp.cfg in the selected language; using %s "
+                "assets\n",
+                filesystem_compat_language_name(language));
+            return qtrue;
+        }
+    }
+
+    Cvar_SetValue("cl_language", (float)savedLanguage);
+    return qfalse;
+}
+
 /* Source: CoDUOMP.exe 0x00430bf0..0x00430ce1.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00430bf0_00430ce2.mcode.
  * Name: exact same-module Mac symbol FS_InitFilesystem. */
@@ -173,13 +213,18 @@ void FS_InitFilesystem(void)
     Com_StartupVariable("fs_usewolf");
     Com_StartupVariable("cl_language");
 
+    const cvar_t *const language = Cvar_FindVar("cl_language");
+    coduomp_FS_languageWasSpecified =
+        language != NULL &&
+        (language->flags & CVAR_USER_CREATED) != 0 ? qtrue : qfalse;
+
     filesystem_compat_init_language();
     FS_Startup("main");
     filesystem_compat_clear_localized_strings();
     filesystem_compat_update_language_info();
     FS_CheckRestrictedDemoPaks();
 
-    if (FS_ReadFile("default_mp.cfg", NULL) <= 0) {
+    if (coduomp_FS_LoadDefaultConfig() == qfalse) {
         Com_Error(
             ERR_FATAL,
             "Couldn't load %s.  Make sure Call of Duty is run from the "

@@ -188,26 +188,52 @@ static inline void filesystem_compat_pure_set_changed(void)
 {
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: expose the Linux dedicated engine's English-only
- * localized-asset policy to the common search-path algorithm. */
+/* NOT_FROM_ORIGINAL_SOURCE: expose the Windows engine's complete localized-
+ * asset policy to the common search-path algorithm. The original Linux
+ * dedicated engine accepts only "english" here, so a non-English install
+ * cannot mount the localized pak that carries default_mp.cfg. The table and
+ * its index order are the retail Windows one at CoDUOMP.exe 0x005ca678. */
 static inline int32_t filesystem_compat_language_count(void)
 {
-    return 1;
+    return 14;
 }
 
 static inline const char *filesystem_compat_language_name(int32_t language)
 {
-    return language == 0 ? "english" : NULL;
+    static const char *const languageNames[] = {
+        "english", "french", "german", "italian", "spanish", "british",
+        "russian", "polish", "korean", "taiwanese", "japanese", "chinese",
+        "thai", "leet"
+    };
+
+    if (language < 0 ||
+        language >= (int32_t)(sizeof(languageNames) /
+                              sizeof(languageNames[0]))) {
+        language = 0;
+    }
+    return languageNames[language];
 }
 
 static inline void filesystem_compat_report_unsupported_pak_language(
     const char *base, const char *game, const char *pakName)
 {
-    /* The original dedicated engine silently ignores localized paks for
-     * languages other than English. */
-    (void)base;
-    (void)game;
-    (void)pakName;
+    static qboolean printedSupportedLanguages;
+
+    Com_Printf(
+        "WARNING: Localized assets pak file %s/%s/%s has invalid name "
+        "(bad language name specified). Proper naming convention is: "
+        "localized_[language]_pak#.pk3\n",
+        base, game, pakName);
+
+    if (printedSupportedLanguages == qfalse) {
+        Com_Printf("Supported languages are:\n");
+        for (int32_t language = 0;
+             language < filesystem_compat_language_count(); ++language) {
+            Com_Printf("    %s\n",
+                       filesystem_compat_language_name(language));
+        }
+        printedSupportedLanguages = qtrue;
+    }
 }
 
 static inline void filesystem_compat_loading_keepalive(void)

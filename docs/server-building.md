@@ -235,6 +235,19 @@ Place the engine executable beside the `main/` and `uo/` game-data directories,
 or pass an explicit `+set fs_basepath`. The engine loads
 `uo/uo_game_mp_x86.dll` through its Win32 loader path.
 
+One behavior deliberately differs from the retail Linux server: localized pak
+acceptance uses the Windows engine's fourteen-entry language table. The retail
+Linux server accepts only `localized_english_*`, so a non-English install cannot
+mount the localized pak that carries `default_mp.cfg` and startup fails with
+`Couldn't load default_mp.cfg`. The standalone server mounts the localized pak
+for every supported language. When `cl_language` is not passed on the command
+line, startup falls back to the installed localized language that carries
+`default_mp.cfg`; pass `+set cl_language <index>` to choose a language
+explicitly. `fs_ignoreLocalized 1` still disables localized assets.
+
+Localized paks are excluded from the pure-server pak list (`sv_pakNames`), so a
+client does not need the server's localized paks to pass `sv_pure` checks.
+
 ## 32-bit Module Notes
 
 The original Linux game module is i386. Building the 32-bit shared module
