@@ -34,6 +34,11 @@ void Pmove(pmove_t *move);
 void PmoveSingle(pmove_t *move);
 void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *command,
                          pm_trace_fn_t traceFunc);
+/* NOT_FROM_ORIGINAL_SOURCE: prediction pre-pass that refreshes command view
+ * angles without advancing the incremental lean state. */
+void coduomp_pm_update_view_angles_without_lean(playerState_t *ps,
+                                                const usercmd_t *command,
+                                                pm_trace_fn_t traceFunc);
 /* Remaining pmove driver dependencies. Their complete bodies remain separately
  * owned until each whole subsystem is adjudicated and extracted. */
 void PM_CheckDuck(void);

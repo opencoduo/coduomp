@@ -8,6 +8,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 
 - Suppresses duplicate local-player firing effects caused by prediction replay, including recoil, muzzle flashes, shot sounds and brass; the same filter covers replayed reload and rechamber sounds.
 - Spawn reload animation is fixed, it won't play anymore
+- Leaning no longer stutters when `pmove_fixed` is enabled. See [lean prediction with `pmove_fixed`](docs/client-lean-pmove-fixed.md).
 - Local server map list limit increased to 2048
 - Sound Options has independent Effects Volume and Music Volume sliders. The existing `mss_volume` cvar controls effects/SFX, and the new `musicVolume` cvar controls music; both use a 0-1 range, with 0 muting that category. There is no separate `sfxVolume` cvar. The retired `playMusic` switch is replaced by the music slider; existing effects-volume and music-mute preferences seed the first independent music setting.
 
