@@ -60,4 +60,7 @@ STANDALONE_SERVER_C_SOURCES := \
 	src/server/standalone/server/sv_startup_services.c \
 	src/server/standalone/sound_alias/sound_alias_localize_command.c
 
-STANDALONE_SERVER_CXX_SOURCES :=
+# The standalone executable shares the Windows language selection and parser.
+STANDALONE_SERVER_CXX_SOURCES := \
+	src/client/engine/localization/string_ed_api.cpp \
+	src/client/engine/localization/string_ed_package.cpp

@@ -31,8 +31,8 @@ void FS_ShutdownSearchPaths(searchpath_t *searchpath)
 
 /* Source: CoDUOMP.exe 0x00430730..0x004307ff and coduo_lnxded
  * 0x080654ae..0x08065604. Name and clearLookupLists contract: exact
- * same-module Mac symbol FS_Shutdown. Client-only sound/localization/case
- * teardown remains at the target service boundary. */
+ * same-module Mac symbol FS_Shutdown. Localization and client-only sound/case
+ * teardown remain at the target service boundary. */
 void FS_Shutdown(qboolean clearLookupLists)
 {
     coduomp_FS_ShutdownPreservingFile(clearLookupLists, 0);

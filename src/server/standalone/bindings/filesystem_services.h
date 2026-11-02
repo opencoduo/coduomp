@@ -2,6 +2,7 @@
 #define ENGINE_FILESYSTEM_SERVICES_H
 
 #include "coduo_engine_structs.h"
+#include "client/engine/localization/string_ed_api.h"
 #include "filesystem/filesystem_compat_types.h"
 #include "filesystem/filesystem.h"
 #include "filesystem/filesystem_path_security.h"
@@ -188,26 +189,36 @@ static inline void filesystem_compat_pure_set_changed(void)
 {
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: expose the Linux dedicated engine's English-only
- * localized-asset policy to the common search-path algorithm. */
+/* NOT_FROM_ORIGINAL_SOURCE: share the Windows language table with the
+ * common search-path algorithm (CoDUOMP.exe RVA 0x2fb80). */
 static inline int32_t filesystem_compat_language_count(void)
 {
-    return 1;
+    return SEH_LANGUAGE_COUNT;
 }
 
 static inline const char *filesystem_compat_language_name(int32_t language)
 {
-    return language == 0 ? "english" : NULL;
+    return SEH_GetLanguageName(language);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: target adapter for the Windows invalid-language
+ * diagnostic and process-lifetime supported-language list (RVA 0x2fba1). */
 static inline void filesystem_compat_report_unsupported_pak_language(
     const char *base, const char *game, const char *pakName)
 {
-    /* The original dedicated engine silently ignores localized paks for
-     * languages other than English. */
-    (void)base;
-    (void)game;
-    (void)pakName;
+    static qboolean printedSupportedLanguages;
+
+    Com_Printf(
+        "WARNING: Localized assets pak file %s/%s/%s has invalid name "
+        "(bad language name specified). Proper naming convention is: "
+        "localized_[language]_pak#.pk3\n",
+        base, game, pakName);
+    if (printedSupportedLanguages == qfalse) {
+        Com_Printf("Supported languages are:\n");
+        for (int32_t language = 0; language < SEH_LANGUAGE_COUNT; ++language)
+            Com_Printf("    %s\n", SEH_GetLanguageName(language));
+        printedSupportedLanguages = qtrue;
+    }
 }
 
 static inline void filesystem_compat_loading_keepalive(void)
@@ -215,25 +226,25 @@ static inline void filesystem_compat_loading_keepalive(void)
     Sys_LoadingKeepAlive();
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: the standalone server has no client localization
- * package, but the Windows filesystem body reads cl_language during its first
- * archive lookup.  Establish that filesystem-visible cvar just as the client
- * language initializer does. */
+/* NOT_FROM_ORIGINAL_SOURCE: use the same localization owner as the Windows
+ * filesystem startup, including the archived and latched language cvar. */
 static inline void filesystem_compat_init_language(void)
 {
-    cl_language = Cvar_Get("cl_language", "0", CVAR_ARCHIVE);
+    SEH_InitLanguage();
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: the standalone server has no client localization
- * strings to clear when using Windows engine behavior. */
+/* NOT_FROM_ORIGINAL_SOURCE: clear the shared string package before rebuilding
+ * the selected language during filesystem startup and restart. */
 static inline void filesystem_compat_clear_localized_strings(void)
 {
+    SEH_StringEd_Clear(0);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: the standalone server has no client localization
- * state to refresh when using Windows engine behavior. */
+/* NOT_FROM_ORIGINAL_SOURCE: preserve Windows selection and string validation
+ * before default_mp.cfg is checked (CoDUOMP.exe RVA 0x30c60). */
 static inline void filesystem_compat_update_language_info(void)
 {
+    SEH_UpdateLanguageInfo();
 }
 
 void Com_ReadCDKey(void);
@@ -268,10 +279,11 @@ static inline void filesystem_compat_stream_seek(
     Sys_StreamSeek(handle, offset, origin);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: the dedicated engine has no client sound,
- * localization-package, or case-cache ownership at filesystem shutdown. */
+/* NOT_FROM_ORIGINAL_SOURCE: release shared localization state at filesystem
+ * shutdown; the dedicated engine has no sound or case-cache owner. */
 static inline void filesystem_compat_shutdown_begin(void)
 {
+    SEH_StringEd_Clear(0);
 }
 
 char **Sys_ListFiles(const char *directory, const char *extension,

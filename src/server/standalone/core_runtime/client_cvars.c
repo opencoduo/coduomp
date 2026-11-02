@@ -1,6 +1,6 @@
 #include "core_runtime_private.h"
+#include "filesystem/filesystem.h"
 
-cvar_t *cl_language;
 cvar_t *cl_shownet;
 
 void CL_Init(void)
