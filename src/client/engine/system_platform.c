@@ -659,9 +659,10 @@ void Sys_LoadingKeepAlive(void)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: shared expression of the Win32 message-pump and
- * two-millisecond yield inlined at CoDUOMP.exe 0x0043028c..0x004302e1 and
+ * display-idle reset inlined at CoDUOMP.exe 0x0043028c..0x004302e1 and
  * 0x0041d01b..0x0041d070. The original out-of-line Sys_LoadingKeepAlive
- * function above is independently empty. */
+ * function above is independently empty. The final imported call takes
+ * ES_DISPLAY_REQUIRED to reset the display idle timer. */
 void coduomp_loading_keepalive(void)
 {
 #if defined(_WIN32)
@@ -675,7 +676,7 @@ void coduomp_loading_keepalive(void)
         TranslateMessage(&message);
         DispatchMessageA(&message);
     }
-    Sleep(2);
+    (void)SetThreadExecutionState(ES_DISPLAY_REQUIRED);
 #endif
 }
 
