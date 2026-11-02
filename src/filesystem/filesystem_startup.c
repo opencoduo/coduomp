@@ -107,6 +107,9 @@ void FS_Startup(const char *gameName)
         CVAR_SYSTEMINFO | CVAR_INIT);
     fs_restrict = Cvar_Get(
         "fs_restrict", "", CVAR_INIT);
+    /* The misspelled cvar name is stock behavior: CoDUOMP.exe RVA 0x308ee
+     * registers the string at RVA 0x194644. Preserve the spelling for
+     * compatibility with existing commands and configurations. */
     fs_ignoreLocalized = Cvar_Get(
         "fs_ignoreLozalized", "0",
         CVAR_LATCH | CVAR_CHEAT);
