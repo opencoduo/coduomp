@@ -100,6 +100,9 @@ int WINAPI WinMain(HINSTANCE applicationInstance,
     Sys_CreateConsole();
     Sys_CreateSplashWindow();
     Sys_ShowSplashWindow();
+    /* NOT_FROM_ORIGINAL_SOURCE: keep the OS from offering to terminate the
+     * process while a map load blocks the window thread. */
+    coduomp_disable_windows_ghosting_compat();
     (void)SetErrorMode(SEM_FAILCRITICALERRORS);
 
     /* WinMain contains the same lazy WinMM-clock initialization as
