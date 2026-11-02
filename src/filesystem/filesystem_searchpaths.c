@@ -19,8 +19,8 @@ enum {
  * 0x080645a4..0x0806490d. Name and argument roles: exact same-module Mac
  * symbol FS_AddPakFilesForGameDirectory. Localized pak prefixes are
  * temporarily replaced with spaces so paksort can group them, then restored
- * before each archive is validated and loaded. The target service retains the
- * original Windows all-language versus Linux English-only acceptance policy. */
+ * before each archive is validated and loaded. Both targets use the original
+ * Windows language table. */
 void FS_AddPakFilesForGameDirectory(const char *base, const char *game)
 {
     char *sortedPakFiles[FS_MAX_PAKFILES_PER_DIRECTORY];
@@ -213,8 +213,8 @@ void FS_AddGameDirectory(const char *base, const char *game,
 
 /* Source: CoDUOMP.exe 0x0042ffd0..0x0042fff7 and coduo_lnxded
  * 0x08064b5b..0x08064b8d. Name and two-argument signature: exact same-module
- * Mac symbol FS_AddLocalizedGameDirectory. The target language-count service
- * retains Windows' 13..0 walk and Linux dedicated's English-only walk. */
+ * Mac symbol FS_AddLocalizedGameDirectory. Both targets preserve the Windows
+ * descending 13..0 language-directory walk. */
 void FS_AddLocalizedGameDirectory(const char *base, const char *game)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: a game directory must remain relative and

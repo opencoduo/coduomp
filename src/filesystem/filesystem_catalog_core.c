@@ -19,8 +19,8 @@ qboolean FS_Initialized(void)
 
 /* Source: CoDUOMP.exe 0x0042c920..0x0042c950.
  * Name and search-path policy: exact same-module Mac symbol FS_UseSearchPath.
- * Linux accepts every localized search path unless all localized assets are
- * disabled; Windows additionally requires the active client language. */
+ * Localized paths require enabled localized assets and the active language
+ * on every host. */
 qboolean FS_UseSearchPath(const searchpath_t *searchpath)
 {
     if (filesystem_compat_server_scope_allows_searchpath(searchpath) ==

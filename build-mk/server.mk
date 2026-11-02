@@ -56,7 +56,7 @@ STANDALONE_CSRCS := $(filter-out $(PUNKBUSTER_RECOVERY_SRCS),$(ALL_CSRCS))
 endif
 CXXSRCS := $(STANDALONE_SERVER_CXX_SOURCES)
 OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(BUILD_DIR)/%.o,$(STANDALONE_CSRCS)) \
-        $(patsubst $(STANDALONE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(CXXSRCS)) \
+        $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(CXXSRCS)) \
         $(patsubst $(POSIX_GENERATED_DIR)/%.c,$(BUILD_DIR)/generated-posix/%.o,$(POSIX_GENERATED_CSRCS)) \
         $(patsubst $(QCOMMON_DIR)/%.c,$(BUILD_DIR)/qcommon/%.o,$(QCOMMON_CSRCS)) \
 	$(patsubst $(CRT_COMPAT_DIR)/%.c,$(BUILD_DIR)/src/compat/crt/%.o,$(CRT_COMPAT_CSRCS)) \
@@ -69,7 +69,7 @@ OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(BUILD_DIR)/%.o,$(STANDALONE_CSRCS)) \
         $(patsubst $(SCRIPT_DIR)/%.c,$(BUILD_DIR)/src/scripting/%.o,$(SCRIPT_CSRCS)) \
         $(patsubst $(SCRIPT_DIR)/%.cpp,$(BUILD_DIR)/src/scripting/%.o,$(SCRIPT_CXXSRCS))
 SHARED_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(BUILD_DIR)/shared/%.o,$(STANDALONE_CSRCS)) \
-               $(patsubst $(STANDALONE_DIR)/%.cpp,$(BUILD_DIR)/shared/%.o,$(CXXSRCS)) \
+               $(patsubst src/%.cpp,$(BUILD_DIR)/shared/%.o,$(CXXSRCS)) \
                $(patsubst $(POSIX_GENERATED_DIR)/%.c,$(BUILD_DIR)/shared/generated-posix/%.o,$(POSIX_GENERATED_CSRCS)) \
                $(patsubst $(QCOMMON_DIR)/%.c,$(BUILD_DIR)/shared/src/qcommon/%.o,$(QCOMMON_CSRCS)) \
 	       $(patsubst $(CRT_COMPAT_DIR)/%.c,$(BUILD_DIR)/shared/src/compat/crt/%.o,$(CRT_COMPAT_CSRCS)) \
@@ -82,7 +82,7 @@ SHARED_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(BUILD_DIR)/shared/%.o,$(STANDA
                $(patsubst $(SCRIPT_DIR)/%.c,$(BUILD_DIR)/shared/src/scripting/%.o,$(SCRIPT_CSRCS)) \
                $(patsubst $(SCRIPT_DIR)/%.cpp,$(BUILD_DIR)/shared/src/scripting/%.o,$(SCRIPT_CXXSRCS))
 EXE_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(EXE_BUILD_DIR)/%.o,$(STANDALONE_CSRCS)) \
-            $(patsubst $(STANDALONE_DIR)/%.cpp,$(EXE_BUILD_DIR)/%.o,$(CXXSRCS)) \
+            $(patsubst src/%.cpp,$(EXE_BUILD_DIR)/%.o,$(CXXSRCS)) \
             $(patsubst $(POSIX_GENERATED_DIR)/%.c,$(EXE_BUILD_DIR)/generated-posix/%.o,$(POSIX_GENERATED_CSRCS)) \
             $(patsubst $(QCOMMON_DIR)/%.c,$(EXE_BUILD_DIR)/qcommon/%.o,$(QCOMMON_CSRCS)) \
 	    $(patsubst $(CRT_COMPAT_DIR)/%.c,$(EXE_BUILD_DIR)/src/compat/crt/%.o,$(CRT_COMPAT_CSRCS)) \
@@ -95,7 +95,7 @@ EXE_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(EXE_BUILD_DIR)/%.o,$(STANDALONE_C
             $(patsubst $(SCRIPT_DIR)/%.c,$(EXE_BUILD_DIR)/src/scripting/%.o,$(SCRIPT_CSRCS)) \
             $(patsubst $(SCRIPT_DIR)/%.cpp,$(EXE_BUILD_DIR)/src/scripting/%.o,$(SCRIPT_CXXSRCS))
 EXE_I386_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(EXE_I386_BUILD_DIR)/%.o,$(STANDALONE_CSRCS)) \
-                 $(patsubst $(STANDALONE_DIR)/%.cpp,$(EXE_I386_BUILD_DIR)/%.o,$(CXXSRCS)) \
+                 $(patsubst src/%.cpp,$(EXE_I386_BUILD_DIR)/%.o,$(CXXSRCS)) \
                  $(patsubst $(POSIX_GENERATED_DIR)/%.c,$(EXE_I386_BUILD_DIR)/generated-posix/%.o,$(POSIX_GENERATED_CSRCS)) \
                  $(patsubst $(QCOMMON_DIR)/%.c,$(EXE_I386_BUILD_DIR)/qcommon/%.o,$(QCOMMON_CSRCS)) \
 		 $(patsubst $(CRT_COMPAT_DIR)/%.c,$(EXE_I386_BUILD_DIR)/src/compat/crt/%.o,$(CRT_COMPAT_CSRCS)) \
@@ -108,7 +108,7 @@ EXE_I386_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(EXE_I386_BUILD_DIR)/%.o,$(ST
                  $(patsubst $(SCRIPT_DIR)/%.c,$(EXE_I386_BUILD_DIR)/src/scripting/%.o,$(SCRIPT_CSRCS)) \
                  $(patsubst $(SCRIPT_DIR)/%.cpp,$(EXE_I386_BUILD_DIR)/src/scripting/%.o,$(SCRIPT_CXXSRCS))
 WINDOWS_I386_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(WINDOWS_I386_BUILD_DIR)/%.o,$(STANDALONE_CSRCS)) \
-                     $(patsubst $(STANDALONE_DIR)/%.cpp,$(WINDOWS_I386_BUILD_DIR)/%.o,$(CXXSRCS)) \
+                     $(patsubst src/%.cpp,$(WINDOWS_I386_BUILD_DIR)/%.o,$(CXXSRCS)) \
                      $(patsubst $(POSIX_GENERATED_DIR)/%.c,$(WINDOWS_I386_BUILD_DIR)/generated-posix/%.o,$(POSIX_GENERATED_CSRCS)) \
                      $(patsubst $(QCOMMON_DIR)/%.c,$(WINDOWS_I386_BUILD_DIR)/qcommon/%.o,$(QCOMMON_CSRCS)) \
 		     $(patsubst $(CRT_COMPAT_DIR)/%.c,$(WINDOWS_I386_BUILD_DIR)/src/compat/crt/%.o,$(CRT_COMPAT_CSRCS)) \
@@ -121,7 +121,7 @@ WINDOWS_I386_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(WINDOWS_I386_BUILD_DIR)/
                      $(patsubst $(SCRIPT_DIR)/%.c,$(WINDOWS_I386_BUILD_DIR)/src/scripting/%.o,$(SCRIPT_CSRCS)) \
                      $(patsubst $(SCRIPT_DIR)/%.cpp,$(WINDOWS_I386_BUILD_DIR)/src/scripting/%.o,$(SCRIPT_CXXSRCS))
 WINDOWS_I686_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(WINDOWS_I686_BUILD_DIR)/%.o,$(STANDALONE_CSRCS)) \
-                     $(patsubst $(STANDALONE_DIR)/%.cpp,$(WINDOWS_I686_BUILD_DIR)/%.o,$(CXXSRCS)) \
+                     $(patsubst src/%.cpp,$(WINDOWS_I686_BUILD_DIR)/%.o,$(CXXSRCS)) \
                      $(patsubst $(POSIX_GENERATED_DIR)/%.c,$(WINDOWS_I686_BUILD_DIR)/generated-posix/%.o,$(POSIX_GENERATED_CSRCS)) \
                      $(patsubst $(QCOMMON_DIR)/%.c,$(WINDOWS_I686_BUILD_DIR)/qcommon/%.o,$(QCOMMON_CSRCS)) \
 		     $(patsubst $(CRT_COMPAT_DIR)/%.c,$(WINDOWS_I686_BUILD_DIR)/src/compat/crt/%.o,$(CRT_COMPAT_CSRCS)) \
@@ -134,7 +134,7 @@ WINDOWS_I686_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(WINDOWS_I686_BUILD_DIR)/
                      $(patsubst $(SCRIPT_DIR)/%.c,$(WINDOWS_I686_BUILD_DIR)/src/scripting/%.o,$(SCRIPT_CSRCS)) \
                      $(patsubst $(SCRIPT_DIR)/%.cpp,$(WINDOWS_I686_BUILD_DIR)/src/scripting/%.o,$(SCRIPT_CXXSRCS))
 WINDOWS_X86_64_OBJS := $(patsubst $(STANDALONE_DIR)/%.c,$(WINDOWS_X86_64_BUILD_DIR)/%.o,$(STANDALONE_CSRCS)) \
-                     $(patsubst $(STANDALONE_DIR)/%.cpp,$(WINDOWS_X86_64_BUILD_DIR)/%.o,$(CXXSRCS)) \
+                     $(patsubst src/%.cpp,$(WINDOWS_X86_64_BUILD_DIR)/%.o,$(CXXSRCS)) \
                      $(patsubst $(POSIX_GENERATED_DIR)/%.c,$(WINDOWS_X86_64_BUILD_DIR)/generated-posix/%.o,$(POSIX_GENERATED_CSRCS)) \
                      $(patsubst $(QCOMMON_DIR)/%.c,$(WINDOWS_X86_64_BUILD_DIR)/qcommon/%.o,$(QCOMMON_CSRCS)) \
 		     $(patsubst $(CRT_COMPAT_DIR)/%.c,$(WINDOWS_X86_64_BUILD_DIR)/src/compat/crt/%.o,$(CRT_COMPAT_CSRCS)) \
@@ -337,7 +337,7 @@ $(BUILD_DIR)/src/scripting/%.o: $(SCRIPT_DIR)/%.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(NATIVE_CPPFLAGS) $(CXXFLAGS) $(NATIVE_CXXFLAGS) $(NATIVE_FLOAT_FLAGS) -c $< -o $@
 
-$(BUILD_DIR)/%.o: $(STANDALONE_DIR)/%.cpp
+$(BUILD_DIR)/%.o: src/%.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(NATIVE_CPPFLAGS) $(CXXFLAGS) $(NATIVE_CXXFLAGS) $(NATIVE_FLOAT_FLAGS) -c $< -o $@
 
@@ -389,7 +389,7 @@ $(BUILD_DIR)/shared/src/scripting/%.o: $(SCRIPT_DIR)/%.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(NATIVE_CPPFLAGS) $(CXXFLAGS) $(NATIVE_CXXFLAGS) $(SHARED_CXXFLAGS) $(NATIVE_FLOAT_FLAGS) -c $< -o $@
 
-$(BUILD_DIR)/shared/%.o: $(STANDALONE_DIR)/%.cpp
+$(BUILD_DIR)/shared/%.o: src/%.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(NATIVE_CPPFLAGS) $(CXXFLAGS) $(NATIVE_CXXFLAGS) $(SHARED_CXXFLAGS) $(NATIVE_FLOAT_FLAGS) -c $< -o $@
 
@@ -441,7 +441,7 @@ $(EXE_BUILD_DIR)/src/scripting/%.o: $(SCRIPT_DIR)/%.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(NATIVE_CPPFLAGS) $(CXXFLAGS) $(NATIVE_CXXFLAGS) $(NATIVE_FLOAT_FLAGS) -c $< -o $@
 
-$(EXE_BUILD_DIR)/%.o: $(STANDALONE_DIR)/%.cpp
+$(EXE_BUILD_DIR)/%.o: src/%.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(NATIVE_CPPFLAGS) $(CXXFLAGS) $(NATIVE_CXXFLAGS) $(NATIVE_FLOAT_FLAGS) -c $< -o $@
 
@@ -512,7 +512,7 @@ $(EXE_I386_BUILD_DIR)/src/scripting/%.o: $(SCRIPT_DIR)/%.cpp
 		-Wno-pedantic -march=i386 \
 		-fexcess-precision=fast -c $< -o $@
 
-$(EXE_I386_BUILD_DIR)/%.o: $(STANDALONE_DIR)/%.cpp
+$(EXE_I386_BUILD_DIR)/%.o: src/%.cpp
 	mkdir -p $(dir $@)
 	$(EXE_I386_CXX) $(CPPFLAGS) $(filter-out -pedantic,$(CXXFLAGS)) \
 		-Wno-pedantic -march=i386 \
@@ -579,7 +579,7 @@ $(WINDOWS_I386_BUILD_DIR)/src/scripting/%.o: $(SCRIPT_DIR)/%.cpp
 		$(filter-out -pedantic,$(CXXFLAGS)) -Wno-pedantic -march=i386 \
 		$(WINDOWS_COMMON_FLOAT_FLAGS) -c $< -o $@
 
-$(WINDOWS_I386_BUILD_DIR)/%.o: $(STANDALONE_DIR)/%.cpp
+$(WINDOWS_I386_BUILD_DIR)/%.o: src/%.cpp
 	mkdir -p $(dir $@)
 	$(MINGW32_CXX) $(CPPFLAGS) $(WINDOWS_COMMON_CPPFLAGS) \
 		$(filter-out -pedantic,$(CXXFLAGS)) -Wno-pedantic -march=i386 \
@@ -646,7 +646,7 @@ $(WINDOWS_I686_BUILD_DIR)/src/scripting/%.o: $(SCRIPT_DIR)/%.cpp
 		$(filter-out -pedantic,$(CXXFLAGS)) -Wno-pedantic -march=i686 \
 		$(WINDOWS_COMMON_FLOAT_FLAGS) -c $< -o $@
 
-$(WINDOWS_I686_BUILD_DIR)/%.o: $(STANDALONE_DIR)/%.cpp
+$(WINDOWS_I686_BUILD_DIR)/%.o: src/%.cpp
 	mkdir -p $(dir $@)
 	$(MINGW32_CXX) $(CPPFLAGS) $(WINDOWS_COMMON_CPPFLAGS) \
 		$(filter-out -pedantic,$(CXXFLAGS)) -Wno-pedantic -march=i686 \
@@ -713,7 +713,7 @@ $(WINDOWS_X86_64_BUILD_DIR)/src/scripting/%.o: $(SCRIPT_DIR)/%.cpp
 		$(filter-out -pedantic,$(CXXFLAGS)) -Wno-pedantic -m64 \
 		$(WINDOWS_COMMON_FLOAT_FLAGS) -c $< -o $@
 
-$(WINDOWS_X86_64_BUILD_DIR)/%.o: $(STANDALONE_DIR)/%.cpp
+$(WINDOWS_X86_64_BUILD_DIR)/%.o: src/%.cpp
 	mkdir -p $(dir $@)
 	$(MINGW64_CXX) $(CPPFLAGS) -D_WIN32_WINNT=0x0601 $(WINDOWS64_DEP_CPPFLAGS) \
 		$(filter-out -pedantic,$(CXXFLAGS)) -Wno-pedantic -m64 \

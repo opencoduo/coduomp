@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "qcommon/vm_runtime.h"
+#include "client/engine/localization/string_ed_api.h"
 #include "../animation/xanim_private.h"
 #include "qcommon/q_command.h"
 #include "../core_cvar/cvar_private.h"
@@ -119,6 +120,9 @@ void Com_Init(char *commandLine)
     }
 
     Com_StartupVariable(NULL);
+    /* CoDUOMP.exe RVA 0x3bde0: refresh selection after configuration and
+     * command-line assignments, before entering dedicated-server mode. */
+    SEH_UpdateLanguageInfo();
     dedicated = Cvar_Get("dedicated", COM_INIT_DEDICATED_DEFAULT,
                          COM_INIT_DEDICATED_FLAGS);
 
