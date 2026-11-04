@@ -5444,9 +5444,14 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
             (WIDE_FLOAT)accelLimit * VEH_PHYSICS_FRAME_SECONDS;
     } else if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL &&
                game_compat_veh_float_is_non_zero_or_nan(vehicleState->angularVelocity[0])) {
-        desiredLocalVelocity[0] =
-            game_compat_veh_approach_float_step(vehicleState->angularVelocity[0],
-                                  0.0f, VEH_IDLE_BRAKE_STEP);
+        const float currentSpeed = vehicleState->angularVelocity[0];
+        if (currentSpeed > 0.0f) {
+            const float braked = coduo_round_f32((WIDE_FLOAT)currentSpeed - VEH_IDLE_BRAKE_STEP);
+            desiredLocalVelocity[0] = braked > 0.0f ? braked : 0.0f;
+        } else {
+            const float braked = coduo_round_f32((WIDE_FLOAT)currentSpeed + VEH_IDLE_BRAKE_STEP);
+            desiredLocalVelocity[0] = braked < 0.0f ? braked : 0.0f;
+        }
     } else {
         desiredLocalVelocity[0] = 0.0f;
     }
@@ -5505,7 +5510,7 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
 
         VEH_GetWheelOrigin(ent, 0, frontWheel);
         VEH_GetWheelOrigin(ent, 2, rearWheel);
-        vehicleState->wheelBaseLength = VectorDistance(frontWheel, rearWheel);
+        vehicleState->wheelBaseLength = VectorDistance(rearWheel, frontWheel);
     }
 
     if (vehicleInfo->type != VEHICLE_TYPE_4_WHEEL) {
