@@ -799,18 +799,14 @@ static void game_compat_drop_weapon_place_at_tag(gentity_t *source, gentity_t *d
         trace_t trace;
         vec3_t start;
 
-        /* Windows rounds X after halving and Z before halving; Y stays wide
-         * through the origin addition. Linux stores each stage. For bounded
-         * finite coordinates, halving commutes with float rounding, so X/Z
-         * share one boundary; only Y needs a profile-specific boundary. */
-        for (int axis = 0; axis < 3; axis++) {
-            WIDE_FLOAT half = ((WIDE_FLOAT)source->mins[axis] + source->maxs[axis]) * 0.5f;
-            if (axis != 1)
-            {
-                half = coduo_round_f32(half);
-            }
-            start[axis] = half + source->currentOrigin[axis];
-        }
+        /* The X half-extent rounds to float. Y stays wide through the
+         * origin addition. Z rounds the bounds sum before halving. */
+        WIDE_FLOAT sumX = (WIDE_FLOAT)source->maxs[0] + source->mins[0];
+        WIDE_FLOAT sumY = (WIDE_FLOAT)source->maxs[1] + source->mins[1];
+        WIDE_FLOAT sumZ = coduo_round_f32((WIDE_FLOAT)source->maxs[2] + source->mins[2]);
+        start[0] = (WIDE_FLOAT)coduo_round_f32(sumX * 0.5f) + source->currentOrigin[0];
+        start[1] = sumY * 0.5f + source->currentOrigin[1];
+        start[2] = sumZ * 0.5f + source->currentOrigin[2];
 
         trap_TraceCapsule(&trace, start,
                           dropped->mins,
