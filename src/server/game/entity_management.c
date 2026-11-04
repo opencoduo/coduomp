@@ -16,7 +16,7 @@
 #include "game_functions.h"
 #include "level_locals.h"
 #include "scr_vm.h"
-#include "compat/coduo_native_x87.h"
+#include "compat/coduo_fp_conversion.h"
 #include "compat/crt/floor_compat.h"
 
 /* ------------------------------------------------------------------ */
@@ -687,9 +687,10 @@ void G_FireTurret(gentity_t *turret, gentity_t *fireEnt, int damage)
 /* NOT_FROM_ORIGINAL_SOURCE: player animation id builder; extracted during reconstruction of 0x5ac06. */
 /* VERIFIED_DECOMPILER(0x5ac06, 6ac06_FUN_0006ac06.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; Scr_GetAnimsIndex, low animation word, shift, and 0xfffffdff mask match the root animation expression. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_PlayerTurretPositionAndBlend (0x5ac06); no standalone original body. */
-static uint32_t game_compat_g_turret_player_anim(uint32_t animationWord)
+static uint32_t game_compat_g_turret_player_anim(const clientInfo_t *clientInfo)
 {
-    uint32_t animTreeIndex = (uint32_t)Scr_GetAnimsIndex(bgAnimStaticTable->animTreeHandle);
+    uint32_t animTreeIndex = (uint32_t)Scr_GetAnimsIndex(bgs.animationTable.animTreeHandle);
+    uint32_t animationWord = game_compat_bg_anim_slot_animation_word(clientInfo, offsetof(clientInfo_t, legsYawAngle));
 
     return ((animTreeIndex << SCR_ANIM_TREE_INDEX_SHIFT) |
             (animationWord & 0xffffu)) &
@@ -777,12 +778,7 @@ static float game_compat_g_turret_prime_child_pair(XAnimTree *animTree, uint32_t
                                     uint32_t *firstChildAnim,
                                     uint32_t *secondChildAnim)
 {
-#if   defined(__i386__) || defined(__x86_64__)
-    int childIndex =
-        CODUO_X87_TRUNCATE_I32((long double)childPosition);
-#else
-    int childIndex = game_compat_int32_from_long_double_trunc(childPosition);
-#endif
+    int childIndex = coduo_fp_to_i32_extended(childPosition);
     float secondWeight = (float)(childPosition - (WIDE_FLOAT)childIndex);
 
     *childIndexOut = childIndex;
@@ -806,7 +802,7 @@ static float game_compat_g_turret_prime_child_pair(XAnimTree *animTree, uint32_t
 static int game_compat_g_turret_select_aiming_anim(XAnimTree *animTree, uint32_t rootAnim,
                                     float targetForwardOffset,
                                     float turretYaw,
-                                    float horizontalRotateIncrement,
+                                    const weaponInfo_t *weaponInfo,
                                     uint32_t *selectedAnim,
                                     uint32_t *selectedFirstChildAnim,
                                     uint32_t *selectedSecondChildAnim,
@@ -854,7 +850,7 @@ static int game_compat_g_turret_select_aiming_anim(XAnimTree *animTree, uint32_t
                       trap_XAnimGetAnimName(topAnim));
         }
 
-        childPosition = (WIDE_FLOAT)childCount * 0.5f - (WIDE_FLOAT)turretYaw / horizontalRotateIncrement;
+        childPosition = (WIDE_FLOAT)childCount * 0.5f - (WIDE_FLOAT)turretYaw / weaponInfo->animHorRotateInc;
         childPosition = game_compat_g_turret_clamp_child_position(childPosition, childCount);
         secondWeight = game_compat_g_turret_prime_child_pair(animTree, topAnim,
                                               childPosition, &childIndex,
@@ -887,7 +883,7 @@ static int game_compat_g_turret_select_aiming_anim(XAnimTree *animTree, uint32_t
 void G_PlayerTurretPositionAndBlend(gentity_t *player, gentity_t *turret)
 {
     clientInfo_t *clientInfo = &bgs.clientinfo[player->s.clientNum];
-    gclient_t *client = player->client;
+    gclient_t *client;
     const weaponInfo_t *weaponInfo;
     uint32_t animationReference;
     uint32_t animationWord;
@@ -936,7 +932,7 @@ void G_PlayerTurretPositionAndBlend(gentity_t *player, gentity_t *turret)
 
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(turret->s.weapon);
     animTree = clientInfo->animTree;
-    rootAnim = game_compat_g_turret_player_anim(animationWord);
+    rootAnim = game_compat_g_turret_player_anim(clientInfo);
     turretYaw = vectosignedyaw(weaponTagMatrix->axis[0]);
 
     AnglesToAxis(turret->currentAngles, turretAxis.axis);
@@ -959,7 +955,7 @@ void G_PlayerTurretPositionAndBlend(gentity_t *player, gentity_t *turret)
     trap_XAnimClearTreeGoalWeightsStrict(animTree, rootAnim, 0.0f);
     selectedTopIndex = game_compat_g_turret_select_aiming_anim(
         animTree, rootAnim, targetForwardOffset, turretYaw,
-        weaponInfo->animHorRotateInc,
+        weaponInfo,
         &selectedAnim, &selectedFirstChildAnim, &selectedSecondChildAnim,
         &selectedSecondWeight, &previousChildIndex, &previousSecondWeight,
         &previousDeltaZ,
@@ -1004,6 +1000,7 @@ void G_PlayerTurretPositionAndBlend(gentity_t *player, gentity_t *turret)
     YawToAxis(RotationToYaw(deltaRotation) + turretYaw, yawTransform.axis);
     MatrixMultiply43(&yawTransform, &turretAxis, &combinedAxis);
 
+    client = player->client;
     client->ps.psOrigin[0] = combinedAxis.origin[0];
     client->ps.psOrigin[1] = combinedAxis.origin[1];
     client->ps.psOrigin[2] = combinedAxis.origin[2];
@@ -1017,11 +1014,13 @@ void G_PlayerTurretPositionAndBlend(gentity_t *player, gentity_t *turret)
     traceEnd[2] = client->ps.psOrigin[2];
     trap_Trace(&trace, traceStart, NULL, NULL, traceEnd,
                player->s.number, TURRET_TRACE_CONTENTS);
+    client = player->client;
     if (trace.fraction < 1.0f) {
         client->ps.psOrigin[2] = trace.endpos[2];
     }
 
     BG_PlayerStateToEntityState(&client->ps, &player->s, qtrue);
+    client = player->client;
     player->currentOrigin[0] = client->ps.psOrigin[0];
     player->currentOrigin[1] = client->ps.psOrigin[1];
     player->currentOrigin[2] = client->ps.psOrigin[2];
