@@ -171,6 +171,10 @@ endif
 # registers. Preserve that defined target behavior without per-expression
 # rollover adapters in recovered source.
 UI_INTEGER_FLAGS := -fwrapv
+# The client footer reports the checked-out revision; exported archives report
+# "unknown" instead of a stale value.
+CODUOMP_GIT_REVISION ?= $(shell git describe --always --dirty 2>/dev/null || printf unknown)
+CODUOMP_BUILD_IDENTITY_CPPFLAGS := -DCODUOMP_GIT_REVISION='"$(CODUOMP_GIT_REVISION)"'
 # Keep tentative globals in ordinary zero-fill storage. Darwin ld64 otherwise
 # derives a 32 KiB COMMON alignment from the large UI state and reduces it to
 # the arm64 Mach-O segment maximum with a link warning.
@@ -178,12 +182,12 @@ UI_NATIVE_STORAGE_FLAGS := -fno-common
 
 native-link:
 	mkdir -p $(dir $(NATIVE_LIBRARY))
-	$(CC) -std=c11 $(RECOVERY_POLICY_CPPFLAGS) -Wall -Wextra -Werror -g -O0 -fPIC \
+	$(CC) -std=c11 $(RECOVERY_POLICY_CPPFLAGS) $(CODUOMP_BUILD_IDENTITY_CPPFLAGS) -Wall -Wextra -Werror -g -O0 -fPIC \
 		$(UI_INTEGER_FLAGS) $(UI_NATIVE_STORAGE_FLAGS) -fvisibility=hidden $(INCLUDE_FLAGS) $(ALL_C_SOURCES) $(NATIVE_LDFLAGS) -lm \
 		-o $(NATIVE_LIBRARY)
 
 syntax-check:
-	$(WIDTH_CC) -std=c11 $(RECOVERY_POLICY_CPPFLAGS) -fsyntax-only $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror \
+	$(WIDTH_CC) -std=c11 $(RECOVERY_POLICY_CPPFLAGS) $(CODUOMP_BUILD_IDENTITY_CPPFLAGS) -fsyntax-only $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror \
 		-Werror=implicit-function-declaration -Werror=incompatible-pointer-types \
 		-Werror=int-conversion -Werror=shorten-64-to-32 \
 		-Werror=pointer-to-int-cast -Werror=int-to-pointer-cast \
@@ -191,19 +195,19 @@ syntax-check:
 
 windows-cross-link:
 	@mkdir -p $(dir $(WINDOWS_LIBRARY))
-	$(WINDOWS_CC) -std=c11 $(RECOVERY_POLICY_CPPFLAGS) $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror $(INCLUDE_FLAGS) $(ALL_C_SOURCES) \
+	$(WINDOWS_CC) -std=c11 $(RECOVERY_POLICY_CPPFLAGS) $(CODUOMP_BUILD_IDENTITY_CPPFLAGS) $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror $(INCLUDE_FLAGS) $(ALL_C_SOURCES) \
 		-shared -static-libgcc $(WINDOWS_DEF) -Wl,--no-undefined -luser32 -lgdi32 -lm \
 		-o $(WINDOWS_LIBRARY)
 
 win32-abi-link:
 	@mkdir -p $(dir $(WIN32_LIBRARY))
-	$(WIN32_CC) -std=c11 $(RECOVERY_POLICY_CPPFLAGS) $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror $(INCLUDE_FLAGS) $(ALL_C_SOURCES) \
+	$(WIN32_CC) -std=c11 $(RECOVERY_POLICY_CPPFLAGS) $(CODUOMP_BUILD_IDENTITY_CPPFLAGS) $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror $(INCLUDE_FLAGS) $(ALL_C_SOURCES) \
 		-shared -static-libgcc $(WINDOWS_DEF) -Wl,--no-undefined -luser32 -lgdi32 -lm \
 		-o $(WIN32_LIBRARY)
 
 linux-i386-link:
 	@mkdir -p $(dir $(LINUX_I386_LIBRARY))
-	$(CC) -m32 -std=c11 $(RECOVERY_POLICY_CPPFLAGS) $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror \
+	$(CC) -m32 -std=c11 $(RECOVERY_POLICY_CPPFLAGS) $(CODUOMP_BUILD_IDENTITY_CPPFLAGS) $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror \
 		-g -O0 -fPIC -fvisibility=hidden \
 		$(INCLUDE_FLAGS) $(ALL_C_SOURCES) -shared -Wl,--no-undefined -lm \
 		-o $(LINUX_I386_LIBRARY)

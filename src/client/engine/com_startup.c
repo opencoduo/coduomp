@@ -477,10 +477,10 @@ parsing_complete:
  * intentionally consecutive: the Windows executable performs both. */
 void Com_Init(char *commandLine)
 {
-    Com_Printf("%s %s build %s %s\n",
+    Com_Printf("%s %s build %s %s git %s\n",
                CODUOMP_DISPLAY_PRODUCT, CODUOMP_DISPLAY_VERSION,
                CODUOMP_PLATFORM_TAG,
-               CODUOMP_DISPLAY_BUILD_DATE);
+               CODUOMP_DISPLAY_BUILD_DATE, CODUOMP_GIT_REVISION);
 
     if (setjmp(com_abortFrame) != 0) {
         Com_ErrorCleanup();

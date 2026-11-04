@@ -36,6 +36,7 @@ set(CODUOMP_DEP_PREFIX "" CACHE PATH "Prefix containing MSVC dependencies")
 
 include(cmake/CoduompManifest.cmake)
 include(cmake/CoduompCommon.cmake)
+include(cmake/CoduompBuildIdentity.cmake)
 include(cmake/CoduompPlatform.cmake)
 include(cmake/CoduompCompilerChecks.cmake)
 include(cmake/CoduompBundledLibs.cmake)
