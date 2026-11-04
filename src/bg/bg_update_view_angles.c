@@ -49,8 +49,13 @@ enum {
                          (uint32_t)PM_ANGLE_TO_SHORT(angle_));               \
 } while (0)
 
-void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
-                         pm_trace_fn_t traceFunc)
+/* NOT_FROM_ORIGINAL_SOURCE: shared body for the original PM_UpdateViewAngles
+ * entry point and the prediction pre-pass that must refresh command view
+ * angles without advancing the incremental lean state a second time. */
+static void coduomp_pm_update_view_angles_internal(playerState_t *ps,
+                                                   const usercmd_t *cmd,
+                                                   pm_trace_fn_t traceFunc,
+                                                   qboolean updateLean)
 {
     float previousYaw;
     float commandYaw;
@@ -71,7 +76,9 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
                 (long double)(float)packed *
                 (long double)PM_SHORT2ANGLE_SCALE);
         }
-        PM_UpdateLean(ps, cmd, traceFunc);
+        if (updateLean != qfalse) {
+            PM_UpdateLean(ps, cmd, traceFunc);
+        }
         return;
     }
 
@@ -387,8 +394,29 @@ candidate_search_done:
     }
 
 update_lean:
-    if (ps->pmType != PM_TYPE_UFO && ps->pmType != PM_TYPE_NOCLIP &&
+    if (updateLean != qfalse &&
+        ps->pmType != PM_TYPE_UFO && ps->pmType != PM_TYPE_NOCLIP &&
         ps->pmType != PM_TYPE_SPECTATOR) {
         PM_UpdateLean(ps, cmd, traceFunc);
     }
+}
+
+void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
+                         pm_trace_fn_t traceFunc)
+{
+    coduomp_pm_update_view_angles_internal(ps, cmd, traceFunc, qtrue);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: prediction pre-pass wrapper. The original
+ * CG_PredictPlayerState_Internal calls PM_UpdateViewAngles for every buffered
+ * command before deciding which commands Pmove will simulate. That refreshes
+ * the absolute command view angles, but also advances the incremental lean
+ * state for commands that are skipped, so with pmove_fixed every frame replays
+ * up to the full command history through PM_UpdateLean. This wrapper keeps the
+ * view-angle update and leaves lean advancement to the simulated commands. */
+void coduomp_pm_update_view_angles_without_lean(playerState_t *ps,
+                                                const usercmd_t *cmd,
+                                                pm_trace_fn_t traceFunc)
+{
+    coduomp_pm_update_view_angles_internal(ps, cmd, traceFunc, qfalse);
 }

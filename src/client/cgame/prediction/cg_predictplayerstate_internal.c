@@ -141,8 +141,12 @@ void CG_PredictPlayerState_Internal(void)
         /* 0x30035ab0: reads the pmove_fixed value CACHED into cg_pmove (+0xf8)
          * at 0x30035a7e, not the cvar itself. */
         if (cg_pmove.pmove_msec_min != 0) {
-            PM_UpdateViewAngles(&cg_predictedPlayerState, cmd,
-                                CG_TraceCapsule);
+            /* The original pre-pass runs for every buffered command, including
+             * commands that Pmove skips. Advancing the incremental lean state
+             * there double-counts lean under pmove_fixed; keep the absolute
+             * view-angle refresh only. */
+            coduomp_pm_update_view_angles_without_lean(
+                &cg_predictedPlayerState, cmd, CG_TraceCapsule);
         }
 
         if (cmd->commandTime <= cg_predictedPlayerState.commandTime ||
