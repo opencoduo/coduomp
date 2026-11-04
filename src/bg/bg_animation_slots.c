@@ -167,6 +167,7 @@ void BG_SetNewAnimation(clientInfo_t *ci, bg_anim_slot_t *slot,
     const uint32_t oldAnimationWord = slot->animationWord;
     const qboolean isLegsSlot = bg_compat_anim_slot_is_legs(ci, slot);
     const uint32_t animationIndex = animationWord & ~ANIM_TOGGLEBIT;
+    bg_static_animation_t *currentAnimation = NULL;
     float startTime = 0.0f;
 
     slot->animationWord = animationWord;
@@ -183,10 +184,9 @@ void BG_SetNewAnimation(clientInfo_t *ci, bg_anim_slot_t *slot,
         bg_compat_set_slot_animation(slot, NULL);
         slot->blendTime = BG_ANIM_NO_ANIMATION_BLEND_TIME_MS;
     } else {
-        bg_static_animation_t *newAnimation = &bgAnimStaticTable->entries[animationIndex];
-
-        bg_compat_set_slot_animation(slot, newAnimation);
-        slot->blendTime = newAnimation->blendTime;
+        currentAnimation = &bgAnimStaticTable->entries[animationIndex];
+        bg_compat_set_slot_animation(slot, currentAnimation);
+        slot->blendTime = currentAnimation->blendTime;
 
         if (isLegsSlot && bg_compat_animation_stance_changed(
                               ci, oldAnimationWord, animationIndex)) {
@@ -199,8 +199,6 @@ void BG_SetNewAnimation(clientInfo_t *ci, bg_anim_slot_t *slot,
         slot->blendTime = 0;
     } else {
         int minimumBlendTime = -1;
-
-        bg_static_animation_t *currentAnimation = bg_compat_slot_animation(slot);
 
         if (currentAnimation == NULL || slot->blendTime < 1) {
             if (currentAnimation == NULL || currentAnimation->moveSpeed == 0) {
@@ -223,8 +221,6 @@ void BG_SetNewAnimation(clientInfo_t *ci, bg_anim_slot_t *slot,
             slot->blendTime = minimumBlendTime;
         }
     }
-
-    bg_static_animation_t *currentAnimation = bg_compat_slot_animation(slot);
 
     if (currentAnimation != NULL && currentAnimation->moveSpeed != 0) {
         const uint32_t newAnim =
@@ -303,8 +299,6 @@ void BG_SetNewAnimation(clientInfo_t *ci, bg_anim_slot_t *slot,
 
     const uint32_t newAnim =
         bg_compat_anim_slot_xanim(animTreeIndex, animationWord);
-
-    currentAnimation = bg_compat_slot_animation(slot);
 
     if ((currentAnimation->flags & BG_ANIM_ENTRY_DEATH) == 0) {
         const qboolean setStartTime =
