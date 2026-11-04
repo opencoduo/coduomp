@@ -879,14 +879,14 @@ gentity_t *Drop_Weapon(gentity_t *ent, int weapon, const char *tagName)
 
     dropped = Drop_Item(ent, game_compat_item_def_for_index(weapon), 0.0f, 0);
 
-    if (client == 0) {
+    if (ent->client == 0) {
         game_compat_drop_weapon_synthetic_ammo(weapon, clipIndex, &ammoCount, &clipCount);
     } else {
-        ammoCount = client->ps.ammo[ammoIndex];
-        client->ps.ammo[ammoIndex] = 0;
-        clipCount = client->ps.clips[clipIndex];
-        client->ps.clips[clipIndex] = 0;
-        BG_TakePlayerWeapon(&client->ps, weapon);
+        ammoCount = ent->client->ps.ammo[ammoIndex];
+        ent->client->ps.ammo[ammoIndex] = 0;
+        clipCount = ent->client->ps.clips[clipIndex];
+        ent->client->ps.clips[clipIndex] = 0;
+        BG_TakePlayerWeapon(&ent->client->ps, weapon);
     }
 
     dropped->itemCount = ammoCount;
