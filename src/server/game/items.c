@@ -584,6 +584,9 @@ void FinishSpawningItem(gentity_t *ent)
             retryStart[0] = ent->currentOrigin[0];
             retryStart[1] = ent->currentOrigin[1];
             retryStart[2] = ent->currentOrigin[2] - ITEM_STARTSOLID_RETRY_Z;
+            end[0] = ent->currentOrigin[0];
+            end[1] = ent->currentOrigin[1];
+            end[2] = ent->currentOrigin[2] - ITEM_DROP_TRACE_DISTANCE;
             trap_TraceCapsule(&trace, retryStart,
                               traceMins,
                               traceMaxs,
