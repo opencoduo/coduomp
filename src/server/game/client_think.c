@@ -55,7 +55,6 @@
 void ClientThink_real(gentity_t *ent, usercmd_t *command)
 {
     gclient_t *client = ent->client;
-    int time;
     int msec;
     int entityClientNum;
     pmove_t pm;
@@ -70,27 +69,25 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
     }
 
     /* Get command time and clamp to prevent large jumps */
-    time = command->commandTime;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (coduo_int32_from_bits(
             (uint32_t)level.time +
-            (uint32_t)CLIENT_THINK_TIME_CLAMP_MAX) < time) {
-        time = coduo_int32_from_bits(
+            (uint32_t)CLIENT_THINK_TIME_CLAMP_MAX) < command->commandTime) {
+        command->commandTime = coduo_int32_from_bits(
             (uint32_t)level.time +
             (uint32_t)CLIENT_THINK_TIME_CLAMP_MAX);
     }
-    if (time < coduo_int32_from_bits(
+    if (command->commandTime < coduo_int32_from_bits(
                    (uint32_t)level.time +
                    (uint32_t)CLIENT_THINK_TIME_CLAMP_MIN)) {
-        time = coduo_int32_from_bits(
+        command->commandTime = coduo_int32_from_bits(
             (uint32_t)level.time +
             (uint32_t)CLIENT_THINK_TIME_CLAMP_MIN);
     }
-    command->commandTime = time;
 
     /* Calculate msec delta from last command */
     msec = coduo_int32_from_bits(
-        (uint32_t)time - (uint32_t)client->ps.commandTime);
+        (uint32_t)command->commandTime - (uint32_t)client->ps.commandTime);
     entityClientNum = (int)(ent - g_entities);
 
     /* Validate msec and check for client number mismatch */
@@ -110,13 +107,12 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
         /* Apply pmove_fixed timing if enabled */
         if (pmove_fixed.integer != 0 || client->pmoveFixed != 0) {
             int32_t fixedNumerator = coduo_int32_from_bits(
-                (uint32_t)pmove_msec.integer + (uint32_t)time - UINT32_C(1));
+                (uint32_t)pmove_msec.integer + (uint32_t)command->commandTime - UINT32_C(1));
             int32_t fixedQuotient = fixedNumerator / pmove_msec.integer;
 
-            time = coduo_int32_from_bits(
+            command->commandTime = coduo_int32_from_bits(
                 (uint32_t)fixedQuotient * (uint32_t)pmove_msec.integer);
         }
-        command->commandTime = time;
 
         /* Route to appropriate think handler based on session state */
         if (client->sessionState == SESS_STATE_INTERMISSION) {
@@ -148,7 +144,6 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
         /* Set up pmove fields */
         pm.ps = &client->ps;
         pm.command = *command;
-        pm.command.commandTime = time;
         pm.oldCommand = client->oldPmoveCommand;
         pm.traceMask = (client->ps.pmType < PM_TYPE_DEAD)
                            ? MASK_PLAYERSOLID
@@ -196,20 +191,16 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
         client->latchedWbuttons = ~client->oldWbuttons & client->spectatorWbuttons;
 
         /* Calculate view angles and weapon sway */
-        const float clientSpeed = BG_GetSpeed(&client->ps, level.time);
+        bg_view_angle_state_t viewContext;
 
-        {
-            bg_view_angle_state_t viewContext;
+        viewContext.ps = &client->ps;
+        viewContext.viewKickStartTime = client->damageTime;
+        viewContext.time = level.time;
+        viewContext.viewKickPitch = client->damagePitch;
+        viewContext.viewKickRoll = client->damageRoll;
+        viewContext.speed = (float)BG_GetSpeed(&client->ps, viewContext.time);
 
-            viewContext.ps = &client->ps;
-            viewContext.viewKickStartTime = client->damageTime;
-            viewContext.time = level.time;
-            viewContext.viewKickPitch = client->damagePitch;
-            viewContext.viewKickRoll = client->damageRoll;
-            viewContext.speed = clientSpeed;
-
-            BG_CalculateViewAngles(&viewContext, viewKickAngles);
-        }
+        BG_CalculateViewAngles(&viewContext, viewKickAngles);
         muzzleAngles[0] = client->ps.viewAngles[0] + viewKickAngles[0];
         muzzleAngles[1] = client->ps.viewAngles[1] + viewKickAngles[1];
         muzzleAngles[2] = client->ps.viewAngles[2] + viewKickAngles[2];
@@ -220,14 +211,14 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
                                         1.0f, msec);
         {
             weaponContext.ps = &client->ps;
-            weaponContext.speed = clientSpeed;
+            weaponContext.speed = viewContext.speed;
             weaponContext.frameTime =
                 (float)((WIDE_FLOAT)msec * 0.001f);
             weaponContext.moveOffset[0] = client->weaponMoveOffset[0];
             weaponContext.moveOffset[1] = client->weaponMoveOffset[1];
             weaponContext.moveOffset[2] = client->weaponMoveOffset[2];
             weaponContext.idleScale = client->weaponIdleScale;
-            weaponContext.time = level.time;
+            weaponContext.time = viewContext.time;
             weaponContext.viewKickStartTime = client->damageTime;
             weaponContext.viewKickPitch = client->damagePitch;
             weaponContext.viewKickYaw = client->damageRoll;
