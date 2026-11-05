@@ -6209,7 +6209,7 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
         endVelocity[2] = vehicleState->velocity[2] - VEH_SLIDE_GRAVITY_STEP;
 
         vehicleState->velocity[2] =
-            (vehicleState->velocity[2] + endVelocity[2]) * 0.5f;
+            ((WIDE_FLOAT)vehicleState->velocity[2] + endVelocity[2]) * 0.5f;
 
         if (vehGroundTraceHit) {
             VEH_ClipVelocity(vehicleState->velocity, vehLastGroundTrace.normal,
@@ -6235,9 +6235,9 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
         trace_t trace;
         vec3_t end;
 
-        end[0] = vehicleState->origin[0] + vehicleState->velocity[0] * timeLeft;
-        end[1] = vehicleState->origin[1] + vehicleState->velocity[1] * timeLeft;
-        end[2] = vehicleState->origin[2] + vehicleState->velocity[2] * timeLeft;
+        end[0] = vehicleState->origin[0] + (WIDE_FLOAT)vehicleState->velocity[0] * timeLeft;
+        end[1] = vehicleState->origin[1] + (WIDE_FLOAT)vehicleState->velocity[1] * timeLeft;
+        end[2] = vehicleState->origin[2] + (WIDE_FLOAT)vehicleState->velocity[2] * timeLeft;
 
         trap_Trace(&trace, vehicleState->origin, vehicleInfo->collisionMins,
                    vehicleInfo->collisionMaxs, end, ent->s.number,
@@ -6264,7 +6264,7 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
             touchCount++;
         }
 
-        timeLeft -= timeLeft * trace.fraction;
+        timeLeft -= (WIDE_FLOAT)timeLeft * trace.fraction;
         if (numPlanes >= VEH_SLIDE_MAX_CLIP_PLANES) {
             game_compat_veh_clear_vehicle_velocity(vehicleState);
             return qtrue;
@@ -6272,10 +6272,12 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
 
         int planeIndex;
         for (planeIndex = 0; planeIndex < numPlanes; planeIndex++) {
-            const float dot =
-                trace.normal[0] * planes[planeIndex][0] +
-                trace.normal[1] * planes[planeIndex][1] +
-                trace.normal[2] * planes[planeIndex][2];
+            /* Collision comparisons consume the live wide sum. Its grouping
+             * differs from the float-stored crease projections below. */
+            const WIDE_FLOAT dot =
+                ((WIDE_FLOAT)trace.normal[2] * planes[planeIndex][2] +
+                 (WIDE_FLOAT)trace.normal[0] * planes[planeIndex][0]) +
+                (WIDE_FLOAT)trace.normal[1] * planes[planeIndex][1];
 
             if (dot > VEH_SLIDE_RECOLLIDE_DOT) {
                 vehicleState->velocity[0] += trace.normal[0];
@@ -6297,10 +6299,10 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
         for (planeIndex = 0; planeIndex < numPlanes; planeIndex++) {
             vec3_t newVelocity;
             vec3_t clippedEndVelocity;
-            const float into =
-                vehicleState->velocity[0] * planes[planeIndex][0] +
-                vehicleState->velocity[1] * planes[planeIndex][1] +
-                vehicleState->velocity[2] * planes[planeIndex][2];
+            const WIDE_FLOAT into =
+                ((WIDE_FLOAT)vehicleState->velocity[0] * planes[planeIndex][0] +
+                 (WIDE_FLOAT)vehicleState->velocity[2] * planes[planeIndex][2]) +
+                (WIDE_FLOAT)vehicleState->velocity[1] * planes[planeIndex][1];
 
             if (into >= VEH_SLIDE_CLIP_EPSILON) {
                 continue;
@@ -6316,9 +6318,9 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
                     continue;
                 }
 
-                if (newVelocity[0] * planes[otherPlane][0] +
-                    newVelocity[1] * planes[otherPlane][1] +
-                    newVelocity[2] * planes[otherPlane][2] >=
+                if (((WIDE_FLOAT)newVelocity[0] * planes[otherPlane][0] +
+                     (WIDE_FLOAT)newVelocity[2] * planes[otherPlane][2]) +
+                    (WIDE_FLOAT)newVelocity[1] * planes[otherPlane][1] >=
                         VEH_SLIDE_CLIP_EPSILON) {
                     continue;
                 }
@@ -6329,9 +6331,9 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
 
                 /* 0x80a48..0x80a68 skips this arm only through an ordered
                  * dot >= 0 branch; an unordered dot enters the crease path. */
-                if (!(newVelocity[0] * planes[planeIndex][0] +
-                      newVelocity[1] * planes[planeIndex][1] +
-                      newVelocity[2] * planes[planeIndex][2] >= 0.0f)) {
+                if (!(((WIDE_FLOAT)newVelocity[2] * planes[planeIndex][2] +
+                       (WIDE_FLOAT)newVelocity[1] * planes[planeIndex][1]) +
+                      (WIDE_FLOAT)newVelocity[0] * planes[planeIndex][0] >= 0.0f)) {
                     vec3_t crease;
                     float projection;
 
@@ -6339,10 +6341,10 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
                                  crease);
                     VectorNormalize(crease);
 
-                    projection =
-                        crease[0] * vehicleState->velocity[0] +
-                        crease[1] * vehicleState->velocity[1] +
-                        crease[2] * vehicleState->velocity[2];
+                    projection = coduo_round_f32(
+                        ((WIDE_FLOAT)crease[0] * vehicleState->velocity[0] +
+                         (WIDE_FLOAT)crease[1] * vehicleState->velocity[1]) +
+                        (WIDE_FLOAT)crease[2] * vehicleState->velocity[2]);
                     newVelocity[0] = crease[0] * projection;
                     newVelocity[1] = crease[1] * projection;
                     newVelocity[2] = crease[2] * projection;
@@ -6351,10 +6353,10 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
                                  crease);
                     VectorNormalize(crease);
 
-                    projection =
-                        crease[0] * endVelocity[0] +
-                        crease[1] * endVelocity[1] +
-                        crease[2] * endVelocity[2];
+                    projection = coduo_round_f32(
+                        ((WIDE_FLOAT)crease[0] * endVelocity[0] +
+                         (WIDE_FLOAT)crease[1] * endVelocity[1]) +
+                        (WIDE_FLOAT)crease[2] * endVelocity[2]);
                     clippedEndVelocity[0] = crease[0] * projection;
                     clippedEndVelocity[1] = crease[1] * projection;
                     clippedEndVelocity[2] = crease[2] * projection;
@@ -6368,9 +6370,9 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
 
                         /* 0x80c71..0x80c8d clears velocity unless an
                          * ordered dot >= epsilon branch succeeds. */
-                        if (!(newVelocity[0] * planes[thirdPlane][0] +
-                              newVelocity[1] * planes[thirdPlane][1] +
-                              newVelocity[2] * planes[thirdPlane][2] >=
+                        if (!(((WIDE_FLOAT)newVelocity[2] * planes[thirdPlane][2] +
+                               (WIDE_FLOAT)newVelocity[0] * planes[thirdPlane][0]) +
+                              (WIDE_FLOAT)newVelocity[1] * planes[thirdPlane][1] >=
                                   VEH_SLIDE_CLIP_EPSILON)) {
                             game_compat_veh_clear_vehicle_velocity(vehicleState);
                             return qtrue;
