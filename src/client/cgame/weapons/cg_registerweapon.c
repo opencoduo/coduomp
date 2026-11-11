@@ -12,7 +12,6 @@
 
 enum {
     CG_WEAPON_DOBJ_MODEL_COUNT = 2,
-    CG_WEAPON_NAME_COPY_SIZE = 63,
     CG_REGISTER_WEAPON_SHADER_SORT = 5,
     CG_REGISTER_WEAPON_MODEL_CATEGORY = 7,
     CG_REGISTER_VIEW_MODEL_CATEGORY = 6,
@@ -187,8 +186,9 @@ void CG_RegisterWeapon(int weaponIndex)
         weaponInfo->viewDObjSelf = (struct DObj_s *)(intptr_t)cgame_syscall(
             CG_DOBJ_GET_HANDLE,
             weaponIndex + CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
-        Q_strncpyz(weaponInfo->name, weapon->handModel, CG_WEAPON_NAME_COPY_SIZE);
-        weaponInfo->name[CG_WEAPON_NAME_COPY_SIZE] = '\0';
+        /* 0x30043ba0..0x30043bb6: strncpy of 63 bytes (PUSH 0x3f) into the
+         * 64-byte name buffer, then a NUL at name[63]. */
+        Q_strncpyz(weaponInfo->name, weapon->handModel, sizeof(weaponInfo->name));
     }
 
     if (weapon->worldModel[0] != '\0') {
