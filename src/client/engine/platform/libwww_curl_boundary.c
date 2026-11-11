@@ -31,7 +31,6 @@ struct _HTRequest {
     CURLM *multiHandle;
     FILE *outputFile;
     char errorBuffer[CURL_ERROR_SIZE];
-    HTBool retriedHttps;
 };
 
 struct _HTResponse {
@@ -57,7 +56,7 @@ static int32_t libwwwTimeoutMilliseconds = -1;
 static HTBool libwwwStopRequested;
 static HTBool libwwwCurlInitialized;
 
-static int32_t Libwww_BeginTransfer(HTRequest *request, const char *url);
+static int32_t Libwww_BeginTransfer(HTRequest *request);
 
 /* NOT_FROM_ORIGINAL_SOURCE: diagnostic bridge for the native libcurl
  * compatibility adapter. */
@@ -291,7 +290,7 @@ HTBool HTLoadToFile(
         HTSACopy(&request->targetPath, localFileName) == HT_FALSE) {
         return HT_FALSE;
     }
-    return Libwww_BeginTransfer(request, request->url) == HT_OK ? HT_TRUE : HT_FALSE;
+    return Libwww_BeginTransfer(request) == HT_OK ? HT_TRUE : HT_FALSE;
 }
 
 void HTProfile_delete(void)
@@ -393,7 +392,7 @@ static HTBool coduomp_libwww_finalize_output_file(HTRequest *request)
     return HT_FALSE;
 }
 
-static int32_t Libwww_BeginTransfer(HTRequest *request, const char *url)
+static int32_t Libwww_BeginTransfer(HTRequest *request)
 {
     int32_t failureStatus = -(int32_t)CURLE_FAILED_INIT;
     CURLMcode multiResult;
@@ -439,7 +438,7 @@ static int32_t Libwww_BeginTransfer(HTRequest *request, const char *url)
 
     request->errorBuffer[0] = '\0';
     CODUOMP_LIBWWW_SETOPT(CURLOPT_ERRORBUFFER, request->errorBuffer);
-    CODUOMP_LIBWWW_SETOPT(CURLOPT_URL, url);
+    CODUOMP_LIBWWW_SETOPT(CURLOPT_URL, request->url);
     /* The original download path accepts FTP URLs as well as HTTP. Keep
      * direct transfers and redirects within the supported network protocols. */
     CODUOMP_LIBWWW_SETOPT(CURLOPT_PROTOCOLS_STR, "http,https,ftp");
@@ -498,35 +497,6 @@ setup_failed:
 #undef CODUOMP_LIBWWW_SETOPT
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: retry the original HTTP URL on the default
- * HTTPS port when the mirror cannot accept a connection on port 80. */
-static char *coduomp_libwww_https_retry_url(const HTRequest *request)
-{
-    long redirects = 0;
-    if (curl_easy_getinfo(request->easyHandle, CURLINFO_REDIRECT_COUNT, &redirects) != CURLE_OK ||
-        redirects != 0 || request->bytesRead != 0)
-        return NULL;
-
-    CURLU *url = curl_url();
-    if (url == NULL)
-        return NULL;
-
-    char *scheme = NULL;
-    char *port = NULL;
-    char *httpsUrl = NULL;
-    if (curl_url_set(url, CURLUPART_URL, request->url, 0) == CURLUE_OK &&
-        curl_url_get(url, CURLUPART_SCHEME, &scheme, 0) == CURLUE_OK &&
-        strcmp(scheme, "http") == 0 &&
-        curl_url_get(url, CURLUPART_PORT, &port, 0) == CURLUE_NO_PORT &&
-        curl_url_set(url, CURLUPART_SCHEME, "https", 0) == CURLUE_OK) {
-        (void)curl_url_get(url, CURLUPART_URL, &httpsUrl, 0);
-    }
-    curl_free(port);
-    curl_free(scheme);
-    curl_url_cleanup(url);
-    return httpsUrl;
-}
-
 static void Libwww_FinishTransfer(HTRequest *request, int32_t status)
 {
     if (status >= 0 &&
@@ -576,21 +546,6 @@ int32_t HTEventList_pump(void)
             continue;
 
         int32_t status;
-
-        if (message->data.result == CURLE_COULDNT_CONNECT && request->retriedHttps == HT_FALSE) {
-            char *httpsUrl = coduomp_libwww_https_retry_url(request);
-            if (httpsUrl != NULL) {
-                Libwww_CloseTransfer(request);
-                coduomp_libwww_print("HTTP connection failed, retrying over HTTPS\n");
-                status = Libwww_BeginTransfer(request, httpsUrl);
-                curl_free(httpsUrl);
-                request->retriedHttps = HT_TRUE;
-                if (status == HT_OK)
-                    return 1;
-                Libwww_FinishTransfer(request, status);
-                return 0;
-            }
-        }
 
         if (message->data.result == CURLE_OK) {
             long responseCode = 0;
