@@ -22,7 +22,9 @@ void CG_FxTest(void)
     cgame_syscall(CG_ARGV, 1,
                   (intptr_t)g_textScratchBuffer,
                   (int32_t)sizeof(g_textScratchBuffer));
-    Q_strncpyz(cg_periodicEffectName, g_textScratchBuffer, 63);
+    /* 0x3003f462..0x3003f47d: strncpy of 63 bytes (PUSH 0x3f) into the 64-byte
+     * name, then a NUL at name[63]. */
+    Q_strncpyz(cg_periodicEffectName, g_textScratchBuffer, sizeof(cg_periodicEffectName));
     cg_periodicEffectName[63] = '\0';
 
     effect = (qhandle_t)cgame_syscall(
