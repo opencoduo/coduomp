@@ -102,10 +102,7 @@ void CG_DrawPlayerWeaponModeIcon(int mode, const rectDef_t *rect,
     int32_t weapon = cg_weaponSelect_vmCvar.integer;
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    /* 0x3002ef31 JL / 0x3002ef33 CMP EAX,[bg_numWeapons] / 0x3002ef39 JGE: the
-     * index is used only when 0 <= weapon < bg_numWeapons, as in
-     * CG_DrawPlayerWeaponName and CG_DrawPlayerWeaponNameBack. */
-    if (weapon >= 0 && weapon < bg_numWeapons &&
+    if (weapon >= 0 && weapon <= bg_numWeapons &&
         (cg_predictedPlayerState.weaponBits[(uint32_t)weapon >> 5] & (1u << ((uint32_t)weapon & 31))) != 0) {
         /* 0x3002ef55 EDX = bg_weaponInfos / 0x3002ef5b EAX = bg_weaponInfos[weapon]. */
         weaponInfo = bg_weaponInfos[weapon];
