@@ -114,7 +114,7 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
     /* lightingOrigin = entity origin, lifted 32 units in Z (0x300216ff..0x30021742).
      * Instead of CG_General's CG_SetupWeaponLightingOrigin call, the vehicle path fills
      * the lighting origin inline: X/Y from lerpOrigin, Z = lerpOrigin[2] + 32. */
-    uint32_t currentTime = cg_time;
+    uint32_t currentTime = (uint32_t)cg_time;
     long double lightingZ =
         (long double)cent->lerpOrigin[2] +
         (long double)CG_VEHICLE_LIGHTING_ORIGIN_ZLIFT;

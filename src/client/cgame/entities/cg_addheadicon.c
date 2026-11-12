@@ -127,7 +127,7 @@ void CG_AddHeadIcon(centity_t *cent)
     if (centHudTeam == localHudTeam || localHudTeam == TEAM_SPECTATOR) {
         /* Active per-client voice chat: draw the entity's currently-registered
          * voiceChatIcon while its deadline has not yet passed (voiceChatTime > cg.time). */
-        if (cent->voiceChatTime > coduo_int32_from_bits(cg_time)) {
+        if (cent->voiceChatTime > cg_time) {
             CG_AddHeadIconSprite(cent, cent->voiceChatIcon, coduo_fp_to_i32_extended(size), 0);
             return;
         }

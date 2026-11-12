@@ -110,7 +110,7 @@ void CG_FireFlameChunks(void)
     {
         /* FILD m32 is signed: preserve the target's Win32 clock value before
          * widening it to the double argument passed to floor. */
-        double timeD = (double)coduo_int32_from_bits(cg_time);
+        double timeD = (double)cg_time;
         cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(floor(timeD + timeD));
     }
 

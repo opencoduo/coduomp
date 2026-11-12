@@ -100,9 +100,9 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
     /* 0x30021dbd..0x30021de0: evaluate the pos/apos trajectories at cg_time.
      * BG_EvaluateTrajectory register ABI: EAX=atTime(cg_time), ECX=out, EBX=tr. */
     BG_EvaluateTrajectory(&state->currentState.pos,
-                          coduo_int32_from_bits(cg_time), entity->lerpOrigin);
+                          cg_time, entity->lerpOrigin);
     BG_EvaluateTrajectory(&state->currentState.apos,
-                          coduo_int32_from_bits(cg_time), entity->lerpAngles);
+                          cg_time, entity->lerpAngles);
 
     /* 0x30021de5: select the per-entity 0x4d0-stride state record whose shared
      * angle block (+0x3e0) receives the derived view angles. */
@@ -155,7 +155,7 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
         /* 0x30021e5d..0x30021e73: mover-lag-correct lerpOrigin in place.
          * fromTime = cg_snap->serverTime, toTime = cg_time, angleDelta = NULL. */
         CG_AdjustPositionForMover(entity->lerpOrigin, state->currentState.groundEntityNum,
-                                  cg_snap->serverTime, coduo_int32_from_bits(cg_time),
+                                  cg_snap->serverTime, cg_time,
                                   entity->lerpOrigin, NULL);
     }
 }

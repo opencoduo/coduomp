@@ -126,7 +126,7 @@ void CG_DrawSkyBoxPortal(void)
         cg_refdef.rdflags &= ~(uint32_t)RDF_SKYBOX_PORTAL_ACTIVE;
         cg_refdef.rdflags |= RDF_SKYBOX_PORTAL;
     }
-    cg_refdef.time = coduo_int32_from_bits(cg_time);
+    cg_refdef.time = cg_time;
 
     cgame_syscall(CG_R_RENDER_SCENE, (intptr_t)&cg_refdef);
 

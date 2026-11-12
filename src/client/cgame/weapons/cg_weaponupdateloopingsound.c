@@ -126,7 +126,7 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent)
          * at cg_time. result in ECX (&soundPos), tr in EBX (&currentState.pos),
          * atTime in EAX (cg_time). */
         BG_EvaluateTrajectory(&cent->currentState.pos,
-                              coduo_int32_from_bits(cg_time), soundPos);
+                              cg_time, soundPos);
     }
 
     /* 0x30049193: reload the (already-decremented) remaining lifetime and choose

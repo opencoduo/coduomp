@@ -33,8 +33,8 @@
 // 0x300da488, re-read every time; the argv indices are the literal PUSH values):
 //   argv[1] -> Q_atoi -> int  (EBX)             -- field1 (kept in a callee-saved reg)
 //   argv[2] -> Q_atoi -> int  (EBP)             -- field2 (kept in a callee-saved reg)
-//   argv[3] -> Q_atoi -> FILD/FSTP -> float     -- origin[0]
-//   argv[5] -> Q_atoi -> int                    -- color (the '^'+%c chat-line char)
+//   argv[3] -> Q_atoi -> int                    -- color (the '^'+%c chat-line char)
+//   argv[5] -> Q_atoi -> FILD/FSTP -> float     -- origin[0]
 //   argv[6] -> Q_atoi -> FILD/FSTP -> float     -- origin[1]
 //   argv[7] -> Q_atoi -> FILD/FSTP -> float     -- origin[2]
 //   argv[4] -> (string, NOT atoi'd; left in g_textScratchBuffer) -- voiceChatString
@@ -59,19 +59,20 @@
 // and an int, plus five caller-cleaned (`add esp,0x14`) cdecl stack args. Anchoring
 // the frame at the proven RET epilogue, the FIRST stack arg (EDX, [ESP+0x28]) is the
 // incoming `mode` argument itself; the middle two are field1 (EBX=argv[1]) and field2
-// (EBP=argv[2]); the fourth ([ESP+0x14], a local int) is the argv[5] value
-// (`color` — the one int token that is neither field1/field2 nor a float, so it is
-// the remaining local; this argv[5]->color mapping is a well-motivated inference,
-// not a hard proof of the [ESP+0x14] slot's origin); the fifth is the argv[4]
-// string in g_textScratchBuffer. CG_VoiceChat (0x3003a250, reconstructed) proves
-// the roles: arg4 is printed after '^' via the second %c of the chat-line format.
+// (EBP=argv[2]); the fourth ([ESP+0x14], a local int) is the argv[3] value
+// (`color`): 0x3003a483 stores argv[3]'s atoi result to [ESP+0x60] with 0x4c bytes
+// of arguments outstanding, which is that same slot. ECX = LEA [ESP+0x2c] after the
+// five pushes is the slot that the argv[5] FSTP at 0x3003a4b0 wrote, so argv[5]
+// is origin[0]. The fifth is the argv[4] string in g_textScratchBuffer.
+// CG_VoiceChat (0x3003a250, reconstructed) proves the roles: arg4 is printed after
+// '^' via the second %c of the chat-line format.
 //
 // ABI: cdecl; `mode` is the single incoming stack arg (callers `add esp,4`; the mode
 // value is also re-passed to CG_VoiceChat as its first stack arg). No return value.
 
 /* The decoded-fields struct handed to CG_VoiceChat (ECX) is now cgVoiceChatMessage_t,
  * promoted to client_recovered.h so CG_VoiceChat's reconstruction shares the exact
- * contract. `origin` is the argv[3]/argv[6]/argv[7] vec3 and `color` is argv[5]. */
+ * contract. `origin` is the argv[5]/argv[6]/argv[7] vec3 and `color` is argv[3]. */
 
 void CG_ParseVoiceChat(int32_t mode)
 {
@@ -85,13 +86,13 @@ void CG_ParseVoiceChat(int32_t mode)
     trap_Argv(2, g_textScratchBuffer, sizeof(g_textScratchBuffer));
     int32_t field2 = coduo_crt_atoi(g_textScratchBuffer);
 
-    /* 0x3003a455..0x3003a4b3: argv[3] -> int -> float (origin[0]). */
+    /* 0x3003a455..0x3003a483: argv[3] -> the chat-line color char value. */
     trap_Argv(3, g_textScratchBuffer, sizeof(g_textScratchBuffer));
-    msg.origin[0] = (float)coduo_crt_atoi(g_textScratchBuffer);
-
-    /* 0x3003a475..0x3003a4c3: argv[5] -> the chat-line color char value. */
-    trap_Argv(5, g_textScratchBuffer, sizeof(g_textScratchBuffer));
     msg.color = coduo_crt_atoi(g_textScratchBuffer);
+
+    /* 0x3003a475..0x3003a4b0: argv[5] -> int -> float (origin[0]). */
+    trap_Argv(5, g_textScratchBuffer, sizeof(g_textScratchBuffer));
+    msg.origin[0] = (float)coduo_crt_atoi(g_textScratchBuffer);
 
     /* 0x3003a4a7..0x3003a4dd: argv[6] -> int -> float (origin[1]). */
     trap_Argv(6, g_textScratchBuffer, sizeof(g_textScratchBuffer));

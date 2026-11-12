@@ -84,7 +84,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
      * byte-for-byte equivalent chain in cg_addflametoscene.c (0x30026904),
      * which lacks only the spill/reload pair. */
     cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(
-        floor((double)coduo_int32_from_bits(cg_time) * 2.0));
+        floor((double)cg_time * 2.0));
 
     f = ownerChunk;
     prev = (flameChunk_t *)0; /* XOR ESI,ESI */

@@ -36,19 +36,19 @@ void CG_CalcAdsViewOffset(const vec3_t pos)
 
     if (weaponInfo->adsEnabled != 0) {
         /*
-         * 0x300451b8..0x300451cd: adsFraction > 0.0f ?
+         * 0x300451b8..0x300451cd: adsFraction != 0.0f ?
          *   FLD [0x304832a4]  -> adsFraction
          *   FLD [0x3007bcec]  -> 0.0f
          *   FLD ST1           -> copy of adsFraction
          *   FUCOMPP           -> compare adsFraction vs 0.0f, pop both operands
          *   FNSTSW AX ; TEST AH,0x44 ; JNP 0x30045204
-         * The 0x44/JNP idiom is the standard `if (x > y)` test: the fall-through
-         * (compute) path is taken only when adsFraction is ordered and strictly
-         * greater than 0.0f; adsFraction <= 0.0f (or NaN) branches to the zeroing
-         * path. The FLD ST1 copy leaves adsFraction on the x87 stack (ST0) as the
-         * multiplier used by the compute path below.
+         * The 0x44/JNP idiom is the inequality test: JNP branches to the zeroing
+         * path only when adsFraction is ordered and equal to 0.0f (C3 set, C2
+         * clear). Every other value, negative and NaN included, falls through to
+         * the compute path. The FLD ST1 copy leaves adsFraction on the x87 stack
+         * (ST0) as the multiplier used by the compute path below.
          */
-        if (cg_predictedPlayerState.adsFraction > 0.0f) {
+        if (cg_predictedPlayerState.adsFraction != 0.0f) {
             /*
              * 0x300451cf..0x30045201: project `pos` relative to the view origin
              * and scale each component by adsFraction.
@@ -77,7 +77,7 @@ void CG_CalcAdsViewOffset(const vec3_t pos)
 
     /*
      * 0x30045206..0x30045224: ADS inactive (weapon has no ADS, or adsFraction is
-     * not > 0). Zero the offset vector as three raw dwords.
+     * exactly 0). Zero the offset vector as three raw dwords.
      */
     cg_adsViewOffset[0] = 0.0f;
     cg_adsViewOffset[1] = 0.0f;

@@ -43,7 +43,7 @@ void CG_InstallSnapshotResetEffects(snapshot_t *snap)
 
     /* serverTime = snap->serverTime; then mirror into the time bases. */
     serverTime = snap->serverTime;
-    cg_time = (uint32_t)serverTime;
+    cg_time = serverTime;
     cg_effectTime = (uint32_t)serverTime;
     cg_physicsTime = serverTime;
 

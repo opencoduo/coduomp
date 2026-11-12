@@ -56,7 +56,7 @@ void CG_UpdatePeriodicEffect(void)
      * an unsigned dword but the DLL compares it signed (JLE), so mirror that. */
     int32_t nextEffectTime = coduo_int32_from_bits(
         (uint32_t)cg_periodicEffectLastTime + (uint32_t)interval);
-    if (coduo_int32_from_bits(cg_time) <= nextEffectTime) {
+    if (cg_time <= nextEffectTime) {
         return;
     }
 
@@ -67,5 +67,5 @@ void CG_UpdatePeriodicEffect(void)
                   (int32_t)effect,
                   (intptr_t)&cg_periodicEffectOrigin);
 
-    cg_periodicEffectLastTime = coduo_int32_from_bits(cg_time);
+    cg_periodicEffectLastTime = cg_time;
 }

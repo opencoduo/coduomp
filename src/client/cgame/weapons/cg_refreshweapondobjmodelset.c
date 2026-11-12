@@ -38,10 +38,6 @@
  * Same band CG_FreeWeaponDObjHandles (0x30044a80) releases with LEA [ESI+0x400];
  * see CG_VIEW_WEAPON_DOBJ_HANDLE_BASE in the shared cgame declarations. */
 
-/* Q_strncpyz destsize used for the cached weapon name at cgWeaponInfo.name (+0x64):
- * a 0x3f-byte copy, after which the function forces a NUL at name[0x3f]. */
-enum { CG_WEAPON_NAME_COPY_SIZE = 0x3f };
-
 /* The engine model-set handed to CG_CLIENT_DOBJ_CREATE here is exactly two
  * DObjModel elements (count 0x2 at 0x300449a8): element 0 is the view
  * gun/hand model (no attach tag), element 1 is the same model attached at
@@ -158,8 +154,7 @@ void CG_RefreshWeaponDObjModelSet(int weaponIndex, const char *configName)
     info->viewDObjSelf = (struct DObj_s *)(intptr_t)cgame_syscall(
         CG_DOBJ_GET_HANDLE, dobjHandle);
 
-    /* 0x300449d5..0x300449ed: cache the new config name (bounded to 0x3f bytes,
-     * then a forced NUL at name[0x3f]). */
-    Q_strncpyz(info->name, configName, CG_WEAPON_NAME_COPY_SIZE);
-    info->name[CG_WEAPON_NAME_COPY_SIZE] = '\0';
+    /* 0x300449d5..0x300449ed: cache the new config name in the full 64-byte
+     * name buffer: strncpy of 63 bytes (PUSH 0x3f), then a NUL at name[63]. */
+    Q_strncpyz(info->name, configName, sizeof(info->name));
 }

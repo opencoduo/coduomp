@@ -13,5 +13,5 @@ void CG_OpenVoiceMenu(void)
     }
     trap_Cvar_Set(g_str_cl_conXOffset, "72");
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    s_voiceMenuStartTime = cg_time;
+    s_voiceMenuStartTime = (uint32_t)cg_time;
 }

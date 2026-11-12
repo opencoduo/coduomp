@@ -74,7 +74,7 @@ void CG_ConfigString3Modified(void)
      * submitted alongside the handle; a negative delta or an uninitialized
      * cg_time (== 0) collapses to 0. */
     int32_t t = coduo_crt_atoi(Info_ValueForKey(cs, "t"));
-    int32_t currentTime = coduo_int32_from_bits((uint32_t)cg_time);
+    int32_t currentTime = cg_time;
     int32_t delta = coduo_int32_from_bits((uint32_t)t - (uint32_t)currentTime);
     if (delta < 0 || currentTime == 0)
         delta = 0;

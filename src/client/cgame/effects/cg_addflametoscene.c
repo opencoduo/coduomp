@@ -35,7 +35,7 @@ void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
      * double); CALL floor; CALL _ftol2 — the floor result goes RAW into _ftol2
      * with no float store, so no (float) cast here. */
     cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(
-        floor((double)coduo_int32_from_bits(cg_time) * 2.0));
+        floor((double)cg_time * 2.0));
 
     if (alpha < 0.0f || chunk->kind == FLAME_KIND_NO_SPRITE_AFTER_CLOCK) {
         return;

@@ -38,7 +38,7 @@ enum { CG_FLAME_DAMAGE_COMMAND_INTERVAL = 2000 };
 void CG_SendFlameDamageCommand(int32_t clientNum, int32_t painId)
 {
     /* 0x300291c0 MOV EDX,cg_time ; 0x300291d4 LEA ESI,[cg_time-0x7d0] */
-    int32_t now = coduo_int32_from_bits(cg_time);
+    int32_t now = cg_time;
 
     cgFlameInfo_t *state = &cg_flameInfo[clientNum];
 

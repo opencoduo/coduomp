@@ -84,7 +84,7 @@ void CG_DrawDisconnect(void)
     if (cmdServerTime <= cg_snap->ps.commandTime) {   /* JLE 0x30018bba */
         return;
     }
-    if (cmdServerTime > coduo_int32_from_bits(cg_time)) {  /* JG  0x30018bba */
+    if (cmdServerTime > cg_time) {  /* JG  0x30018bba */
         return;
     }
 
@@ -126,7 +126,7 @@ void CG_DrawDisconnect(void)
                   CG_DISCONNECT_TEXT_STYLE);
 
     /* 0x30018b83..0x30018b8f: blink — hide the icon while cg.time bit 0x200 is set. */
-    if (cg_time & CG_DISCONNECT_BLINK_MASK) {         /* JNZ 0x30018bba */
+    if ((uint32_t)cg_time & CG_DISCONNECT_BLINK_MASK) { /* JNZ 0x30018bba */
         return;
     }
 

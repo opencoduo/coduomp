@@ -181,7 +181,7 @@ reconcile_current_weapon:
         return;
     }
 
-    cg_weaponSelectTime = (int32_t)cg_time;
+    cg_weaponSelectTime = cg_time;
     if (currentWeapon == 0) {
         return;
     }

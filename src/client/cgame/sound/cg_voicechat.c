@@ -18,7 +18,7 @@
 //     mode            arg1  0/1/2 -> which display-string variant
 //     voiceOnly       arg2  stored to cgVoiceChatMsg_t->voiceOnly
 //     clientNum       arg3  speaker; range-clamped to [0,64), indexes the table
-//     color           arg4  parser argv[5] int; printed via the second %c after '^'
+//     color           arg4  parser argv[3] int; printed via the second %c after '^'
 //                           (RTCW CG_VoiceChatLocal signature lineage). All three
 //                           mode blocks read it at [ESP+0x17c] one push deeper than
 //                           the [ESP+0x17c] voiceChatString read at 0x3003a30a —

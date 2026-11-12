@@ -3591,8 +3591,9 @@ extern float cg_frameInterpolation;
 extern int32_t cg_frametime;
 /* 0x304831b0 .data: the cgame time base (cg.time), the current client game time
  * in ms. Read as the "now" value for elapsed-time math across ~146 sites and
- * written by the CG frame/init cluster. */
-extern uint32_t cg_time;
+ * written by the CG frame/init cluster. Signed: every conversion, compare and
+ * divide of it is FILD m32, JL/JG/JLE/JGE/JS, or CDQ+IDIV. */
+extern int32_t cg_time;
 /* 0x304831b4 .data refs=7 width=4 first=0x30035b1c owner=pmovesingle */
 extern int32_t cg_physicsTime;
 /* 0x304831b8 .data: cg.latestSnapshotTime — the newest installed snapshot's

@@ -172,13 +172,13 @@ void CG_OffsetFirstPersonView(void)
      * elapsed value. */
     {
         int32_t elapsed = coduo_int32_from_bits(
-            cg_time - (uint32_t)cg_impactViewKickTime);
+            (uint32_t)cg_time - (uint32_t)cg_impactViewKickTime);
         float elapsedFloat = (float)elapsed;
         float phase;
 
         if (elapsedFloat < 0.0f) {
             cg_impactViewKickTime = coduo_int32_from_bits(
-                cg_time - (uint32_t)CG_IMPACT_KICK_TOTAL_MS);
+                (uint32_t)cg_time - (uint32_t)CG_IMPACT_KICK_TOTAL_MS);
         }
 
         if (elapsedFloat < (float)CG_IMPACT_KICK_RISE_MS) {

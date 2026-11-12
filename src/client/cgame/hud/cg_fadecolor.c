@@ -43,7 +43,7 @@ vec_t *CG_FadeColor(int32_t startMsec, int32_t totalMsec)
 
     // 0x3001d205 MOV EAX,[0x304831b0] (cg.time) / 0x3001d20a SUB EAX,EDX.
     // Elapsed time since the effect started (signed int millisecond math).
-    t = coduo_int32_from_bits(cg_time - (uint32_t)startMsec);
+    t = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)startMsec);
 
     // 0x3001d20c CMP EAX,ECX / 0x3001d20e JL: continue only while t < totalMsec
     // (signed). Otherwise the effect has fully expired.

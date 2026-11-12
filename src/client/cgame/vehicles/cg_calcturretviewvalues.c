@@ -138,7 +138,7 @@ void CG_CalcTurretViewValues(void)
                                     cg_turretViewSwayViewAngles,
                                     CG_TURRET_SWAY_SCALE, cg_frametime);
 
-    int32_t phase = coduo_int32_from_bits(cg_time) % CG_TURRET_OSCILLATION_PERIOD;
+    int32_t phase = cg_time % CG_TURRET_OSCILLATION_PERIOD;
     if (phase > CG_TURRET_OSCILLATION_HALF_PERIOD) {
         phase = CG_TURRET_OSCILLATION_PERIOD - phase;
     }

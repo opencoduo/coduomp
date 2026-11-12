@@ -153,10 +153,10 @@ void CG_ScanForCrosshairEntity(void)
      * (entityNum >= MAX_CLIENTS, signed compare). */
     snap = cg_snap;
     if (entityNum != snap->ps.psClientNum && entityNum < MAX_CLIENTS) {
-        uint32_t crosshairTime = cg_time;
+        int32_t crosshairTime = cg_time;
 
         cg_crosshairEntNum = entityNum;
-        cg_crosshairEntTime = coduo_int32_from_bits(crosshairTime);
+        cg_crosshairEntTime = crosshairTime;
     }
     /* 0x3001a5a7: RET (no return value). */
 }

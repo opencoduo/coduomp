@@ -77,7 +77,7 @@ void CG_AddMovingTracer(localEntity_t *le)
      * Register ABI proven by the callee (0x30005f30): result in ECX (LEA ECX,[ESP+0x14]),
      * trajectory in EBX (LEA EBX,[ESI+0x18] == &le->pos), atTime in EAX (MOV EAX,[cg_time]).
      */
-    BG_EvaluateTrajectory(&le->pos, coduo_int32_from_bits(cg_time), pos);
+    BG_EvaluateTrajectory(&le->pos, cg_time, pos);
 
     /*
      * 0x3002ab62-0x3002ab6e: VectorNormalize2(le->pos.trDelta, dir).

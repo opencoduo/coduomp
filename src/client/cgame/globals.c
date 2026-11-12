@@ -3709,7 +3709,7 @@ int32_t cg_frametime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304831b0 (.data); refs=146 width=4; first=0x30016605; owner=cg_asset_parse.
  * Example: 30016605   8b 15 b0 31 48 30            MOV EDX,dword ptr [0x304831b0] | 30016643   a1 b0 31 48 30               MOV EAX,[0x304831b0] | 30016684   8b 0d b0 31 48 30            MOV ECX,dword ptr [0x304831b0]
  */
-uint32_t cg_time = (uint32_t)0x00000000u;
+int32_t cg_time = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304831b4 (.data); refs=7 width=4; first=0x30035b1c; owner=pmovesingle.
  * Example: 30035b1c   8b 15 b4 31 48 30            MOV EDX,dword ptr [0x304831b4] | 30035cfa   8b 15 b4 31 48 30            MOV EDX,dword ptr [0x304831b4] | 3003c9e3   a3 b4 31 48 30               MOV [0x304831b4],EAX
  */

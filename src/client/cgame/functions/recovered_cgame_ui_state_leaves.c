@@ -46,7 +46,7 @@ void CG_UpdateFlameTime(void)
     /* FILD signed cg_time; FADD ST0,ST0; floor; _ftol2. The helper preserves
      * the target's signed-64 conversion and low-dword return for every input. */
     cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(
-        floor((double)coduo_int32_from_bits(cg_time) * 2.0));
+        floor((double)cg_time * 2.0));
 }
 
 void CG_AddLagometerFrameInfo(void) /* 0x30018a10 */

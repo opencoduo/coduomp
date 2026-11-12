@@ -55,8 +55,9 @@ void CG_WeaponSway_ApplyShellShock(void)
 
     /* remaining = (duration - cg.time) + startTime, evaluated as signed 32-bit
      * (0x30044c21..0x30044c34: MOV EAX,[end]; SUB EAX,[cg.time]; ADD EAX,ESI[=start];
-     * TEST EAX,EAX; JLE is a SIGNED test). cg_time is stored unsigned, so cast it to
-     * int32_t to keep the subtraction and the <= 0 branch signed like the ALU op. */
+     * TEST EAX,EAX; JLE is a SIGNED test). The operands are subtracted as wrapping
+     * 32-bit values and the result is reinterpreted as int32_t, so the <= 0 branch
+     * stays signed like the ALU op. */
     int32_t remaining = coduo_int32_from_bits(
         ((uint32_t)cg_shellShockSwayDuration - (uint32_t)cg_time) +
         (uint32_t)cg_shellShockSwayStartTime);

@@ -86,7 +86,7 @@ qboolean CG_CalcViewValues(void)
         if ((cg_predictedPlayerState.playerStateFlags &
              CG_VIEW_BOB_VERTICAL_SPEED_FLAG) != 0) {
             int32_t elapsed = coduo_int32_from_bits(
-                cg_time - (uint32_t)cg_predictedPlayerState.lastJumpCommandTime);
+                (uint32_t)cg_time - (uint32_t)cg_predictedPlayerState.lastJumpCommandTime);
             cg_weaponMoveSpeed =
                 (elapsed < CG_VIEW_BOB_VERTICAL_DELAY_MS)
                     ? 0.0f
@@ -116,7 +116,7 @@ qboolean CG_CalcViewValues(void)
      * strictly interior fraction. The timestamp is cleared outside (0,1). */
     if (cg_errordecay_vmCvar.value > 0.0f) {
         int32_t elapsed = coduo_int32_from_bits(
-            cg_time - (uint32_t)cg_predictedErrorTime);
+            (uint32_t)cg_time - (uint32_t)cg_predictedErrorTime);
         float elapsedFloat = (float)elapsed;
         float decay = (float)(
             ((long double)cg_errordecay_vmCvar.value -

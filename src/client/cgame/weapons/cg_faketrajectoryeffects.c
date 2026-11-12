@@ -32,7 +32,7 @@ enum {
 void CG_FakeTrajectoryEffects(int32_t entityNum, int32_t weaponIndex,
                               const char *tagName)
 {
-    if (cg_fakeTrajectoryTime == (int32_t)cg_time &&
+    if (cg_fakeTrajectoryTime == cg_time &&
         cg_fakeTrajectoryEntity == entityNum) {
         return;
     }
@@ -90,7 +90,7 @@ void CG_FakeTrajectoryEffects(int32_t entityNum, int32_t weaponIndex,
                            vec3_origin, entityNum);
         if (aimTrace.allsolid != 0 || aimTrace.startsolid != 0) {
             Com_PrintMessage(cg_fakeTrajectoryStartedInSolidMessage,
-                             (int32_t)cg_time);
+                             cg_time);
         }
 
         toAim[0] = aimTrace.endpos[0] - tagMatrix.origin[0];

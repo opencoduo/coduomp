@@ -77,9 +77,9 @@ void CG_TransitionEntity(centity_t *cent /* [ESP+0xc] */)
 
     /* Evaluate this entity's motion trajectories at cg.time to produce the current
      * interpolated render origin and angles. */
-    BG_EvaluateTrajectory(&cent->nextState.pos, (int32_t)cg_time,
+    BG_EvaluateTrajectory(&cent->nextState.pos, cg_time,
                           cent->lerpOrigin);
-    BG_EvaluateTrajectory(&cent->nextState.apos, (int32_t)cg_time,
+    BG_EvaluateTrajectory(&cent->nextState.apos, cg_time,
                           cent->lerpAngles);
 
     switch (cent->nextState.eType) {

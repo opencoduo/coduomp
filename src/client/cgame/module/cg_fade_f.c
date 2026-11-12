@@ -35,7 +35,7 @@ void CG_Fade_f(void)
         (long double)alpha * (long double)CG_FADE_BYTE_SCALE);
     cg_fovFade.durationMs =
         (int32_t)((uint32_t)seconds * (uint32_t)CG_MILLISECONDS_PER_SECOND);
-    cg_fovFade.startTime = coduo_int32_from_bits(cg_time);
+    cg_fovFade.startTime = cg_time;
     int32_t endTime = coduo_int32_from_bits(
         (uint32_t)cg_fovFade.startTime + (uint32_t)cg_fovFade.durationMs);
     if (endTime <= cg_fovFade.startTime) {

@@ -43,7 +43,7 @@
 void CG_AddCEntity_LoopedFx(centity_t *cent)
 {
     // Phase 1: advance the emission cadence toward cg.time.
-    int32_t entryTime = coduo_int32_from_bits(cg_time);
+    int32_t entryTime = cg_time;
     if (entryTime <= cent->loopedFxNextTime) {
         cent->loopedFxNextTime = entryTime;
     } else {
@@ -70,7 +70,7 @@ void CG_AddCEntity_LoopedFx(centity_t *cent)
                 (uint32_t)cent->loopedFxNextTime + (uint32_t)interval);
             cent->loopedFxNextTime = nextTime;
             /* 0x30021a6e reloads cg_time after every publication. */
-            int32_t currentTime = coduo_int32_from_bits(cg_time);
+            int32_t currentTime = cg_time;
             elapsed = coduo_int32_from_bits(
                 (uint32_t)currentTime - (uint32_t)nextTime);
         } while (elapsed > interval);

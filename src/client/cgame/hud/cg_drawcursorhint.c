@@ -210,7 +210,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
     // (FILD cg.time; FMUL 1/150; FSIN; FADD 1.0; FMUL [EDI+0xc]; FMUL 0.5; FSTP [EDI+0xc]).
     if (style == HINT_STYLE_WOBBLE) {
         const long double phase = coduo_x87_sinl(
-            (long double)coduo_int32_from_bits((uint32_t)cg_time) *
+            (long double)cg_time *
             (long double)HINT_PHASE_RATE);
         fadeColor[3] = (float)((phase + 1.0L) *
                                (long double)fadeColor[3] * 0.5L);
@@ -235,7 +235,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
         } else {
             // default style: fixed sine pulse (sin+1.0)*0.5*10.0.
             const long double phase = coduo_x87_sinl(
-                (long double)coduo_int32_from_bits((uint32_t)cg_time) *
+                (long double)cg_time *
                 (long double)HINT_PHASE_RATE);
             pulseScale = (float)((phase + 1.0L) * 0.5L * 10.0L);
         }

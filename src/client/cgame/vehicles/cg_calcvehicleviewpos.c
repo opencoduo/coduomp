@@ -132,7 +132,7 @@ void CG_CalcVehicleViewPos(void)
                                         cg_frametime);
 
         /* oscInt = cg_time % 100 folded to <=50; oscFactor = oscInt * 0.02f (0x3007c2b8). */
-        int32_t oscInt = coduo_int32_from_bits(cg_time) % 100;
+        int32_t oscInt = cg_time % 100;
         if (oscInt > 50) {
             oscInt = 100 - oscInt;
         }
@@ -293,7 +293,7 @@ void CG_CalcVehicleViewPos(void)
              * arg3=cg_time. */
             float osc = Q_SwayRand(2.3342339992523193f,
                                    3.1978652477264404f,
-                                   (float)coduo_int32_from_bits(cg_time));
+                                   (float)cg_time);
             cg_refdefViewAngles[1] = osc * 0.25f + cg_refdefViewAngles[1];
         }
 
@@ -440,7 +440,7 @@ void CG_CalcVehicleViewPos(void)
             cg_vehicleViewSwayOrigin[0] = (float)candidate[0];
             cg_vehicleViewSwayOrigin[1] = (float)candidate[1];
             cg_vehicleViewSwayOrigin[2] = (float)candidate[2];
-            cg_vehicleViewSwayPrevTime = coduo_int32_from_bits(cg_time);
+            cg_vehicleViewSwayPrevTime = cg_time;
 
             /* 0x300410b1..0x3004119e: clamp the candidate displacement length
              * against the source tag-delta length. VectorNormalize is called only

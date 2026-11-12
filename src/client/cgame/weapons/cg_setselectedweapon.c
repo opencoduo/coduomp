@@ -35,7 +35,7 @@ void CG_SetSelectedWeapon(int32_t weaponIndex)
 {
     /* 0x30022660 MOV ECX,[0x304831b0]: read the current game time (cg.time) once
      * into ECX; it is stamped into three snapshot slots below. */
-    int32_t now = coduo_int32_from_bits(cg_time);
+    int32_t now = cg_time;
 
     /* 0x30022666 MOV [0x3048ae38],EAX: latch the requested weapon index
      * unconditionally (this happens before any gate). */

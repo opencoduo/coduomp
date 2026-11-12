@@ -36,7 +36,7 @@ enum {
 
 void CG_DrawVote(void)
 {
-    int32_t initialNow = coduo_int32_from_bits((uint32_t)cg_time);
+    int32_t initialNow = cg_time;
     int32_t initialComplaintEnd = cg_complaintEndTime;
     float color[4] = {1.0f, 1.0f, 0.0f, 1.0f};
     char yesKey[256];
@@ -66,7 +66,7 @@ void CG_DrawVote(void)
     }
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (cg_complaintEndTime > coduo_int32_from_bits((uint32_t)cg_time)) {
+    if (cg_complaintEndTime > cg_time) {
         const char *statusToken = NULL;
         const char *text;
 

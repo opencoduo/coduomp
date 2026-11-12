@@ -62,7 +62,7 @@ void CG_LatchOverlaySource(void)
     }
 
     // 0x3001a5c8..0x3001a5da: both inputs are loaded before either output.
-    startTime = cg_time;
+    startTime = (uint32_t)cg_time;
     durationBits = (uint32_t)cg_hintFadeTime_vmCvar.integer;
     cg_overlayFadeStartTime = startTime;
     cg_overlayFadeDuration = durationBits;

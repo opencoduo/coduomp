@@ -54,7 +54,7 @@ void CG_CalcViewShake(void)
     // timePhase. An explicit (float) on cg_time would round it first (a real
     // fildl/fstps/flds under -std=c11) and diverge past 2^24 ms, ~4.66 h uptime.
     // The remaining (int32_t) is an integer signedness cast, not a rounding.
-    long double timePhaseValue = (long double)coduo_int32_from_bits(cg_time);
+    long double timePhaseValue = (long double)cg_time;
 
     // 0x3001b55b/0x3001b569: the running "strongest source" pair, zero-initialized.
     // maxAmplitude tracks the largest scaledAmplitude (+0x1c) among live sources;

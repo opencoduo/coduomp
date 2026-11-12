@@ -74,12 +74,12 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
         }
 
         cgCompassBlip_t *blip = &cg_compassFriendlies[entityNum];
-        blip->updateTime = coduo_int32_from_bits(cg_time);
+        blip->updateTime = cg_time;
         blip->origin[0] = cent->lerpOrigin[0];
         blip->origin[1] = cent->lerpOrigin[1];
         blip->origin[2] = cent->lerpAngles[1];
         if ((cent->nextState.eFlags & COMPASS_FRIEND_ENTITY_CHAT_FLAG) != 0) {
-            int32_t pulseTime = coduo_int32_from_bits(cg_time);
+            int32_t pulseTime = cg_time;
             if (blip->kindOrExpireTime <= pulseTime) {
                 blip->kindOrExpireTime = coduo_int32_from_bits(
                     (uint32_t)pulseTime + COMPASS_CHAT_PULSE_MS);
@@ -96,7 +96,7 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
             (float)((int32_t)((packed >> 15) & 0x1ffu) * 4 - 1020)
         };
 
-        blip->updateTime = coduo_int32_from_bits(cg_time);
+        blip->updateTime = cg_time;
         if ((report[0] != COMPASS_PACKED_COORD_MAX &&
              report[0] != COMPASS_PACKED_COORD_MIN) &&
             (report[1] != COMPASS_PACKED_COORD_MAX &&
@@ -119,7 +119,7 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
         blip->origin[2] = (float)(int8_t)(packed >> 24) * COMPASS_PACKED_YAW_SCALE;
 
         if ((cg_nextSnap->ps.entityStateFlags & COMPASS_LOCAL_CHAT_FLAG) != 0) {
-            int32_t pulseTime = coduo_int32_from_bits(cg_time);
+            int32_t pulseTime = cg_time;
             if (blip->kindOrExpireTime <= pulseTime) {
                 blip->kindOrExpireTime = coduo_int32_from_bits(
                     (uint32_t)pulseTime + COMPASS_CHAT_PULSE_MS);
@@ -150,11 +150,11 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
         uint32_t packedBearing;
         float bearingDeg;
 
-        if (blip->updateTime > coduo_int32_from_bits(cg_time)) {
+        if (blip->updateTime > cg_time) {
             blip->updateTime = 0;
         }
         if (blip->updateTime < coduo_int32_from_bits(
-                cg_time - COMPASS_BLIP_LIFETIME_MS) ||
+                (uint32_t)cg_time - COMPASS_BLIP_LIFETIME_MS) ||
             i == cg_nextSnap->ps.psClientNum) {
             continue;
         }
@@ -261,7 +261,7 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
         float rotation = (float)(int32_t)packedRotation * COMPASS_SHORT2ANGLE;
 
         int32_t pulse = 0;
-        int32_t pulseTime = coduo_int32_from_bits(cg_time);
+        int32_t pulseTime = cg_time;
         if (blip->kindOrExpireTime > pulseTime) {
             pulse = (coduo_int32_from_bits(
                          (uint32_t)blip->kindOrExpireTime -

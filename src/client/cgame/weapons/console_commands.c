@@ -12,7 +12,7 @@ static qboolean CG_WeaponCommandReady(void)
     return cg_snap != NULL &&
            (cg_predictedPlayerState.playerStateFlags & PMF_FOLLOW) == 0 &&
            (cg_snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0 &&
-           (int32_t)(cg_time - (uint32_t)cg_weaponSelectTime) >= cg_weaponCycleDelay.integer;
+           (int32_t)((uint32_t)cg_time - (uint32_t)cg_weaponSelectTime) >= cg_weaponCycleDelay.integer;
 }
 
 void CG_AltWeapon_f(void) /* 0x30047400 */
@@ -67,9 +67,9 @@ void CG_NextWeapon_f(void) /* 0x300474c0 */
         return;
     }
     if ((cg_snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) return;
-    if ((int32_t)(cg_time - (uint32_t)cg_weaponSelectTime) <
+    if ((int32_t)((uint32_t)cg_time - (uint32_t)cg_weaponSelectTime) <
         cg_weaponCycleDelay.integer) return;
-    cg_weaponSelectTime = (int32_t)cg_time;
+    cg_weaponSelectTime = cg_time;
     CG_CycleWeap(1, 0);
 }
 
@@ -104,9 +104,9 @@ void CG_PrevWeapon_f(void) /* 0x30047550 */
         return;
     }
     if ((cg_snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) return;
-    if ((int32_t)(cg_time - (uint32_t)cg_weaponSelectTime) <
+    if ((int32_t)((uint32_t)cg_time - (uint32_t)cg_weaponSelectTime) <
         cg_weaponCycleDelay.integer) return;
-    cg_weaponSelectTime = (int32_t)cg_time;
+    cg_weaponSelectTime = cg_time;
     CG_CycleWeap(0, 0);
 }
 
@@ -116,7 +116,7 @@ void CG_WeaponSlot_f(void) /* 0x30047750 */
     if ((cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) &&
         !(cg_snap->ps.vehicleType == 1 && cg_snap->ps.vehiclePosition == 3)) return;
 
-    cg_weaponSelectTime = (int32_t)cg_time;
+    cg_weaponSelectTime = cg_time;
     const char *argument = CG_Argv(1);
     int32_t slot = BG_GetWeaponSlotForName(argument);
     if (slot == 0) slot = coduo_crt_atoi(CG_Argv(1));

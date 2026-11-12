@@ -31,7 +31,7 @@ void CG_ScoresUp_f(void) /* 0x30017310: release of the +scores command */
 {
     if (cg_scoreboardShowing) {
         cg_scoreboardShowing = qfalse;
-        cg_scoreboardShowTime = (int32_t)cg_time;
+        cg_scoreboardShowTime = cg_time;
     }
 }
 

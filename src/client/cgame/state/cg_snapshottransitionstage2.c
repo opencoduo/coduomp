@@ -73,7 +73,7 @@ void CG_SnapshotTransitionStage2(void)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     weaponInfo_t *selectedWeapon =
         bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
-    int32_t weaponSelectTime = coduo_int32_from_bits(cg_time);
+    int32_t weaponSelectTime = cg_time;
     cg_weaponSelectTime = weaponSelectTime;
     cg_currentWeaponInfo = selectedWeapon;
 
