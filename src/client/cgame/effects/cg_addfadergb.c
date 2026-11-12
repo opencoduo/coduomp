@@ -12,7 +12,7 @@
  * refEntity's shaderRGBA bytes, and submits the entity to the render scene.
  *
  * Machine-code facts proven for every statement below:
- *   3002abc1  ECX = cg_time                              [uint32 global 0x304831b0]
+ *   3002abc1  ECX = cg_time                              [int32 global 0x304831b0]
  *   3002abc7  EAX = le->endTime            (int32 @ +0x10)
  *   3002abca  EAX = EAX - ECX              (endTime - cg.time), 32-bit wrap
  *   3002abcf  FILD [ESP]                   -> (float) of that signed int32

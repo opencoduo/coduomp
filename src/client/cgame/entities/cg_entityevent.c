@@ -259,7 +259,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                             cg_shellFlashSurfaceSounds[event - EV_FLESH_LO]);
         if (clientNum == (int)cg_clientNum) {
-            cg_impactViewKickTime = coduo_int32_from_bits(cg_time);
+            cg_impactViewKickTime = cg_time;
             cg_impactViewKick = -(long double)eventParm; /* FILD raw; FCHS; FSTP (0x30022a0a..0x30022a1c): no pre-store round */
         }
         return;
@@ -305,7 +305,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
                     }
                     eventParm = n;
                 }
-                cg_impactViewKickTime = coduo_int32_from_bits(cg_time);
+                cg_impactViewKickTime = cg_time;
                 cg_impactViewKick = -(long double)eventParm; /* FILD raw; FCHS; FSTP (0x30022ad5..0x30022ae5): no pre-store round */
             }
         }
@@ -371,7 +371,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
             return;
         }
         {
-            int32_t now = coduo_int32_from_bits(cg_time);
+            int32_t now = cg_time;
             int32_t sinceLast = coduo_int32_from_bits(
                 (uint32_t)now - (uint32_t)cg_weaponChangeViewOffsetTime);
             /* base is never stored: both legs leave it in st (the product at
@@ -993,7 +993,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
 
     /* 0xcc (0x300231c2): stamp cg.time into self->miscTime, then play 0x3044bbcc. */
     case EV_ITEM_RESPAWN:
-        self->miscTime = coduo_int32_from_bits(cg_time);
+        self->miscTime = cg_time;
         CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundItemRespawn);
         return;
 

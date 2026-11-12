@@ -55,7 +55,7 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
     /* 0x30034ac3..0x30034ad1: FILD damage remains live across the cg.time load and
      * feedback-time store, then is committed to a binary32 stack slot. */
     long double damageRaw = (long double)damage;
-    int32_t feedbackTime = coduo_int32_from_bits(cg_time);
+    int32_t feedbackTime = cg_time;
     cg_damageFeedbackTime = feedbackTime;
     float damageFloat = (float)damageRaw;
 
@@ -182,7 +182,7 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
 
     /* 0x30034d0c..0x30034d28: snapshot both globals before the target-width ADD,
      * store the wrapped deadline, then dereference the retained snapshot. */
-    int32_t now = coduo_int32_from_bits(cg_time);
+    int32_t now = cg_time;
     snapshot_t *snap = cg_snap;
     int32_t flashEndTime = coduo_int32_from_bits(
         (uint32_t)now + (uint32_t)CG_DAMAGE_FLASH_DURATION_MS);

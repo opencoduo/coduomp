@@ -10,7 +10,7 @@ void CG_Tcmd_f(void) /* 0x30017210 */
     int32_t target = cg_crosshairEntNum;
     int32_t expiry =
         coduo_int32_from_bits((uint32_t)cg_crosshairEntTime + 1000u);
-    if ((int32_t)cg_time > expiry) target = -1;
+    if (cg_time > expiry) target = -1;
     else if (target == 0) return;
 
     char orderText[4];
@@ -23,8 +23,8 @@ void CG_ScoresDown_f(void) /* 0x30017330 */
 {
     int32_t refreshDeadline = coduo_int32_from_bits(
         (uint32_t)cgs_scoreboardTime + 2000u);
-    if (refreshDeadline < coduo_int32_from_bits(cg_time)) {
-        cgs_scoreboardTime = coduo_int32_from_bits(cg_time);
+    if (refreshDeadline < cg_time) {
+        cgs_scoreboardTime = cg_time;
         cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"score");
         if (!cg_scoreboardShowing) {
             cg_scoreboardNumClients = 0;
@@ -59,7 +59,7 @@ void CG_ShellShock_Save_f(void) /* 0x300175f0 */
 
 void CG_TellTarget_f(void) /* 0x30017660 */
 {
-    int32_t currentTime = coduo_int32_from_bits(cg_time);
+    int32_t currentTime = cg_time;
     int32_t expiry = coduo_int32_from_bits(
         (uint32_t)cg_crosshairEntTime + 1000u);
     if (currentTime > expiry || cg_crosshairEntNum == -1) return;

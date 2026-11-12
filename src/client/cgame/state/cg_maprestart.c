@@ -113,7 +113,7 @@ void CG_MapRestart(qboolean restart)
      *   EAX = cg_scoreboardShowing; if (EAX) { ECX = cg_time;
      *         cg_scoreboardShowing = 0; cg_scoreboardShowTime = ECX; } */
     if (cg_scoreboardShowing != 0) {
-        int32_t now = coduo_int32_from_bits((uint32_t)cg_time);
+        int32_t now = cg_time;
         cg_scoreboardShowing = qfalse;          /* MOV [0x3048a554],ESI */
         cg_scoreboardShowTime = now;            /* MOV [0x3048a55c],ECX */
     }

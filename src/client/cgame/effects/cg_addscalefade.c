@@ -33,7 +33,7 @@
  *   (0x3002ac39-0x3002ac49; the surviving P is popped at 0x3002ac66).
  *
  * Instruction-level proof of every statement:
- *   3002ac21  ECX = cg_time                         [uint32 global 0x304831b0]
+ *   3002ac21  ECX = cg_time                         [int32 global 0x304831b0]
  *   3002ac27  EAX = le->endTime          (int32 @ +0x10)
  *   3002ac2a  EAX = EAX - ECX            (endTime - cg_time), 32-bit wrap
  *   3002ac2f  FILD [ESP]                 -> P0 = (float) of that signed int32

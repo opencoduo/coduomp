@@ -76,7 +76,7 @@ void CG_AddLocalEntities(void)
     do {
         /* 0x3002ad14 reads the signed target clock before 0x3002ad1c captures
          * the next node to visit. */
-        int32_t now = coduo_int32_from_bits(cg_time);
+        int32_t now = cg_time;
         next = le->prev;
 
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */

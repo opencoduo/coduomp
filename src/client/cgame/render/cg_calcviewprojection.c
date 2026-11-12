@@ -96,7 +96,7 @@ qboolean CG_CalcViewProjection(void)
          * -std=c11 it would round cg_time (a ms clock that passes 2^24) where the
          * DLL keeps it exact in 80-bit. */
         long double pulse = coduo_x87_sinl(
-            (long double)coduo_int32_from_bits(cg_time) *
+            (long double)cg_time *
             (long double)PULSE_RATE_2500MS);
         markFlags |= RDF_DRAW_SKYBOX;                       /* 0x300402fd OR EAX,0x20 */
         termB = fovX + pulse;                                 /* 0x3004030a FADDP ST3,ST0 */

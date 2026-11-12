@@ -287,7 +287,7 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
      * (0x300240e4 FILD [0x304831b0]=cg_time; FADD ST0,ST0 (=*2); FSTP dbl;
      *  CALL floor (0x3005bcd0); CALL 0x3006be3c -> EAX; MOV [0x300ab718],EAX). */
     {
-        double t2 = (double)coduo_int32_from_bits(cg_time);
+        double t2 = (double)cg_time;
         t2 = t2 + t2;
         cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(floor(t2)); /* raw st0 into _ftol2 */
     }

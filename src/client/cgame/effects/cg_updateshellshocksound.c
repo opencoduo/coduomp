@@ -117,7 +117,7 @@ void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed,
                            + (uint32_t)cg_time
                            + (uint32_t)duration);
 
-    if ((int32_t)cg_time < soundEndTime) {
+    if (cg_time < soundEndTime) {
         if (cg_shellshockSoundEndTime != 0) {
             snd_alias_t *alias;
             cg_shellshockSoundEndTime = 0;

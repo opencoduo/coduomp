@@ -65,7 +65,7 @@ void CG_UpdateHudSpinAngle(void)
         ((long double)cg_refdefViewAngles[1] - (long double)cg_hudSpinBaseTime) *
         (long double)ANGLE2SHORT;
     int32_t targetInteger = coduo_fp_to_i32_extended(targetRaw);
-    int32_t now = coduo_int32_from_bits(cg_time); /* 0x3001d3bb MOV ECX,[cg_time] */
+    int32_t now = cg_time; /* 0x3001d3bb MOV ECX,[cg_time] */
     uint32_t targetPacked = (uint32_t)targetInteger & 0xffffu;
     long double targetPackedCarrier = (long double)(int32_t)targetPacked;
     int32_t prev = cg_hudSpinPrevTime;       /* 0x3001d3ce MOV EAX,[prevTime] */

@@ -45,9 +45,9 @@
 // and clamped time calculation, resolving the source name.
 //
 // ABI: the element pointer arrives in ECX (thiscall-style register argument),
-// result in EAX; plain `RET`, no stack args. cg_time is uint32_t but every use
-// here is signed subtraction and a signed >= 0 clamp, so the working value is
-// int32_t.
+// result in EAX; plain `RET`, no stack args. Every use here is a wrapping 32-bit
+// subtraction followed by a signed >= 0 clamp, so the working value is
+// reinterpreted as int32_t.
 
 int32_t CG_GetHudElemTime(const struct hudElem_s *elem)
 {
@@ -55,18 +55,18 @@ int32_t CG_GetHudElemTime(const struct hudElem_s *elem)
 
     switch (elem->type) {
     case HE_TYPE_TIMER:        /* 4: countdown, whole-second rounding */
-        value = (uint32_t)elem->timerValue - cg_time + 999u;
+        value = (uint32_t)elem->timerValue - (uint32_t)cg_time + 999u;
         break;
     case HE_TYPE_TENTHS_TIMER: /* 6: countdown, tenth-second rounding */
-        value = (uint32_t)elem->timerValue - cg_time + 99u;
+        value = (uint32_t)elem->timerValue - (uint32_t)cg_time + 99u;
         break;
     case HE_TYPE_CLOCK:        /* 8: countdown, no rounding */
-        value = (uint32_t)elem->timerValue - cg_time;
+        value = (uint32_t)elem->timerValue - (uint32_t)cg_time;
         break;
     case HE_TYPE_TIMER_UP:        /* 5 */
     case HE_TYPE_TENTHS_TIMER_UP: /* 7 */
     case HE_TYPE_CLOCK_UP:        /* 9: count-up, elapsed since timerValue */
-        value = cg_time - (uint32_t)elem->timerValue;
+        value = (uint32_t)cg_time - (uint32_t)elem->timerValue;
         break;
     default:                   /* type < 4 or > 9: JA default */
         return 0;

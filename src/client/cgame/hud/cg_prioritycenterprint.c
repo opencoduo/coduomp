@@ -105,7 +105,7 @@ void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
     /* Latch the display time (cg_time + 2000ms) and the rounded screen position.
      * _ftol2 (0x3006be3c) truncates each float coordinate toward zero.
      * (0x300190f2..0x3001911b) */
-    uint32_t printTimeBase = cg_time;       /* 0x300190f2 MOV ECX,[cg_time] */
+    uint32_t printTimeBase = (uint32_t)cg_time;      /* 0x300190f2 MOV ECX,[cg_time] */
     long double yLive = (long double)y;     /* 0x300190f8 FLD y */
     cg_centerPrintTime = coduo_int32_from_bits(
         printTimeBase + (uint32_t)CG_CENTERPRINT_DURATION_MS);

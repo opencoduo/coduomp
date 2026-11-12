@@ -81,7 +81,7 @@ void CG_ScreenFade(void)
     int32_t durationMs = cg_fovFade.durationMs;
     int32_t endTime = coduo_int32_from_bits((uint32_t)startTime +
                                        (uint32_t)durationMs);
-    int32_t cgameTime = coduo_int32_from_bits(cg_time);
+    int32_t cgameTime = cg_time;
 
     if (endTime < cgameTime) {
         /* 0xa877: schedule expired -> settle immediately at the target. */

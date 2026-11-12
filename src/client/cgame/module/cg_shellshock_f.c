@@ -104,6 +104,6 @@ void CG_ShellShock_f(void)
 
     /* 0x30017569..0x30017577: arm the manual shellshock for the scene reader:
      * record the current game time as the start and the rounded duration. */
-    cg_shellShockStartTime = coduo_int32_from_bits(cg_time);
+    cg_shellShockStartTime = cg_time;
     cg_shellShockDuration = durationMs;
 }

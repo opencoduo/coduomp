@@ -214,7 +214,7 @@ void CG_PredictPlayerState_Internal(void)
                 if (cg_errordecay_vmCvar.integer != 0) {
                     const int32_t elapsed =
                         coduo_int32_from_bits(
-                            cg_time - (uint32_t)cg_predictedErrorTime);
+                            (uint32_t)cg_time - (uint32_t)cg_predictedErrorTime);
                     /* elapsed enters via bare FILD (0x30035c52) -- no (float) cast;
                      * cg.time deltas exceed 2^24 and an explicit cast would round
                      * (Class 4). */
@@ -391,7 +391,7 @@ next_command:
     cg_currentWeaponInfo = selectedWeapon;
     if (verbosePrediction > 1) {
         Com_PrintMessage("[%i : %i] ", cmd->commandTime,
-                         coduo_int32_from_bits(cg_time));
+                         cg_time);
     }
     if (predictionRan == qfalse) {
         if (cg_showmiss_vmCvar.integer != 0) {
@@ -406,7 +406,7 @@ next_command:
      * at 0x30035b1c, which passes cg_physicsTime ([0x304831b4]). */
     CG_AdjustPositionForMover(cg_predictedPlayerState.psOrigin,
                               cg_predictedPlayerState.groundEntityNum,
-                              cg_latestSnapshotTime, coduo_int32_from_bits(cg_time),
+                              cg_latestSnapshotTime, cg_time,
                               cg_predictedPlayerState.psOrigin, moverAngleDelta);
     CG_TransitionPlayerState(&cg_predictedPlayerState, &oldPlayerState);
 }

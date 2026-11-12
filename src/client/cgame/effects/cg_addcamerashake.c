@@ -62,7 +62,7 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
     src.duration = (float)durationValue;                /* FSTP m32 */
     memcpy(&originYBits, &origin[1], 4);
     memcpy(&originZBits, &origin[2], 4);
-    int32_t now = coduo_int32_from_bits(cg_time);
+    int32_t now = cg_time;
     memcpy(&radiusBits, &radius, 4);
     memcpy(&src.origin[0], &originXBits, 4);
     src.startMsec = now;
@@ -101,7 +101,7 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
          * has fully elapsed => reuse it. */
         long double slotEnd = (long double)startMsec;
         slotEnd += (long double)cg_shakeSources[i].duration;
-        int32_t comparisonNow = coduo_int32_from_bits(cg_time);
+        int32_t comparisonNow = cg_time;
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if ((long double)comparisonNow >= slotEnd) {
             slot = i;

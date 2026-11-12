@@ -90,7 +90,7 @@ void CG_AddPacketEntities(void)
      * 0x168 (=360) IMUL runs on the masked integer, which is then FILD'd and FDIV'd
      * by the (float) divisor. pitch and roll are 0 (EBP). */
     {
-        uint32_t t = cg_time;
+        uint32_t t = (uint32_t)cg_time;
         cgDObjPreviewOrientation_t *o0 = &cg_dobjPreviewOrientations[0];
         cgDObjPreviewOrientation_t *o1 = &cg_dobjPreviewOrientations[1];
         cgDObjPreviewOrientation_t *o2 = &cg_dobjPreviewOrientations[2];

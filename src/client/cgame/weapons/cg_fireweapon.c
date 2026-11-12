@@ -79,7 +79,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
     /* Gas weapons only stamp their fire time and skip every ordinary muzzle/
      * sound/brass effect. */
     if (weapon->weaponType == WEAPTYPE_GAS) {
-        cent->gasFireTime = (int32_t)cg_time;
+        cent->gasFireTime = cg_time;
         return;
     }
 
@@ -194,7 +194,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
                 soundOrigin[1] = tagMatrix.origin[1];
                 soundOrigin[2] = tagMatrix.origin[2];
             } else {
-                BG_EvaluateTrajectory(&model->pos, (int32_t)cg_time,
+                BG_EvaluateTrajectory(&model->pos, cg_time,
                                       soundOrigin);
             }
 

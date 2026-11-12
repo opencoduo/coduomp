@@ -62,7 +62,7 @@ void CG_DrawFlashDamage(void)
 
     // Signed CMP/JLE: both dwords are retained for the following SUB.
     int32_t endTime = cg_damageFlashEndTime;
-    int32_t cgameTime = coduo_int32_from_bits(cg_time);
+    int32_t cgameTime = cg_time;
     if (endTime <= cgameTime) {
         return;
     }

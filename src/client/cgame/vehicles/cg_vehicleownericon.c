@@ -89,7 +89,7 @@ void CG_VehicleOwnerIcon(centity_t *cent)
 
     for (int32_t phaseOffset = 0; phaseOffset < CG_HEADICON_CYCLE_MS;
          phaseOffset += CG_HEADICON_PHASE_MS) {
-        int32_t now = coduo_int32_from_bits((uint32_t)cg_time);
+        int32_t now = cg_time;
         /* Signed remainder of (phaseOffset + cg_time) / 1500 (CDQ + IDIV). For the
          * positive time base this lands in [0, 1499]. */
         int32_t phaseTime = coduo_int32_from_bits(

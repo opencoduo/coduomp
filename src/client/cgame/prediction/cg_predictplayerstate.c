@@ -88,7 +88,7 @@ void CG_PredictPlayerState(void)
      * Register ABI: result=&lerpAngles (ECX), tr=&cent->currentState.apos (EBX),
      * atTime=cg_time (EAX). */
     BG_EvaluateTrajectory(&cent->currentState.apos,
-                          coduo_int32_from_bits(cg_time), cent->lerpAngles);
+                          cg_time, cent->lerpAngles);
 
     /* Only continue for the active local player's first-person view. */
     if ((cg_snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {

@@ -68,12 +68,12 @@ void CG_TouchItem(centity_t *cent)
     // in ESI. Bail if the player is not touching the item.
     if (!CG_TrajectoryPointInBounds(
             cent, &cg_predictedPlayerState,
-            coduo_int32_from_bits(cg_time))) {
+            cg_time)) {
         return;
     }
 
     // 300356a4..300356b0: don't touch the same item twice in one frame.
-    if (cent->miscTime == coduo_int32_from_bits(cg_time)) {
+    if (cent->miscTime == cg_time) {
         return;
     }
 
@@ -90,7 +90,7 @@ void CG_TouchItem(centity_t *cent)
     // 300356ce/300356d4/300356da: record the touch time and cache the item id.
     // EAX holds cent->currentState.itemIndex from here through the parm store below.
     int32_t modelindex = cent->currentState.itemIndex;
-    cent->miscTime = coduo_int32_from_bits(cg_time);
+    cent->miscTime = cg_time;
 
     // 300356e0..30035707: append the predictable pickup event to the player state
     // event rings (BG_AddPredictableEventToPlayerstate, inlined):

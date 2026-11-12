@@ -47,9 +47,9 @@
  */
 void CG_SettleViewOriginZ(void)
 {
-    int32_t now = coduo_int32_from_bits(cg_time);
+    int32_t now = cg_time;
     int32_t elapsed = coduo_int32_from_bits(
-        cg_time - (uint32_t)cg_weaponChangeViewOffsetTime);
+        (uint32_t)cg_time - (uint32_t)cg_weaponChangeViewOffsetTime);
 
     /* Negative delta => the cg.time base moved backward (map restart / rollback):
      * re-baseline the stamp. elapsed is left negative, so the window test below

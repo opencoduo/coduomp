@@ -69,7 +69,7 @@ enum {
 float CG_CalcFov(void)
 {
     /* EDX in the machine code: held live across the whole body. */
-    const int32_t now = coduo_int32_from_bits(cg_time);
+    const int32_t now = cg_time;
     /* EBP: local player's predicted entityStateFlags. */
     const uint32_t flags = cg_predictedPlayerState.entityStateFlags;
 

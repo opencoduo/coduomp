@@ -35,11 +35,11 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
     /* A stereo-right render reuses the prediction/physics delta established by
      * the first eye. Every other frame advances the physics clock and lag ring. */
     if (stereoView != STEREO_RIGHT) {
-        cg_physicsTime = coduo_int32_from_bits(cg_time);
+        cg_physicsTime = cg_time;
     }
 
     cg_demoPlayback = demoPlayback;
-    cg_time = (uint32_t)serverTime;
+    cg_time = serverTime;
     cg_effectTime = (uint32_t)serverTime;
     cg_lockedViewFace = lockedViewFace;
     cg_lockedViewSize = lockedViewSize;
@@ -162,7 +162,7 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
     }
 
     CG_DrawSkyBoxPortal();
-    cgame_syscall(CG_FX_ADJUST_TIME, coduo_int32_from_bits(cg_time));
+    cgame_syscall(CG_FX_ADJUST_TIME, cg_time);
     cgame_syscall(CG_FX_ADJUST_CAMERA, (intptr_t)&cg_refdef);
 
     CG_UpdatePeriodicEffect();
@@ -175,7 +175,7 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
     CG_FireFlameChunks();
 
     cgame_syscall(CG_FX_ADD_SCHEDULED_EFFECTS);
-    cg_refdef.time = coduo_int32_from_bits(cg_time);
+    cg_refdef.time = cg_time;
 
     if (cg_weaponSelect_vmCvar.integer < 0 || cg_weaponSelect_vmCvar.integer > bg_numWeapons) {
         int32_t slot;

@@ -69,7 +69,7 @@ void CG_UpdateCompassOrientation(void)
     }
 
     int32_t prev = coduo_int32_from_bits(cg_compassSpinPrevTime); /* 0x3001d6ea */
-    int32_t now  = coduo_int32_from_bits(cg_time);                /* 0x3001d6ef */
+    int32_t now  = cg_time;                /* 0x3001d6ef */
 
     /* 0x3001d6f5/0x3001d6f7: nothing to do if no time has passed this frame. */
     if (prev == now) {

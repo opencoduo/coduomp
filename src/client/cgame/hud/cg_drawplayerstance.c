@@ -88,7 +88,7 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
      * function copies colorVec[0..2] into [0..2]; the alpha [3] is overwritten per
      * draw. Modelled as one local, matching the machine code's buffer reuse. */
     float drawColor[4];
-    int32_t now = coduo_int32_from_bits((uint32_t)cg_time);
+    int32_t now = cg_time;
     float slideX;   /* frame -0x154: animated horizontal slide offset (all icons) */
 
     /* 0x3002efc0: gate on the predicted playerState entity-state flags. Proceed only
@@ -196,7 +196,7 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
                                   0,
                                   0,
                                   textArgC);
-                    now = coduo_int32_from_bits((uint32_t)cg_time); /* 0x3002f17b reload */
+                    now = cg_time; /* 0x3002f17b reload */
                 }
             }
         }
@@ -242,7 +242,7 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
 
         /* 0x3002f3db: refresh the cached key bindings before querying them. */
         Controls_GetConfig();
-        now = coduo_int32_from_bits((uint32_t)cg_time); /* 0x3002f3e5 reload after call */
+        now = cg_time; /* 0x3002f3e5 reload after call */
 
         /* 0x3002f3e0: fade-in over the last 1000ms of the 3000ms window; stored into
          * the alpha slot drawColor[3] (change+2000 > now ? 1.0 : (change-now+3000)/1000). */
@@ -447,7 +447,7 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
     }
 
     /* -------- countdown overlay (0x3002f81f) -------- */
-    now = coduo_int32_from_bits((uint32_t)cg_time); /* 0x3002f824 countdown reload */
+    now = cg_time; /* 0x3002f824 countdown reload */
     if (coduo_int32_from_bits((uint32_t)cg_stanceHintChangeTime + 1000u) > now) {
         int32_t e = coduo_int32_from_bits(
             (uint32_t)cg_stanceHintChangeTime - (uint32_t)now + 1000u);

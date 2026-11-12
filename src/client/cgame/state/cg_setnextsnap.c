@@ -28,7 +28,7 @@ void CG_SetNextSnap(snapshot_t *snap)
          * against 0.0f -- so the sign test must read the wide quotient, not the
          * float lvalue. */
         int32_t numerator = coduo_int32_from_bits(
-            cg_time - (uint32_t)cg_snap->serverTime);
+            (uint32_t)cg_time - (uint32_t)cg_snap->serverTime);
         int32_t denominator = coduo_int32_from_bits(
             (uint32_t)snap->serverTime - (uint32_t)cg_snap->serverTime);
         long double frac = (long double)numerator / (long double)denominator;

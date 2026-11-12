@@ -31,7 +31,7 @@ void CG_FxTest(void)
     cgame_syscall(CG_PLAY_EFFECT_ORIGIN,
                   (int32_t)effect,
                   (intptr_t)cg_periodicEffectOrigin);
-    cg_periodicEffectLastTime = (int32_t)cg_time;
+    cg_periodicEffectLastTime = cg_time;
 
     if (cgame_syscall(CG_ARGC) == 3) {
         cgame_syscall(CG_ARGV, 2,

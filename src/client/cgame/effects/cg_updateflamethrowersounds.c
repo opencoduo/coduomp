@@ -80,7 +80,7 @@ void CG_UpdateFlamethrowerSounds(void)
      * a (float) cast here would round it. coduo_fp_to_i32_extended takes long double
      * for exactly this. (Same shape as CG_FireFlameChunks 0x30027d30/0x30027d38.)
      * EBP holds flameTime for the rest of the function. */
-    int32_t signedTime = coduo_int32_from_bits(cg_time);
+    int32_t signedTime = cg_time;
     double timeD = (double)signedTime;
     int32_t flameTime = coduo_fp_to_i32_extended(floor(timeD + timeD));
 

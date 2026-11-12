@@ -40,7 +40,7 @@ int32_t CG_CrosshairPlayer(void)
     int32_t expiry = coduo_int32_from_bits(
         (uint32_t)cg_crosshairEntTime + (uint32_t)CROSSHAIR_TIMEOUT);
 
-    if (coduo_int32_from_bits((uint32_t)cg_time) > expiry) {
+    if (cg_time > expiry) {
         return -1;
     }
     return cg_crosshairEntNum;
