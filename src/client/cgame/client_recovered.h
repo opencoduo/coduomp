@@ -1781,8 +1781,8 @@ void CG_VoiceChat_f(void);
  * Proven from CG_VoiceChat's own body: MOV [EDI]/[EDI+4]/[EDI+8] read the three
  * origin floats at +0x0/+0x4/+0x8. */
 typedef struct cgVoiceChatMessage_s {
-    vec3_t   origin;   /* +0x0: argv[3], argv[6], argv[7] as floats */
-    int32_t  color;    /* +0xc: argv[5] as int; the '^'+%c color char in the chat line */
+    vec3_t   origin;   /* +0x0: argv[5], argv[6], argv[7] as floats */
+    int32_t  color;    /* +0xc: argv[3] as int; the '^'+%c color char in the chat line */
 } cgVoiceChatMessage_t;
 
 /*
@@ -1813,7 +1813,7 @@ void CG_VoiceChat(cgVoiceChatMessage_t *msg, int32_t mode, int32_t voiceOnly,
 /*
  * CG_ParseVoiceChat (0x3003a410) — client handler for a server-sent voice-chat
  * command. Reads seven console tokens via trap_Argv(n, g_textScratchBuffer, 1024) and
- * Q_atoi's them: argv[1]/argv[2]/argv[5] as ints, argv[3]/argv[6]/argv[7] converted
+ * Q_atoi's them: argv[1]/argv[2]/argv[3] as ints, argv[5]/argv[6]/argv[7] converted
  * to floats forming a vec3 origin, and argv[4] kept as the voice-chat-string token.
  * When the g_voiceChatCategoryFilter flag (0x30421c0c) is set it suppresses the
  * "insult"/"taunt"/"praise"/"gauntlet" categories (string-compared against
