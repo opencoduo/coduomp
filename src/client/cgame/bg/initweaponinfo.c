@@ -10,7 +10,7 @@
 // InitWeaponInfo — the weapon-info registration entry point. It:
 //   1. Allocates (or fetches) the engine-owned bg_weaponInfos pointer array via
 //      CG_GET_WEAPON_INFO_MEMORY (trap 0xcb), storing the base at bg_weaponInfos; a NULL return
-//      is a fatal "Could not allocate weaponInfo_t array" error. The trap also
+//      is a fatal "Could not allocate WeaponInfo array" error. The trap also
 //      uses 0x200 as the original 32-bit pointer-array allocation size, and
 //      writes the previous-owner flag through loadedFlag below.
 //   2. Resets the two per-slot dedup tables — the ammo-type table
@@ -31,7 +31,7 @@
 // Naming: the .mcode header name "fire_artillery_barrage" is a pure size-only
 // corpus guess and is REJECTED (this function does no artillery/fire logic; it
 // registers weapon info). Named by behavior — the weaponInfo_t array allocation,
-// the "Could not allocate weaponInfo_t array" fatal string, and the weapon-list
+// the "Could not allocate WeaponInfo array" fatal string, and the weapon-list
 // parse — matching the cgame_mp.dll "InitWeaponInfo" name-bank entry.
 //
 // A /GS stack cookie (__security_cookie snapshotted at 0x30010e00, checked via
@@ -71,7 +71,7 @@ void InitWeaponInfo(void)
     // 0x30010e2f/0x30010e31: NULL array => fatal error (ERR_DROP). The "\x15"
     // leading byte is the CG_ERROR marker consumed by the Com_Error family.
     if (weaponArray == NULL) {
-        Com_Error(ERR_DROP, "\x15" "Could not allocate weaponInfo_t array\n");
+        Com_Error(ERR_DROP, "\x15" "Could not allocate WeaponInfo array\n");
         /* 0x30010e3d reloads the global if the fatal callback returns. */
         weaponArray = bg_weaponInfos;
     }

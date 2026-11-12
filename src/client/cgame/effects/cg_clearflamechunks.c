@@ -38,9 +38,10 @@
  *   0x30025592  cg_freeFlameChunks = EBP (free list head := &node[0]).
  *   0x30025598  cg_activeFlameChunks = 0.
  *   0x3002559e  cg_flameChunkList = 0.
- *   0x300255b0  loop over i in [0, FLAME_CHUNK_COUNT):
+ *   0x300255b0  loop over i in [0, FLAME_CHUNK_COUNT), EAX = &node[i] + 4
+ *               (LEA EAX,[EBP+4] at 0x300255a6):
  *                 node[i].next = &node[i+1]          (MOV [EAX-4],EDX; EDX=&node[i+1])
- *                 node[i].unresolvedField_1c = 0     (MOV [EAX+0x1c],EDI; EDI=0)
+ *                 node[i].liveFlag = 0               (MOV [EAX+0x1c],EDI; +0x20; EDI=0)
  *                 node[i].prev = (i==0) ? NULL       (SETLE/DEC/AND branchless:
  *                                       : &node[i-1]  ESI holds &node[i-1])
  *               EAX advances by FLAME_CHUNK_SIZE (0x150) each iteration; the loop
@@ -74,7 +75,7 @@ void CG_ClearFlameChunks(void)
     /* Thread every node onto the free list: next -> node[i+1], prev -> node[i-1]. */
     for (int32_t i = 0; i < FLAME_CHUNK_COUNT; ++i) {
         chunks[i].next = &chunks[i + 1];
-        chunks[i].unresolvedField_1c = 0;
+        chunks[i].liveFlag = 0;
         chunks[i].prev = (i == 0) ? NULL : &chunks[i - 1];
     }
 
