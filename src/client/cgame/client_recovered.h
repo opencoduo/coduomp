@@ -3876,10 +3876,7 @@ typedef struct effectDef_s {
  * at a fixed world origin on a throttle. Defined in globals.c and zero-initialized
  * in the DLL. CG_FxTest writes it; CG_UpdatePeriodicEffect consumes it.
  */
-extern char         cg_periodicEffectName[MAX_QPATH];/* 0x3048b004: name -> CG_FX_REGISTER_EFFECT */
-extern vec3_t      cg_periodicEffectOrigin;   /* 0x3048b044: origin -> CG_PLAY_EFFECT_ORIGIN */
-extern int32_t     cg_periodicEffectLastTime; /* 0x3048b050: cg.time of last emit */
-extern int32_t     cg_periodicEffectInterval; /* 0x3048b054: min ms between emits (>=1 gate) */
+/* Storage: cg.periodicEffectName/Origin/LastTime/Interval (globals.h cg_t). */
 
 /*
  * CG_UpdatePeriodicEffect (0x30042110) — throttled periodic effect emitter. If the
@@ -5667,142 +5664,7 @@ void ProjectPointOnPlane(vec3_t dst, const vec3_t point, const vec3_t normal);
 
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
 
-struct centity_s {
-    entityState_t currentState; /* +0x000..+0x0f3 */
-
-    /* +0xf4: dual-view region. CG_AddPlayerCorpseEntity (0x300346c0) forms
-     * &cent->corpseModelInfo and reads it as the corpse DObj model-info sub-object,
-     * while CG_TransitionEntity (0x3003c7c0) and its caller (0x3003d020) treat the same
-     * bytes as the entity's nextState (the incoming snapshot entityState copied in here,
-     * then evaluated/dispatched at transition). Both views span +0xf4..+0x1e7. */
-    union {
-        entityState_t corpseModelInfo; /* +0xf4: corpse/DObj entity-state view */
-        entityState_t nextState;       /* +0xf4: incoming snapshot state */
-    };
-    qboolean currentValid;    /* +0x1e8: current snapshot state is valid. CG_ResetEntity
-                               * copies nextState to currentState and writes 1 here; snapshot
-                               * teardown paths write 0. DObj/tag consumers test this flag
-                               * before asking the engine for the entity's DObj handle. */
-    qboolean weaponEffectActive; /* +0x1ec: ordinary weapon-fire effect latch */
-    int32_t previousEvent;    /* +0x1f0: highest event sequence CG_CheckEvents (0x300238e0)
-                               * has already dispatched for this entity. Doubles as a
-                               * one-shot "fired" flag for pure ET_EVENTS entities (set to 1
-                               * so the event plays exactly once). Client centity_t
-                               * previousEvent; provisional exact source name. */
-    int32_t modelPreviousEvent; /* +0x1f4: highest event sequence CG_CheckPreEvents
-                               * (0x300239e0) has already dispatched for this entity's corpse-model
-                               * sub-entity (corpseModelInfo at +0xf4). Doubles as the one-shot
-                               * "fired" flag for a pure model event entity (eType > ET_EVENTS: set
-                               * to 1 so the encoded event plays once). Parallel to previousEvent
-                               * (+0x1f0) but for the model sub-entity's event ring. Provisional
-                               * exact source name. Proven at 0x300239ec (MOV [ESI+0x1f4]). */
-    int32_t laserEffectStarted; /* +0x1f8: one-shot latch so the laser/muzzle tag effect
-                               * is played exactly once. CG_Missile (0x3001edb0) plays the
-                               * tag_origin effect only when this is 0, then sets it to 1
-                               * after a successful CG_RESOLVE_TAG. Provisional field name
-                               * (exact centity_t source name unproven). */
-    int32_t miscTime;         /* +0x1fc: a per-entity client-time (ms) timestamp. The vehicle
-                               * render handler CG_AddCEntity_Vehicle (0x30021660) derives the
-                               * DObj model's shaderTime (age in seconds) as
-                               * (cg.time - miscTime) * 0.001f. CG_Vehicle_DoControllers
-                               * (0x30020540) sets it to -1 when currentState.time < 0;
-                               * otherwise it lerps currentState.time to nextState.time in
-                               * seconds and converts the result back to integer milliseconds.
-                               * Provisional field name (exact centity_t source name unproven). */
-    int32_t gasFireTime;      /* +0x200: cg.time of the latest gas-weapon fire */
-    int32_t flashSoundLifetime; /* +0x204: remaining lifetime (ms) of this entity's
-                               * muzzle-flash sound emission. CG_WeaponUpdateLoopingSound
-                               * (0x300490b0) decrements it by cg_frametime each frame
-                               * (only while it is > 0); while it stays > 0 the looping
-                               * fire sound (cgWeaponInfo.flashLoopSound, +0x128) is
-                               * played, and on the frame it reaches <= 0 the tail sound
-                               * (cgWeaponInfo.flashTailSound, +0x12c) plays once. A value
-                               * <= 0 on entry skips the whole emitter. Provisional field
-                               * name (exact centity_t source name unproven). */
-    vec3_t  lerpOrigin;       /* +0x208: canonical centity_t interpolated origin. */
-    vec3_t  lerpAngles;       /* +0x214: canonical centity_t interpolated angles. */
-    vec3_t  smoothedWeaponAngles; /* +0x220: view-weapon angles smoothed across frames.
-                               * The refEntity builder at 0x3001e380 seeds this from
-                               * lerpOrigin on first use (sentinel 0.5 per component)
-                               * and zeroes it when the EF flag is clear. Provisional name. */
-    int32_t loopedFxNextTime; /* +0x22c: cg.time (ms) at which this looped emitter should next
-                               * spawn its effect. CG_AddCEntity_LoopedFx (0x30021a30) clamps it
-                               * up to cg.time when it has fallen behind, and otherwise advances
-                               * it by loopedFxInterval (+0x6c) until it is within one interval
-                               * of cg.time, returning without playing when the interval has not
-                               * yet elapsed. Provisional field name. */
-    int32_t voiceChatIcon;    /* +0x230: registered head-icon shader handle shown while
-                               * this client is voice-chatting. Written by CG_PlayVoiceChat
-                               * (0x30039ff0) from cgs_voiceChatIcon (the "headiconVoiceChat"
-                               * shader handle at 0x3044b6cc). Provisional field name; role
-                               * proven by the writer, exact centity_t source name unproven. */
-    int32_t voiceChatTime;    /* +0x234: cg.time deadline until which voiceChatIcon is shown.
-                               * CG_PlayVoiceChat sets it to cg.time + duration, or
-                               * cg.time + 2*duration when the icon is the default voice-chat
-                               * icon. Provisional field name. */
-    qboolean predictionCollisionActive; /* +0x238: temporary predicted-player
-                               * collision participation flag. The predictor sets it
-                               * around Pmove for the contacted ET_VEHICLE entity and
-                               * clears it immediately afterward. */
-    vec3_t  vehicleWheelLastOrigin[6]; /* +0x23c..+0x283: one persistent world-space
-                               * contact origin per vehicle wheel. The six-wheel
-                               * DObj pass at 0x30020540 advances this pointer by
-                               * 0x0c with the wheel-tag table, initializes an all-zero
-                               * slot from the current contact, and otherwise emits
-                               * tread dust after it moves more than 32 and no more
-                               * than 200 units. */
-    /* +0x284: corpse tag-state sub-object. CG_AddPlayerCorpseEntity (0x300346c0)
-     * forms &cent->corpseTagState and passes it to CG_UpdateCorpseModelPartState
-     * (0x300058f0), which reads its leading byte ([edx]) while (re)binding the
-     * corpse skeleton. Modeled opaque (only its address and leading byte are
-     * observed here). Provisional field name. */
-    uint8_t corpseTagState[4]; /* +0x284 */
-}; /* struct centity_s; typedef to centity_t is the forward decl above */
-_Static_assert(sizeof(struct centity_s) == 0x288, "centity_t stride 0x288");
-_Static_assert(offsetof(struct centity_s, currentState.eType) == 0x4, "centity eType +0x4");
-_Static_assert(offsetof(struct centity_s, currentState.eFlags) == 0x8, "centity eFlags +0x8");
-_Static_assert(offsetof(struct centity_s, currentState.pos) == 0x0c, "centity currentState.pos +0x0c");
-_Static_assert(offsetof(struct centity_s, currentState.origin) == 0x18,
-               "centity currentState.origin +0x18");
-_Static_assert(offsetof(struct centity_s, currentState.apos) == 0x30, "centity apos +0x30");
-_Static_assert(offsetof(struct centity_s, currentState.time) == 0x54, "centity time +0x54");
-_Static_assert(offsetof(struct centity_s, currentState.iconFadeEndTime) == 0x54, "centity iconFadeEndTime +0x54");
-_Static_assert(offsetof(struct centity_s, currentState.origin2) == 0x5c, "centity origin2 +0x5c");
-_Static_assert(offsetof(struct centity_s, currentState.angles2) == 0x68, "centity angles2 +0x68");
-_Static_assert(offsetof(struct centity_s, currentState.iconBaseYaw) == 0xd8, "centity iconBaseYaw +0xd8");
-_Static_assert(offsetof(struct centity_s, currentState.leanf) == 0xd8, "centity leanf +0xd8");
-_Static_assert(offsetof(struct centity_s, currentValid) == 0x1e8,
-               "centity currentValid +0x1e8");
-_Static_assert(offsetof(struct centity_s, weaponEffectActive) == 0x1ec, "centity weaponEffectActive +0x1ec");
-_Static_assert(offsetof(struct centity_s, currentState.vehicleEntityNum) == 0x74, "centity vehicleEntityNum +0x74");
-_Static_assert(offsetof(struct centity_s, currentState.compassBlipIndex) == 0x78, "centity compassBlipIndex +0x78");
-_Static_assert(offsetof(struct centity_s, currentState.stateFilter) == 0x88, "centity stateFilter +0x88");
-_Static_assert(offsetof(struct centity_s, currentState.surfType) == 0x88, "centity surfType +0x88");
-_Static_assert(offsetof(struct centity_s, currentState.modelIndex) == 0x90, "centity modelIndex +0x90");
-_Static_assert(offsetof(struct centity_s, currentState.clientNum) == 0x94, "centity clientNum +0x94");
-_Static_assert(offsetof(struct centity_s, currentState.iHeadIcon) == 0x98, "centity iHeadIcon +0x98");
-_Static_assert(offsetof(struct centity_s, currentState.headIconTeam) == 0x9c, "centity headIconTeam +0x9c");
-_Static_assert(offsetof(struct centity_s, currentState.eventParm) == 0xa4, "centity eventParm +0xa4");
-_Static_assert(offsetof(struct centity_s, currentState.eventSequence) == 0xa8, "centity eventSequence +0xa8");
-_Static_assert(offsetof(struct centity_s, currentState.events) == 0xac, "centity events +0xac");
-_Static_assert(offsetof(struct centity_s, currentState.eventParms) == 0xbc, "centity eventParms +0xbc");
-_Static_assert(offsetof(struct centity_s, currentState.weapon) == 0xcc, "centity weapon +0xcc");
-_Static_assert(offsetof(struct centity_s, currentState.scale) == 0xdc, "centity scale +0xdc");
-_Static_assert(offsetof(struct centity_s, previousEvent) == 0x1f0, "centity previousEvent +0x1f0");
-_Static_assert(offsetof(struct centity_s, currentState.hudTagMask) == 0xe4, "centity hudTagMask +0xe4");
-_Static_assert(offsetof(struct centity_s, currentState.animMovetype) == 0xe4, "centity animMovetype +0xe4");
-_Static_assert(offsetof(struct centity_s, currentState.turretOverheatState) == 0xe4,
-               "centity turretOverheatState +0xe4");
-_Static_assert(offsetof(struct centity_s, lerpOrigin) == 0x208, "centity lerpOrigin +0x208");
-_Static_assert(offsetof(struct centity_s, lerpAngles) == 0x214, "centity lerpAngles +0x214");
-_Static_assert(offsetof(struct centity_s, smoothedWeaponAngles) == 0x220, "centity smoothedWeaponAngles +0x220");
-_Static_assert(offsetof(struct centity_s, corpseModelInfo) == 0xf4, "centity corpseModelInfo +0xf4");
-_Static_assert(offsetof(struct centity_s, modelPreviousEvent) == 0x1f4, "centity modelPreviousEvent +0x1f4");
-_Static_assert(offsetof(struct centity_s, gasFireTime) == 0x200, "centity gasFireTime +0x200");
-_Static_assert(offsetof(struct centity_s, voiceChatIcon) == 0x230, "centity voiceChatIcon +0x230");
-_Static_assert(offsetof(struct centity_s, voiceChatTime) == 0x234, "centity voiceChatTime +0x234");
-_Static_assert(offsetof(struct centity_s, vehicleWheelLastOrigin) == 0x23c, "centity vehicle wheel origins +0x23c");
-_Static_assert(offsetof(struct centity_s, corpseTagState) == 0x284, "centity corpseTagState +0x284");
+/* struct centity_s is defined in globals.h (a cg_t member embeds one). */
 
 /* CG_CheckEvents (0x300238e0) — fire the entity events that have been queued on one
  * client entity since it was last checked. For a pure event entity (eType > ET_EVENTS)
@@ -7112,31 +6974,7 @@ void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs,
  * string compare. Provisional caller-observed decl; superseded by its own .mcode.
  */
 
-/*
- * cg_shakeSource_t — one active camera-shake ("earthquake") source, a 0x24-byte
- * entry in the client's fixed 4-slot shake table at 0x3048b52c (stride 0x24,
- * end 0x3048b5bc). Proven from the shake trio:
- *   - the add path at 0x3001b420 populates a stack copy of this struct (startMsec
- *     from cg_time, amplitude, duration, radius, origin) then REP MOVSD's it into
- *     a free table slot (9 dwords == 0x24 bytes);
- *   - the per-source evaluator at 0x3001b390 (CG_EvaluateCameraShakeSource) reads
- *     startMsec/+0x00, amplitude/+0x04, duration/+0x08, radius/+0x0c, origin/+0x10
- *     and writes scaledAmplitude/+0x1c and timeFalloff/+0x20;
- *   - the aggregate path at 0x3001b550 (CG_CalcViewShake) walks the table, calls the
- *     evaluator, takes the max surviving scaledAmplitude (entry+0x1c) and drives the
- *     shaken view origin/angles from it.
- * Field offsets are all proven by those three functions' machine code. The names
- * radius/amplitude are role-derived (exact original member names not proved).
- */
-typedef struct cg_shakeSource_s {
-    int32_t startMsec;       /* +0x00: cg_time when this shake began */
-    float   amplitude;       /* +0x04: base shake magnitude */
-    float   duration;        /* +0x08: total lifetime in ms */
-    float   radius;          /* +0x0c: spatial falloff radius (distance divisor) */
-    vec3_t  origin;          /* +0x10: world position of the shake source */
-    float   scaledAmplitude; /* +0x1c: OUT — amplitude scaled by time*distance falloff */
-    float   timeFalloff;     /* +0x20: OUT — the time-only falloff factor */
-} cg_shakeSource_t;
+/* cg_shakeSource_t is defined in globals.h (cg_t member cg.shakeSources). */
 
 /*
  * CG_EvaluateCameraShakeSource (0x3001b390) — evaluate a single active camera
@@ -7151,14 +6989,6 @@ typedef struct cg_shakeSource_s {
  */
 qboolean CG_EvaluateCameraShakeSource(cg_shakeSource_t *source);
 
-/*
- * cg_shakeSources[4] (0x3048b52c, .data) — the client's fixed 4-slot active
- * camera-shake table (stride 0x24 == sizeof(cg_shakeSource_t), end 0x3048b5bc).
- * Storage in globals.c; supersedes the mechanical g_data_*_viewki_* dword
- * captures at 0x3048b52c/0x3048b548/0x3048b56c/0x3048b590/0x3048b5b4. Written by
- * CG_AddCameraShake (0x3001b420) and consumed by CG_EvaluateCameraShakeSource
- * (0x3001b390) / the aggregate walker (0x3001b550). */
-extern cg_shakeSource_t cg_shakeSources[4];
 
 /*
  * CG_AddCameraShake (0x3001b420) — register a new camera-shake ("earthquake")

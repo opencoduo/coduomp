@@ -66,7 +66,7 @@
  * stack args (self, self, event, subFlag). */
 
 /* Mechanical globals referenced by role. cg_debugevents_vmCvar.integer gates the event trace;
- * cg_footsteps gates the surface step sounds; cg_clientNum is the local client
+ * cg_footsteps gates the surface step sounds; cg_predictedClientNum is the local client
  * number; cg_eventDemoGate gates the voice-cvar paths; cg_eventNames[event] is the
  * event-name string table used by the trace/unknown diagnostics. The three
  * fire-mode gates block the local-player low-ammo prediction. Identities resolved
@@ -74,7 +74,7 @@
 /* cg_debugevents_vmCvar.integer is now a resolved extern in globals.h (was the mechanical
  * g_data_cmd_callvote_f_30456f8c); no local alias needed. */
 #define cg_footsteps       cg_footsteps_vmCvar.integer   /* nonzero: play step sounds */
-#define cg_clientNum       cg_predictedPlayerState.psClientNum   /* local client number */
+#define cg_predictedClientNum cg_predictedPlayerState.psClientNum   /* local client number */
 #define cg_eventDemoGate   cl_stanceTemp_vmCvar.integer   /* nonzero: suppress voice cvar */
 #define cg_fireGateTurretA cg_nopredict_vmCvar.integer
 #define cg_fireGateTurretB g_synchronousClients_vmCvar.integer
@@ -258,7 +258,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     if (event >= EV_FLESH_LO && event < EV_FLESH_HI) {
         CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                             cg_landSurfaceSounds[event - EV_FLESH_LO]);
-        if (clientNum == (int)cg_clientNum) {
+        if (clientNum == (int)cg_predictedClientNum) {
             cg_impactViewKickTime = cg_time;
             cg_impactViewKick = -(long double)eventParm; /* FILD raw; FCHS; FSTP (0x30022a0a..0x30022a1c): no pre-store round */
         }
@@ -272,7 +272,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                             cg_landSurfaceSounds[event - EV_BODY_LO]);
         CG_PlayEntitySoundAliasByName(entNum, cg_soundLandDamage);
-        if (clientNum == (int)cg_clientNum) {
+        if (clientNum == (int)cg_predictedClientNum) {
             /* envelope = (hi - lo) * eventParm * 0.01 + lo; FCOM against 12.0.
              * TEST AH,0x41 followed by JNP at 0x30022a97 skips the kick only for
              * less-than/equal; greater-than and unordered both continue. */
@@ -347,7 +347,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         const char *voice = (event == EV_STANCE_FORCE_STAND) ? "0"
                           : (event == EV_STANCE_FORCE_CROUCH) ? "1"
                                              : "2";
-        if (clientNum != (int)cg_clientNum) {
+        if (clientNum != (int)cg_predictedClientNum) {
             Com_DPrintf("Event %s just for client %i was sent to other clients\n",
                         cg_eventNames[event], clientNum);
             return;
@@ -362,7 +362,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     /* 0x91 (0x30022c1f): weapon-changed / low-ammo warning. For a non-local client
      * this behaves as the 0x8e voice-diagnostic path (JNZ 0x30022b5e). */
     case EV_STEP_VIEW:
-        if (clientNum != (int)cg_clientNum) {
+        if (clientNum != (int)cg_predictedClientNum) {
             Com_DPrintf("Event %s just for client %i was sent to other clients\n",
                         cg_eventNames[event], clientNum);
             return;

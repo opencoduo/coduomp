@@ -35,15 +35,6 @@ void cgame_compat_reset_recovered_cgs_state(void)
 #undef CG_ZERO_ORIGINAL_OBJECT
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of CG_Init's original
- * monolithic cg_t clear; see cgame_compat_reset_recovered_cgs_state. */
-void cgame_compat_reset_recovered_cg_state(void)
-{
-#define CG_ZERO_ORIGINAL_OBJECT(object_) memset(&(object_), 0, sizeof(object_))
-#include "recovered_initializers/cg_init_cg_reset.inc"
-#undef CG_ZERO_ORIGINAL_OBJECT
-}
-
 /* NOT_FROM_ORIGINAL_SOURCE: retail reaches dllEntry through a freshly mapped
  * PE image. Native loaders are allowed to retain a closed image, so dllEntry
  * explicitly restores the behavior-bearing load state that CG_Init does not
@@ -64,7 +55,7 @@ void cgame_compat_reset_module_load_state(void)
     };
 
     cgame_compat_reset_recovered_cgs_state();
-    cgame_compat_reset_recovered_cg_state();
+    memset(&cg, 0, sizeof(cg));
 
 #define CG_ZERO_LOAD_OBJECT(object_) memset(&(object_), 0, sizeof(object_))
 #include "recovered_initializers/cgame_module_load_reset.inc"
@@ -3609,7 +3600,8 @@ vmCvar_t cl_serverloadgametype;
 
 /* 0x30459140: cg.clientFrame. Incremented once by CG_DrawActiveFrame; flame
  * emitter records use it as a last-touched frame stamp. */
-int32_t cg_clientFrame = 0;
+/* 0x30459140..0x3048c007: the client game state object (globals.h cg_t). */
+cg_t cg;
 /* Source: uo_cgame_mp_x86.dll 0x30459144 (.data); refs=5 width=4; first=0x30022477.
  * cg.clientNum — installed from CG_Init's clientNum argument, used to index
  * bgs.clientinfo[] (0x30022477), and compared to cg_snap->clientNum
@@ -3617,14 +3609,11 @@ int32_t cg_clientFrame = 0;
  * Retyped uint32_t->int32_t; owner=scr_vehicle_think (a first-toucher) superseded.
  * Example: 30022477   8b 15 44 91 45 30            MOV EDX,dword ptr [0x30459144] | 3002dfaf   89 0d 44 91 45 30            MOV dword ptr [0x30459144],ECX | 30031321   3b 05 44 91 45 30            CMP EAX,dword ptr [0x30459144]
  */
-int32_t cg_clientNum = 0;
 /* cg_demoPlayback (0x30459148): written by the active-frame driver from its
  * demoPlayback argument and read as the live-input/prediction suppression gate. */
-qboolean cg_demoPlayback = qfalse;
 /* Source: uo_cgame_mp_x86.dll 0x3045914c (.data); refs=1 width=4; first=0x3001bfe1; owner=fire_lead.
  * Example: 3001bfe1   a1 4c 91 45 30               MOV EAX,[0x3045914c]
  */
-uint32_t g_cgScreenSuppressFlag = (uint32_t)0x00000000u;
 /* Source: uo_cgame_mp_x86.dll 0x30459150 (.data); refs=5 width=4.
  * cg_lockedViewFace — the locked/cube-face render selector: 0 means "normal view",
  * 1..6 select one of six axis-aligned camera orientations. The refdef dispatcher
@@ -3633,7 +3622,6 @@ uint32_t g_cgScreenSuppressFlag = (uint32_t)0x00000000u;
  * Named by that proven role; exact source field name unresolved and other
  * consumers (0x3001bfee) not yet reconstructed. owner=fire_lead was the mechanical
  * first-toucher and is not the identity. */
-int32_t cg_lockedViewFace = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30459154 (.data); refs=3 width=4.
  * cg_lockedViewSize — the locked-view square viewport base size (int). The
  * locked-view builder (0x30040360) sets refdef width == height == (this + 2) and
@@ -3641,14 +3629,12 @@ int32_t cg_lockedViewFace = 0;
  * cg_lockedViewFace by the request setter at 0x300421b8. Named by proven role;
  * exact source field name unresolved. owner=cg_spawntracer was a size-collision
  * mislabel (the 0x30040360 builder is not CG_SpawnTracer). */
-int32_t cg_lockedViewSize = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30459158 (.data); refs=6 width=4; first=0x30018026.
  * cg.latestSnapshotNum — see globals.h. Written by CG_ProcessSnapshots (0x3003d30a)
  * next to the "n < cg.latestSnapshotNum" error string; read as the "snap:%i" value
  * by CG_DrawSnapshot (0x30018026).
  * Example: 30018026   8b 0d 58 91 45 30            MOV ECX,dword ptr [0x30459158] | 3003d225   8b 0d 58 91 45 30            MOV ECX,dword ptr [0x30459158] | 3003d241   8b 0d 58 91 45 30            MOV ECX,dword ptr [0x30459158]
  */
-int32_t cg_latestSnapshotNum = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3045915c (.data); refs=3 width=4; first=0x3003d2d4.
  * cg_latestSnapshotServerTime — the engine server time (ms) of the most recent
  * snapshot. Written by CG_ProcessSnapshots (0x3003d2d0), which passes its address as
@@ -3661,7 +3647,6 @@ int32_t cg_latestSnapshotNum = 0;
  * was a wrong size-match; this is a cgame client datum, not a server GSC builtin).
  * Example: 3003d2d4   68 5c 91 45 30               PUSH 0x3045915c | 3003d316   8b 0d 5c 91 45 30            MOV ECX,dword ptr [0x3045915c] | 300421e5   2b 05 5c 91 45 30            SUB EAX,dword ptr [0x3045915c]
  */
-int32_t cg_latestSnapshotServerTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30459160 (.data); refs=137 width=4; first=0x300177a5; owner=pm_interuptweaponwithsprintmove.
  * Example: 300177a5   a1 60 91 45 30               MOV EAX,[0x30459160] | 3001802c   8b 15 60 91 45 30            MOV EDX,dword ptr [0x30459160] | 30018acc   8b 15 60 91 45 30            MOV EDX,dword ptr [0x30459160]
  */
@@ -3670,27 +3655,23 @@ int32_t cg_latestSnapshotServerTime = 0;
  * (FUN_3003d2d0) reads snap->snapFlags (+0x00) and snap->serverTime (+0x08)
  * through it. Retyped from the mechanical uint32_t/void* to snapshot_t *. */
 /* Source: uo_cgame_mp_x86.dll 0x30459160. */
-snapshot_t *cg_snap = NULL;
 /* cg_nextSnap (0x30459164, .data): the next/incoming client snapshot pointer,
  * paired with cg_snap. CG_BuildSolidList (0x30035030) reads it and walks
  * snap->entities[] to rebuild the per-frame mark lists. Retyped from the mechanical
  * uint32_t (the owner=cg_asset_parse label was the first-touching function, not the
  * identity). refs=32.
  * Example: 30016570   8b 0d 64 91 45 30            MOV ECX,dword ptr [0x30459164] | 3003503a first MOV EDI,[0x30459164] read by the mark-list builder */
-snapshot_t *cg_nextSnap = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x30459168 (.data): cg_activeSnapshots[0] — first
  * double-buffered snapshot slot (see globals.h). The mechanical export captured only
  * the first dword of this large snapshot_t; retyped to the full object. Its address
  * is taken as the trap_GetSnapshot destination and compared against cg_snap.
  * Example: 3003d260   81 3d 60 91 45 30 68 91 45 30 CMP dword ptr [0x30459160],0x30459168 | 3003d271   be 68 91 45 30               MOV ESI,0x30459168
  */
-snapshot_t cg_activeSnapshots0;
 /* Source: uo_cgame_mp_x86.dll 0x3046e188 (.data): cg_activeSnapshots[1] — second
  * double-buffered snapshot slot (see globals.h). Truncated to its first dword by the
  * mechanical export; retyped to the full snapshot_t object.
  * Example: 3003d26a   be 88 e1 46 30               MOV ESI,0x3046e188
  */
-snapshot_t cg_activeSnapshots1;
 /* Source: uo_cgame_mp_x86.dll 0x304831a8 (.data); refs=16 width=4; first=0x3001ea35; owner=fire_artillery.
  * cg.frameInterpolation: the [0,1) inter-snapshot lerp fraction. Written by
  * CG_SetFrameInterpolation (0x3001f710) and read as a float lerp weight by ~16
@@ -3699,28 +3680,22 @@ snapshot_t cg_activeSnapshots1;
  * the owner=fire_artillery label was the first-touching function, not the identity.
  * Example: 3001ea35   8b 15 a8 31 48 30            MOV EDX,dword ptr [0x304831a8] | 3001eae9   8b 15 a8 31 48 30            MOV EDX,dword ptr [0x304831a8] | 3001ebac   a1 a8 31 48 30               MOV EAX,[0x304831a8]
  */
-float cg_frameInterpolation = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x304831ac (.data). cg.frametime — the current client
  * frame's elapsed time in ms (see globals.h). Retyped from the mechanical uint32_t
  * to int32_t; (owner=finishspawningitem) was the first-touching function, not the
  * identity. Consumed across ~38 sites as an int->float per-frame delta. */
-int32_t cg_frametime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304831b0 (.data); refs=146 width=4; first=0x30016605; owner=cg_asset_parse.
  * Example: 30016605   8b 15 b0 31 48 30            MOV EDX,dword ptr [0x304831b0] | 30016643   a1 b0 31 48 30               MOV EAX,[0x304831b0] | 30016684   8b 0d b0 31 48 30            MOV ECX,dword ptr [0x304831b0]
  */
-int32_t cg_time = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304831b4 (.data); refs=7 width=4; first=0x30035b1c; owner=pmovesingle.
  * Example: 30035b1c   8b 15 b4 31 48 30            MOV EDX,dword ptr [0x304831b4] | 30035cfa   8b 15 b4 31 48 30            MOV EDX,dword ptr [0x304831b4] | 3003c9e3   a3 b4 31 48 30               MOV [0x304831b4],EAX
  */
-int32_t cg_physicsTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304831b8 (.data); refs=6 width=4; first=0x30035132; owner=cg_registerimpacteffects.
  * Example: 30035132   a1 b8 31 48 30               MOV EAX,[0x304831b8] | 30035146   a1 b8 31 48 30               MOV EAX,[0x304831b8] | 3003557f   b8 b8 31 48 30               MOV EAX,0x304831b8
  */
-int32_t cg_latestSnapshotTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304831bc (.data); refs=4 width=4; first=0x30034d4a; owner=cg_addscalefade.
  * Example: 30034d4a   89 15 bc 31 48 30            MOV dword ptr [0x304831bc],EDX | 30039580   c7 05 bc 31 48 30 01 00 00 00 MOV dword ptr [0x304831bc],0x1 | 3003d009   a1 bc 31 48 30               MOV EAX,[0x304831bc]
  */
-qboolean cg_initialSnapshotPending = qfalse;
 /* Source: uo_cgame_mp_x86.dll 0x304831c0 (.data); refs=17 width=4; first=0x30019bdd; owner=pm_viewheighttablelerp.
  * A boolean view/render-state flag written only as 0/1 at 0x30042558/0x30042564 (from a
  * `mode >= 6` compare). Consumers disagree on its exact meaning (a "not third-person"
@@ -3729,18 +3704,15 @@ qboolean cg_initialSnapshotPending = qfalse;
  * reconstructed.
  * Example: 30019bdd MOV EAX,[0x304831c0] | 30042558 MOV [0x304831c0],0 | 30042564 MOV [0x304831c0],1
  */
-qboolean cg_thirdPerson = qfalse;
 /* Source: uo_cgame_mp_x86.dll 0x304831c4 (.data); refs=31 width=4; first=0x3001a26a.
  * Example: 3001a26a   b9 c4 31 48 30               MOV ECX,0x304831c4 | 3001fa11   bf c4 31 48 30               MOV EDI,0x304831c4 | 3002081c   be c4 31 48 30               MOV ESI,0x304831c4
  * RESOLVED: cg.predictedPlayerState base object. Its address is
  * &cg.predictedPlayerState, passed to BG/CG helpers (e.g. CG_TouchItem hands it to
  * BG_PlayerTouchesItem and BG_CanItemBeGrabbed). owner=veh_playercollision was only
  * the first toucher, not the identity. */
-playerState_t cg_predictedPlayerState = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x304876c8..0x30487950 (.data).
  * Complete predicted local-player centity. Its nextState, interpolated fields,
  * event latches, and voice-chat fields are all members of this one object. */
-centity_t cg_predictedEventEntity = {0};
 /* Source: uo_cgame_mp_x86.dll 0x30487950 (.data); refs=7 width=4; first=0x30034e01.
  * RESOLVED: cg_prevAdsFraction — previous frame's ADS zoom fraction, read/written
  * as a float scalar by CG_TrackAdsZoomDirection (0x30045480) to detect this frame's
@@ -3750,7 +3722,6 @@ centity_t cg_predictedEventEntity = {0};
  * Retyped from the mislabeled uint32 placeholder to float.
  * Example: 30034e01   bf 50 79 48 30               MOV EDI,0x30487950 | 300454d0   d9 05 50 79 48 30            FLD float ptr [0x30487950] | 3004552b   a3 50 79 48 30               MOV [0x30487950],EAX
  */
-float cg_prevAdsFraction = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x30487954 (.data); refs=5 width=4; first=0x30019560.
  * RESOLVED: cg_adsZoomingIn — qboolean written each frame at 0x30045521/0x30045533
  * (1 when adsFraction rose above cg_prevAdsFraction this frame, else 0) and read by
@@ -3758,7 +3729,6 @@ float cg_prevAdsFraction = 0.0f;
  * The owner=sp_trigger_mount_no_brush label was a wrong size-based auto-name.
  * Example: 30019560   a1 54 79 48 30               MOV EAX,[0x30487954] | 30045521   a3 54 79 48 30               MOV [0x30487954],EAX
  */
-qboolean cg_adsZoomingIn = qfalse;
 /* Source: uo_cgame_mp_x86.dll 0x30487958..0x30487963 (.data); three consecutive
  * width-4 floats. Superseded the mechanical uint32 triple
  * g_data_com_dprintf_30487958/5c/60: 0x30045070 (CG_ApplyWeaponMovementAngles) writes v[0],
@@ -3768,17 +3738,13 @@ qboolean cg_adsZoomingIn = qfalse;
  * angle offset computed and applied this frame (the "owner=com_dprintf" label
  * was a wrong size-based auto-name). Sole writer; role-proven provisional name.
  */
-vec3_t cg_weaponMovementAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487964 (.data); refs=2 width=4; first=0x3004670d; owner=bg_playerstatetoentitystate.
  * Example: 3004670d   8b 15 64 79 48 30            MOV EDX,dword ptr [0x30487964] | 3004686c   89 15 64 79 48 30            MOV dword ptr [0x30487964],EDX
  */
-float cg_weaponPositionMoveScale = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x30487968..0x30487973 (.data). */
-vec3_t cg_weaponMoveAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487974 (.data); refs=2 width=4; first=0x300466cd; owner=bg_playerstatetoentitystate.
  * Example: 300466cd   8b 15 74 79 48 30            MOV EDX,dword ptr [0x30487974] | 3004684f   89 15 74 79 48 30            MOV dword ptr [0x30487974],EDX
  */
-vec3_t cg_weaponPositionPrevAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487978 (.data); refs=2 width=4; first=0x300466c8; owner=bg_playerstatetoentitystate.
  * Example: 300466c8   a1 78 79 48 30               MOV EAX,[0x30487978] | 30046859   a3 78 79 48 30               MOV [0x30487978],EAX
  */
@@ -3795,37 +3761,28 @@ vec3_t cg_weaponPositionPrevAngles = { 0.0f, 0.0f, 0.0f };
  * The owner=sp_trigger_mount_no_brush label was a wrong size-based auto-name.
  * Example: 3001952c   8b 15 80 79 48 30            MOV EDX,dword ptr [0x30487980] | 30034d79   a3 80 79 48 30               MOV [0x30487980],EAX
  */
-weaponInfo_t *cg_currentWeaponInfo = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30487984: prediction-error decay timestamp. */
-int32_t cg_predictedErrorTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30487988..0x30487993: three-component
  * positional prediction error. */
-vec3_t cg_predictedError = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487994 (.data). RESOLVED: cg_predictedEventSequence,
  * the predicted-event counter incremented by CG_CheckPlayerstateEvents. See
  * globals.h. Supersedes the mechanical owner=sp_script_vehicle. */
-int32_t cg_predictedEventSequence = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30487998..0x304879d8 (.data). RESOLVED:
  * cg_predictedEvents[MAX_PREDICTED_EVENTS], the predicted-event id ring written by
  * CG_CheckPlayerstateEvents. See globals.h. Supersedes the mechanical single-dword
  * owner=sp_script_vehicle; the 16-entry array occupies the previously-zero span up
  * to the next mechanical entry at 0x304879d8. */
-int32_t cg_predictedEvents[MAX_PREDICTED_EVENTS] = {0};
 /* Source: uo_cgame_mp_x86.dll 0x304879d8 (.data); refs=7 width=4; first=0x30022c76; owner=cmd_callvote_f (first-touch artifact; real owner is CG_EntityEvent).
  * FLD/FMUL/FSTP-accessed float (retyped from uint32_t).
  * Example: 30022c76   d8 0d d8 79 48 30            FMUL float ptr [0x304879d8] | 30022ca1   d9 1d d8 79 48 30            FSTP float ptr [0x304879d8] | 30022ca9   d9 05 d8 79 48 30            FLD float ptr [0x304879d8]
  */
-float cg_weaponChangeViewOffset = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x304879dc (.data); refs=5 width=4; first=0x30022c58; owner=cmd_callvote_f (first-touch artifact; real owner is CG_EntityEvent).
  * Example: 30022c58   8b 35 dc 79 48 30            MOV ESI,dword ptr [0x304879dc] | 30022cc6   89 0d dc 79 48 30            MOV dword ptr [0x304879dc],ECX | 30022cf1   89 0d dc 79 48 30            MOV dword ptr [0x304879dc],ECX
  */
-int32_t cg_weaponChangeViewOffsetTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304879e0 (.data): cg_impactViewKick, the signed
  * local bullet/body-hit impulse applied by the view and weapon kick envelopes. */
-float cg_impactViewKick = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x304879e4 (.data): cg_impactViewKickTime, the
  * cg.time stamp paired with cg_impactViewKick. */
-int32_t cg_impactViewKickTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304879e8..0x30487a77 (.data); owner=finishspawningitem
  * (first-touch size-guess). cg_dobjPreviewOrientations[3] — three per-frame scratch
  * orientations rebuilt from cg_time by CG_AddPacketEntities (0x3001f810). See
@@ -3833,7 +3790,6 @@ int32_t cg_impactViewKickTime = 0;
  * supersedes the ~25 mechanical g_data_finishspawningitem_* dwords that captured
  * only the individually-xref'd words of one contiguous 0x90-byte scratch block.
  * Zero-initialized in the exported image; rebuilt each frame. */
-cgDObjPreviewOrientation_t cg_dobjPreviewOrientations[CG_DOBJ_PREVIEW_ORIENTATION_COUNT] = {0};
 /* Source: uo_cgame_mp_x86.dll 0x30487a78 (.data); refs=16 width=4; first=0x3001967e; owner=stuckinclient.
  * Example: 3001967e   da 05 78 7a 48 30            FIADD dword ptr [0x30487a78] | 300198cc   da 05 78 7a 48 30            FIADD dword ptr [0x30487a78] | 30019cd6   da 05 78 7a 48 30            FIADD dword ptr [0x30487a78]
  */
@@ -3897,17 +3853,14 @@ cgDObjPreviewOrientation_t cg_dobjPreviewOrientations[CG_DOBJ_PREVIEW_ORIENTATIO
  * Role name; owner=g_getnonpvsfriendlyinfo was a wrong size-match. */
 /* Source: uo_cgame_mp_x86.dll 0x30487a78..0x30487ac7 (.data): the contiguous
  * renderer refdef prefix saved and restored as 0x50 bytes by CG_DrawSkyBoxPortal. */
-refdef_t cg_refdef = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30487ac8..0x30487ad3 (.data).
  * cg_refdefViewAngles — contiguous pitch/yaw/roll Euler vector. CG_CalcVehicleViewPos
  * passes its base to AnglesToAxisNegRight at 0x30040f1c; CG_CalcViewShake updates all
  * three components at 0x3001b6ba..0x3001b716. */
-vec3_t cg_refdefViewAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487ad4 (.data); previous view angles passed
  * on the stack to BG_CalculateWeaponPosition_Sway at 0x30044c9c.
  * Example: 30034d9e   89 15 d4 7a 48 30            MOV dword ptr [0x30487ad4],EDX | 30044c9c   68 d4 7a 48 30               PUSH 0x30487ad4
  */
-vec3_t cg_weaponSwayViewAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487ad8 (.data); refs=1 width=4; first=0x30034d98; owner=cg_addscalefade.
  * Example: 30034d98   89 15 d8 7a 48 30            MOV dword ptr [0x30487ad8],EDX
  */
@@ -3917,7 +3870,6 @@ vec3_t cg_weaponSwayViewAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487ae0 (.data); refs=3 width=4; first=0x30034db0; owner=cg_addscalefade.
  * Example: 30034db0   89 15 e0 7a 48 30            MOV dword ptr [0x30487ae0],EDX | 30044ca1   bf e0 7a 48 30               MOV EDI,0x30487ae0 | 30046777   8b 0d e0 7a 48 30            MOV ECX,dword ptr [0x30487ae0]
  */
-vec3_t cg_weaponSwayAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487ae4 (.data); refs=2 width=4; first=0x30034daa; owner=cg_addscalefade.
  * Example: 30034daa   89 15 e4 7a 48 30            MOV dword ptr [0x30487ae4],EDX | 30046781   8b 15 e4 7a 48 30            MOV EDX,dword ptr [0x30487ae4]
  */
@@ -3928,7 +3880,6 @@ vec3_t cg_weaponSwayAngles = { 0.0f, 0.0f, 0.0f };
  * in EAX to BG_CalculateWeaponPosition_Sway at 0x30044ca6.
  * Example: 30034dc2   89 15 ec 7a 48 30            MOV dword ptr [0x30487aec],EDX | 30044ca6   b8 ec 7a 48 30               MOV EAX,0x30487aec
  */
-vec3_t cg_weaponSwayOffset = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487af0 (.data); refs=2 width=4; first=0x30034dbc; owner=cg_addscalefade.
  * Example: 30034dbc   89 15 f0 7a 48 30            MOV dword ptr [0x30487af0],EDX | 300453d8   d8 25 f0 7a 48 30            FSUB float ptr [0x30487af0]
  */
@@ -3943,46 +3894,38 @@ vec3_t cg_weaponSwayOffset = { 0.0f, 0.0f, 0.0f };
  *   300163e4  MOV [ESI*4 + 0x30487af8],EDI   (CG_FreeRegisteredHandlesLow, null)
  *   3001648e  MOV [ESI*4 + 0x30487af8],EDI   (CG_FreeRegisteredHandlesHigh, null)
  *   30021ed2  CMP [ESI*4 + 0x30487af8],EAX   (CG_UpdateEntityDObjModel, match) */
-uint32_t cg_dObjInfoKeys[ENTITYNUM_NONE];
 /* Source: uo_cgame_mp_x86.dll 0x30488af4 (.data); the "DObj info" model table, 1023
  * dwords indexed by ESI*4 (immediately follows cg_dObjInfoKeys; next datum at
  * 0x30489af0). Same repair as cg_dObjInfoKeys above. Writers seen:
  *   300163ee  MOV [ESI*4 + 0x30488af4],EDI   (free helper, null)
  *   30016498  MOV [ESI*4 + 0x30488af4],EDI   (free helper, null)
  *   30021edb  CMP [ESI*4 + 0x30488af4],EDI   (CG_UpdateEntityDObjModel, match) */
-XModel *cg_dObjInfoHandles[ENTITYNUM_NONE];
 /* Source: uo_cgame_mp_x86.dll 0x30489af0 (.data); refs=2 width=4; first=0x30040358; owner=veh_setupcollmap.
  * Example: 30040358   d9 1d f0 9a 48 30            FSTP float ptr [0x30489af0] | 300426be   a1 f0 9a 48 30               MOV EAX,[0x30489af0]
  */
-float cg_zoomSensitivity = 0.0f; /* 0x30489af0; see globals.h. */
 /* Source: uo_cgame_mp_x86.dll 0x30489af4..0x30489ef3 (.data); 0x400 bytes; first=0x3002ba98.
  * cg_loadingScratch[1024] — "LOADING... %s" status scratch buffer; see globals.h. Spans
  * exactly to 0x30489ef3 (element [0x3ff], the forced NUL) with the next global at 0x30489ef4.
  * Supersedes the mechanical g_data_pm_updateviewangles_30489af4 (dword) and _30489ef3 (byte)
  * placeholders, which were two views of this one array.
  */
-char cg_loadingScratch[MAX_STRING_CHARS] = {0};
 /* Source: uo_cgame_mp_x86.dll 0x30489ef4 (.data); refs=3 width=4 — cg_vehicleViewReset, a
  * qboolean latch: CG_SnapshotTransitionStage2 (0x30034df2) sets it to 1 on a snapshot reset;
  * CG_CalcVehicleViewValues (0x30040580) reads it (0x30040675), reseeds cg_vehicleViewPrevAxis
  * when set, and clears it back to 0 (0x3004068c). owner=cg_addscalefade was a first-toucher.
  * See globals.h. */
-int32_t cg_vehicleViewReset = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30489ef8..0x30489f1b (.data) — cg_vehicleViewPrevAxis, the
  * previous frame's vehicle/turret tag orientation basis (axis_t, 3x3). Read/written only by
  * CG_CalcVehicleViewValues (0x30040580) for view-angle smoothing; owner=convertquattomat was a
  * mechanical first-toucher. See globals.h. */
-axis_t cg_vehicleViewPrevAxis = { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 /* Source: uo_cgame_mp_x86.dll 0x30489f1c (.data); refs=2 width=4; first=0x30037dd7; owner=yawvectors.
  * Example: 30037dd7   8b 0d 1c 9f 48 30            MOV ECX,dword ptr [0x30489f1c] | 30037df3   a3 1c 9f 48 30               MOV [0x30489f1c],EAX
  */
-int32_t cgs_scoreboardTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30489f20 (.data); refs=9 width=4; first=0x30036ea8.
  * cg_scoreboardNumClients — see globals.h. Signed row-count clamped to
  * MAX_CLIENTS by the scoreboard build routine at 0x30038000.
  * Example: 30036ea8   8b 15 20 9f 48 30            MOV EDX,dword ptr [0x30489f20] | 3003808c   c7 05 20 9f 48 30 40 00 00 00   MOV dword ptr [0x30489f20],0x40
  */
-int32_t cg_scoreboardNumClients = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30489f24..0x30489f33 (.data), 16 bytes.
  * cg_scoreboardTeamScores[TEAM_COUNT] — per-team scores sent as server-command args 2/3
  * and drawn in the score column; see globals.h. Supersedes the mechanical
@@ -3991,7 +3934,6 @@ int32_t cg_scoreboardNumClients = 0;
  * array, not four scalars. Team-indexed store 0x300380a1 MOV [0x30489f24],EAX and
  * loads 0x3003732d MOV EAX,[EBX*4 + 0x30489f24] (header) / 0x30037c0c-c11 (body).
  */
-int32_t cg_scoreboardTeamScores[TEAM_COUNT] = { 0, 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30489f34..0x30489f43 (.data), 16 bytes.
  * cg_scoreboardTeamPings[TEAM_COUNT] — per-team ping sum, then integer average (totals-row
  * ping column); see globals.h. Supersedes the mechanical per-element split (0x30489f38/
@@ -3999,13 +3941,11 @@ int32_t cg_scoreboardTeamScores[TEAM_COUNT] = { 0, 0, 0, 0 };
  * scalars. Team-indexed accumulate 0x300382a2 ADD [EAX*4 + 0x30489f34],ECX and
  * load 0x30037336 MOV EAX,[EBX*4 + 0x30489f34] (header).
  */
-int32_t cg_scoreboardTeamPings[TEAM_COUNT] = { 0, 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30489f44..0x30489f53 (.data); refs=6+4+4+4 width=4.
  * cg_scoreboardTeamCount[team_t] — see globals.h. Proven as a 4-element int
  * array indexed by team by 0x30038295 (`inc [0x30489f44 + eax*4]`) and
  * 0x30037121 (`mov eax,[ebx*4 + 0x30489f44]`).
  */
-int32_t cg_scoreboardTeamCount[TEAM_COUNT] = { 0, 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30489f54..0x3048a553 (.data), 0x600 bytes.
  * cg_scoreboardEntries[64] — collected scoreboard rows (cgScore_t, stride 0x18),
  * see globals.h. Supersedes the mechanical single-dword symbol
@@ -4017,37 +3957,30 @@ int32_t cg_scoreboardTeamCount[TEAM_COUNT] = { 0, 0, 0, 0 };
  *          300380ff   bf 54 9f 48 30   MOV EDI,0x30489f54 (build STOSD base) |
  *          30038154   be 54 9f 48 30   MOV ESI,0x30489f54 (build fill base)
  */
-cgScore_t cg_scoreboardEntries[64];
 /* Source: uo_cgame_mp_x86.dll 0x3048a554 (.data); refs=7 width=4; first=0x3001af19; owner=bytetodir.
  * Example: 3001af19   a1 54 a5 48 30               MOV EAX,[0x3048a554] | 3001afd3   a1 54 a5 48 30               MOV EAX,[0x3048a554] | 3001bd35   c7 05 54 a5 48 30 01 00 00 00 MOV dword ptr [0x3048a554],0x1
  */
-qboolean cg_scoreboardShowing = qfalse;
 /* Source: uo_cgame_mp_x86.dll 0x3048a55c (.data); refs=5 width=4; first=0x3001af46; owner=bytetodir.
  * Example: 3001af46   8b 15 5c a5 48 30            MOV EDX,dword ptr [0x3048a55c] | 3001afec   8b 15 5c a5 48 30            MOV EDX,dword ptr [0x3048a55c] | 3001bd30   a3 5c a5 48 30               MOV [0x3048a55c],EAX
  */
-int32_t cg_scoreboardShowTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048a560 (.data); refs=13 width=4; first=0x300327c3; owner=com_parseonline.
  * Example: 300327c3   a1 60 a5 48 30               MOV EAX,[0x3048a560] | 300327d2   a3 60 a5 48 30               MOV [0x3048a560],EAX | 300327d9   c7 05 60 a5 48 30 00 00 00 00 MOV dword ptr [0x3048a560],0x0
  */
-int32_t cg_scoreboardScrollPos = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048a564 (.data); refs=6 width=4; first=0x300370a2.
  * cg_scoreboardOverflowed — the scoreboard "flowed off the bottom" latch; see
  * globals.h. Read at 0x300370a2 / 0x30037420, set to 1 at 0x300370f0, cleared per
  * frame by the body drawer. Mechanical owner=g_damage was a wrong size-match guess.
  * Example: 300370a2   a1 64 a5 48 30               MOV EAX,[0x3048a564] | 300370f0   c7 05 64 a5 48 30 01 00 00 00 MOV dword ptr [0x3048a564],0x1 | 30037420   a1 64 a5 48 30               MOV EAX,[0x3048a564]
  */
-qboolean cg_scoreboardOverflowed = qfalse;
 /* Source: uo_cgame_mp_x86.dll 0x3048a568 (.data); the scoreboard "fragged by" name
  * buffer char[0x20]. Supersedes the mis-captured cg_scoreboardFadedOut byte and the
  * aliased 0x3048a587 terminator symbol (both were byte slices of this one string).
  * Example: 3002251d PUSH 0x3048a568 (strncpy dest) | 30031a90 MOV AL,[0x3048a568]
  * (name[0] gate) | 30031aaa PUSH 0x3048a568 (va %s). See globals.h for the full
  * proof (strncpy count 0x1f + terminator zero at 0x3048a587). */
-char cg_fraggedByName[32] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3048a588..0x3048a9ac (.data).
  * Dormant spectator/HUD fields in the cg aggregate. The preceding name buffer
  * has a proven bound, and no instruction or relocation addresses this interval. */
-uint8_t cg_unreferencedSpectatorState[1060];
 /* cg.centerPrint* HUD state. Resolved from CG_PriorityCenterPrint (0x30019050,
  * "Center Print" tag @0x30076cdc) and the renderer at 0x300191b0. Contiguous
  * layout: time(4) @a9ac, charWidth(4) @a9b0, y(4) @a9b4,
@@ -4056,18 +3989,12 @@ uint8_t cg_unreferencedSpectatorState[1060];
  * was a size-guess mislabel; 0x3048adb7 was the last byte of the string buffer,
  * not a separate datum.) */
 /* Source: uo_cgame_mp_x86.dll 0x3048a9ac (.data). Written cg_time+2000 @0x30019102. */
-int32_t cg_centerPrintTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048a9b0 (.data). (int)charWidth @0x3001911b; FILD @0x30019220. */
-int32_t cg_centerPrintCharWidth = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048a9b4 (.data). (int)y @0x30019111; FILD @0x30019256. */
-int32_t cg_centerPrintY = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048a9b8 (.data). Q_strncpyz dest, destsize 1024;
  * last byte @0x3048adb7 forced to 0 at 0x3001909d. */
-char cg_centerPrintString[MAX_STRING_CHARS] = {0};
 /* Source: uo_cgame_mp_x86.dll 0x3048adb8 (.data). Set 1 @0x30019127; INC @0x30019157/0x30019175. */
-int32_t cg_centerPrintLines = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048adbc (.data). Read @0x30019060; written @0x30019090. */
-int32_t cg_centerPrintPriority = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048adc0..0x3048ade4 (.bss, zero-init).
  * cg_screenFade: the full-screen fade/flash overlay state block. The mechanical export
  * split it into ten g_data_script_func_getangledelta_* dwords with a bogus owner/name
@@ -4075,7 +4002,6 @@ int32_t cg_centerPrintPriority = 0;
  * real shape: endTime (int, cg_time ms) at +0x00, rate (float, 0 => inactive) at +0x04,
  * a current RGBA at +0x08, and a stored source RGBA at +0x18. Superseded to one typed
  * struct. See cg_screen_fade_t in globals.h. */
-cg_screen_fade_t cg_screenFade = {0};
 /* Source: uo_cgame_mp_x86.dll 0x3048ade8 (.data); refs=3 width=4; first=0x30034a76.
  * cg_outOfAmmoState: persistent low/out-of-ammo warning state, owned solely by
  * CG_OutOfAmmoChange (0x30034a00). 0 = has ammo / not warned; 1 = warned with some
@@ -4084,7 +4010,6 @@ cg_screen_fade_t cg_screenFade = {0};
  * the first-touching function label, not the identity).
  * Example: 30034a76   8b 0d e8 ad 48 30            MOV ECX,dword ptr [0x3048ade8] | 30034aa1   89 0d e8 ad 48 30            MOV dword ptr [0x3048ade8],ECX | 30034ab0   c7 05 e8 ad 48 30 00 00 00 00 MOV dword ptr [0x3048ade8],0x0
  */
-int32_t cg_outOfAmmoState = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048adec (.data); refs=4 width=4; first=0x3001a59c.
  * RESOLVED (role): cg_crosshairEntNum — the client/entity number under the crosshair.
  * CG_ScanForCrosshairEntity (0x3001a4d0) writes the traced entity number here
@@ -4094,7 +4019,6 @@ int32_t cg_outOfAmmoState = 0;
  * only the first-touching label and is itself a wrong name-guess (see
  * CG_ScanForCrosshairEntity). Exact CoD symbol unconfirmed; named by proven role.
  */
-int32_t cg_crosshairEntNum = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048adf0 (.data); refs=3 width=4; first=0x3001a5a2.
  * RESOLVED (role): cg_crosshairEntTime — the cg_time latched when the crosshair
  * entity was last acquired. CG_ScanForCrosshairEntity stores cg_time here
@@ -4102,23 +4026,19 @@ int32_t cg_crosshairEntNum = 0;
  * CG_FadeColor start time so the name fades after the target is lost. Provisional
  * role name; exact CoD symbol unconfirmed.
  */
-int32_t cg_crosshairEntTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048adfc (.data); refs=2 width=4; first=0x3001a6f0.
  * cg_crosshairHealthEntNum — entity whose health is latched for the crosshair-name
  * tint; written at 0x3003cfab, compared to cg_crosshairEntNum at 0x3001a6f0.
  * Example: 3001a6f0   3b 15 fc ad 48 30            CMP EDX,dword ptr [0x3048adfc] | 3003cfab   a3 fc ad 48 30               MOV [0x3048adfc],EAX
  */
-int32_t cg_crosshairHealthEntNum = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae00 (.data); refs=2 width=4; first=0x3001a6f8.
  * cg_crosshairHealth — latched health (0..100) of cg_crosshairHealthEntNum;
  * written at 0x3003cfb6, FILDed and scaled by 0.01 at 0x3001a6f8 for the name tint.
  * Example: 3001a6f8   db 05 00 ae 48 30            FILD dword ptr [0x3048ae00] | 3003cfb6   89 0d 00 ae 48 30            MOV dword ptr [0x3048ae00],ECX
  */
-int32_t cg_crosshairHealth = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae08 (.data); refs=5 width=4; first=0x3001a5e6; owner=pm_jumpforsurface.
  * Example: 3001a5e6   89 0d 08 ae 48 30            MOV dword ptr [0x3048ae08],ECX | 300303e0   8b 35 08 ae 48 30            MOV ESI,dword ptr [0x3048ae08] | 3003042e   89 3d 08 ae 48 30            MOV dword ptr [0x3048ae08],EDI
  */
-cursorHint_t cg_usableHintKind = CURSOR_HINT_OFF; /* 0x3048ae08 */
 /* Source: uo_cgame_mp_x86.dll 0x3048ae0c (.data); refs=4 width=4; first=0x3001a5d4; owner=pm_jumpforsurface.
  * Example: 3001a5d4   89 0d 0c ae 48 30            MOV dword ptr [0x3048ae0c],ECX | 3003040c   8b 15 0c ae 48 30            MOV EDX,dword ptr [0x3048ae0c] | 3003049c   a1 0c ae 48 30               MOV EAX,[0x3048ae0c]
  */
@@ -4126,22 +4046,18 @@ cursorHint_t cg_usableHintKind = CURSOR_HINT_OFF; /* 0x3048ae08 */
  * CG_LatchOverlaySource (0x3001a5d4) and consumed as the fade start by the
  * drawer's CG_FadeColor call (FUN_3001d200 does cg_time - startTime). */
 /* Source: uo_cgame_mp_x86.dll 0x3048ae0c. */
-uint32_t cg_overlayFadeStartTime = (uint32_t)0x00000000u;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae10 (.data); refs=3 width=4; first=0x3001a5da; owner=pm_jumpforsurface.
  * Example: 3001a5da   89 15 10 ae 48 30            MOV dword ptr [0x3048ae10],EDX | 30030406   8b 0d 10 ae 48 30            MOV ECX,dword ptr [0x3048ae10] | 30039543   89 35 10 ae 48 30            MOV dword ptr [0x3048ae10],ESI
  */
 /* CG_FadeColor duration (totalMsec): latched by CG_LatchOverlaySource and
  * consumed as the fade length by the drawer's CG_FadeColor call. */
 /* Source: uo_cgame_mp_x86.dll 0x3048ae10. */
-uint32_t cg_overlayFadeDuration = (uint32_t)0x00000000u;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae14 (.data); refs=3 width=4; first=0x3001a5f2; owner=pm_jumpforsurface.
  * Example: 3001a5f2   89 15 14 ae 48 30            MOV dword ptr [0x3048ae14],EDX | 30030be1   a1 14 ae 48 30               MOV EAX,[0x3048ae14] | 30030c08   db 05 14 ae 48 30            FILD dword ptr [0x3048ae14]
  */
-int32_t cg_usableHintColorByte = 0; /* 0x3048ae14 */
 /* Source: uo_cgame_mp_x86.dll 0x3048ae18 (.data); refs=2 width=4; first=0x3001a5fe; owner=pm_jumpforsurface.
  * Example: 3001a5fe   a3 18 ae 48 30               MOV [0x3048ae18],EAX | 30030973   a1 18 ae 48 30               MOV EAX,[0x3048ae18]
  */
-int32_t cg_usableHintCommandIndex = 0; /* 0x3048ae18 */
 /* Source: uo_cgame_mp_x86.dll 0x3048ae24 (.data) — cg_damageFeedbackTime: cg.time
  * latched at the very top of CG_DamageFeedback (0x30034acc copies cg_time here
  * unconditionally on every hit). Write-only in this DLL (refs=1, no reader here);
@@ -4149,37 +4065,29 @@ int32_t cg_usableHintCommandIndex = 0; /* 0x3048ae18 */
  * a size-match artifact; renamed by proven role.
  * Example: 30034acc   a3 24 ae 48 30               MOV [0x3048ae24],EAX
  */
-uint32_t cg_damageFeedbackTime = (uint32_t)0x00000000u;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae28 (.data); refs=2 width=4; first=0x3001ab00; owner=pm_weapon_finishweaponbreakdown.
  * Example: 3001ab00   a1 28 ae 48 30               MOV EAX,[0x3048ae28] | 3001ab44   c7 05 28 ae 48 30 00 00 00 00 MOV dword ptr [0x3048ae28],0x0
  */
-uint32_t s_voiceMenuStartTime = (uint32_t)0x00000000u;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae38 (.data); refs=1 width=4; first=0x30022666; owner=vectordistance2d.
  * Example: 30022666   a3 38 ae 48 30               MOV [0x3048ae38],EAX
  */
-int32_t cg_lastRequestedWeapon = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae3c (.data); refs=2 width=4; first=0x30022678; owner=vectordistance2d.
  * Example: 30022678   89 0d 3c ae 48 30            MOV dword ptr [0x3048ae3c],ECX | 3003953d   89 35 3c ae 48 30            MOV dword ptr [0x3048ae3c],ESI
  */
-int32_t cg_weaponSelectTimeA = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae40 (.data); refs=1 width=4; first=0x3002267e; owner=vectordistance2d.
  * Example: 3002267e   89 0d 40 ae 48 30            MOV dword ptr [0x3048ae40],ECX
  */
-int32_t cg_weaponSelectTimeB = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae44 (.data); width=4.
  * cg_weaponSelectTime — cg.time (ms) of the last weapon (re)selection; drives the
  * fading weapon-name overlay (see globals.h). Zero-initialized in .data. Written by
  * the weapon-select cluster and read as CG_FadeColor's startMsec. The mechanical
  * owner=vectordistance2d label was only a first-touch artifact. */
-int32_t cg_weaponSelectTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae50 (.data); refs=2 width=4; first=0x300395af; owner=cg_drawsoundoverlay.
  * Example: 300395af   a3 50 ae 48 30               MOV [0x3048ae50],EAX | 3004734f   81 fd 50 ae 48 30            CMP EBP,0x3048ae50
  */
-float cg_weaponSelectSlotScale[8];
 /* Source: uo_cgame_mp_x86.dll 0x3048ae70 (.data); refs=3 width=4; first=0x300395e3; owner=cg_drawsoundoverlay.
  * Example: 300395e3   89 35 70 ae 48 30            MOV dword ptr [0x3048ae70],ESI | 30046bbb   8b 15 70 ae 48 30            MOV EDX,dword ptr [0x3048ae70] | 30046bc9   a3 70 ae 48 30               MOV [0x3048ae70],EAX
  */
-int32_t cg_weaponSelectLastTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048ae74..0x3048aed3 (.data) — cg_damageDirIndicators[8],
  * the active damage-direction HUD arrow ring (serverTime/duration/yaw per slot).
  * Registered by CG_AddDamageDirection (0x30034ac0), drawn by CG_DrawDamageDirectionIndicators
@@ -4188,33 +4096,27 @@ int32_t cg_weaponSelectLastTime = 0;
  * field placeholders (a brass/shell size-guess; this is a 2D indicator ring). See globals.h.
  * Example: 3001aa1c   be 74 ae 48 30               MOV ESI,0x3048ae74 | 30034ca1   89 86 74 ae 48 30            MOV dword ptr [ESI + 0x3048ae74],EAX
  */
-cg_damageDirIndicator_t cg_damageDirIndicators[CG_DAMAGE_DIRECTION_SLOT_COUNT] = {{0, 0, 0.0f}};
 /* Source: uo_cgame_mp_x86.dll 0x3048aed4 (.data) — cg_damageDirLatestServerTime, latched
  * right after the array (writer 0x30034d28). Mechanical owner=cg_ejectweaponbrass rejected.
  * Example: 3001aaeb   81 fe d4 ae 48 30            CMP ESI,0x3048aed4 | 30034d28   89 0d d4 ae 48 30            MOV dword ptr [0x3048aed4],ECX
  */
-int32_t cg_damageDirLatestServerTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048aee8 (.data); refs=2 width=4; first=0x3001a13c; owner=veh_playercollision.
  * Example: 3001a13c   a1 e8 ae 48 30               MOV EAX,[0x3048aee8] | 3001a170   89 35 e8 ae 48 30            MOV dword ptr [0x3048aee8],ESI
  */
-int32_t cg_grenadePulseLastSpecialTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048aeec (.data); refs=1 width=4; first=0x3002e54b.
  * cg_suppressMarksGate: nonzero => CG_ImpactMark returns without making a
  * mark. Exact source name unresolved (single reader, no recovered writer); address
  * suffix retained as the disambiguator. owner=veh_unlinkplayer label rejected.
  * Example: 3002e54b   a1 ec ae 48 30               MOV EAX,[0x3048aeec]
  */
-int32_t cg_suppressMarksGate = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048af0c (.data); refs=3 width=4; first=0x3001a8f0; owner=dynasink (rejected).
  * cg_damageFlashEndTime: consumed by CG_DrawFlashDamage (0x3001a8e0), set to
  * cg_time+500 by the trigger path (0x30034d1e) and zeroed by reset (0x3003959d).
  */
-int32_t cg_damageFlashEndTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048af10 (.data); refs=6 width=4; first=0x3001a90d; owner=dynasink (rejected).
  * cg_damageFlashScale: signed float magnitude of the damage flash; FMUL'd into the
  * fade alpha by CG_DrawFlashDamage (0x3001a90d), written by 0x30034b3c/0x30034c6b.
  */
-float cg_damageFlashScale = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048af14 (.data) — cg_damageFlashX: the horizontal
  * component of the directional damage blend, paired with cg_damageFlashScale (the
  * value/magnitude at 0x3048af10). CG_DamageFeedback (0x30034ac0) writes them as a
@@ -4225,29 +4127,20 @@ float cg_damageFlashScale = 0.0f;
  * classic Quake3/CoD cg.damageX. owner=cg_addpacketentities was a size-match artifact.
  * Example: 30034b30   c7 05 14 af 48 30 00 00 00 00 MOV dword ptr [0x3048af14],0x0 | 30034c3f   d9 1d 14 af 48 30            FSTP float ptr [0x3048af14] | 30034e13   a3 14 af 48 30               MOV [0x3048af14],EAX
  */
-float cg_damageFlashX = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048af18: current bobCycle phase in radians. */
-float cg_bobCyclePhase = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048af1c (.data); refs=7 width=4; first=0x30034dec; owner=cg_addscalefade.
  * Example: 30034dec   89 15 1c af 48 30            MOV dword ptr [0x3048af1c],EDX | 3003fbb0   8b 0d 1c af 48 30            MOV ECX,dword ptr [0x3048af1c] | 3003fd50   8b 35 1c af 48 30            MOV ESI,dword ptr [0x3048af1c]
  */
-float cg_weaponMoveSpeed = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048af20..0x3048b000 (.data).
  * Unreferenced loader-zero view/weapon state in the original cg aggregate. */
-uint8_t cg_unreferencedViewWeaponStateA[224];
 /* Source: uo_cgame_mp_x86.dll 0x3048b000 (.data); refs=1 width=4; first=0x300465f4; owner=bg_playerstatetoentitystate.
  * Example: 300465f4   39 35 00 b0 48 30            CMP dword ptr [0x3048b000],ESI
  */
-qboolean cg_viewWeaponSuppressed = qfalse;
 /* Source: uo_cgame_mp_x86.dll 0x3048b004..0x3048b057 (.bss, zero-initialized).
  * The fxTest command state shared by CG_FxTest (0x3003f430) and the periodic
  * emitter (0x30042110): a 64-byte effect-name string, world origin, last emit
  * time, and interval. Q_strncpyz(..., 63) plus the explicit NUL store at +0x3f
  * proves that 0x3048b004 is char[64], not an effectDef_t payload. */
-char         cg_periodicEffectName[MAX_QPATH]; /* 0x3048b004: name handed to CG_FX_REGISTER_EFFECT */
-vec3_t      cg_periodicEffectOrigin;      /* 0x3048b044: origin handed to CG_PLAY_EFFECT_ORIGIN */
-int32_t     cg_periodicEffectLastTime;    /* 0x3048b050: cg.time at last emit */
-int32_t     cg_periodicEffectInterval;    /* 0x3048b054: min ms between emits (>=1 gate) */
 /* Source: uo_cgame_mp_x86.dll 0x3048b058..0x3048b063 (.data) — cg_viewKickVel,
  * the view-kick angular-velocity vec3 (.x@0x3048b058, .y@0x3048b05c, .z@0x3048b060).
  * CG_UpdateViewKick (0x3003f9f0) iterates it as a 3-float array in lockstep with
@@ -4256,7 +4149,6 @@ int32_t     cg_periodicEffectInterval;    /* 0x3048b054: min ms between emits (>
  * all three; 0x30042592/88/7e also zeroes them as a unit. Consolidates the three
  * uint32_t g_data_cg_addscalefade_3048b05{8,c}/3048b060 placeholders into one vec3.
  */
-vec3_t cg_viewKickVel = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3048b064..0x3048b06f (.data) — cg_viewKickAngles,
  * the view-kick angular-offset vec3 (.x@0x3048b064, .y@0x3048b068, .z@0x3048b06c)
  * added to the view during first-person rendering. CG_UpdateViewKick (0x3003f9f0)
@@ -4266,7 +4158,6 @@ vec3_t cg_viewKickVel = { 0.0f, 0.0f, 0.0f };
  * 0x3004271a). Consolidates the three uint32_t g_data_cg_addscalefade_3048b06{4,8,c}
  * placeholders into one vec3.
  */
-vec3_t cg_viewKickAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3048b070..0x3048b07b (.data) — cg_adsViewErrorAngles,
  * the persistent ADS view-error (idle aim-wander) angular-offset vec3
  * (.x@0x3048b070, .y@0x3048b074, .z@0x3048b078). CG_UpdateAdsViewError (0x30036070)
@@ -4278,18 +4169,14 @@ vec3_t cg_viewKickAngles = { 0.0f, 0.0f, 0.0f };
  * into one vec3; the scriptent_moveaxis / g_moverpush owner labels were mechanical
  * first-touchers and are wrong.
  */
-vec3_t cg_adsViewErrorAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3048b07c..0x3048b0b8 (.data).
  * Five dormant vec3-sized lanes in the contiguous view-kick/ADS state block. */
-vec3_t cg_unreferencedViewVectors[5];
 /* Source: uo_cgame_mp_x86.dll 0x3048b0b8 (.data); refs=4 width=4; first=0x30019379; owner=cg_parseimpacteffects.
  * Example: 30019379   a1 b8 b0 48 30               MOV EAX,[0x3048b0b8] | 3004680f   d9 1d b8 b0 48 30            FSTP float ptr [0x3048b0b8] | 30046838   a3 b8 b0 48 30               MOV [0x3048b0b8],EAX
  */
-float cg_effectProjAnglePitch = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048b0bc (.data); refs=4 width=4; first=0x30019373; owner=cg_parseimpacteffects.
  * Example: 30019373   8b 0d bc b0 48 30            MOV ECX,dword ptr [0x3048b0bc] | 30046822   d9 1d bc b0 48 30            FSTP float ptr [0x3048b0bc] | 3004683d   89 0d bc b0 48 30            MOV dword ptr [0x3048b0bc],ECX
  */
-float cg_effectProjAngleYaw = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048b0c0..0x3048b0cb (.data) — cg_adsViewOffset,
  * the ADS view-relative offset vec3 (.x@0x3048b0c0, .y@0x3048b0c4, .z@0x3048b0c8).
  * CG_CalcAdsViewOffset (0x300451a0) writes it as one vec3 —
@@ -4300,11 +4187,9 @@ float cg_effectProjAngleYaw = 0.0f;
  * fully proved.
  * Example: 300451d9   d9 1d c0 b0 48 30            FSTP float ptr [0x3048b0c0] | 30045206   c7 05 c0 b0 48 30 00 00 00 00 MOV dword ptr [0x3048b0c0],0x0
  */
-vec3_t cg_adsViewOffset = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3048b0cc (.data); refs=3 width=4; first=0x30034e22; owner=cg_addscalefade.
  * Example: 30034e22   a3 cc b0 48 30               MOV [0x3048b0cc],EAX | 30046734   8b 0d cc b0 48 30            MOV ECX,dword ptr [0x3048b0cc] | 30046876   a3 cc b0 48 30               MOV [0x3048b0cc],EAX
  */
-vec3_t cg_weaponPositionBaseAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3048b0d0 (.data); refs=3 width=4; first=0x30034e1d; owner=cg_addscalefade.
  * Example: 30034e1d   a3 d0 b0 48 30               MOV [0x3048b0d0],EAX | 30046747   8b 15 d0 b0 48 30            MOV EDX,dword ptr [0x3048b0d0] | 3004687f   89 0d d0 b0 48 30            MOV dword ptr [0x3048b0d0],ECX
  */
@@ -4318,7 +4203,6 @@ vec3_t cg_weaponPositionBaseAngles = { 0.0f, 0.0f, 0.0f };
  * Example: 30034e2c   a3 dc b0 48 30               MOV [0x3048b0dc],EAX | 30046764   8b 15 dc b0 48 30            MOV EDX,dword ptr [0x3048b0dc] | 3004689b   89 0d dc b0 48 30            MOV dword ptr [0x3048b0dc],ECX
  */
 /* Source: uo_cgame_mp_x86.dll 0x3048b0d8..0x3048b0e3 (.data). */
-vec3_t cg_weaponRecoilAngles = { 0.0f, 0.0f, 0.0f };
 /* cg_specialTagPlacement — supersedes the 13 mechanical
  * g_data_pm_beginreloadloop_3048b0{e4..110} scalars (the "pm_beginreloadloop" owner
  * was only the first toucher, not the subsystem). One fixed entity placement, laid
@@ -4331,18 +4215,12 @@ vec3_t cg_weaponRecoilAngles = { 0.0f, 0.0f, 0.0f };
  * Zero-initialized in the exported image; written as a unit by the tag/effect setup
  * around 0x300460b0.. and read as origin+axis by CG_GetEntityOriginAxis (0x3002adb0)
  * and 0x3001fec0. Provisional name by role. */
-orientation_t cg_specialTagPlacement = {
-    { 0.0f, 0.0f, 0.0f },
-    { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } },
-};
 /* Source: uo_cgame_mp_x86.dll 0x3048b114 (.data); refs=5 width=4; first=0x3001bffb; owner=fire_lead.
  * Example: 3001bffb   a1 14 b1 48 30               MOV EAX,[0x3048b114] | 30034511   8b 0d 14 b1 48 30            MOV ECX,dword ptr [0x3048b114] | 30034d8c   89 15 14 b1 48 30            MOV dword ptr [0x3048b114],EDX
  */
-uint32_t g_cgScreenReadyState = (uint32_t)0x00000000u;
 /* Source: uo_cgame_mp_x86.dll 0x3048b118..0x3048b52c (.data).
  * Loader-zero, unreferenced tail of the cg view/effect aggregate before the
  * separately proven camera-shake array. */
-uint8_t cg_unreferencedViewEffectState[1044];
 /* Source: uo_cgame_mp_x86.dll 0x3048b52c..0x3048b5bc (.data): the fixed 4-slot
  * camera-shake table, cg_shakeSource_t cg_shakeSources[4] (stride 0x24). This
  * supersedes the mechanical per-dword captures the exporter made inside the
@@ -4352,12 +4230,6 @@ uint8_t cg_unreferencedViewEffectState[1044];
  * by CG_AddCameraShake (0x3001b420, REP MOVSD of a 0x24 stack copy), read by
  * CG_EvaluateCameraShakeSource (0x3001b390) and the aggregate walker (0x3001b550).
  */
-cg_shakeSource_t cg_shakeSources[4] = {
-    { 0, 0.0f, 0.0f, 0.0f, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f },
-    { 0, 0.0f, 0.0f, 0.0f, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f },
-    { 0, 0.0f, 0.0f, 0.0f, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f },
-    { 0, 0.0f, 0.0f, 0.0f, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f },
-};
 /* Source: uo_cgame_mp_x86.dll 0x3048b5bc (.data); refs=5 width=4; first=0x3001b4ac.
  * cg_shakeSpinPhase — the random phase offset (radians) applied to the camera-shake
  * sway. NOT part of cg_shakeSources[4] (that array ends at 0x3048b5bc); the array's
@@ -4366,7 +4238,6 @@ cg_shakeSource_t cg_shakeSources[4] = {
  * in [-PI, PI) here on frames with no active shake (0x3001b606) and FADDs it as the
  * phase argument of the three FSIN sway terms (0x3001b6a5/6d0/6fb). Type repaired
  * uint32_t->float; mechanical owner=script_method_scriptbuiltin_viewki rejected. */
-float cg_shakeSpinPhase = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048b5c0 (.data); refs=3 width=4; first=0x3001b5b1.
  * cg_shakeExternAmplitude — an externally-supplied shake amplitude (float) written by
  * 0x3001f901 (MOV [0x3048b5c0],EBP) and merged into the shake maximum by
@@ -4375,21 +4246,17 @@ float cg_shakeSpinPhase = 0.0f;
  * uint32_t->float; mechanical owner=item_slider_paint size-match rejected.
  * Example: 3001b5b1   d9 05 c0 b5 48 30            FLD float ptr [0x3048b5c0] | 3001b5c2   8b 15 c0 b5 48 30            MOV EDX,dword ptr [0x3048b5c0] | 3001f901   89 2d c0 b5 48 30            MOV dword ptr [0x3048b5c0],EBP
  */
-float cg_shakeExternAmplitude = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048b5c4 (.data); refs=1 width=4; first=0x30039597; owner=cg_drawsoundoverlay.
  * Example: 30039597   89 35 c4 b5 48 30            MOV dword ptr [0x3048b5c4],ESI
  */
-int32_t cg_shakeRestartLatch = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048b5c8 (.data); refs=3 width=4; first=0x3001d391.
  * cg_hudSpinBaseTime — the spinning-HUD animation base time (float). Writers FSTP a
  * float here from atof of config string 11 (CG_ConfigString11Modified 0x3001d391 and
  * 0x3002e350); the sole consumer CG_UpdateHudSpinAngle FSUBs it (0x3001d3aa). Type
  * repaired uint32_t->float; mechanical owner=bg_getweapontypename size-match rejected. */
-float cg_hudSpinBaseTime = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048b5cc (.data); refs=5 width=4; first=0x3001d412; owner=pm_beginweaponchange.
  * Example: 3001d412   a1 cc b5 48 30               MOV EAX,[0x3048b5cc] | 3001d68a   d9 1d cc b5 48 30            FSTP float ptr [0x3048b5cc] | 3001d69b   89 2d cc b5 48 30            MOV dword ptr [0x3048b5cc],EBP
  */
-float cg_hudSpinAngle = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048b5d0 (.data); refs=29 width=4; first=0x3001d481.
  * cg_hudSpinVel — angular velocity (float, deg/s) of the spinning HUD element
  * (angle = cg_hudSpinAngle at 0x3048b5cc). All 29 refs live in CG_UpdateHudSpinAngle,
@@ -4397,19 +4264,15 @@ float cg_hudSpinAngle = 0.0f;
  * label pm_beginweaponchange was a size-guess and is rejected.
  * Example: 3001d481   d9 05 d0 b5 48 30            FLD float ptr [0x3048b5d0] | 3001d49a   d9 05 d0 b5 48 30            FLD float ptr [0x3048b5d0] | 3001d514   d8 2d d0 b5 48 30            FSUBR float ptr [0x3048b5d0]
  */
-float cg_hudSpinVel = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048b5d4 (.data); refs=10 width=4; first=0x300168c5; owner=cg_asset_parse.
  * Example: 300168c5   d8 25 d4 b5 48 30            FSUB float ptr [0x3048b5d4] | 30016942   d8 25 d4 b5 48 30            FSUB float ptr [0x3048b5d4] | 30016ee8   d8 25 d4 b5 48 30            FSUB float ptr [0x3048b5d4]
  */
-float cg_compassRefYaw = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048b5d8 (.data); refs=18 width=4; first=0x3001b5a9; owner=item_slider_paint.
  * Example: 3001b5a9   81 ff d8 b5 48 30            CMP EDI,0x3048b5d8 | 3001d7ad   d9 05 d8 b5 48 30            FLD float ptr [0x3048b5d8] | 3001d7c6   d9 05 d8 b5 48 30            FLD float ptr [0x3048b5d8]
  */
-float cg_compassRefVel = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048b5dc (.data); refs=3 width=4; first=0x30016617; owner=cg_asset_parse.
  * Example: 30016617   89 91 dc b5 48 30            MOV dword ptr [ECX + 0x3048b5dc],EDX | 30016693   89 8f dc b5 48 30            MOV dword ptr [EDI + 0x3048b5dc],ECX | 300167f2   be dc b5 48 30               MOV ESI,0x3048b5dc
  */
-cgCompassBlip_t cg_compassFriendlies[CG_COMPASS_BLIP_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3048b5e0 (.data); refs=4 width=4; first=0x30016623; owner=cg_asset_parse.
  * Example: 30016623   89 91 e0 b5 48 30            MOV dword ptr [ECX + 0x3048b5e0],EDX | 3001674e   d9 9f e0 b5 48 30            FSTP float ptr [EDI + 0x3048b5e0] | 3001677b   89 97 e0 b5 48 30            MOV dword ptr [EDI + 0x3048b5e0],EDX
  */
@@ -4425,7 +4288,6 @@ cgCompassBlip_t cg_compassFriendlies[CG_COMPASS_BLIP_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3048badc (.data); refs=3 width=4; first=0x30016cbb; owner=cg_drawcompasstanks.
  * Example: 30016cbb   89 91 dc ba 48 30            MOV dword ptr [ECX + 0x3048badc],EDX | 30016d38   89 87 dc ba 48 30            MOV dword ptr [EDI + 0x3048badc],EAX | 30016e37   bd dc ba 48 30               MOV EBP,0x3048badc
  */
-cgCompassBlip_t cg_compassTanks[CG_COMPASS_BLIP_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3048bae0 (.data); refs=5 width=4; first=0x30016bcd; owner=cg_asset_parse.
  * Example: 30016bcd   81 ff e0 ba 48 30            CMP EDI,0x3048bae0 | 30016cc7   89 91 e0 ba 48 30            MOV dword ptr [ECX + 0x3048bae0],EDX | 30016dbd   d9 9f e0 ba 48 30            FSTP float ptr [EDI + 0x3048bae0]
  */
@@ -4449,7 +4311,6 @@ cgCompassBlip_t cg_compassTanks[CG_COMPASS_BLIP_COUNT] = { 0 };
  * cg_shellShockSwayDuration, which the same writer stores together. The mechanical
  * owner=g_getnonpvsfriendlyinfo label was only the first toucher, not the identity.
  * Example: 3004250d MOV [0x3048bfdc],EBX | 30044c4a MOV ECX,[ECX]. */
-shellshock_t *cg_shellShockSwayParams = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3048bfe0 (.data); refs=5 width=4; first=0x300171ec.
  * RESOLVED (on consume by CG_WeaponSway_ApplyShellShock, 0x30044c10): the
  * shell-shock sway start time (signed ms). The sway scaler forms the eased
@@ -4458,14 +4319,12 @@ shellshock_t *cg_shellShockSwayParams = NULL;
  * CG_DrawActiveFrame (0x300424e0). Mechanical owner=cg_drawcompasstanks was only a
  * first toucher; retyped uint32->int32 for the signed time arithmetic.
  * Example: 30042513 MOV [0x3048bfe0],EAX | 30044c27 MOV ESI,[0x3048bfe0]. */
-int32_t cg_shellShockSwayStartTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048bfe4 (.data); refs=3 width=4; first=0x3001c45d.
  * Active shellshock duration (signed ms). CG_WeaponSway_ApplyShellShock computes
  * startTime + duration - cg.time from this and cg_shellShockSwayStartTime. Written
  * together with the params pointer by CG_DrawActiveFrame (0x300424e0). Mechanical
  * owner=g_getnonpvsfriendlyinfo was only a first toucher; retyped uint32->int32.
  * Example: 3004253b MOV [0x3048bfe4],EDI | 30044c21 MOV EAX,[0x3048bfe4]. */
-int32_t cg_shellShockSwayDuration = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048bfe8 (.data); refs=5; first=0x3003c122.
  * Shellshock looping-sound end time (a signed millisecond timestamp; 0 = no
  * shellshock sound active). Mechanical uint32/owner=player_getmethod repaired: the
@@ -4475,7 +4334,6 @@ int32_t cg_shellShockSwayDuration = 0;
  * sound has finished. CG_EndShellShockSound (0x3003c0f0) tests it for nonzero,
  * and when a sound is active registers "shellshock_end_abort" and plays it, then
  * clears this to 0. Retyped to int32_t for the signed time comparison. */
-int32_t cg_shellshockSoundEndTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048bfec (.data). Shellshock mouse-sensitivity
  * scale. Retyped uint32 -> float: all accesses are x87 (FLD/FSTP/FCOMP), and
  * the writers store the float bit patterns 0x3f800000 (1.0f) and computed floats,
@@ -4485,38 +4343,32 @@ int32_t cg_shellshockSoundEndTime = 0;
  * owner/width) on consume by CG_EndShellShock.
  * Example: 3003c1f5 MOV dword ptr [0x3048bfec],0x3f800000 (=1.0f) | 3003c559 mouse update writes the interpolated sensitivity.
  */
-float cg_shellshockMouseSensitivityScale = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048bff0 (.data). Shellshock screen-blur amount,
  * component X. Retyped uint32 -> float (x87 FLD/FUCOMP accesses). Raw .data value
  * 0. Renamed from mechanical g_data_pm_jump_3048bff0 on consume by CG_EndShellShock.
  * Example: 3003b679 FLD float ptr [0x3048bff0] | 3003c20b MOV dword ptr [0x3048bff0],0x0 (=0.0f).
  */
-float cg_shellshockScreenBlurX = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048bff4 (.data). Shellshock screen-blur amount,
  * component Y. Retyped uint32 -> float (x87 FLD/FUCOMP accesses). Raw .data value
  * 0. Renamed from mechanical g_data_pm_jump_3048bff4 on consume by CG_EndShellShock.
  * Example: 3003b68e FLD float ptr [0x3048bff4] | 3003c215 MOV dword ptr [0x3048bff4],0x0 (=0.0f).
  */
-float cg_shellshockScreenBlurY = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048bff8 (.data); refs=3 width=4; first=0x3003b833.
  * cg_fadeOverlayActive: CG_UpdateFadeOverlay's (0x3003b7e0) "drew overlay last frame"
  * latch; it is the only accessor of all 3 refs. Mechanical owner=itemparse_forecolor
  * label was a size-guess and is corrected here.
  * Example: 3003b833   a1 f8 bf 48 30               MOV EAX,[0x3048bff8] | 3003b858   a3 f8 bf 48 30               MOV [0x3048bff8],EAX | 3003b861   c7 05 f8 bf 48 30 00 00 00 00 MOV dword ptr [0x3048bff8],0x0
  */
-int32_t cg_fadeOverlayActive = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048bffc (.data); width=4.
  * cg_shellShockStartTime: cg.time (ms) captured when "cg_shellshock" triggers.
  * Written by CG_ShellShock_f (0x30017572) and read by scene reader 0x30042160
  * (0x300424fd). The mechanical owner=concatargs label was a wrong size-guess
  * name for 0x300174b0. */
-int32_t cg_shellShockStartTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048c000 (.data); width=4.
  * cg_shellShockDuration: shellshock duration (ms) for "cg_shellshock". Written
  * by CG_ShellShock_f (0x30017577) and read by scene reader 0x30042160
  * (0x30042502). The mechanical owner=concatargs label was a wrong size-guess
  * name for 0x300174b0. */
-int32_t cg_shellShockDuration = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3048c004 (.data) — cg_adsViewErrorLatched, the
  * one-shot latch guarding the ADS view-error step in CG_UpdateAdsViewError
  * (0x30036070): the step runs only while this is 0, then sets it to 1 (0x30036110);
@@ -4525,7 +4377,6 @@ int32_t cg_shellShockDuration = 0;
  * [0x3048c004],EDX with EDX==0). Modeled int32 boolean; the owner=cg_addscalefade
  * label was the first toucher, not the identity.
  */
-int32_t cg_adsViewErrorLatched = 0;
 /* 0x3048c030 RESOLVED: cg_crosshairNoGun_vmCvar.string (+0x10 of the vmCvar at
  * 0x3048c020); no separate object exists at this address. See globals.h. */
 
