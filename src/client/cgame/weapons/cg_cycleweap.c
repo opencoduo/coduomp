@@ -18,6 +18,9 @@
 // CG_SelectFirstWeaponInSlot, and the corresponding next/previous-weapon command
 // callers establish the same circular selection role, resolving the source name.
 
+/* Selection value written when the selected weapon is no longer held. */
+#define CG_CYCLE_CLEARED_WEAPON_SELECT 0
+
 void CG_CycleWeap(int32_t forward, int32_t requireAmmo)
 {
     playerState_t *ps;
@@ -186,6 +189,8 @@ reconcile_current_weapon:
         return;
     }
 
-    trap_Cvar_Set("cg_weaponSelect", va("%i", currentWeapon));
+    /* 0x30047b9c PUSH 0 / PUSH "%i" / CALL va: the unheld selection is cleared
+     * to "0", not re-written with its own index. */
+    trap_Cvar_Set("cg_weaponSelect", va("%i", CG_CYCLE_CLEARED_WEAPON_SELECT));
     trap_Cvar_Set("cl_run", "1");
 }
