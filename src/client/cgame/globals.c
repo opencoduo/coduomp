@@ -2933,7 +2933,7 @@ const char *cg_stepProneSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044c138 (.data); refs=1 width=imm; first=0x3002b859; owner=playercmd_finishplayerdamage.
  * Example: 3002b859   bf 38 c1 44 30               MOV EDI,0x3044c138
  */
-const char *cg_shellFlashSurfaceSounds[23];
+const char *cg_landSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044c194 (.data); refs=2 width=4; first=0x300232fa; owner=cmd_callvote_f.
  * Example: 300232fa   8b 04 b5 94 c1 44 30         MOV EAX,dword ptr [ESI*0x4 + 0x3044c194] | 3002b86a   89 35 94 c1 44 30            MOV dword ptr [0x3044c194],ESI
  */

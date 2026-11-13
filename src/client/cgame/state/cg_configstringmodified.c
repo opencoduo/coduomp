@@ -65,7 +65,10 @@ void CG_ConfigStringModified(void)
         cg_voteNo = coduo_crt_atoi(value);
         cg_voteModified = qtrue;
     } else if (index == CS_VOTE_STRING) {
-        const char *display = CG_TranslateMessage(value, "vote string");
+        /* Localized directly through CG_SE_LOCALIZE_MESSAGE (push 0x39 at 0x3003908e), with
+         * no CG_TranslateMessage key-binding substitution. */
+        const char *display = (const char *)(intptr_t)cgame_syscall(
+            CG_SE_LOCALIZE_MESSAGE, (intptr_t)value, (intptr_t)"vote string");
         strncpy(cg_voteString, display, CG_HUD_TEXT_CAPACITY);
         cg_voteString[CG_HUD_TEXT_CAPACITY] = '\0';
     } else if (index == CS_TIMEOUT_TIME) {
@@ -77,7 +80,10 @@ void CG_ConfigStringModified(void)
         }
         cg_timeoutActive = 0;
     } else if (index == CS_TIMEOUT_STRING) {
-        const char *display = CG_TranslateMessage(value, "timeout string");
+        /* Localized directly through CG_SE_LOCALIZE_MESSAGE (push 0x39 at 0x30039126), with
+         * no CG_TranslateMessage key-binding substitution. */
+        const char *display = (const char *)(intptr_t)cgame_syscall(
+            CG_SE_LOCALIZE_MESSAGE, (intptr_t)value, (intptr_t)"timeout string");
         strncpy(cg_timeoutString, display, CG_HUD_TEXT_CAPACITY);
         cg_timeoutString[CG_HUD_TEXT_CAPACITY] = '\0';
     } else if (index == CS_FOGVARS) {

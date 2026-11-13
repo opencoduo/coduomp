@@ -2824,7 +2824,7 @@ extern const char *cg_stepWalkSurfaceSounds[23];
 /* 0x3044c0dc .data refs=1 width=imm first=0x3002b84a owner=playercmd_finishplayerdamage */
 extern const char *cg_stepProneSurfaceSounds[23];
 /* 0x3044c138 .data refs=1 width=imm first=0x3002b859 owner=playercmd_finishplayerdamage */
-extern const char *cg_shellFlashSurfaceSounds[23];
+extern const char *cg_landSurfaceSounds[23];
 /* 0x3044c194 .data refs=2 width=4 first=0x300232fa owner=cmd_callvote_f */
 extern const char *cg_shellFlashSounds[8];
 /* 0x3044c1b4 .data refs=2 width=4 first=0x3002332f owner=cmd_callvote_f */

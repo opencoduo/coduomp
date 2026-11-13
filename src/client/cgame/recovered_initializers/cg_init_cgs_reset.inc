@@ -99,7 +99,7 @@ CG_ZERO_ORIGINAL_OBJECT(cg_stepSprintSurfaceSounds);
 CG_ZERO_ORIGINAL_OBJECT(cg_stepRunSurfaceSounds);
 CG_ZERO_ORIGINAL_OBJECT(cg_stepWalkSurfaceSounds);
 CG_ZERO_ORIGINAL_OBJECT(cg_stepProneSurfaceSounds);
-CG_ZERO_ORIGINAL_OBJECT(cg_shellFlashSurfaceSounds);
+CG_ZERO_ORIGINAL_OBJECT(cg_landSurfaceSounds);
 CG_ZERO_ORIGINAL_OBJECT(cg_shellFlashSounds);
 CG_ZERO_ORIGINAL_OBJECT(cg_barrageIncomingSounds);
 CG_ZERO_ORIGINAL_OBJECT(cg_soundGearRattleSprint);

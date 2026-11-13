@@ -66,7 +66,8 @@ void CG_RegisterSounds(void)
     CG_RegisterSurfaceTypeSounds(cg_stepRunSurfaceSounds, "step_run");
     CG_RegisterSurfaceTypeSounds(cg_stepWalkSurfaceSounds, "step_walk");
     CG_RegisterSurfaceTypeSounds(cg_stepProneSurfaceSounds, "step_prone");
-    CG_RegisterSurfaceTypeSounds(cg_shellFlashSurfaceSounds, "shell_flash");
+    /* 0x3002b859..0x3002b863: MOV EDI,0x3044c138; MOV EBX,0x30078604 ("land"). */
+    CG_RegisterSurfaceTypeSounds(cg_landSurfaceSounds, "land");
 
     cg_shellFlashSounds[0] = 0;
     cg_shellFlashSounds[2] = 0;
