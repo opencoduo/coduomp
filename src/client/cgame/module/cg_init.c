@@ -30,7 +30,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
              int32_t clientNum)
 {
     cgame_compat_reset_recovered_cgs_state();
-    cgame_compat_reset_recovered_cg_state();
+    memset(&cg, 0, sizeof(cg));
     memset(cg_entities, 0, sizeof(cg_entities));
     memset(cg_weaponInfos, 0, sizeof(cg_weaponInfos));
     memset(cg_items, 0, sizeof(cg_items));

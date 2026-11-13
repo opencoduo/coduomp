@@ -163,7 +163,7 @@ void cgame_compat_demo_rewind(int32_t processedSnapshotNum,
     if (cg_flameChunks != NULL)
         CG_ClearFlameChunks();
 
-    cgame_compat_reset_recovered_cg_state();
+    memset(&cg, 0, sizeof(cg));
     memset(cg_entities, 0, sizeof(cg_entities));
     memset(cg_lagometerFrameSamples, 0,
            sizeof(cg_lagometerFrameSamples));
