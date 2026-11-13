@@ -33,39 +33,42 @@ void CG_RailTrail(int32_t colorIndex, const vec3_t start, const vec3_t end)
 {
     vec3_t color = {0.0f, 1.0f, 1.0f};
 
+    /* 0x300431a9/0x300431ab: ESI = start (+0x18), EBX = end (+0x5c). Each single
+     * segment passes EBX as the segment origin and EDI = ESI as its oldorigin,
+     * so the core runs from end back to start. */
     switch (colorIndex) {
     case RAIL_COLOR_CYAN:
-        CG_SpawnRailCoreSegment(start, end, color);
+        CG_SpawnRailCoreSegment(end, start, color);
         return;
     case RAIL_COLOR_RED:
         color[0] = 1.0f;
         color[1] = 0.0f;
         color[2] = 0.0f;
-        CG_SpawnRailCoreSegment(start, end, color);
+        CG_SpawnRailCoreSegment(end, start, color);
         return;
     case RAIL_COLOR_YELLOW:
         color[0] = 1.0f;
         color[1] = 1.0f;
         color[2] = 0.0f;
-        CG_SpawnRailCoreSegment(start, end, color);
+        CG_SpawnRailCoreSegment(end, start, color);
         return;
     case RAIL_COLOR_GREEN:
         color[0] = 0.0f;
         color[1] = 1.0f;
         color[2] = 0.0f;
-        CG_SpawnRailCoreSegment(start, end, color);
+        CG_SpawnRailCoreSegment(end, start, color);
         return;
     case RAIL_COLOR_BLUE:
         color[0] = 0.0f;
         color[1] = 0.0f;
         color[2] = 1.0f;
-        CG_SpawnRailCoreSegment(start, end, color);
+        CG_SpawnRailCoreSegment(end, start, color);
         return;
     case RAIL_COLOR_WHITE:
         color[0] = 1.0f;
         color[1] = 1.0f;
         color[2] = 1.0f;
-        CG_SpawnRailCoreSegment(start, end, color);
+        CG_SpawnRailCoreSegment(end, start, color);
         return;
     default:
         break;
@@ -80,8 +83,9 @@ void CG_RailTrail(int32_t colorIndex, const vec3_t start, const vec3_t end)
         int32_t i;
 
         PerpendicularVector(radial, axis);
-        /* 0x30043321..0x3004332b: ECX=radial, EAX=axis, EDX=tangent. */
-        CrossProduct(radial, axis, tangent);
+        /* 0x30043321..0x3004332b: ECX = EDI = axis (first operand), EAX =
+         * radial, EDX = tangent. */
+        CrossProduct(axis, radial, tangent);
 
         for (i = 0; i < RAIL_RING_SEGMENTS; ++i) {
             /* i enters via a bare FILD fed straight into FMUL 0.3926991f (0x30043350
@@ -123,14 +127,43 @@ void CG_RailTrail(int32_t colorIndex, const vec3_t start, const vec3_t end)
 
     /* The 12 calls at 0x30043493..0x300435a4 are the twelve edges of the box
      * spanned by the two opposite corners. The ordering below matches the machine:
-     * three edges from end, three from start, then the six remaining connectors. */
+     * three edges from end, three from start, then the six remaining connectors.
+     * 0x30043425..0x3004348f and 0x300434b4..0x30043503: the corners are not
+     * copied from start/end. The float span end - start is stored first; the
+     * end-side corners take end - span and the start-side corners take
+     * start + span for the coordinate they move, each rounded by a float store. */
     {
-        vec3_t c001 = {start[0], start[1], end[2]};
-        vec3_t c010 = {start[0], end[1], start[2]};
-        vec3_t c011 = {start[0], end[1], end[2]};
-        vec3_t c100 = {end[0], start[1], start[2]};
-        vec3_t c101 = {end[0], start[1], end[2]};
-        vec3_t c110 = {end[0], end[1], start[2]};
+        vec3_t span;
+        vec3_t c001;
+        vec3_t c010;
+        vec3_t c011;
+        vec3_t c100;
+        vec3_t c101;
+        vec3_t c110;
+
+        span[0] = end[0] - start[0];
+        span[1] = end[1] - start[1];
+        span[2] = end[2] - start[2];
+
+        c011[0] = end[0] - span[0];
+        c011[1] = end[1];
+        c011[2] = end[2];
+        c101[0] = end[0];
+        c101[1] = end[1] - span[1];
+        c101[2] = end[2];
+        c110[0] = end[0];
+        c110[1] = end[1];
+        c110[2] = end[2] - span[2];
+
+        c100[0] = start[0] + span[0];
+        c100[1] = start[1];
+        c100[2] = start[2];
+        c010[0] = start[0];
+        c010[1] = start[1] + span[1];
+        c010[2] = start[2];
+        c001[0] = start[0];
+        c001[1] = start[1];
+        c001[2] = start[2] + span[2];
 
         CG_SpawnRailCoreSegment(end, c011, color);
         CG_SpawnRailCoreSegment(end, c101, color);
