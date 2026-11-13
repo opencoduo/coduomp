@@ -14,7 +14,7 @@
 // The mcode header's assigned name `ClearBounds` is a size-matched broad-corpus
 // label (win 0x49 == some PPC symbol 0x49) and is REJECTED: there is no bounds
 // vector, no min/max init here — the body reads a time discriminant and does
-// signed timer arithmetic against cg_time.
+// signed timer arithmetic against cg.time.
 //
 // Dispatch (machine-code proof):
 //   MOV EAX,[ECX]; ADD EAX,-4; CMP EAX,5; JA default    // type-4, gate 0..5
@@ -26,12 +26,12 @@
 //   [2] type 6 -> 0x300297a1   [3] type 7 -> 0x300297ba
 //   [4] type 8 -> 0x300297af   [5] type 9 -> 0x300297ba
 //
-// Per-case arithmetic (all signed int32; 0x304831b0 == cg_time):
-//   type 4  HE_TYPE_TIMER            EAX = elem->timerValue - cg_time + 0x3e7 (999)
-//   type 6  HE_TYPE_TENTHS_TIMER     EAX = elem->timerValue - cg_time + 0x63  (99)
-//   type 8  HE_TYPE_CLOCK            EAX = elem->timerValue - cg_time
+// Per-case arithmetic (all signed int32; 0x304831b0 == cg.time):
+//   type 4  HE_TYPE_TIMER            EAX = elem->timerValue - cg.time + 0x3e7 (999)
+//   type 6  HE_TYPE_TENTHS_TIMER     EAX = elem->timerValue - cg.time + 0x63  (99)
+//   type 8  HE_TYPE_CLOCK            EAX = elem->timerValue - cg.time
 //   type 5  HE_TYPE_TIMER_UP
-//   type 7  HE_TYPE_TENTHS_TIMER_UP    EAX = cg_time - elem->timerValue
+//   type 7  HE_TYPE_TENTHS_TIMER_UP    EAX = cg.time - elem->timerValue
 //   type 9  HE_TYPE_CLOCK_UP
 // Countdown types (4/6/8) measure time remaining until timerValue; the +999/+99
 // biases round the ms up to the next whole second / tenth-second before the
@@ -55,18 +55,18 @@ int32_t CG_GetHudElemTime(const struct hudElem_s *elem)
 
     switch (elem->type) {
     case HE_TYPE_TIMER:        /* 4: countdown, whole-second rounding */
-        value = (uint32_t)elem->timerValue - (uint32_t)cg_time + 999u;
+        value = (uint32_t)elem->timerValue - (uint32_t)cg.time + 999u;
         break;
     case HE_TYPE_TENTHS_TIMER: /* 6: countdown, tenth-second rounding */
-        value = (uint32_t)elem->timerValue - (uint32_t)cg_time + 99u;
+        value = (uint32_t)elem->timerValue - (uint32_t)cg.time + 99u;
         break;
     case HE_TYPE_CLOCK:        /* 8: countdown, no rounding */
-        value = (uint32_t)elem->timerValue - (uint32_t)cg_time;
+        value = (uint32_t)elem->timerValue - (uint32_t)cg.time;
         break;
     case HE_TYPE_TIMER_UP:        /* 5 */
     case HE_TYPE_TENTHS_TIMER_UP: /* 7 */
     case HE_TYPE_CLOCK_UP:        /* 9: count-up, elapsed since timerValue */
-        value = (uint32_t)cg_time - (uint32_t)elem->timerValue;
+        value = (uint32_t)cg.time - (uint32_t)elem->timerValue;
         break;
     default:                   /* type < 4 or > 9: JA default */
         return 0;

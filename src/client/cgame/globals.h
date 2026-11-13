@@ -220,7 +220,7 @@ extern bg_indexed_string_t bgAnimConditionTypeStrings[];   /* 0x30082328 */
 extern bg_indexed_string_t bgAnimParseSectionStrings[];    /* 0x300823f8 */
 
 /* The ABI-gap audit proved pm->ps is playerState_t: cg_pmove assigns
- * it &cg_predictedPlayerState, and the movement accesses match the shared server
+ * it &cg.predictedPlayerState, and the movement accesses match the shared server
  * layout. The former duplicate bg_animContext_t was removed. Animation condition
  * words at +0x468 belong instead to clientInfo_t. */
 
@@ -674,8 +674,8 @@ extern const float cg_turretTagShaderParams[8];
  * table base 0x30071a64 minus 4): element 0 is the standalone dword just before
  * the table (value 4), elements 1..4 alias
  * cg_scoreboardColumns[0..3].nextColumnValueSelect
- * (values 0,1,2,3). Selector 1 -> draw cg_scoreboardTeamScores[team]; 3 -> draw
- * cg_scoreboardTeamPings[team]; any other value (0/2/4) skips that column body.
+ * (values 0,1,2,3). Selector 1 -> draw cg.teamScores[team]; 3 -> draw
+ * cg.scoreboardTeamPings[team]; any other value (0/2/4) skips that column body.
  * Modeled as a distinct const int lane starting at 0x30071a60 (the address the
  * machine indexes); supersedes the mechanical single-dword split. The mechanical
  * owner=g_damage / "different table" note was a wrong size-match guess.
@@ -1199,7 +1199,7 @@ extern const float markFadeFraction;
 extern const float HALF_RAD_TO_DEG;
 /* 0x3007c094 .rdata refs=1 width=4 first=0x30040300.
  * = 2*pi/2500 (0.0025132743): angular rate for a 2500 ms sine pulse cycle
- * (sin(cg_time * 2*pi/2500)). Read only via FMUL (float); retyped from the
+ * (sin(cg.time * 2*pi/2500)). Read only via FMUL (float); retyped from the
  * mislabeled uint32_t placeholder. owner=veh_setupcollmap was a wrong size-match. */
 extern const float PULSE_RATE_2500MS;
 /* 0x30082050 .data refs=5 first=0x3000122c (mechanical owner is wrong). The name
@@ -1258,7 +1258,7 @@ extern vec3_t cg_flameTraceMaxs;
 /* 0x300851dc .data refs=1 — cg_flameSpriteViewRelative: a boolean flag that selects
  * how CG_AddFlameSpriteToScene (0x300268e0) builds the flame billboard basis. When
  * nonzero (0x30026db1: TEST EAX,EAX / JZ) the function derives view angles from
- * cg_refdef.viewaxis[0] (vectoangles) and computes cg_flameSpriteRight/Up via
+ * cg.refdef.viewaxis[0] (vectoangles) and computes cg_flameSpriteRight/Up via
  * AngleVectors; when zero it copies the precomputed cg_flameSpriteSrcRight
  * (0x300a84f8) / cg_flameSpriteSrcUp (0x300ab744) instead. ROLE-RESOLVED from that sole
  * consumer; exact source name provisional (writer not reconstructed). */
@@ -1312,7 +1312,7 @@ extern int32_t cg_statBarLastClientNum;
 /* 0x30085db8 .data refs=2 — cg_scoreboardLeadTeam: which of the two scored teams
  * (TEAM_AXIS=1 / TEAM_ALLIES=2) currently leads, used as the tiebreak/latch that
  * decides which team's scoreboard section draws first. CG_DrawScoreboardBody
- * (0x30037b50) compares cg_scoreboardTeamScores[AXIS] vs [ALLIES]: the higher
+ * (0x30037b50) compares cg.teamScores[AXIS] vs [ALLIES]: the higher
  * aggregate leads and is stored here (0x30037c43 MOV [0x30085db8],EBX); on an exact
  * tie the previously latched value is reused (0x30037c29 MOV EBX,[0x30085db8]), so
  * the lead order is stable across frames. Both refs are in that one function.
@@ -1565,7 +1565,7 @@ extern vec4_t cg_fadeColor;
  * which builds its own basis via AngleVectors). ROLE-RESOLVED (name provisional) from
  * CG_AddFlameSpriteToScene (0x300268e0): on the non-first-person path it copies this
  * triple into cg_flameSpriteRight (0x300ab72c) verbatim (0x30026de7..0x30026df8).
- * WRITER PROVEN: CG_FireFlameChunks (0x30027da4..0x30027dd3) copies cg_refdef.viewaxis[1]
+ * WRITER PROVEN: CG_FireFlameChunks (0x30027da4..0x30027dd3) copies cg.refdef.viewaxis[1]
  * (viewaxis[1]) into these three dwords once per frame. Retyped from three mechanical
  * uint32_t placeholders to the one vec3 they form. */
 extern vec3_t cg_flameSpriteSrcRight;
@@ -1643,14 +1643,14 @@ _Static_assert(sizeof(cgFlameSoundLoop_t) == 12, "cgFlameSoundLoop_t must be 12 
 #endif
 extern cgFlameSoundLoop_t cg_flameSoundLoops[1024];
 /* 0x300ab718 .data refs=46 — cg_flameTime: the flame subsystem per-frame time base
- * (round(2*cg_time)); written by the flame update path and read via FILD as an int
+ * (round(2*cg.time)); written by the flame update path and read via FILD as an int
  * timestamp. RESOLVED from CG_AddFlameChunks (0x300272b0) / CG_UpdateFlamethrowerSounds
  * (0x30029210); the mechanical owner=cg_playadsanim was a first-toucher label. */
 extern uint32_t cg_flameTime;
 /* 0x300ab71c/720/724 .data — cg_flameSpriteUp: the flame billboard's UP basis vec3.
  * ROLE-RESOLVED (name provisional) from CG_AddFlameSpriteToScene (0x300268e0): when
  * the flame is the local player's first-person flame the function derives view angles
- * from cg_refdef.viewaxis[0] via vectoangles and fills this triple as AngleVectors'
+ * from cg.refdef.viewaxis[0] via vectoangles and fills this triple as AngleVectors'
  * `up` output (0x30026dcc..0x30026de5, dst passed in EBX=0x300ab71c); otherwise it is
  * copied from cg_flameSpriteSrcUp (0x300ab744). The sprite quad corners are then built
  * as center +/- radius*cg_flameSpriteRight +/- radius*cg_flameSpriteUp. Three .data
@@ -1680,7 +1680,7 @@ extern vec3_t cg_flameLastSpritePos;
  * CG_AddFlameSpriteToScene (0x300268e0): on the non-first-person path it copies this
  * triple into cg_flameSpriteUp (0x300ab71c) verbatim (0x30026dfe..0x30026e25); the pair
  * with cg_flameSpriteSrcRight (0x300a84f8) spans the world-flame sprite quad. WRITER
- * PROVEN: CG_FireFlameChunks (0x30027dc2..0x30027dea) copies cg_refdef.viewaxis[2]
+ * PROVEN: CG_FireFlameChunks (0x30027dc2..0x30027dea) copies cg.refdef.viewaxis[2]
  * (viewaxis[2]) into these three dwords once per frame. Retyped from three mechanical
  * uint32_t placeholders to the one vec3 they form. */
 extern vec3_t cg_flameSpriteSrcUp;
@@ -1802,14 +1802,14 @@ extern pmove_t cg_pmove;
 extern char cg_translatedVoiceChatString[MAX_STRING_CHARS];
 /* 0x300dc9b0 .data — cg_vehicleViewSwayPrevTime: the cg.time (ms) latched by
  * CG_CalcVehicleViewPos (0x30040810) at the moment it recorded the smoothed
- * vehicle-view aim origin below. Written once (0x3004109d, MOV [..],cg_time) and
+ * vehicle-view aim origin below. Written once (0x3004109d, MOV [..],cg.time) and
  * read back as the previous-frame time. Sole owner is CG_CalcVehicleViewPos (the
  * mechanical owner=pm_slidemove is this function's rejected size-guess name). */
 extern int32_t cg_vehicleViewSwayPrevTime;
 /* 0x300dc9b4/b8/bc .data — cg_vehicleViewSwayOrigin: the smoothed vehicle-view aim
  * origin vec3 stored by CG_CalcVehicleViewPos so the next frame can lerp the camera
  * toward it. The seat-view arm (0x30041097..0x300411af) writes the three floats and
- * later reloads them (0x300411a4..) into cg_refdef.vieworg. Three consecutive floats;
+ * later reloads them (0x300411a4..) into cg.refdef.vieworg. Three consecutive floats;
  * consolidated from the mechanical per-dword pm_slidemove symbols. */
 extern vec3_t cg_vehicleViewSwayOrigin;
 /* Mounted-turret BG weapon-sway output buffers. */
@@ -1817,7 +1817,7 @@ extern vec3_t cg_turretViewSwayPreviousViewAngles;
 extern vec2_t cg_turretViewSwayViewAngles;
 /* 0x300dc9d8 .data refs=4 width=4.
  * RESOLVED on consume by CG_CalcFov (0x3003ffc0): cg_fovLastVehiclePosition — the
- * last predicted vehiclePosition (cg_predictedPlayerState.vehiclePosition, values 1/2/3)
+ * last predicted vehiclePosition (cg.predictedPlayerState.vehiclePosition, values 1/2/3)
  * for which the vehicle/turret FOV path ran. CG_CalcFov compares the current
  * position against it to detect a change (0x300400f6), stores the new position
  * (0x30040120), and resets it to 0 when the vehicle-view flag is clear (0x3004023a).
@@ -2114,11 +2114,11 @@ _Static_assert(offsetof(cgWeaponInfo_t, flashRenderFx) == 0x168, "cgWeaponInfo f
 _Static_assert(offsetof(cgWeaponInfo_t, projectileTrailEffect) == 0x17c, "cgWeaponInfo projectileTrailEffect offset");
 _Static_assert(sizeof(cgWeaponInfo_t) == 0x1c4, "cgWeaponInfo stride");
 #endif
-/* 0x30134ce0 .data — cg_hudSpinPrevTime: the cg_time (ms) at which the spinning
+/* 0x30134ce0 .data — cg_hudSpinPrevTime: the cg.time (ms) at which the spinning
  * HUD element's angle was last advanced. Exclusively owned by CG_UpdateHudSpinAngle
- * (0x3001d3a0): read as prevTime, used to derive the elapsed-time delta (cg_time -
- * prevTime), and rewritten to cg_time each advance (and in the reset path when
- * prevTime > cg_time). All 3 refs are inside that one function; the mechanical
+ * (0x3001d3a0): read as prevTime, used to derive the elapsed-time delta (cg.time -
+ * prevTime), and rewritten to cg.time each advance (and in the reset path when
+ * prevTime > cg.time). All 3 refs are inside that one function; the mechanical
  * owner=pm_beginweaponchange label is a size-guess for the writer and is rejected.
  * Signed ms time (compared with signed JG / signed SUB). Exact CoD field name
  * unproven; role-derived. */
@@ -2322,7 +2322,7 @@ extern cgWeaponInfo_t cg_weaponInfos[MAX_WEAPONS];
 /* 0x30421d2c is cg_scoreboardScrollStep_vmCvar.integer. The cvar table registers
  * `cg_scoreboardScrollStep` with default "3" and the engine updates this mirror
  * through the registered vmCvar_t pointer. CG_KeyEvent/CG_NextWeapon_f subtract
- * it from cg_scoreboardScrollPos; CG_ScrollScoreboardDown/CG_PrevWeapon_f add it.
+ * it from cg.scoreboardScrollPos; CG_ScrollScoreboardDown/CG_PrevWeapon_f add it.
  * Those direct consumers interpret the dword result as signed for clamping. */
 /* 0x30421e4c .data refs=1 width=4 first=0x30048536 owner=veh_updateclient */
 /* 0x30422054..0x3042205b are g_uiDCInstance.cursorx/cursory; vmMain command 8
@@ -2682,7 +2682,7 @@ extern qhandle_t cgs_media_backTileShader;
 /* 0x3044b6f4 .data refs=2 width=4 first=0x3002c492 resolved: cgs.media handle for "hudNoWeaponIcon" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
 extern qhandle_t cgs_media_hudNoWeaponIcon;
 /* 0x3044b6f8..0x3044b720: cgs media handles indexed directly by
- * cg_usableHintKind. Slots 0 and 1 remain zero because those selector values draw
+ * cg.usableHintKind. Slots 0 and 1 remain zero because those selector values draw
  * nothing; slots 2..9 are registered consecutively by CG_RegisterGraphics. */
 /* playerState.serverCursorHint value 10 (== CURSOR_HINT_WEAPON_BASE) — the friendly-player
  * hint. CG_DrawCursorhint (0x300303a0) maps hint kinds >= 10 to
@@ -2998,7 +2998,7 @@ enum { CG_COMPLAINT_STATUS_COUNT = 4 };
 
 /* 0x3044caf4/0x3044caf8: complaint-vote HUD state. CG_ServerCommand stores the
  * complained-about client number or one of four negative status codes and an
- * absolute display deadline (cg_time+20000, shortened to +10000 for a status
+ * absolute display deadline (cg.time+20000, shortened to +10000 for a status
  * code); CG_MapRestart resets them to -1/0. */
 extern int32_t cg_complaintClientNum;
 extern int32_t cg_complaintEndTime;
@@ -3136,7 +3136,7 @@ extern vmCvar_t pmove_msec;
 
 /* cg_hudCompassSpringyPointers_vmCvar.integer (0x30450fec, .data) — first-run flag for the compass
  * reference-yaw spring in CG_UpdateCompassOrientation (0x3001d6d0). While 0, the updater snaps
- * cg_compassRefYaw straight to cg_refdefViewAngles[1] and returns without integrating; the
+ * cg.compassRefYaw straight to cg.refdefViewAngles[1] and returns without integrating; the
  * flag is otherwise only tested (never written) inside this function, so the initial
  * snap depends on an external one-shot set. refs=1, owned solely by 0x3001d6d0; the
  * owner=veh_checkpushclients label is a wrong size-match name. Boolean int. */
@@ -3188,7 +3188,7 @@ extern vmCvar_t pmove_msec;
 
 /* 0x30451e8c .data refs=2 width=4 first=0x3001c401: cg_skybox_vmCvar.integer — the boolean
  * that decides whether the 3D scene submitted to trap_R_RenderScene draws the world
- * model. CG_DrawActive (0x3001c3fb) always OR's bit 0x10 into cg_refdef.rdflags, then if
+ * model. CG_DrawActive (0x3001c3fb) always OR's bit 0x10 into cg.refdef.rdflags, then if
  * this flag is zero clears it again (AND ~0x10) — i.e. bit 0x10 stays set (no-world /
  * RDF_NOWORLDMODEL-style) only when cg_skybox_vmCvar.integer == 0. Also read by the refdef
  * builder at 0x30041e53. Role name from the proven consumer; owner=g_getnonpvsfriendlyinfo
@@ -3240,7 +3240,7 @@ extern vmCvar_t cg_objectiveText;
 /* 0x30452c08 .data — cg_centertime_vmCvar.value: the center-print fade-out
  * duration in SECONDS. CG_DrawCenterString (0x300191b0) reads it as a float
  * (FLD @0x300191d4), multiplies by 1000.0 and rounds (Q_rint) to milliseconds,
- * then passes that as the totalMsec argument to CG_FadeColor(cg_centerPrintTime,
+ * then passes that as the totalMsec argument to CG_FadeColor(cg.centerPrintTime,
  * ms). The mechanical export mislabeled this as uint32_t and tagged it to a
  * size-guessed owner; it is a float. Only reader is CG_DrawCenterString; its
  * writer (a cvar-float snapshot) is not among reconstructed code, so the exact
@@ -3387,7 +3387,7 @@ extern itemInfo_t cg_items[256];
 /* 0x304570a8 .data refs=2 width=4 first=0x3001c35f: cg_stereoSeparation_vmCvar.value — the eye
  * separation distance (float) applied when rendering a stereo frame. CG_DrawActive
  * (0x3001c120) FLDs it and multiplies by -0.5f (left eye, stereoView 1) or +0.5f
- * (right eye, stereoView 2) to offset cg_refdef.vieworg along viewaxis[1] before
+ * (right eye, stereoView 2) to offset cg.refdef.vieworg along viewaxis[1] before
  * trap_R_RenderScene. Retyped float role name; owner=g_getnonpvsfriendlyinfo was a
  * wrong size-match (first toucher is CG_DrawActive). */
 
@@ -3485,13 +3485,13 @@ extern vmCvar_t cl_serverloadgametype;
  * written in .text. Mechanical owner label "cmd_fogswitch_f" is a
  * size-match/first-toucher artifact and is wrong. Exact cvar name unresolved. */
 
-/* MAX_PREDICTED_EVENTS: size of the cg_predictedEvents[] ring; the index mask
+/* MAX_PREDICTED_EVENTS: size of the cg.predictableEvents[] ring; the index mask
  * (i & 0xf) at 0x30034f23 proves 16 entries (a power of two). */
 enum { MAX_PREDICTED_EVENTS = 16 };
-/* 0x304879e8..0x30487a77 (.data): cg_dobjPreviewOrientations[3] — three per-frame
- * scratch orientations that CG_AddPacketEntities (0x3001f810) rebuilds from cg_time
+/* 0x304879e8..0x30487a77 (.data): cg.dobjPreviewOrientations[3] — three per-frame
+ * scratch orientations that CG_AddPacketEntities (0x3001f810) rebuilds from cg.time
  * before the entity add pass. Each 48-byte record holds an Euler `angles` vector
- * whose yaw spins at a distinct rate ((cg_time & mask) * 360 / divisor, with masks
+ * whose yaw spins at a distinct rate ((cg.time & mask) * 360 / divisor, with masks
  * 0xfff/0x7ff/0x3ff and divisors 4095/2048/1024, pitch=roll=0), the `forward` and
  * `up` basis vectors produced by AngleVectors from those angles, and the NEGATED
  * `right` vector (AngleVectors' `right` output is taken into a stack temp, then
@@ -3517,10 +3517,10 @@ _Static_assert(offsetof(cgDObjPreviewOrientation_t, negRight) == 0x18, "preview 
 
 enum { CG_DOBJINFO_LOW_COUNT = 64 };
 /*
- * cgScore_t — one collected scoreboard row (element of cg_scoreboardEntries[]
+ * cgScore_t — one collected scoreboard row (element of cg.scores[]
  * below). The build routine at 0x30038060 zeroes 0x180 dwords (0x600 bytes) from
  * 0x30489f54 (`mov ecx,0x180 / rep stosd`), then fills up to
- * cg_scoreboardNumClients rows at stride 0x18 (0x300382b7 `add esi,0x18`) — a
+ * cg.numScores rows at stride 0x18 (0x300382b7 `add esi,0x18`) — a
  * 24-byte element. The server producer at 0x20021864..0x20021882 formats each
  * row as clientNum, score, ping, deaths, statusIcon; the parser stores those at
  * +0x00/+0x04/+0x08/+0x0c/+0x14 and derives team at +0x10.
@@ -3540,7 +3540,7 @@ _Static_assert(sizeof(cgScore_t) == 0x18, "cgScore_t stride 0x18 (imul/add esi)"
 _Static_assert(offsetof(cgScore_t, client) == 0x00, "cgScore_t.client at +0x00");
 _Static_assert(offsetof(cgScore_t, team) == 0x10, "cgScore_t.team at +0x10");
 _Static_assert(offsetof(cgScore_t, statusIcon) == 0x14, "cgScore_t.statusIcon at +0x14");
-/* 0x3048adc0..0x3048ade4 (.bss, zero-init): cg_screenFade — the per-frame full-screen
+/* 0x3048adc0..0x3048ade4 (.bss, zero-init): cg.screenFade — the per-frame full-screen
  * fade/flash overlay state block, ten contiguous 4-byte fields. The mechanical export
  * split this into ten g_data_script_func_getangledelta_* dwords with a wrong
  * owner/name (the size-guess "script_func_getangledelta"); the sole reader/writer is
@@ -3548,20 +3548,20 @@ _Static_assert(offsetof(cgScore_t, statusIcon) == 0x14, "cgScore_t.statusIcon at
  * time-driven RGBA lerp and a full-screen CG_FillRect — not angle math. Superseded to
  * one typed struct. (These addresses land above .data's end 0x3008c000, so they are
  * BSS: zero-initialized runtime state, no file bytes.) endTime is compared signed
- * against cg_time; rate==0.0f means the fade is inactive. color[] is the RGBA drawn
+ * against cg.time; rate==0.0f means the fade is inactive. color[] is the RGBA drawn
  * this frame; fromColor[] is the fade's stored source RGBA. See CG_DrawFade. */
 typedef struct cg_screen_fade_s {
-    int32_t endTime;      /* +0x00 (0x3048adc0): fade end time in cg_time ms */
+    int32_t endTime;      /* +0x00 (0x3048adc0): fade end time in cg.time ms */
     float   rate;         /* +0x04 (0x3048adc4): 1/duration; 0.0f => fade inactive */
     vec4_t  color;        /* +0x08 (0x3048adc8): current RGBA composed and drawn */
     vec4_t  fromColor;    /* +0x18 (0x3048add8): stored source RGBA of the fade */
 } cg_screen_fade_t;
-/* 0x3048ae74..0x3048aed3 .data — cg_damageDirIndicators[8]: the ring of active
+/* 0x3048ae74..0x3048aed3 .data — cg.damageDirIndicators[8]: the ring of active
  * "damage-direction" HUD arrows, the sibling of the red damage flash
- * (cg_damageFlashEndTime/Scale just below). Each 0xc-byte slot records one recent
+ * (cg.v_dmg_time/v_dmg_pitch just below). Each 0xc-byte slot records one recent
  * damage event:
- *   +0x0 int32_t serverTime  — cg_snap->serverTime when the hit was registered
- *                              (writer 0x30034ca1: MOV [+0], cg_snap->serverTime);
+ *   +0x0 int32_t serverTime  — cg.snap->serverTime when the hit was registered
+ *                              (writer 0x30034ca1: MOV [+0], cg.snap->serverTime);
  *                              the drawer expires the slot once cg.time-serverTime
  *                              leaves (0, duration).
  *   +0x4 int32_t duration    — display lifetime in ms (writer 0x30034ca7 copies it
@@ -3569,7 +3569,7 @@ typedef struct cg_screen_fade_s {
  *   +0x8 float   yaw         — world yaw toward the damage source, in degrees
  *                              (writer 0x30034d06 stores the projected attacker
  *                              direction); the drawer rotates the arrow icon by
- *                              vectoyaw(cg_refdef.viewaxis[0]) - yaw so it points at
+ *                              vectoyaw(cg.refdef.viewaxis[0]) - yaw so it points at
  *                              the attacker relative to the current view.
  * Registered by CG_AddDamageDirection (0x30034ac0), drawn by CG_DrawDamageDirectionIndicators
  * (0x3001a980), zeroed on effect reset (0x30039595 / 0x30034e36). Supersedes the
@@ -3635,7 +3635,7 @@ struct centity_s {
     int32_t gasFireTime;      /* +0x200: cg.time of the latest gas-weapon fire */
     int32_t flashSoundLifetime; /* +0x204: remaining lifetime (ms) of this entity's
                                * muzzle-flash sound emission. CG_WeaponUpdateLoopingSound
-                               * (0x300490b0) decrements it by cg_frametime each frame
+                               * (0x300490b0) decrements it by cg.frametime each frame
                                * (only while it is > 0); while it stays > 0 the looping
                                * fire sound (cgWeaponInfo.flashLoopSound, +0x128) is
                                * played, and on the frame it reaches <= 0 the tail sound
@@ -3729,7 +3729,7 @@ _Static_assert(offsetof(struct centity_s, corpseTagState) == 0x284, "centity cor
  * entry in the client's fixed 4-slot shake table at 0x3048b52c (stride 0x24,
  * end 0x3048b5bc). Proven from the shake trio:
  *   - the add path at 0x3001b420 populates a stack copy of this struct (startMsec
- *     from cg_time, amplitude, duration, radius, origin) then REP MOVSD's it into
+ *     from cg.time, amplitude, duration, radius, origin) then REP MOVSD's it into
  *     a free table slot (9 dwords == 0x24 bytes);
  *   - the per-source evaluator at 0x3001b390 (CG_EvaluateCameraShakeSource) reads
  *     startMsec/+0x00, amplitude/+0x04, duration/+0x08, radius/+0x0c, origin/+0x10
@@ -3741,7 +3741,7 @@ _Static_assert(offsetof(struct centity_s, corpseTagState) == 0x284, "centity cor
  * radius/amplitude are role-derived (exact original member names not proved).
  */
 typedef struct cg_shakeSource_s {
-    int32_t startMsec;       /* +0x00: cg_time when this shake began */
+    int32_t startMsec;       /* +0x00: cg.time when this shake began */
     float   amplitude;       /* +0x04: base shake magnitude */
     float   duration;        /* +0x08: total lifetime in ms */
     float   radius;          /* +0x0c: spatial falloff radius (distance divisor) */
@@ -3752,9 +3752,9 @@ typedef struct cg_shakeSource_s {
 
 typedef struct cgWeaponPositionState_s {
     /* 0x30487950 .data refs=7 width=4 first=0x30034e01.
-     * RESOLVED: cg_prevAdsFraction — the previous frame's ADS (aim-down-sight) zoom
+     * RESOLVED: cg.weaponPosition.prevAdsFraction — the previous frame's ADS (aim-down-sight) zoom
      * fraction. CG_TrackAdsZoomDirection (0x30045480) compares this frame's
-     * cg_predictedPlayerState.adsFraction (0x304832a4) against this to set cg_adsZoomingIn,
+     * cg.predictedPlayerState.adsFraction (0x304832a4) against this to set cg.weaponPosition.adsZoomingIn,
      * then copies the current fraction here for the next frame. Read/written as a
      * single float scalar (FLD/FCOMP at 0x300454d0/0x300454e5/0x300454f4/0x3004550f;
      * dword copy-store at 0x3004552b/0x3004553d). The mechanical owner=cg_addscalefade
@@ -3763,9 +3763,9 @@ typedef struct cgWeaponPositionState_s {
      * Retyped from the mislabeled uint32 placeholder to float. */
     float prevAdsFraction;
     /* 0x30487954 .data refs=5 width=4 first=0x30019560.
-     * RESOLVED: cg_adsZoomingIn — qboolean set each frame by the ADS-fraction tracker
+     * RESOLVED: cg.weaponPosition.adsZoomingIn — qboolean set each frame by the ADS-fraction tracker
      * at 0x30045509: 1 when this frame's adsFraction rose above last frame's
-     * (cg_prevAdsFraction, 0x30487950), else 0. CG_CalcAdsOverlayFrac (0x30019520)
+     * (cg.weaponPosition.prevAdsFraction, 0x30487950), else 0. CG_CalcAdsOverlayFrac (0x30019520)
      * reads it to pick adsZoomInFrac (zooming in) vs adsZoomOutFrac (zooming out).
      * owner=sp_trigger_mount_no_brush was a wrong size-based auto-name. */
     qboolean adsZoomingIn;
@@ -3789,8 +3789,8 @@ _Static_assert(sizeof(cgWeaponPositionState_t) == 0x30, "12-dword REP STOSD at 0
  * CG_Init (0x3002df41) clears it with one 0xcbb2-dword REP STOSD. Retail code
  * addresses its members as one object (stores through a member pointer alias the
  * other members), so they are modelled here at their retail offsets. Fields named
- * field_XXXX (offset into cg_t) are unresolved spans. The cg_* names below remain
- * as member aliases for the existing sources. */
+ * field_XXXX (offset into cg_t) are unresolved spans. Members that correspond to
+ * Quake 3 cg_t fields carry the Quake 3 names. */
 typedef struct cg_s {
     /* 0x30459140: cg.clientFrame. CG_DrawActiveFrame is its only writer (one INC per
      * rendered client frame) and optionally prints it with the literal
@@ -3800,33 +3800,29 @@ typedef struct cg_s {
     /* 0x30459144 (.data): cg.clientNum, installed from CG_Init's clientNum argument.
      * Consumed as an index into
      * bgs.clientinfo[] (IMUL 0x4d0; ADD 0x305e1f34) at 0x30022477, and compared
-     * against cg_snap->ps.psClientNum by the trap-54 HUD digit emitter at 0x30031321 and by
+     * against cg.snap->ps.psClientNum by the trap-54 HUD digit emitter at 0x30031321 and by
      * 0x30037498 to decide whether the drawn element belongs to the local player (use
      * the live snapshot value) or a cached per-client value. Retyped uint32_t->int32_t
      * (used as a signed client index/compare). The role is fully resolved; the
      * mechanical owner=scr_vehicle_think label (a first-toucher) is superseded. */
     int32_t clientNum;
-    /* cg_demoPlayback (0x30459148): installed from the demoPlayback argument of the
+    /* cg.demoPlayback (0x30459148): installed from the demoPlayback argument of the
      * active-frame driver at 0x30042160, then used to suppress live usercmd prediction
      * and player-state transition work in the vehicle DObj pass, entity-event pass,
      * predictor, and snapshot transition. This is the standard cgame demoPlayback
      * gate; the mechanical owner=bg_animparseanimscript was only first-touching. */
     qboolean demoPlayback;
-    /* 0x3045914c (.data): a cgame screen-draw suppress flag (refs=1, read only by
-     * CG_Draw2D 0x3001bfe0 as its very first entry guard; nonzero => draw
-     * nothing this frame and return immediately). No .text writer (engine/config-set).
-     * Sits one dword below cg_lockedViewFace (0x30459150), the sibling render-mode gate
-     * checked right after it. Provisional role name kept address-shaped (exact source
-     * name unresolved); the mechanical owner=fire_lead label was a size-collision
-     * mislabel and is corrected here. */
-    uint32_t screenSuppressFlag;
-    /* 0x30459150 .data refs=5 width=4 — cg_lockedViewFace: locked/cube-face render
+    /* 0x3045914c: cg.levelShot. CG_Draw2D (0x3001bfe0) returns before drawing anything
+     * while it is set, exactly as Quake 3 does for a level-menu screenshot, and it sits in
+     * Quake 3's slot after demoPlayback. No .text writer. */
+    qboolean levelShot;
+    /* 0x30459150 .data refs=5 width=4 — cg.lockedViewFace: locked/cube-face render
      * selector. 0 = normal view; 1..6 pick one of six axis-aligned camera
      * orientations. The refdef dispatcher (0x30041a30) branches into the locked-view
      * builder (0x30040360) when != 0, which uses (value-1) as a 6-entry jump-table
      * index. Named by proven role; exact source field name unresolved. */
     int32_t lockedViewFace;
-    /* 0x30459154 .data refs=3 width=4 — cg_lockedViewSize: locked-view square
+    /* 0x30459154 .data refs=3 width=4 — cg.lockedViewSize: locked-view square
      * viewport base size (int). Builder (0x30040360) sets refdef width==height==size+2
      * and square fov = atan2(size+2,size). owner=cg_spawntracer was a size-collision
      * mislabel. */
@@ -3838,7 +3834,7 @@ typedef struct cg_s {
      * of CG_DrawSnapshot (0x30018020). Retyped from the mechanical uint32_t; the
      * (owner=scr_getobjectfield) label was wrong. */
     int32_t latestSnapshotNum;
-    /* 0x3045915c (.data): cg_latestSnapshotServerTime — the engine server time (ms) of
+    /* 0x3045915c (.data): cg.latestSnapshotTime — the engine server time (ms) of
      * the most recent snapshot. Written by CG_ProcessSnapshots (0x3003d2d0) as the second
      * out-parameter of cgame_syscall(CG_GET_CURRENT_SNAPSHOT_NUMBER, &n, &this), then
      * mirrored into cg_effectAnimTime (0x3053a034). Consumed as a snapshot-time base for
@@ -3846,40 +3842,31 @@ typedef struct cg_s {
      * Superseded from the size-guessed mechanical g_data_script_func_playfxontag_3045915c
      * (that owner was a wrong size-match to a server GSC builtin; this is a cgame client
      * datum). refs=3, width=4. */
-    int32_t latestSnapshotServerTime;
-    /* 0x30459160 .data refs=137: the current client snapshot pointer, cg_snap.
+    int32_t latestSnapshotTime;
+    /* 0x30459160 .data refs=137: the current client snapshot pointer, cg.snap.
      * CG_InstallSnapshotResetEffects (0x3003c9d0) stores the installed snapshot here;
      * the snapshot-transition loop (0x3003d2d0) reads snap->snapFlags (+0x00) and
      * snap->serverTime (+0x08) through it, and the paired next-snapshot pointer sits
      * at 0x30459164. Retyped from the mechanical uint32_t/void* to snapshot_t *. */
     snapshot_t *snap;
-    /* 0x30459164 (.data): cg_nextSnap — the next/incoming client snapshot pointer,
-     * paired with cg_snap at 0x30459160. CG_BuildSolidList (0x30035030) reads it
+    /* 0x30459164 (.data): cg.nextSnap — the next/incoming client snapshot pointer,
+     * paired with cg.snap at 0x30459160. CG_BuildSolidList (0x30035030) reads it
      * (MOV EDI,[0x30459164]) and walks snap->entities[0..numEntities) to rebuild the
      * per-frame mark lists. Retyped from the mechanical uint32_t (the owner=cg_asset_parse
      * label was the first-touching function, not the identity). refs=32; provisional
      * name by role (paired next-snapshot pointer). */
     snapshot_t *nextSnap;
-    /* 0x30459168 (.data): cg_activeSnapshots[0] — the first of the two double-buffered
-     * snapshot storage slots that CG_ReadNextSnapshot (0x3003d220) fills via
-     * trap_GetSnapshot and installs as cg_snap. CG_ReadNextSnapshot picks the slot NOT
-     * currently pointed at by cg_snap: `dest = (cg_snap == &cg_activeSnapshots[0]) ?
-     * &cg_activeSnapshots[1] : &cg_activeSnapshots[0]`. The two slots are 0x15020 apart
-     * in .data (cg_activeSnapshots[1] at 0x3046e188), larger than the modelled
-     * snapshot_t prefix, so they are declared as two separate objects rather than a
-     * strided array. Retyped from the mechanical uint32_t (owner=keywordhash_key was the
-     * first-touching function, not the identity). */
-    /* 0x3046e188 (.data): cg_activeSnapshots[1] — the second double-buffered snapshot
-     * storage slot (paired with cg_activeSnapshots0 at 0x30459168); see that entry.
-     * Retyped from the mechanical uint32_t (owner=keywordhash_key was the first-touching
-     * function, not the identity). Kept next to its pair rather than in strict address
-     * order because the two form one logical cg.activeSnapshots[2]. */
+    /* 0x30459168..0x30483197: cg.activeSnapshots[2], the double-buffered snapshot
+     * storage (0x15020 bytes each; [1] at 0x3046e188). CG_ReadNextSnapshot (0x3003d220)
+     * fills the slot cg.snap does not point at via trap_GetSnapshot:
+     * `dest = (cg.snap == &cg.activeSnapshots[0]) ? &cg.activeSnapshots[1] :
+     * &cg.activeSnapshots[0]`. */
     snapshot_t activeSnapshots[2];
     /* 0x304831a8 (.data): cg.frameInterpolation — the [0,1) fraction between the
-     * current snapshot (cg_snap) and the next snapshot (cg_nextSnap), used to
+     * current snapshot (cg.snap) and the next snapshot (cg.nextSnap), used to
      * interpolate entity/view state each frame. Written by CG_SetFrameInterpolation
-     * (0x3001f710) as (cg.time - cg_snap->serverTime) / (cg_nextSnap->serverTime -
-     * cg_snap->serverTime), clamped to 0 when the span is 0 or the result is negative.
+     * (0x3001f710) as (cg.time - cg.snap->serverTime) / (cg.nextSnap->serverTime -
+     * cg.snap->serverTime), clamped to 0 when the span is 0 or the result is negative.
      * Read as a float lerp weight by ~16 consumers (e.g. 0x3001ea35/0x3001eae9/
      * 0x3001ebac push it as the `frac` arg to the interpolation helper 0x3004bd00).
      * Retyped from the mechanical uint32_t to float; the owner=fire_artillery label
@@ -3892,31 +3879,32 @@ typedef struct cg_s {
      * animation/decay rates, and subtracted as a raw ms count (e.g. the stat-bar hold
      * timer in CG_DrawStatBarWithDecay at 0x3002fb83). Retyped from the mechanical
      * uint32_t; the (owner=finishspawningitem) label was the first-touching function,
-     * not the identity. Provisional-but-well-supported name. */
+     * not the identity. */
     int32_t frametime;
     /* 0x304831b0 .data: the cgame time base (cg.time), the current client game time
      * in ms. Read as the "now" value for elapsed-time math across ~146 sites and
      * written by the CG frame/init cluster. Signed: every conversion, compare and
      * divide of it is FILD m32, JL/JG/JLE/JGE/JS, or CDQ+IDIV. */
     int32_t time;
-    /* 0x304831b4 .data refs=7 width=4 first=0x30035b1c owner=pmovesingle */
+    /* 0x304831b4: cg.oldTime. CG_DrawActiveFrame (0x300421c0) computes
+     * cg.frametime = cg.time - cg.oldTime and clamps a negative result to zero, as in
+     * Quake 3; the snapshot paths (0x3003c9e3, 0x3003d34f) reseed it and prediction reads
+     * it (0x30035b1c, 0x30035cfa). */
+    int32_t oldTime;
+    /* 0x304831b8: cg.physicsTime. CG_PredictPlayerState_Internal (0x30035964) stores
+     * the next or current snapshot's serverTime here, and CG_ClipMoveToEntities
+     * (0x30035132) passes it to BG_EvaluateTrajectory, as Quake 3 does. Signed: it is the
+     * `int time` argument. */
     int32_t physicsTime;
-    /* 0x304831b8 .data: cg.latestSnapshotTime — the newest installed snapshot's
-     * server time. Snapshot-installer FUN_30035940
-     * copies cg_nextSnap->serverTime (snapshot_t +0x08 at 0x30459164) into it, and
-     * CG_ClipMoveToEntities (0x300350d0) reads it as the `int time` argument to
-     * BG_EvaluateTrajectory when evaluating each solid entity's pos/apos trajectories.
-     * refs=6; the (owner=cg_registerimpacteffects) mechanical label was a size-guess,
-     * not the identity. Retyped from the mechanical uint32_t to signed int32_t (it is
-     * a server-time value fed to BG_EvaluateTrajectory's signed `time` parameter). */
-    int32_t latestSnapshotTime;
-    /* 0x304831bc .data refs=4 width=4 first=0x30034d4a owner=cg_addscalefade */
-    qboolean initialSnapshotPending;
-    /* 0x304831c0 .data — cg_thirdPerson. Written only as 0/1 by the frame builder;
+    /* 0x304831bc: cg.mapRestart. CG_MapRestart (0x30039580) sets it to 1; the snapshot
+     * transition (0x30034d4a) clears it and CG_SetNextSnap (0x3003d009, 0x3003d09b) tests
+     * it, matching Quake 3's map-restart latch. */
+    qboolean mapRestart;
+    /* 0x304831c0 .data — cg.renderingThirdPerson. Written only as 0/1 by the frame builder;
      * CG_CalcViewValues selects CG_OffsetThirdPersonView when it is set, while the
      * view-weapon and first-person effect/tag consumers all suppress their work in
      * that state. The old pm_viewheighttablelerp owner was a size-match artifact. */
-    qboolean thirdPerson;
+    qboolean renderingThirdPerson;
     /* 0x304831c4..0x304876c7 .data.
      * RESOLVED: cg.predictedPlayerState, the full 0x4504-byte playerState_s block.
      * Its fields are modeled in playerState_t; do not add standalone globals inside
@@ -3930,12 +3918,12 @@ typedef struct cg_s {
      * members through +0x220. CG_PlayVoiceChat writes voiceChatIcon/voiceChatTime at
      * +0x230/+0x234. These ranges are subobjects of one 0x288-byte centity_t,
      * not separately allocated globals. */
-    centity_t predictedEventEntity;
+    centity_t predictedPlayerEntity;
     /* 0x30487950..0x3048797f: weapon-position state; CG_SnapshotTransitionStage2 clears
      * the whole block with one 12-dword REP STOSD (0x30034dfc). */
     cgWeaponPositionState_t weaponPosition;
     /* 0x30487980 .data refs=28 width=4 first=0x3001952c.
-     * RESOLVED: cg_currentWeaponInfo — pointer to the current predicted weapon's
+     * RESOLVED: cg.currentWeaponInfo — pointer to the current predicted weapon's
      * weaponInfo_t record, cached once per predicted frame at 0x30034d79 as
      * bg_weaponInfos[cg.predictedPlayerState.currentWeapon]. Widely read across the
      * cgame view/HUD code (28 refs) via +offset field access (e.g. adsZoomInFrac
@@ -3944,40 +3932,37 @@ typedef struct cg_s {
     weaponInfo_t *currentWeaponInfo;
     /* 0x30487984..0x30487993: prediction-error decay state. The prediction updater
      * stores the error timestamp/vector; CG_CalcViewValues adds
-     * cg_predictedError * decayFraction to the camera and clears the timestamp when
+     * cg.predictedError * decayFraction to the camera and clears the timestamp when
      * the fraction leaves (0,1). */
     int32_t predictedErrorTime;
     vec3_t predictedError;
-    /* 0x30487994 .data: cg_predictedEventSequence -- monotonically incrementing
+    /* 0x30487994 .data: cg.eventSequence -- monotonically incrementing
      * counter of predicted local-player events. CG_CheckPlayerstateEvents (0x30034ec0)
      * increments it once per fired predicted event. Immediately followed by
-     * cg_predictedEvents[16] at 0x30487998. Supersedes the mechanical
+     * cg.predictableEvents[16] at 0x30487998. Supersedes the mechanical
      * owner=sp_script_vehicle (a wrong size-guess owner). */
-    int32_t predictedEventSequence;
-    /* 0x30487998..0x304879d8 .data: cg_predictedEvents[MAX_PREDICTED_EVENTS] -- ring
+    int32_t eventSequence;
+    /* 0x30487998..0x304879d8 .data: cg.predictableEvents[MAX_PREDICTED_EVENTS] -- ring
      * of recently fired predicted event ids, written by CG_CheckPlayerstateEvents
      * (0x30034f26) at index (i & (MAX_PREDICTED_EVENTS-1)). Supersedes the mechanical
      * single-dword owner=sp_script_vehicle; the array spans exactly to the next
      * mechanical entry at 0x304879d8. */
-    int32_t predictedEvents[MAX_PREDICTED_EVENTS];
-    /* 0x304879d8 .data: a float envelope value CG_EntityEvent (0x30022810) maintains
-     * for the weapon-changed / low-ammo warning event (0x91). Read and written via
-     * FLD/FSTP (proven float shape; retyped from the mechanical uint32_t). Exact CoD
-     * name unresolved — kept address-suffixed. owner=cmd_callvote_f is a first-touch
-     * artifact (this function is CG_EntityEvent, not Cmd_CallVote_f). refs=7. */
-    float weaponChangeViewOffset;
-    /* 0x304879dc .data: the cg.time stamp paired with cg_weaponChangeViewOffset;
-     * CG_EntityEvent stores cg.time here when it updates that envelope. Exact CoD name
-     * unresolved. owner=cmd_callvote_f first-touch artifact. refs=5. */
-    int32_t weaponChangeViewOffsetTime;
-    /* 0x304879e0 .data: cg_impactViewKick — signed vertical view/weapon impulse set
-     * by CG_EntityEvent for local bullet-flesh/body-hit events. CG_OffsetFirstPersonView
-     * applies its 150 ms rise / 300 ms fall envelope directly to vieworg.z, while
-     * CG_CalcViewLeanKickOffset applies the same envelope at quarter scale. */
-    float impactViewKick;
-    /* 0x304879e4 .data: cg_impactViewKickTime — cg.time stamp paired with
-     * cg_impactViewKick and used by both view/weapon kick consumers. */
-    int32_t impactViewKickTime;
+    int32_t predictableEvents[MAX_PREDICTED_EVENTS];
+    /* 0x304879d8: cg.stepChange. CG_EntityEvent's step event (0x30022c58..0x30022cf1)
+     * decays the previous value over STEP_TIME (100 ms), adds the new step height
+     * (eventParm - 128), clamps it to [-16, 24] and stamps cg.stepTime, the Quake 3 stair
+     * smoothing sequence; CG_SettleViewOriginZ (0x3003f9cb) applies it to vieworg.z. */
+    float stepChange;
+    /* 0x304879dc: cg.stepTime, the cg.time of the last step change (see stepChange). */
+    int32_t stepTime;
+    /* 0x304879e0: cg.landChange. The per-surface landing events in CG_EntityEvent
+     * (0x30022a1c, 0x30022ae5) store the negated landing strength here for the local
+     * client, as Quake 3's EV_FALL cases do. CG_OffsetFirstPersonView applies its 150 ms
+     * rise / 300 ms fall envelope to vieworg.z, and CG_CalcViewLeanKickOffset applies the
+     * same envelope at quarter scale. */
+    float landChange;
+    /* 0x304879e4: cg.landTime, the cg.time stamp paired with cg.landChange. */
+    int32_t landTime;
     cgDObjPreviewOrientation_t dobjPreviewOrientations[CG_DOBJ_PREVIEW_ORIENTATION_COUNT]; /* 0x304879e8 */
     /* 0x30487a78..0x30487a84 (.data): the cropped 3D-view rectangle (cg.refdef view
      * region), four contiguous ints x/y/width/height in real screen pixels. Named by
@@ -3998,7 +3983,7 @@ typedef struct cg_s {
      * Exact original cg field names not fully proved (likely a projection-scale pair);
      * float width and producer/consumer roles are proven. */
     /*
-     * 0x30487a90 .data — cg_refdef.vieworg: the current client view/camera origin as
+     * 0x30487a90 .data — cg.refdef.vieworg: the current client view/camera origin as
      * a 3-component float vector (0x30487a90 .x, 0x30487a94 .y, 0x30487a98 .z). The
      * mechanical owner=bg_indexforstring label is just the first-touching function
      * and is wrong. Proven vec3: it is written as three consecutive dwords copied
@@ -4012,41 +3997,41 @@ typedef struct cg_s {
      * not three ints). refs=79/60/75 across the three components.
      */
     /*
-     * 0x30487a9c .data — cg_refdef.viewaxis[0]: the current view/aim forward direction
+     * 0x30487a9c .data — cg.refdef.viewaxis[0]: the current view/aim forward direction
      * as a 3-component float vector (.x@0x30487a9c, .y@0x30487aa0, .z@0x30487aa4),
-     * stored immediately after cg_refdef.vieworg (0x30487a90). Proven vec3: the setup
+     * stored immediately after cg.refdef.vieworg (0x30487a90). Proven vec3: the setup
      * paths at 0x300403e1.. write it as pure unit axis vectors (e.g. (0,0,1), (1,0,0),
      * (-1,0,0)), and the consumers FLD all three consecutive dwords in order
-     * (CG_ScanForCrosshairEntity 0x3001a4d3/508/525 forms cg_refdef.vieworg + 8192*this
+     * (CG_ScanForCrosshairEntity 0x3001a4d3/508/525 forms cg.refdef.vieworg + 8192*this
      * as the crosshair trace endpoint; the tracer/fire paths at 0x30026c88/0x30034c45
      * read the same triple). The mechanical owner=cg_parseimpacteffects label is only
      * the first-touching function. Exact CoD field name (likely cg.refdef.viewaxis[0])
      * not fully proved; the vec3 shape and forward-direction role are. Supersedes the
      * three prior uint32_t g_data_cg_parseimpacteffects_30487a{9c,a0,a4} placeholders. */
-    /* 0x30487aa8..0x30487ab3 .data — cg_refdef.viewaxis[1]: second row of
+    /* 0x30487aa8..0x30487ab3 .data — cg.refdef.viewaxis[1]: second row of
      * cg.refdef.viewaxis (Q3 viewaxis[1]), a vec3 immediately after
-     * cg_refdef.viewaxis[0] (viewaxis[0]). Written as an axis-aligned unit row by the
+     * cg.refdef.viewaxis[0] (viewaxis[0]). Written as an axis-aligned unit row by the
      * locked/cube-face refdef builder (0x30040360); consumers FLD the three
      * consecutive dwords. Supersedes the three uint32_t
      * g_data_cg_parseimpacteffects_30487a{a8,ac,b0} placeholders. */
-    /* 0x30487ab4..0x30487abf .data — cg_refdef.viewaxis[2]: third row of
-     * cg.refdef.viewaxis (Q3 viewaxis[2]), a vec3 after cg_refdef.viewaxis[1]. Written as
+    /* 0x30487ab4..0x30487abf .data — cg.refdef.viewaxis[2]: third row of
+     * cg.refdef.viewaxis (Q3 viewaxis[2]), a vec3 after cg.refdef.viewaxis[1]. Written as
      * an axis-aligned unit row by the locked/cube-face refdef builder (0x30040360).
      * Supersedes the three uint32_t g_data_cg_parseimpacteffects_30487a{b4,b8,bc}
      * placeholders. */
     /* 0x30487ac0 .data refs=2 width=4 first=0x300420e7 owner=script_method_player_cloneplayer */
-    /* 0x30487ac4 .data refs=11 width=4 first=0x3001c3fb: cg_refdef.rdflags — the rdflags
+    /* 0x30487ac4 .data refs=11 width=4 first=0x3001c3fb: cg.refdef.rdflags — the rdflags
      * bitfield of the cg.refdef block (base 0x30487a78, this is base+0x4c) submitted to
      * trap_R_RenderScene (CG_R_RENDER_SCENE). CG_DrawActive (0x3001c3fb..0x3001c418)
      * OR's bit 0x10 in and conditionally clears it per cg_skybox_vmCvar.integer; the refdef
      * builders at 0x300402eb/0x30042096/0x300420c9 OR/AND other view-mode bits (0x8, and
      * a mask ~0x10). Provisional flag constants named below. Role name from the proven
      * refdef consumers; owner=g_getnonpvsfriendlyinfo was a wrong size-match. */
-    /* cg_refdef.rdflags uses the shared renderer_refdef_flags_e domain from
+    /* cg.refdef.rdflags uses the shared renderer_refdef_flags_e domain from
      * q_renderer_types.h. The cgame writers use RDF_SKYBOX_PORTAL (0x08),
      * RDF_SKYBOX_PORTAL_ACTIVE (0x10), and RDF_DRAW_SKYBOX (0x20). */
-    /* 0x30487ac8..0x30487ad3 .data — cg_refdefViewAngles: the contiguous pitch/yaw/roll
-     * Euler vector immediately after cg_refdef.rdflags in the cg.refdef block. Identity as
+    /* 0x30487ac8..0x30487ad3 .data — cg.refdefViewAngles: the contiguous pitch/yaw/roll
+     * Euler vector immediately after cg.refdef.rdflags in the cg.refdef block. Identity as
      * one vec3 is proven by CG_CalcVehicleViewPos (0x30040f1c), which passes the base
      * 0x30487ac8 in EDX to AnglesToAxisNegRight. The three components are also updated
      * together by CG_CalcViewShake (0x3001b6ba..0x3001b716) and consumed as view/effect
@@ -4060,10 +4045,10 @@ typedef struct cg_s {
     /* Persistent weapon-sway positional output filled as one vec3. */
     vec3_t weaponSwayOffset;
     /*
-     * cg_dObjInfoKeys[] / cg_dObjInfoHandles[] — the parallel "DObj info" registration
+     * cg.dObjInfoKeys[] / cg.dObjInfoHandles[] — the parallel "DObj info" registration
      * table, indexed by a table index (register-argument in every accessor). Each slot
-     * caches the identity/type key (cg_dObjInfoKeys) and the engine XModel pointer
-     * returned by CG_DOBJ_WRAP_MODEL (cg_dObjInfoHandles) for that index. Proven a
+     * caches the identity/type key (cg.dObjInfoKeys) and the engine XModel pointer
+     * returned by CG_DOBJ_WRAP_MODEL (cg.dObjInfoHandles) for that index. Proven a
      * 1023-entry table by the address layout (keys at 0x30487af8, handles at 0x30488af4;
      * 0x30488af4 - 0x30487af8 = 4092 bytes = 1023 dwords, with handles immediately
      * followed by the next datum at 0x30489af0) and by
@@ -4087,118 +4072,119 @@ typedef struct cg_s {
      * Retyped from the mislabeled uint32_t placeholder; owner=veh_setupcollmap was a
      * wrong size-match. Exact original cg field name unproven; float role proven. */
     float zoomSensitivity;
-    /* 0x30489af4 .data — cg_loadingScratch[1024]: the shared scratch string buffer used
+    /* 0x30489af4 .data — cg.infoScreenText[1024]: the shared scratch string buffer used
      * to build the "LOADING... %s" status text during asset registration. CG_RegisterGraphics
-     * (0x3002ba50) and its media-batch siblings do Q_strncpyz(cg_loadingScratch, section, 0x3ff)
-     * then Com_PrintMessage(va("LOADING... %s\n", cg_loadingScratch)) + trap_UpdateScreen. The
-     * separate byte 0x30489ef3 (== cg_loadingScratch[0x3ff]) is the trailing NUL forced to 0
+     * (0x3002ba50) and its media-batch siblings do Q_strncpyz(cg.infoScreenText, section, 0x3ff)
+     * then Com_PrintMessage(va("LOADING... %s\n", cg.infoScreenText)) + trap_UpdateScreen. The
+     * separate byte 0x30489ef3 (== cg.infoScreenText[0x3ff]) is the trailing NUL forced to 0
      * before each copy; it is element [0x3ff] of this array, not a distinct global. Size 0x400
      * is proven by the 0x3ff cap passed to Q_strncpyz and the [0x3ff]=0 terminator write.
      * (owner=pm_updateviewangles was a size-guess and is rejected.) */
-    char loadingScratch[MAX_STRING_CHARS];
-    /* 0x30489ef4 .data refs=3 width=4 — cg_vehicleViewReset: a qboolean latch set to 1 by
+    char infoScreenText[MAX_STRING_CHARS];
+    /* 0x30489ef4 .data refs=3 width=4 — cg.vehicleViewReset: a qboolean latch set to 1 by
      * CG_SnapshotTransitionStage2 (0x30034d40) on a snapshot reset, telling
-     * CG_CalcVehicleViewValues (0x30040580) to reseed cg_vehicleViewPrevAxis from the current
+     * CG_CalcVehicleViewValues (0x30040580) to reseed cg.vehicleViewPrevAxis from the current
      * tag orientation this frame instead of composing against the previous frame; the view
      * builder clears it back to 0 after reseeding. owner=cg_addscalefade was a mechanical
      * first-toucher. Provisional role name; exact CoD field name unresolved. */
     int32_t vehicleViewReset;
-    /* 0x30489ef8..0x30489f1b .data — cg_vehicleViewPrevAxis: the previous frame's vehicle/turret
+    /* 0x30489ef8..0x30489f1b .data — cg.vehicleViewPrevAxis: the previous frame's vehicle/turret
      * tag orientation basis (axis_t, 3x3). CG_CalcVehicleViewValues (0x30040580) composes it with
      * the current tag orientation to smooth the derived view angles, then transposes the current
      * orientation back into it for the next frame. owner=convertquattomat was a mechanical
      * first-toucher (this address is the routine's only consumer). */
     axis_t vehicleViewPrevAxis;
-    /* 0x30489f1c .data refs=2 width=4 first=0x30037dd7; resolved as cgs.scoreboardTime,
-     * the cg_time of the last "score" info request. CG_DrawScoreboard (0x30037d90) and
+    /* 0x30489f1c .data refs=2 width=4 first=0x30037dd7; resolved as cgs.scoresRequestTime,
+     * the cg.time of the last "score" info request. CG_DrawScoreboard (0x30037d90) and
      * the sibling score-request path (0x30017330) both throttle the request: when
-     * cg_time - cgs_scoreboardTime > 2000 they latch cg_time here and issue
-     * cgame_syscall(CG_SEND_CLIENT_COMMAND, "score"). Signed cg_time value. (Exact
-     * original symbol not proven; named by proven role.) */
-    int32_t scoreboardTime;
+     * cg.time - cg.scoresRequestTime > 2000 they latch cg.time here and issue
+     * cgame_syscall(CG_SEND_CLIENT_COMMAND, "score"). Signed cg.time value. CG_ScoresDown_f
+     * matches Quake 3's scoresRequestTime throttle instruction for instruction. */
+    int32_t scoresRequestTime;
     /*
      * 0x30489f20 .data refs=9 width=4 (mechanical owner label turret_think_client is
      * the exporter's wrong size-match guess; this is scoreboard state, see below).
      *
-     * cg_scoreboardNumClients — number of client rows collected into the scoreboard
+     * cg.numScores — number of client rows collected into the scoreboard
      * this frame. The scoreboard-build routine at 0x30038000 queries the connected
      * client count and clamps it to MAX_CLIENTS (0x30038082: `cmp eax,0x40` /
      * `jle`; > 64 is forced to 64 at 0x3003808c). CG_ScoreboardHeight (0x30036e50)
      * reads it as a SIGNED row-count loop bound (JLE/JL), so it is int32_t.
      */
-    int32_t scoreboardNumClients;
+    int32_t numScores;
     /*
-     * 0x30489f24..0x30489f33 .data — cg_scoreboardTeamScores[TEAM_COUNT]: the per-team scores
+     * 0x30489f24..0x30489f33 .data — cg.teamScores[TEAM_COUNT]: the per-team scores
      * sent in server-command args 2 and 3 and drawn in the totals row's score
      * column, indexed by team_t. Proven a 4-element int array: CG_ParseScores stores
      * the two command arguments team-indexed
      * (0x300380a1 MOV [0x30489f24],EAX and the team loop), CG_DrawScoreboardBody
      * reads elements 1 and 2 directly to pick the leading team (0x30037c0c
      * MOV EAX,[0x30489f28]; 0x30037c11 MOV ECX,[0x30489f2c]; CMP), and
-     * CG_DrawScoreboardTeamHeader (0x30037090) reads cg_scoreboardTeamScores[team]
+     * CG_DrawScoreboardTeamHeader (0x30037090) reads cg.teamScores[team]
      * (0x3003732d MOV EAX,[EBX*4 + 0x30489f24]) when the column value-selector is 1.
      * Supersedes the mechanical per-element split (0x30489f28 as cg_entitypreevent,
      * 0x30489f2c as cg_entitypreevent, 0x30489f30 as g_touchtriggers) — one array,
-     * not four unrelated scalars. Exact source symbol unproven; named by proven role.
-     */
-    int32_t scoreboardTeamScores[TEAM_COUNT];
+     * not four unrelated scalars. */
+    int32_t teamScores[TEAM_COUNT];
     /*
-     * 0x30489f34..0x30489f43 .data — cg_scoreboardTeamPings[TEAM_COUNT]: the sum, then
+     * 0x30489f34..0x30489f43 .data — cg.scoreboardTeamPings[TEAM_COUNT]: the sum, then
      * integer average, of each team's client pings. Proven a 4-element int array:
      * the build routine accumulates row +0x08 (ping) team-indexed
      * (0x300382a2 ADD [EAX*4 + 0x30489f34],ECX;
      * 0x30038121 MOV [0x30489f34],EAX) and CG_DrawScoreboardTeamHeader (0x30037090)
-     * reads cg_scoreboardTeamPings[team] (0x30037336 MOV EAX,[EBX*4 + 0x30489f34])
+     * reads cg.scoreboardTeamPings[team] (0x30037336 MOV EAX,[EBX*4 + 0x30489f34])
      * when the column value-selector is 3, formatting it into the totals row's ping
      * column. Supersedes the mechanical per-element split (0x30489f38/0x30489f3c/
      * 0x30489f40 as g_touchtriggers) — one array, not four unrelated scalars. Exact
-     * source symbol unproven; named by proven role (parallel to cg_scoreboardTeamCount).
+     * source symbol unproven; named by proven role (parallel to cg.scoreboardTeamCount).
      */
     int32_t scoreboardTeamPings[TEAM_COUNT];
     /*
-     * 0x30489f44..0x30489f53 .data — cg_scoreboardTeamCount[TEAM_COUNT]: the number
+     * 0x30489f44..0x30489f53 .data — cg.scoreboardTeamCount[TEAM_COUNT]: the number
      * of scoreboard rows belonging to each team, indexed by team_t (FREE=0, AXIS=1,
      * ALLIES=2, SPECTATOR=3). Proven as a 4-element int array by the scoreboard
      * build loop at 0x30038295 (`inc dword ptr [0x30489f44 + eax*4]`, eax = the
-     * row's team_t), the parallel per-team ping array cg_scoreboardTeamPings is at
+     * row's team_t), the parallel per-team ping array cg.scoreboardTeamPings is at
      * 0x30489f34. CG_ScoreboardHeight (0x30036e50) reads the four elements as flags
      * (nonzero => that team's section is present). Mechanical owner label
      * turret_think_client is the exporter's wrong size-match guess.
      */
     int32_t scoreboardTeamCount[TEAM_COUNT];
     /*
-     * cg_scoreboardEntries[] — the per-frame collected scoreboard rows, backed at
+     * cg.scores[] — the per-frame collected scoreboard rows, backed at
      * 0x30489f54. The build routine at 0x30038060 `rep stosd` zeroes 0x180 dwords
-     * (0x600 bytes) from here, then fills up to cg_scoreboardNumClients rows at
+     * (0x600 bytes) from here, then fills up to cg.numScores rows at
      * stride 0x18 (element cgScore_t, defined just above). 0x600 == 64*0x18, and
-     * 0x30489f54+0x600 == 0x3048a554 (cg_scoreboardShowing), so the array is exactly
+     * 0x30489f54+0x600 == 0x3048a554 (cg.showScores), so the array is exactly
      * MAX_CLIENTS (64) rows and captures the entire span the single mechanical
      * item_correctedtextrect dword mislabelled. CG_DrawScoreboard_ScoresList
      * (0x30037810) walks it filtering by entry->team and the client's live
      * bgs.clientinfo. Supersedes the mechanical g_data_item_correctedtextrect
      * fragment (owner label was the exporter's wrong size-match guess). */
-    cgScore_t scoreboardEntries[64];
+    cgScore_t scores[64];
     /* 0x3048a554 .data refs=7 width=4 first=0x3001af19; resolved as the "scoreboard
      * showing" state flag. Set to qtrue by the scoreboard-show path (0x3001bd20,
-     * which also records cg.time into cg_scoreboardShowTime and inits the scoreboard),
+     * which also records cg.time into cg.scoreFadeTime and inits the scoreboard),
      * cleared on map restart (0x30039500). CG_KeyEvent (0x30032780) gates all
      * scoreboard scroll input on it; various HUD/draw routines branch on it. qboolean.
-     * (Exact original symbol not proven; named by proven role.) */
-    qboolean scoreboardShowing;
-    int32_t field_31418[1]; /* 0x3048a558: unresolved */
-    /* 0x3048a55c .data refs=5 width=4 first=0x3001af46; resolved as cg.scoreboardShowTime,
-     * the cg_time latched when cg_scoreboardShowing (0x3048a554) toggles. The
-     * show/toggle paths (0x3001bd20, 0x30039660) store cg_time here on a state change;
+     * */
+    qboolean showScores;
+    /* 0x3048a558: cg.scoreBoardShowing, Quake 3's slot between showScores and
+     * scoreFadeTime; no reference in this module. */
+    qboolean scoreBoardShowing;
+    /* 0x3048a55c .data refs=5 width=4 first=0x3001af46; resolved as cg.scoreFadeTime,
+     * the cg.time latched when cg.showScores (0x3048a554) toggles. The
+     * show/toggle paths (0x3001bd20, 0x30039660) store cg.time here on a state change;
      * CG_DrawScoreboard (0x30037d90) feeds it to CG_FadeColor as startMsec to fade the
-     * scoreboard over a 100 ms window. Signed cg_time value. (Exact original symbol not
+     * scoreboard over a 100 ms window. Signed cg.time value. (Exact original symbol not
      * proven; named by proven role.) */
-    int32_t scoreboardShowTime;
+    int32_t scoreFadeTime;
     /* 0x3048a560 .data refs=13 width=4 first=0x300327c3; resolved as the scoreboard
      * scroll position (top line offset). CG_KeyEvent (0x30032780) decrements it by
      * cg_scoreboardScrollStep_vmCvar.integer on scroll-up (clamped to >= 0); the scroll-down helper
      * (0x30037e60) increments it (clamped to line-count-1). Signed int. */
     int32_t scoreboardScrollPos;
-    /* 0x3048a564 .data refs=6 width=4 first=0x300370a2 — cg_scoreboardOverflowed: the
+    /* 0x3048a564 .data refs=6 width=4 first=0x300370a2 — cg.scoreboardOverflowed: the
      * "scoreboard content has flowed past the bottom of the visible area" latch.
      * CG_DrawScoreboardBody clears it at frame start; the per-line drawers
      * CG_DrawScoreboardTeamHeader (0x300370a2 reads it; 0x300370f0 sets it to 1 when
@@ -4213,17 +4199,16 @@ typedef struct cg_s {
      *   - CG_Obituary (0x30022270, 0x3002251d) fills it by copying 0x1f bytes from
      *     the 32-byte attacker-name view, then zeroes the byte at +0x1f
      *     (0x3048a587) as the fixed terminator, i.e. a 32-byte string;
-     *   - CG_DrawObituaryLine (0x30031a90) tests cg_fraggedByName[0] as the
+     *   - CG_DrawObituaryLine (0x30031a90) tests cg.killerName[0] as the
      *     "has a target name" gate (MOV AL,[0x3048a568]; TEST AL,AL) and passes the
-     *     buffer as the %s of va("Fragged by %s", cg_fraggedByName);
-     *   - CG_DrawScoreboard (0x30037d90) stores 0 into cg_fraggedByName[0] when
+     *     buffer as the %s of va("Fragged by %s", cg.killerName);
+     *   - CG_DrawScoreboard (0x30037d90) stores 0 into cg.killerName[0] when
      *     CG_FadeColor returns NULL (scoreboard faded out), emptying the string so the
      *     obituary line stops drawing.
      * Buffer size proven by the CRT strncpy count 0x1f plus the explicit +0x1f
-     * terminator zero. (Exact original symbol name not proven; named by proven role.
-     * Supersedes the mis-captured cg_scoreboardFadedOut byte and the aliased
+     * terminator zero. CG_Obituary fills it as Quake 3 fills cg.killerName. (Supersedes the mis-captured cg_scoreboardFadedOut byte and the aliased
      * 0x3048a587 terminator symbol.) */
-    char fraggedByName[32];
+    char killerName[32];
     uint8_t field_31448[1060];
     /* cg.centerPrint* state block. Written by CG_PriorityCenterPrint (0x30019050)
      * and read by the center-string renderer at 0x300191b0 (CG_DrawCenterString:
@@ -4233,7 +4218,7 @@ typedef struct cg_s {
      * mechanical owner=pm_weapon_allowreload label was wrong (size-guess): the
      * "Center Print" .rdata tag (0x30076cdc) and the classic Q3 center-print
      * layout prove these are the cg center-print HUD fields. */
-    /* 0x3048a9ac .data — cg.centerPrintTime: cg_time + 2000 (ms) display expiry. */
+    /* 0x3048a9ac .data — cg.centerPrintTime: cg.time + 2000 (ms) display expiry. */
     int32_t centerPrintTime;
     /* 0x3048a9b0 .data — truncated charWidth argument; divided by 32 for scale. */
     int32_t centerPrintCharWidth;
@@ -4242,7 +4227,7 @@ typedef struct cg_s {
     /* 0x3048a9b8 .data — cg.centerPrint[1024]: the center-print text buffer.
      * CRT-strncpy'd with count 1023; byte [0x3048adb7] zeroed at
      * 0x3001909d is this buffer's last element, so it is not a separate symbol. */
-    char centerPrintString[MAX_STRING_CHARS];
+    char centerPrint[MAX_STRING_CHARS];
     /* 0x3048adb8 .data — cg.centerPrintLines: line count (init 1, ++ per '\n' and
      * per literal "\\n" escape). */
     int32_t centerPrintLines;
@@ -4250,47 +4235,46 @@ typedef struct cg_s {
      * a new print is dropped when its priority < this while a print is active. */
     int32_t centerPrintPriority;
     cg_screen_fade_t screenFade;
-    /* 0x3048ade8 (.data): cg_outOfAmmoState — persistent low/out-of-ammo warning state
+    /* 0x3048ade8 (.data): cg.lowAmmoWarning — persistent low/out-of-ammo warning state
      * owned solely by CG_OutOfAmmoChange (0x30034a00). 0 = has ammo / not warned;
      * 1 = warned, some ammo remaining (<threshold); 2 = warned, zero ammo. The warning
      * sound plays only on the 0 -> {1,2} transition, and the state is reset to 0 once the
      * scaled ammo total reaches the 5000 threshold. Was the mechanical
      * g_data_quateigentrace_3048ade8 (owner label = first-touching function). */
-    int32_t outOfAmmoState;
-    /* 0x3048adec .data refs=4: cg_crosshairEntNum — the client/entity number of the
+    int32_t lowAmmoWarning;
+    /* 0x3048adec .data refs=4: cg.crosshairClientNum — the client/entity number of the
      * entity currently under the crosshair. Written by CG_ScanForCrosshairEntity
      * (0x3001a59c stores the traced entity number) and read by the crosshair-name HUD
      * drawer (0x3001a65a/0x3001a6ea) as the %s player-name index. The mechanical
      * owner=cg_drawscoreboard was only the first-touching label (that name-guess is
-     * itself wrong; see CG_ScanForCrosshairEntity). Exact CoD symbol unconfirmed;
-     * named by proven role. */
-    int32_t crosshairEntNum;
-    /* 0x3048adf0 .data refs=3: cg_crosshairEntTime — the cg_time latched when the
+     * itself wrong; see CG_ScanForCrosshairEntity). Quake 3 cg.crosshairClientNum,
+     * written and read by the same-named Quake 3 functions. */
+    int32_t crosshairClientNum;
+    /* 0x3048adf0 .data refs=3: cg.crosshairClientTime — the cg.time latched when the
      * crosshair entity was last acquired. Written by CG_ScanForCrosshairEntity
-     * (0x3001a5a2 stores cg_time) and read by the drawer at 0x3001a640 as the
-     * CG_FadeColor start time so the name fades out after the target is lost.
-     * Provisional role name; exact CoD symbol unconfirmed. */
-    int32_t crosshairEntTime;
+     * (0x3001a5a2 stores cg.time) and read by the drawer at 0x3001a640 as the
+     * CG_FadeColor start time so the name fades out after the target is lost. */
+    int32_t crosshairClientTime;
     int32_t field_31cb4[2]; /* 0x3048adf4: unresolved */
-    /* 0x3048adfc cg_crosshairHealthEntNum (.data refs=2 width=4 first=0x3001a6f0). The
+    /* 0x3048adfc cg.crosshairHealthEntNum (.data refs=2 width=4 first=0x3001a6f0). The
      * entity/client number whose health is currently latched for the crosshair-name
      * tint. Written by the snapshot-processing path at 0x3003cfab
      * (MOV EAX,[playerState+0x134]; MOV [0x3048adfc],EAX) and read by
      * CG_DrawCrosshairNames (0x3001a6f0) which compares it against
-     * cg_crosshairEntNum: only when they match does the name get tinted by
-     * cg_crosshairHealth (else it is drawn white). Provisional role name; exact CoD
+     * cg.crosshairClientNum: only when they match does the name get tinted by
+     * cg.crosshairHealth (else it is drawn white). Provisional role name; exact CoD
      * symbol unconfirmed. */
     int32_t crosshairHealthEntNum;
-    /* 0x3048ae00 cg_crosshairHealth (.data refs=2 width=4 first=0x3001a6f8). The
-     * latched health value (0..100 scale) of cg_crosshairHealthEntNum. Written by the
+    /* 0x3048ae00 cg.crosshairHealth (.data refs=2 width=4 first=0x3001a6f8). The
+     * latched health value (0..100 scale) of cg.crosshairHealthEntNum. Written by the
      * snapshot path at 0x3003cfb6 (MOV ECX,[playerState+0x138]; MOV [0x3048ae00],ECX)
      * and read by CG_DrawCrosshairNames (0x3001a6f8 FILDs it), scaled by 0.01 and
      * clamped to [0,1] to drive the green->yellow->red name tint. Provisional role
      * name; exact CoD symbol unconfirmed. */
     int32_t crosshairHealth;
     int32_t field_31cc4[1]; /* 0x3048ae04: unresolved */
-    /* 0x3048ae08: cg_usableHintKind — the latched "which usable-entity hint to draw"
-     * selector. CG_LatchOverlaySource (0x3001a5b0) copies cg_snap.field_5d0 here; the
+    /* 0x3048ae08: cg.usableHintKind — the latched "which usable-entity hint to draw"
+     * selector. CG_LatchOverlaySource (0x3001a5b0) copies cg.snap.field_5d0 here; the
      * drawer CG_DrawCursorhint (0x300303a0) dispatches on it: <=1 draws nothing, a
      * weapon-pickup selector in [0xb,0x8a] or [0x8b,0x10a] selects a weapon hint,
      * CURSOR_HINT_LMG (7) selects the mount hint, CURSOR_HINT_HEALTH (8)
@@ -4300,21 +4284,21 @@ typedef struct cg_s {
      * the state-reset block at 0x30034d8c. Mechanical owner=pm_jumpforsurface (a
      * size-match mislabel) rejected; named by proven role, exact CoD name unproven. */
     cursorHint_t usableHintKind;
-    /* 0x3048ae0c: CG_FadeColor start time (startMsec); latched from cg_time by
+    /* 0x3048ae0c: CG_FadeColor start time (startMsec); latched from cg.time by
      * CG_LatchOverlaySource (0x3001a5b0), consumed by the drawer FUN_300303a0. */
     uint32_t overlayFadeStartTime;
     /* 0x3048ae10: CG_FadeColor duration (totalMsec); latched from the fade-duration
      * constant 0x3052fc4c by CG_LatchOverlaySource, consumed by the same drawer. */
     uint32_t overlayFadeDuration;
-    /* 0x3048ae14: cg_usableHintColorByte — a latched 0..255 color/alpha byte for the
-     * usable-entity hint. Latched from cg_snap.field_5d4 by CG_LatchOverlaySource; the
+    /* 0x3048ae14: cg.usableHintColorByte — a latched 0..255 color/alpha byte for the
+     * usable-entity hint. Latched from cg.snap.field_5d4 by CG_LatchOverlaySource; the
      * drawer CG_DrawCursorhint gates the optional CG_FilledBar overlay on it being
      * nonzero and FILDs it, multiplying by 1/255 (0x3007be24) to a [0,1] fraction used
      * as the bar's alpha. Mechanical owner=pm_jumpforsurface (size-match mislabel)
      * rejected; named by proven role, exact CoD name unproven. */
     int32_t usableHintColorByte;
-    /* 0x3048ae18: cg_usableHintCommandIndex — a latched signed selector for the "raw
-     * command" hint. Latched from cg_snap.field_5d8 by CG_LatchOverlaySource. In
+    /* 0x3048ae18: cg.usableHintCommandIndex — a latched signed selector for the "raw
+     * command" hint. Latched from cg.snap.field_5d8 by CG_LatchOverlaySource. In
      * CG_DrawCursorhint, when >= 0 it is a gameState hint slot (index + 0x555 passed to
      * CG_ConfigString) whose text is localized via CG_TranslateMessage(.., "Hint String"); when
      * < 0 the hint falls back to the serverCursorHint selector's named
@@ -4323,7 +4307,7 @@ typedef struct cg_s {
      * proven role, exact CoD name unproven. */
     int32_t usableHintCommandIndex;
     int32_t field_31cdc[2]; /* 0x3048ae1c: unresolved */
-    /* 0x3048ae24 .data — cg_damageFeedbackTime: cg.time latched at the top of
+    /* 0x3048ae24 .data — cg.damageFeedbackTime: cg.time latched at the top of
      * CG_DamageFeedback (0x30034acc) on every hit. Write-only in this DLL; a "time of
      * last damage feedback" latch. Renamed from the size-match owner label. */
     uint32_t damageFeedbackTime;
@@ -4341,24 +4325,24 @@ typedef struct cg_s {
      * Named by proven role; exact CoD source name unproven. */
     int32_t lastRequestedWeapon;
     /* 0x3048ae3c .data width=4: a cg.time (ms) snapshot written by
-     * CG_SetSelectedWeapon (0x3002267e writes cg_time here) and re-stamped by the HUD
+     * CG_SetSelectedWeapon (0x3002267e writes cg.time here) and re-stamped by the HUD
      * overlay-reset cluster (0x3003953d). Write-only in this DLL — a HUD/overlay
      * "last touched" timestamp with no reader visible here. Adjacent to
-     * cg_weaponSelectTime (0x3048ae44) in the weapon-select timer group. The
+     * cg.weaponSelectTime (0x3048ae44) in the weapon-select timer group. The
      * owner=vectordistance2d label was a first-touch artifact. Named by proven role
      * (cg.time snapshot); exact CoD source name unproven. */
     int32_t weaponSelectTimeA;
     /* 0x3048ae40 .data width=4: a second cg.time (ms) snapshot written only by
-     * CG_SetSelectedWeapon (0x30022684 writes cg_time here). Write-only in this DLL;
+     * CG_SetSelectedWeapon (0x30022684 writes cg.time here). Write-only in this DLL;
      * no reader visible. Sits between the two other weapon-select time snapshots
-     * (0x3048ae3c and cg_weaponSelectTime at 0x3048ae44). The owner=vectordistance2d
+     * (0x3048ae3c and cg.weaponSelectTime at 0x3048ae44). The owner=vectordistance2d
      * label was a first-touch artifact. Named by proven role; exact CoD source name
      * unproven. */
     int32_t weaponSelectTimeB;
     /* 0x3048ae44 .data width=4.
-     * cg_weaponSelectTime — the cg.time (ms) at which the local player last
+     * cg.weaponSelectTime — the cg.time (ms) at which the local player last
      * (re)selected a weapon; drives the brief on-screen weapon-name overlay that
-     * fades out over 1800 ms after a switch. Snapshotted from cg_time by the
+     * fades out over 1800 ms after a switch. Snapshotted from cg.time by the
      * weapon-select cluster (writers at 0x30047398/0x3004753f/0x300475dd/0x300477b5/
      * 0x30047b94, plus the per-frame weapon-info cache at 0x30034d73 and 0x3002269c)
      * and read as CG_FadeColor's startMsec by the selected-weapon-name HUD draws
@@ -4373,9 +4357,9 @@ typedef struct cg_s {
     /* +0x70: previous cg.time used to calculate the carousel frame delta. */
     int32_t weaponSelectLastTime;
     cg_damageDirIndicator_t damageDirIndicators[CG_DAMAGE_DIRECTION_SLOT_COUNT];
-    /* 0x3048aed4 .data — cg_damageDirLatestServerTime: cg_snap->serverTime of the most
+    /* 0x3048aed4 .data — cg.damageDirLatestServerTime: cg.snap->serverTime of the most
      * recent damage event, latched right after the array (writer 0x30034d28). It sits
-     * exactly at &cg_damageDirIndicators[8], which is why the drawer's loop terminator
+     * exactly at &cg.damageDirIndicators[8], which is why the drawer's loop terminator
      * is the hard address 0x3048aed4. Mechanical owner=cg_ejectweaponbrass rejected. */
     int32_t damageDirLatestServerTime;
     int32_t field_31d98[4]; /* 0x3048aed8: unresolved */
@@ -4391,34 +4375,36 @@ typedef struct cg_s {
      * owner=veh_unlinkplayer was a wrong first-touch label and is rejected. */
     int32_t suppressMarksGate;
     int32_t field_31db0[7]; /* 0x3048aef0: unresolved */
-    /* 0x3048af0c (.data): cg_damageFlashEndTime — cg.time (ms) at which the red
+    /* 0x3048af0c (.data): cg.v_dmg_time — cg.time (ms) at which the red
      * damage-flash screen overlay finishes fading out. The trigger writer sets it to
-     * cg_time + 500 (0x30034d1e: MOV EDX,cg_time; ADD EDX,0x1f4; MOV [af0c],EDX), and
+     * cg.time + 500 (0x30034d1e: MOV EDX,cg.time; ADD EDX,0x1f4; MOV [af0c],EDX), and
      * the effect-reset path (0x3003959d) zeroes it. CG_DrawFlashDamage (0x3001a8e0)
-     * draws while cg_damageFlashEndTime > cg_time, so the effect lasts 500 ms and the
-     * remaining time (endTime - cg_time) drives the alpha ramp. Signed comparison
+     * draws while cg.v_dmg_time > cg.time, so the effect lasts 500 ms and the
+     * remaining time (endTime - cg.time) drives the alpha ramp. Signed comparison
      * (CMP/JLE) proves int32_t. Mechanical owner=dynasink label rejected (size guess). */
-    int32_t damageFlashEndTime;
-    /* 0x3048af10 (.data): cg_damageFlashScale — signed magnitude of the red
+    int32_t v_dmg_time;
+    /* 0x3048af10 (.data): cg.v_dmg_pitch — signed magnitude of the red
      * damage-flash overlay, multiplied into the fade alpha by CG_DrawFlashDamage
      * (0x3001a90d FMUL float ptr). Written as a float by the trigger path (0x30034b3c
      * FSTP after FCHS — can be negative; 0x30034c6b FSTP) and cleared by the reset
-     * path. Exact source field name unresolved; named by proven role. Mechanical
+     * path. Mechanical
      * owner=dynasink label rejected (size guess). */
-    float damageFlashScale;
-    /* 0x3048af14 .data — cg_damageFlashX: horizontal component of the directional
-     * damage blend, the {X} paired with cg_damageFlashScale (the value @0x3048af10).
-     * CG_DamageFeedback writes X = -DotProduct(cg_refdef.viewaxis[1], damageDir)*kick
+    float v_dmg_pitch;
+    /* 0x3048af14 .data — cg.v_dmg_roll: horizontal component of the directional
+     * damage blend, the {X} paired with cg.v_dmg_pitch (the value @0x3048af10).
+     * CG_DamageFeedback writes X = -DotProduct(cg.refdef.viewaxis[1], damageDir)*kick
      * (0x30034c3f), or 0 in the all-directions special case (0x30034b30); read together
-     * with cg_damageFlashScale by the damage-blend renderers (0x3003fbba/0x30046729) and
-     * cleared on reset (0x30034e13). Classic Quake3/CoD cg.damageX. A float. Renamed
+     * with cg.v_dmg_pitch by the damage-blend renderers (0x3003fbba/0x30046729) and
+     * cleared on reset (0x30034e13). Quake 3 cg.v_dmg_roll. A float. Renamed
      * from the size-match owner label. */
-    float damageFlashX;
+    float v_dmg_roll;
     /* 0x3048af18: current low-byte bobCycle phase in radians, computed as
      * (bobCycle & 255) / 255 * 2*pi + 2*pi and passed to the BG bob-factor helpers. */
     float bobCyclePhase;
-    /* 0x3048af1c .data refs=7 width=4 first=0x30034dec owner=cg_addscalefade */
-    float weaponMoveSpeed;
+    /* 0x3048af1c: cg.xyspeed. CG_CalcViewValues (0x30041b77..0x30041ba6) stores
+     * sqrt(velocity[0]^2 + velocity[1]^2) of the predicted player state, as Quake 3 does;
+     * the view-bob, weapon-movement and view-weapon paths read it. */
+    float xyspeed;
     uint8_t field_31de0[224];
     /* Per-frame gate suppressing the local view weapon. */
     qboolean viewWeaponSuppressed;
@@ -4431,47 +4417,47 @@ typedef struct cg_s {
     /* 0x3048b054: min ms between periodic emits (>=1 gate). */
     int32_t periodicEffectInterval;
     /* 0x3048b004..0x3048b057 — the fxTest command/CG_UpdatePeriodicEffect state
-     * block: cg_periodicEffectName (char[64] @0x3048b004), cg_periodicEffectOrigin
-     * (vec3_t @0x3048b044), cg_periodicEffectLastTime (@0x3048b050) and
-     * cg_periodicEffectInterval (@0x3048b054). Typed and declared in
+     * block: cg.periodicEffectName (char[64] @0x3048b004), cg.periodicEffectOrigin
+     * (vec3_t @0x3048b044), cg.periodicEffectLastTime (@0x3048b050) and
+     * cg.periodicEffectInterval (@0x3048b054). Typed and declared in
      * client_recovered.h after the common vector types are available. */
-    /* 0x3048b058..0x3048b063 .data — cg_viewKickVel: the persistent view-kick
+    /* 0x3048b058..0x3048b063 .data — cg.viewKickVel: the persistent view-kick
      * angular velocity vec3 (.x@0x3048b058, .y@0x3048b05c, .z@0x3048b060), the
-     * time-derivative of cg_viewKickAngles. CG_UpdateViewKick (0x3003f9f0) treats it
-     * as a 3-element float array indexed together with cg_viewKickAngles: it
+     * time-derivative of cg.viewKickAngles. CG_UpdateViewKick (0x3003f9f0) treats it
+     * as a 3-element float array indexed together with cg.viewKickAngles: it
      * integrates a weapon-dependent centering acceleration into it and zeroes a
      * component when its angle centers/clamps. Consolidated from the three
      * uint32_t g_data_cg_addscalefade_3048b05{8,c}/3048b060 placeholders (one vec3,
      * not three scalars). Exact original cg field name unproven; role name from the
      * view-kick centering integrator. */
     vec3_t viewKickVel;
-    /* 0x3048b064..0x3048b06f .data — cg_viewKickAngles: the persistent view-kick
+    /* 0x3048b064..0x3048b06f .data — cg.viewKickAngles: the persistent view-kick
      * angular offset vec3 (.x@0x3048b064, .y@0x3048b068, .z@0x3048b06c) added to the
      * view during first-person rendering. CG_UpdateViewKick (0x3003f9f0) integrates
-     * cg_viewKickVel into it, damps motion toward center, clamps each component to
+     * cg.viewKickVel into it, damps motion toward center, clamps each component to
      * +/-10.0 degrees, and resets to 0 on a zero crossing. Other view code reads the
      * components directly (e.g. FADD [0x3048b064] at 0x300426f7). Consolidated from
      * the three uint32_t g_data_cg_addscalefade_3048b06{4,8,c} placeholders (one
      * vec3). Exact original cg field name unproven; role name from the integrator. */
     vec3_t viewKickAngles;
-    /* 0x3048b070..0x3048b07b .data — cg_adsViewErrorAngles: the persistent ADS
+    /* 0x3048b070..0x3048b07b .data — cg.adsViewErrorAngles: the persistent ADS
      * view-error (idle aim-wander) angular offset vec3 (.x@0x3048b070, .y@0x3048b074,
      * .z@0x3048b078). CG_UpdateAdsViewError (0x30036070) steps .x and .y each activation
      * by AngleMod(prev + trig(phase)*magnitude) with a random magnitude in the weapon's
      * [adsViewErrorMin, adsViewErrorMax] and a random phase (rand()*2*pi/1666); .z is
      * written by the sway integrator at 0x30041746. The view builder at 0x300426ed adds
-     * this whole vec3 to cg_viewKickAngles when composing the final view angle offset
+     * this whole vec3 to cg.viewKickAngles when composing the final view angle offset
      * (FLD [0x3048b070] + [0x3048b064], etc.). Consolidated from the three
      * g_data_*_3048b07{0,4,8} placeholders (one vec3); the owner labels
      * scriptent_moveaxis / g_moverpush were mechanical first-touchers and are wrong.
      * Exact original cg field name unproven; role name from the writer/consumer. */
     vec3_t adsViewErrorAngles;
     vec3_t field_31f3c[5];
-    /* 0x3048b0b8 / 0x3048b0bc .data -- cg_effectProjAnglePitch / cg_effectProjAngleYaw:
+    /* 0x3048b0b8 / 0x3048b0bc .data -- cg.effectProjAnglePitch / cg.effectProjAngleYaw:
      * a cached {pitch, yaw} angle pair (degrees, floats) describing a fixed world
      * direction that is projected onto the screen. Proven floats: written together by
      * the effect-update path at 0x30046810 (FSTP [0xb8] / FSTP [0xbc]; the else-branch
-     * at 0x30046838 falls back to copying cg_refdefViewAngles[0]/cg_refdefViewAngles[1]),
+     * at 0x30046838 falls back to copying cg.refdefViewAngles[0]/cg.refdefViewAngles[1]),
      * and read as an angle pair by CG_ProjectEffectAnglesToScreen (0x30019373/0x30019379)
      * which multiplies each by DEG2RAD and feeds them through sincos to build a forward
      * unit vector. Retyped from the mislabeled uint32_t placeholders; owner=cg_parseimpacteffects
@@ -4479,9 +4465,9 @@ typedef struct cg_s {
      * {pitch,yaw} shape and projection role are proven. */
     float effectProjAnglePitch;
     float effectProjAngleYaw;
-    /* 0x3048b0c0..0x3048b0cb .data — cg_adsViewOffset: the ADS view-relative offset
+    /* 0x3048b0c0..0x3048b0cb .data — cg.adsViewOffset: the ADS view-relative offset
      * vec3 (.x@0x3048b0c0, .y@0x3048b0c4, .z@0x3048b0c8). Written only as a unit:
-     * CG_CalcAdsViewOffset (0x300451a0) stores (pos - cg_refdef.vieworg)*adsFraction
+     * CG_CalcAdsViewOffset (0x300451a0) stores (pos - cg.refdef.vieworg)*adsFraction
      * component-by-component, and both it and 0x30046a00 zero all three dwords when
      * ADS is inactive. Consolidates the three prior
      * uint32_t g_data_script_method_scriptbuiltin_setrig_3048b0c{0,4,8} placeholders
@@ -4492,7 +4478,7 @@ typedef struct cg_s {
     vec3_t weaponPositionBaseAngles;
     /* 0x3048b0d8..0x3048b0e3: persistent pitch/yaw/roll recoil accumulator. */
     vec3_t weaponRecoilAngles;
-    /* cg_specialTagPlacement (0x3048b0e4 .data) — a single fixed entity placement
+    /* cg.specialTagPlacement (0x3048b0e4 .data) — a single fixed entity placement
      * (world origin + 3x3 axis), 12 dwords / 0x30 bytes: origin at 0x3048b0e4 (+0x0),
      * axis[0] at 0x3048b0f0 (+0xc), axis[1] at 0x3048b0fc (+0x18), axis[2] at
      * 0x3048b108 (+0x24), ending 0x3048b110 (+0x2c). Supersedes the 13 mechanical
@@ -4515,7 +4501,7 @@ typedef struct cg_s {
     uint32_t screenReadyState;
     uint8_t field_31fd8[1044];
     /*
-     * cg_shakeSources[4] (0x3048b52c, .data) — the client's fixed 4-slot active
+     * cg.shakeSources[4] (0x3048b52c, .data) — the client's fixed 4-slot active
      * camera-shake table (stride 0x24 == sizeof(cg_shakeSource_t), end 0x3048b5bc).
      * Storage in globals.c; supersedes the mechanical g_data_*_viewki_* dword
      * captures at 0x3048b52c/0x3048b548/0x3048b56c/0x3048b590/0x3048b5b4. Written by
@@ -4523,51 +4509,51 @@ typedef struct cg_s {
      * (0x3001b390) / the aggregate walker (0x3001b550). */
     cg_shakeSource_t shakeSources[4];
     /* 0x3048b52c..0x3048b5bc .data: the client's fixed 4-slot camera-shake table,
-     * cg_shakeSource_t cg_shakeSources[4] (stride 0x24). The mechanical exporter
+     * cg_shakeSource_t cg.shakeSources[4] (stride 0x24). The mechanical exporter
      * captured individual dwords inside this array as separate g_data_*_viewki_*
      * symbols (0x3048b52c slot0.startMsec, 0x3048b548 slot0.scaledAmplitude,
      * 0x3048b56c slot1.scaledAmplitude, 0x3048b590 slot2.scaledAmplitude,
      * 0x3048b5b4 slot3.scaledAmplitude); those are superseded here by the typed
-     * array declared as cg_shakeSources in client_recovered.h (defined in
+     * array declared as cg.shakeSources in client_recovered.h (defined in
      * globals.c). Proven by the shake trio: CG_AddCameraShake (0x3001b420) REP MOVSDs
      * a 9-dword (0x24) cg_shakeSource_t into a free/weakest slot;
      * CG_EvaluateCameraShakeSource (0x3001b390) reads a slot; the aggregate walker
-     * (0x3001b550) iterates all 4. See cg_shakeSources in client_recovered.h. */
-    /* 0x3048b5bc .data -- cg_shakeSpinPhase (float): the random phase offset (radians) of
-     * the camera-shake sway. NOT part of cg_shakeSources[4] (that array ends at 0x3048b5bc;
-     * &cg_shakeSources[4] is only CG_AddCameraShake's loop-end bound). CG_CalcViewShake
+     * (0x3001b550) iterates all 4. See cg.shakeSources in client_recovered.h. */
+    /* 0x3048b5bc .data -- cg.shakeSpinPhase (float): the random phase offset (radians) of
+     * the camera-shake sway. NOT part of cg.shakeSources[4] (that array ends at 0x3048b5bc;
+     * &cg.shakeSources[4] is only CG_AddCameraShake's loop-end bound). CG_CalcViewShake
      * (0x3001b550) FSTPs a fresh random phase in [-PI, PI) here on frames with no active
      * shake and FADDs it as the phase of its three FSIN sway terms. Type repaired
      * uint32_t->float; mechanical viewki owner rejected. */
     float shakeSpinPhase;
-    /* 0x3048b5c0 .data -- cg_shakeExternAmplitude (float): an externally-set shake amplitude
+    /* 0x3048b5c0 .data -- cg.shakeExternAmplitude (float): an externally-set shake amplitude
      * written by 0x3001f901 and merged (max) into the shake amplitude by CG_CalcViewShake
      * (0x3001b5b1). Type repaired uint32_t->float; mechanical item_slider_paint owner
      * rejected. */
     float shakeExternAmplitude;
     /* 0x3048b5c4: write-only camera-shake restart cell; no reader exists in this DLL. */
     int32_t shakeRestartLatch;
-    /* 0x3048b5c8 .data — cg_hudSpinBaseTime (float). Written (FSTP float) by
+    /* 0x3048b5c8 .data — cg.hudSpinBaseTime (float). Written (FSTP float) by
      * CG_ConfigString11Modified (0x3001d391) and its sibling 0x3002e350 as the atof of
      * config string 11; consumed by CG_UpdateHudSpinAngle (0x3001d3aa) via FSUB float as
      * the base time subtracted from a running clock, then scaled to advance the spinning
-     * HUD element whose angle is the adjacent cg_hudSpinAngle at 0x3048b5cc. Type repaired
+     * HUD element whose angle is the adjacent cg.hudSpinAngle at 0x3048b5cc. Type repaired
      * uint32_t->float (all accesses are x87 float); size-match owner bg_getweapontypename
      * rejected. Exact original symbol name unresolved (role-derived), so the address
      * suffix is kept as the only disambiguator. */
     float hudSpinBaseTime;
     /* 0x3048b5cc .data refs=5 width=4 first=0x3001d412.
-     * RESOLVED (role): cg_hudSpinAngle — the current rotation angle (float, degrees)
+     * RESOLVED (role): cg.hudSpinAngle — the current rotation angle (float, degrees)
      * of the time-animated spinning HUD element. Sole writer is CG_UpdateHudSpinAngle
-     * (0x3001d3a0), which advances it from cg_time via a stepped interpolation and
+     * (0x3001d3a0), which advances it from cg.time via a stepped interpolation and
      * FSTPs a float here; sole consumer is CG_DrawSpinningPic (0x3002f910), which
      * reads it as the `angle` argument to CG_DrawRotatedPic. Written as a raw dword
      * in the callee's reset paths (a float bit pattern), so the datum is a float.
      * Exact CoD source name unproven; role name. The mechanical owner label
      * "pm_beginweaponchange" is a size-guess for the writer and is rejected. */
     float hudSpinAngle;
-    /* 0x3048b5d0 .data — cg_hudSpinVel: the angular velocity (float, degrees/second)
-     * of the time-animated spinning HUD element whose angle is cg_hudSpinAngle
+    /* 0x3048b5d0 .data — cg.hudSpinVel: the angular velocity (float, degrees/second)
+     * of the time-animated spinning HUD element whose angle is cg.hudSpinAngle
      * (0x3048b5cc). Exclusively owned by CG_UpdateHudSpinAngle (0x3001d3a0) — all 29
      * refs are inside that function — which integrates it against the substep time,
      * damps it (spring/critical-damping toward the target angle), clamps it to
@@ -4577,20 +4563,20 @@ typedef struct cg_s {
      * label is a size-guess for the writer and is rejected. Exact CoD field name
      * unproven; role-derived. */
     float hudSpinVel;
-    /* cg_compassRefYaw (0x3048b5d4, .data) — the current compass/objective-pointer
+    /* cg.compassRefYaw (0x3048b5d4, .data) — the current compass/objective-pointer
      * reference yaw (float, degrees). CG_DrawObjectivePointers (0x3002fe70) subtracts it
      * from each objective's world bearing (vectoyaw of objOrigin - viewOrigin) before
      * converting to a screen-relative angle, so it is the yaw the HUD compass is oriented
      * to. Written/advanced by the sibling spin-angle updater at 0x3001d6d0 (a twin of
-     * CG_UpdateHudSpinAngle, which writes the adjacent cg_hudSpinAngle at 0x3048b5cc);
+     * CG_UpdateHudSpinAngle, which writes the adjacent cg.hudSpinAngle at 0x3048b5cc);
      * that writer FSTPs a float here. Type repaired uint32_t->float. refs=10 across the DLL
      * are not all reconstructed, so the address suffix is kept and the exact CoD source name
      * is left unproven; the owner=cg_asset_parse label is only the first toucher. */
     float compassRefYaw;
-    /* cg_compassRefVel (0x3048b5d8, .data) — angular velocity (float, deg/s) of the
+    /* cg.compassRefVel (0x3048b5d8, .data) — angular velocity (float, deg/s) of the
      * compass reference-yaw spring driven by CG_UpdateCompassOrientation (0x3001d6d0). It is the
-     * velocity twin of cg_compassRefYaw, exactly as cg_hudSpinVel (0x3048b5d0) is
-     * the velocity for cg_hudSpinAngle. CG_UpdateCompassOrientation integrates it against substep
+     * velocity twin of cg.compassRefYaw, exactly as cg.hudSpinVel (0x3048b5d0) is
+     * the velocity for cg.hudSpinAngle. CG_UpdateCompassOrientation integrates it against substep
      * time with a critically-damped spring (accel ~1500, damping terms 3/5*dt), clamps its
      * magnitude to [-2000, 2000], and zeroes it on settle/reset. Type repaired uint32_t->float
      * (every value access is an x87 FLD; the reset MOVs store float bit patterns, e.g.
@@ -4619,40 +4605,40 @@ typedef struct cg_s {
     int32_t shellshockSoundEndTime;
     /* 0x3048bfec .data: shellshock mouse-sensitivity multiplier. The mouse update
      * interpolates it toward shellshock_t.mouseSensitivityScale, EndShellShockMouse
-     * restores 1.0f, and CG_DrawActiveFrame multiplies it into cg_zoomSensitivity
+     * restores 1.0f, and CG_DrawActiveFrame multiplies it into cg.zoomSensitivity
      * before CG_SET_USER_CMD_VALUE. */
     float shellshockMouseSensitivityScale;
     /* 0x3048bff0 .data: shellshock screen-blur amount, component X (a float — x87
      * FLD/FUCOMP accesses; mechanical uint32 width was wrong). Default 0.0f. Paired
-     * with cg_shellshockScreenBlurY below: the screen-blur pass (0x3003b670) runs only
+     * with cg.shellshockScreenBlurY below: the screen-blur pass (0x3003b670) runs only
      * when either differs from 0.0f, and both are zeroed together by CG_EndShellShock
      * (0x3003c1d0) and by 0x3003c630. Consumed by CG_EndShellShock. Exact source field
      * name unresolved; named by proven role. */
     float shellshockScreenBlurX;
     /* 0x3048bff4 .data: shellshock screen-blur amount, component Y (a float; see
-     * cg_shellshockScreenBlurX). Default 0.0f. Consumed by CG_EndShellShock
-     * (0x3003c1d0). Exact source field name unresolved; named by proven role. */
+     * cg.shellshockScreenBlurX). Default 0.0f. Consumed by CG_EndShellShock
+     * (0x3003c1d0). */
     float shellshockScreenBlurY;
-    /* 0x3048bff8 .data: cg_fadeOverlayActive — the "drew the timed 2D overlay on the
+    /* 0x3048bff8 .data: cg.fadeOverlayActive — the "drew the timed 2D overlay on the
      * previous frame" latch owned solely by CG_UpdateFadeOverlay (0x3003b7e0), its only
      * accessor (all 3 refs). Set to 1 after a frame that issued CG_R_SAVE_SCREEN/71 and read
      * next frame to gate the CG_R_BLEND_SAVED_SCREEN(value) call; cleared to 0 whenever the overlay
      * is not visible (remaining time <= 0). The mechanical owner=itemparse_forecolor
      * label is wrong — 0x3003b7e0 does no menu-item color parse. */
     int32_t fadeOverlayActive;
-    /* 0x3048bffc .data: cg_shellShockStartTime — the cg.time (ms) captured when the
+    /* 0x3048bffc .data: cg.shellShockStartTime — the cg.time (ms) captured when the
      * manual "cg_shellshock" console command triggers a shellshock. Written by
-     * CG_ShellShock_f (0x30017572: MOV [0x3048bffc],cg_time) and read by the scene
+     * CG_ShellShock_f (0x30017572: MOV [0x3048bffc],cg.time) and read by the scene
      * reader 0x30042160 (0x300424fd) as the effect start time. The mechanical
      * owner=concatargs label is a wrong size-guess name for 0x300174b0. */
     int32_t shellShockStartTime;
-    /* 0x3048c000 .data: cg_shellShockDuration — the shellshock duration in ms for the
+    /* 0x3048c000 .data: cg.shellShockDuration — the shellshock duration in ms for the
      * manual "cg_shellshock" console command. Written by CG_ShellShock_f
      * (0x30017577: the rounded (durationSeconds*1000) value) and read by the scene
      * reader 0x30042160 (0x30042502). The mechanical owner=concatargs label is a
      * wrong size-guess name for 0x300174b0. */
     int32_t shellShockDuration;
-    /* 0x3048c004 .data — cg_adsViewErrorLatched: one-shot latch guarding the ADS
+    /* 0x3048c004 .data — cg.adsViewErrorLatched: one-shot latch guarding the ADS
      * view-error (idle aim-wander) step in CG_UpdateAdsViewError (0x30036070). While the
      * player is scoped and the ADS overlay is active, the sway is stepped exactly once
      * per activation: the step runs only when this flag is 0, then sets it to 1
@@ -4672,33 +4658,33 @@ _Static_assert(sizeof(cg_t) == 0x32ec8, "cg_t clear: 0xcbb2 dwords at 0x30459140
 _Static_assert(offsetof(cg_t, clientFrame) == 0x0, "cg.clientFrame at 0x30459140");
 _Static_assert(offsetof(cg_t, clientNum) == 0x4, "cg.clientNum at 0x30459144");
 _Static_assert(offsetof(cg_t, demoPlayback) == 0x8, "cg.demoPlayback at 0x30459148");
-_Static_assert(offsetof(cg_t, screenSuppressFlag) == 0xc, "cg.screenSuppressFlag at 0x3045914c");
+_Static_assert(offsetof(cg_t, levelShot) == 0xc, "cg.levelShot at 0x3045914c");
 _Static_assert(offsetof(cg_t, lockedViewFace) == 0x10, "cg.lockedViewFace at 0x30459150");
 _Static_assert(offsetof(cg_t, lockedViewSize) == 0x14, "cg.lockedViewSize at 0x30459154");
 _Static_assert(offsetof(cg_t, latestSnapshotNum) == 0x18, "cg.latestSnapshotNum at 0x30459158");
-_Static_assert(offsetof(cg_t, latestSnapshotServerTime) == 0x1c, "cg.latestSnapshotServerTime at 0x3045915c");
+_Static_assert(offsetof(cg_t, latestSnapshotTime) == 0x1c, "cg.latestSnapshotTime at 0x3045915c");
 _Static_assert(offsetof(cg_t, snap) == 0x20, "cg.snap at 0x30459160");
 _Static_assert(offsetof(cg_t, nextSnap) == 0x24, "cg.nextSnap at 0x30459164");
 _Static_assert(offsetof(cg_t, activeSnapshots) == 0x28, "cg.activeSnapshots at 0x30459168");
 _Static_assert(offsetof(cg_t, frameInterpolation) == 0x2a068, "cg.frameInterpolation at 0x304831a8");
 _Static_assert(offsetof(cg_t, frametime) == 0x2a06c, "cg.frametime at 0x304831ac");
 _Static_assert(offsetof(cg_t, time) == 0x2a070, "cg.time at 0x304831b0");
-_Static_assert(offsetof(cg_t, physicsTime) == 0x2a074, "cg.physicsTime at 0x304831b4");
-_Static_assert(offsetof(cg_t, latestSnapshotTime) == 0x2a078, "cg.latestSnapshotTime at 0x304831b8");
-_Static_assert(offsetof(cg_t, initialSnapshotPending) == 0x2a07c, "cg.initialSnapshotPending at 0x304831bc");
-_Static_assert(offsetof(cg_t, thirdPerson) == 0x2a080, "cg.thirdPerson at 0x304831c0");
+_Static_assert(offsetof(cg_t, oldTime) == 0x2a074, "cg.oldTime at 0x304831b4");
+_Static_assert(offsetof(cg_t, physicsTime) == 0x2a078, "cg.physicsTime at 0x304831b8");
+_Static_assert(offsetof(cg_t, mapRestart) == 0x2a07c, "cg.mapRestart at 0x304831bc");
+_Static_assert(offsetof(cg_t, renderingThirdPerson) == 0x2a080, "cg.renderingThirdPerson at 0x304831c0");
 _Static_assert(offsetof(cg_t, predictedPlayerState) == 0x2a084, "cg.predictedPlayerState at 0x304831c4");
-_Static_assert(offsetof(cg_t, predictedEventEntity) == 0x2e588, "cg.predictedEventEntity at 0x304876c8");
+_Static_assert(offsetof(cg_t, predictedPlayerEntity) == 0x2e588, "cg.predictedPlayerEntity at 0x304876c8");
 _Static_assert(offsetof(cg_t, weaponPosition) == 0x2e810, "cg.weaponPosition at 0x30487950");
 _Static_assert(offsetof(cg_t, currentWeaponInfo) == 0x2e840, "cg.currentWeaponInfo at 0x30487980");
 _Static_assert(offsetof(cg_t, predictedErrorTime) == 0x2e844, "cg.predictedErrorTime at 0x30487984");
 _Static_assert(offsetof(cg_t, predictedError) == 0x2e848, "cg.predictedError at 0x30487988");
-_Static_assert(offsetof(cg_t, predictedEventSequence) == 0x2e854, "cg.predictedEventSequence at 0x30487994");
-_Static_assert(offsetof(cg_t, predictedEvents) == 0x2e858, "cg.predictedEvents at 0x30487998");
-_Static_assert(offsetof(cg_t, weaponChangeViewOffset) == 0x2e898, "cg.weaponChangeViewOffset at 0x304879d8");
-_Static_assert(offsetof(cg_t, weaponChangeViewOffsetTime) == 0x2e89c, "cg.weaponChangeViewOffsetTime at 0x304879dc");
-_Static_assert(offsetof(cg_t, impactViewKick) == 0x2e8a0, "cg.impactViewKick at 0x304879e0");
-_Static_assert(offsetof(cg_t, impactViewKickTime) == 0x2e8a4, "cg.impactViewKickTime at 0x304879e4");
+_Static_assert(offsetof(cg_t, eventSequence) == 0x2e854, "cg.eventSequence at 0x30487994");
+_Static_assert(offsetof(cg_t, predictableEvents) == 0x2e858, "cg.predictableEvents at 0x30487998");
+_Static_assert(offsetof(cg_t, stepChange) == 0x2e898, "cg.stepChange at 0x304879d8");
+_Static_assert(offsetof(cg_t, stepTime) == 0x2e89c, "cg.stepTime at 0x304879dc");
+_Static_assert(offsetof(cg_t, landChange) == 0x2e8a0, "cg.landChange at 0x304879e0");
+_Static_assert(offsetof(cg_t, landTime) == 0x2e8a4, "cg.landTime at 0x304879e4");
 _Static_assert(offsetof(cg_t, dobjPreviewOrientations) == 0x2e8a8, "cg.dobjPreviewOrientations at 0x304879e8");
 _Static_assert(offsetof(cg_t, refdef) == 0x2e938, "cg.refdef at 0x30487a78");
 _Static_assert(offsetof(cg_t, refdefViewAngles) == 0x2e988, "cg.refdefViewAngles at 0x30487ac8");
@@ -4708,31 +4694,31 @@ _Static_assert(offsetof(cg_t, weaponSwayOffset) == 0x2e9ac, "cg.weaponSwayOffset
 _Static_assert(offsetof(cg_t, dObjInfoKeys) == 0x2e9b8, "cg.dObjInfoKeys at 0x30487af8");
 _Static_assert(offsetof(cg_t, dObjInfoHandles) == 0x2f9b4, "cg.dObjInfoHandles at 0x30488af4");
 _Static_assert(offsetof(cg_t, zoomSensitivity) == 0x309b0, "cg.zoomSensitivity at 0x30489af0");
-_Static_assert(offsetof(cg_t, loadingScratch) == 0x309b4, "cg.loadingScratch at 0x30489af4");
+_Static_assert(offsetof(cg_t, infoScreenText) == 0x309b4, "cg.infoScreenText at 0x30489af4");
 _Static_assert(offsetof(cg_t, vehicleViewReset) == 0x30db4, "cg.vehicleViewReset at 0x30489ef4");
 _Static_assert(offsetof(cg_t, vehicleViewPrevAxis) == 0x30db8, "cg.vehicleViewPrevAxis at 0x30489ef8");
-_Static_assert(offsetof(cg_t, scoreboardTime) == 0x30ddc, "cg.scoreboardTime at 0x30489f1c");
-_Static_assert(offsetof(cg_t, scoreboardNumClients) == 0x30de0, "cg.scoreboardNumClients at 0x30489f20");
-_Static_assert(offsetof(cg_t, scoreboardTeamScores) == 0x30de4, "cg.scoreboardTeamScores at 0x30489f24");
+_Static_assert(offsetof(cg_t, scoresRequestTime) == 0x30ddc, "cg.scoresRequestTime at 0x30489f1c");
+_Static_assert(offsetof(cg_t, numScores) == 0x30de0, "cg.numScores at 0x30489f20");
+_Static_assert(offsetof(cg_t, teamScores) == 0x30de4, "cg.teamScores at 0x30489f24");
 _Static_assert(offsetof(cg_t, scoreboardTeamPings) == 0x30df4, "cg.scoreboardTeamPings at 0x30489f34");
 _Static_assert(offsetof(cg_t, scoreboardTeamCount) == 0x30e04, "cg.scoreboardTeamCount at 0x30489f44");
-_Static_assert(offsetof(cg_t, scoreboardEntries) == 0x30e14, "cg.scoreboardEntries at 0x30489f54");
-_Static_assert(offsetof(cg_t, scoreboardShowing) == 0x31414, "cg.scoreboardShowing at 0x3048a554");
-_Static_assert(offsetof(cg_t, scoreboardShowTime) == 0x3141c, "cg.scoreboardShowTime at 0x3048a55c");
+_Static_assert(offsetof(cg_t, scores) == 0x30e14, "cg.scores at 0x30489f54");
+_Static_assert(offsetof(cg_t, showScores) == 0x31414, "cg.showScores at 0x3048a554");
+_Static_assert(offsetof(cg_t, scoreFadeTime) == 0x3141c, "cg.scoreFadeTime at 0x3048a55c");
 _Static_assert(offsetof(cg_t, scoreboardScrollPos) == 0x31420, "cg.scoreboardScrollPos at 0x3048a560");
 _Static_assert(offsetof(cg_t, scoreboardOverflowed) == 0x31424, "cg.scoreboardOverflowed at 0x3048a564");
-_Static_assert(offsetof(cg_t, fraggedByName) == 0x31428, "cg.fraggedByName at 0x3048a568");
+_Static_assert(offsetof(cg_t, killerName) == 0x31428, "cg.killerName at 0x3048a568");
 _Static_assert(offsetof(cg_t, field_31448) == 0x31448, "cg.field_31448 at 0x3048a588");
 _Static_assert(offsetof(cg_t, centerPrintTime) == 0x3186c, "cg.centerPrintTime at 0x3048a9ac");
 _Static_assert(offsetof(cg_t, centerPrintCharWidth) == 0x31870, "cg.centerPrintCharWidth at 0x3048a9b0");
 _Static_assert(offsetof(cg_t, centerPrintY) == 0x31874, "cg.centerPrintY at 0x3048a9b4");
-_Static_assert(offsetof(cg_t, centerPrintString) == 0x31878, "cg.centerPrintString at 0x3048a9b8");
+_Static_assert(offsetof(cg_t, centerPrint) == 0x31878, "cg.centerPrint at 0x3048a9b8");
 _Static_assert(offsetof(cg_t, centerPrintLines) == 0x31c78, "cg.centerPrintLines at 0x3048adb8");
 _Static_assert(offsetof(cg_t, centerPrintPriority) == 0x31c7c, "cg.centerPrintPriority at 0x3048adbc");
 _Static_assert(offsetof(cg_t, screenFade) == 0x31c80, "cg.screenFade at 0x3048adc0");
-_Static_assert(offsetof(cg_t, outOfAmmoState) == 0x31ca8, "cg.outOfAmmoState at 0x3048ade8");
-_Static_assert(offsetof(cg_t, crosshairEntNum) == 0x31cac, "cg.crosshairEntNum at 0x3048adec");
-_Static_assert(offsetof(cg_t, crosshairEntTime) == 0x31cb0, "cg.crosshairEntTime at 0x3048adf0");
+_Static_assert(offsetof(cg_t, lowAmmoWarning) == 0x31ca8, "cg.lowAmmoWarning at 0x3048ade8");
+_Static_assert(offsetof(cg_t, crosshairClientNum) == 0x31cac, "cg.crosshairClientNum at 0x3048adec");
+_Static_assert(offsetof(cg_t, crosshairClientTime) == 0x31cb0, "cg.crosshairClientTime at 0x3048adf0");
 _Static_assert(offsetof(cg_t, crosshairHealthEntNum) == 0x31cbc, "cg.crosshairHealthEntNum at 0x3048adfc");
 _Static_assert(offsetof(cg_t, crosshairHealth) == 0x31cc0, "cg.crosshairHealth at 0x3048ae00");
 _Static_assert(offsetof(cg_t, usableHintKind) == 0x31cc8, "cg.usableHintKind at 0x3048ae08");
@@ -4752,11 +4738,11 @@ _Static_assert(offsetof(cg_t, damageDirIndicators) == 0x31d34, "cg.damageDirIndi
 _Static_assert(offsetof(cg_t, damageDirLatestServerTime) == 0x31d94, "cg.damageDirLatestServerTime at 0x3048aed4");
 _Static_assert(offsetof(cg_t, grenadePulseLastSpecialTime) == 0x31da8, "cg.grenadePulseLastSpecialTime at 0x3048aee8");
 _Static_assert(offsetof(cg_t, suppressMarksGate) == 0x31dac, "cg.suppressMarksGate at 0x3048aeec");
-_Static_assert(offsetof(cg_t, damageFlashEndTime) == 0x31dcc, "cg.damageFlashEndTime at 0x3048af0c");
-_Static_assert(offsetof(cg_t, damageFlashScale) == 0x31dd0, "cg.damageFlashScale at 0x3048af10");
-_Static_assert(offsetof(cg_t, damageFlashX) == 0x31dd4, "cg.damageFlashX at 0x3048af14");
+_Static_assert(offsetof(cg_t, v_dmg_time) == 0x31dcc, "cg.v_dmg_time at 0x3048af0c");
+_Static_assert(offsetof(cg_t, v_dmg_pitch) == 0x31dd0, "cg.v_dmg_pitch at 0x3048af10");
+_Static_assert(offsetof(cg_t, v_dmg_roll) == 0x31dd4, "cg.v_dmg_roll at 0x3048af14");
 _Static_assert(offsetof(cg_t, bobCyclePhase) == 0x31dd8, "cg.bobCyclePhase at 0x3048af18");
-_Static_assert(offsetof(cg_t, weaponMoveSpeed) == 0x31ddc, "cg.weaponMoveSpeed at 0x3048af1c");
+_Static_assert(offsetof(cg_t, xyspeed) == 0x31ddc, "cg.xyspeed at 0x3048af1c");
 _Static_assert(offsetof(cg_t, field_31de0) == 0x31de0, "cg.field_31de0 at 0x3048af20");
 _Static_assert(offsetof(cg_t, viewWeaponSuppressed) == 0x31ec0, "cg.viewWeaponSuppressed at 0x3048b000");
 _Static_assert(offsetof(cg_t, periodicEffectName) == 0x31ec4, "cg.periodicEffectName at 0x3048b004");
@@ -4799,142 +4785,6 @@ _Static_assert(offsetof(cg_t, shellShockDuration) == 0x32ec0, "cg.shellShockDura
 _Static_assert(offsetof(cg_t, adsViewErrorLatched) == 0x32ec4, "cg.adsViewErrorLatched at 0x3048c004");
 #endif
 
-/* NOT_FROM_ORIGINAL_SOURCE: aliases that keep the former separate-global spellings
- * compiling; each names exactly one cg_t member. */
-#define cg_clientFrame (cg.clientFrame)
-#define cg_clientNum (cg.clientNum)
-#define cg_demoPlayback (cg.demoPlayback)
-#define g_cgScreenSuppressFlag (cg.screenSuppressFlag)
-#define cg_lockedViewFace (cg.lockedViewFace)
-#define cg_lockedViewSize (cg.lockedViewSize)
-#define cg_latestSnapshotNum (cg.latestSnapshotNum)
-#define cg_latestSnapshotServerTime (cg.latestSnapshotServerTime)
-#define cg_snap (cg.snap)
-#define cg_nextSnap (cg.nextSnap)
-#define cg_activeSnapshots0 (cg.activeSnapshots[0])
-#define cg_activeSnapshots1 (cg.activeSnapshots[1])
-#define cg_frameInterpolation (cg.frameInterpolation)
-#define cg_frametime (cg.frametime)
-#define cg_time (cg.time)
-#define cg_physicsTime (cg.physicsTime)
-#define cg_latestSnapshotTime (cg.latestSnapshotTime)
-#define cg_initialSnapshotPending (cg.initialSnapshotPending)
-#define cg_thirdPerson (cg.thirdPerson)
-#define cg_predictedPlayerState (cg.predictedPlayerState)
-#define cg_predictedEventEntity (cg.predictedEventEntity)
-#define cg_prevAdsFraction (cg.weaponPosition.prevAdsFraction)
-#define cg_adsZoomingIn (cg.weaponPosition.adsZoomingIn)
-#define cg_weaponMovementAngles (cg.weaponPosition.weaponMovementAngles)
-#define cg_weaponPositionMoveScale (cg.weaponPosition.weaponPositionMoveScale)
-#define cg_weaponMoveAngles (cg.weaponPosition.weaponMoveAngles)
-#define cg_weaponPositionPrevAngles (cg.weaponPosition.weaponPositionPrevAngles)
-#define cg_currentWeaponInfo (cg.currentWeaponInfo)
-#define cg_predictedErrorTime (cg.predictedErrorTime)
-#define cg_predictedError (cg.predictedError)
-#define cg_predictedEventSequence (cg.predictedEventSequence)
-#define cg_predictedEvents (cg.predictedEvents)
-#define cg_weaponChangeViewOffset (cg.weaponChangeViewOffset)
-#define cg_weaponChangeViewOffsetTime (cg.weaponChangeViewOffsetTime)
-#define cg_impactViewKick (cg.impactViewKick)
-#define cg_impactViewKickTime (cg.impactViewKickTime)
-#define cg_dobjPreviewOrientations (cg.dobjPreviewOrientations)
-#define cg_refdef (cg.refdef)
-#define cg_refdefViewAngles (cg.refdefViewAngles)
-#define cg_weaponSwayOffset (cg.weaponSwayOffset)
-#define cg_weaponSwayAngles (cg.weaponSwayAngles)
-#define cg_weaponSwayViewAngles (cg.weaponSwayViewAngles)
-#define cg_dObjInfoKeys (cg.dObjInfoKeys)
-#define cg_dObjInfoHandles (cg.dObjInfoHandles)
-#define cg_zoomSensitivity (cg.zoomSensitivity)
-#define cg_loadingScratch (cg.loadingScratch)
-#define cg_vehicleViewReset (cg.vehicleViewReset)
-#define cg_vehicleViewPrevAxis (cg.vehicleViewPrevAxis)
-#define cgs_scoreboardTime (cg.scoreboardTime)
-#define cg_scoreboardNumClients (cg.scoreboardNumClients)
-#define cg_scoreboardTeamScores (cg.scoreboardTeamScores)
-#define cg_scoreboardTeamPings (cg.scoreboardTeamPings)
-#define cg_scoreboardTeamCount (cg.scoreboardTeamCount)
-#define cg_scoreboardEntries (cg.scoreboardEntries)
-#define cg_scoreboardShowing (cg.scoreboardShowing)
-#define cg_scoreboardShowTime (cg.scoreboardShowTime)
-#define cg_scoreboardScrollPos (cg.scoreboardScrollPos)
-#define cg_scoreboardOverflowed (cg.scoreboardOverflowed)
-#define cg_fraggedByName (cg.fraggedByName)
-#define cg_unreferencedSpectatorState (cg.field_31448)
-#define cg_centerPrintTime (cg.centerPrintTime)
-#define cg_centerPrintCharWidth (cg.centerPrintCharWidth)
-#define cg_centerPrintY (cg.centerPrintY)
-#define cg_centerPrintString (cg.centerPrintString)
-#define cg_centerPrintLines (cg.centerPrintLines)
-#define cg_centerPrintPriority (cg.centerPrintPriority)
-#define cg_screenFade (cg.screenFade)
-#define cg_outOfAmmoState (cg.outOfAmmoState)
-#define cg_crosshairEntNum (cg.crosshairEntNum)
-#define cg_crosshairEntTime (cg.crosshairEntTime)
-#define cg_crosshairHealthEntNum (cg.crosshairHealthEntNum)
-#define cg_crosshairHealth (cg.crosshairHealth)
-#define cg_usableHintKind (cg.usableHintKind)
-#define cg_overlayFadeStartTime (cg.overlayFadeStartTime)
-#define cg_overlayFadeDuration (cg.overlayFadeDuration)
-#define cg_usableHintColorByte (cg.usableHintColorByte)
-#define cg_usableHintCommandIndex (cg.usableHintCommandIndex)
-#define cg_damageFeedbackTime (cg.damageFeedbackTime)
-#define s_voiceMenuStartTime (cg.voiceMenuStartTime)
-#define cg_lastRequestedWeapon (cg.lastRequestedWeapon)
-#define cg_weaponSelectTimeA (cg.weaponSelectTimeA)
-#define cg_weaponSelectTimeB (cg.weaponSelectTimeB)
-#define cg_weaponSelectTime (cg.weaponSelectTime)
-#define cg_weaponSelectSlotScale (cg.weaponSelectSlotScale)
-#define cg_weaponSelectLastTime (cg.weaponSelectLastTime)
-#define cg_damageDirIndicators (cg.damageDirIndicators)
-#define cg_damageDirLatestServerTime (cg.damageDirLatestServerTime)
-#define cg_grenadePulseLastSpecialTime (cg.grenadePulseLastSpecialTime)
-#define cg_suppressMarksGate (cg.suppressMarksGate)
-#define cg_damageFlashEndTime (cg.damageFlashEndTime)
-#define cg_damageFlashScale (cg.damageFlashScale)
-#define cg_damageFlashX (cg.damageFlashX)
-#define cg_bobCyclePhase (cg.bobCyclePhase)
-#define cg_weaponMoveSpeed (cg.weaponMoveSpeed)
-#define cg_unreferencedViewWeaponStateA (cg.field_31de0)
-#define cg_viewWeaponSuppressed (cg.viewWeaponSuppressed)
-#define cg_periodicEffectName (cg.periodicEffectName)
-#define cg_periodicEffectOrigin (cg.periodicEffectOrigin)
-#define cg_periodicEffectLastTime (cg.periodicEffectLastTime)
-#define cg_periodicEffectInterval (cg.periodicEffectInterval)
-#define cg_viewKickVel (cg.viewKickVel)
-#define cg_viewKickAngles (cg.viewKickAngles)
-#define cg_adsViewErrorAngles (cg.adsViewErrorAngles)
-#define cg_unreferencedViewVectors (cg.field_31f3c)
-#define cg_effectProjAnglePitch (cg.effectProjAnglePitch)
-#define cg_effectProjAngleYaw (cg.effectProjAngleYaw)
-#define cg_adsViewOffset (cg.adsViewOffset)
-#define cg_weaponPositionBaseAngles (cg.weaponPositionBaseAngles)
-#define cg_weaponRecoilAngles (cg.weaponRecoilAngles)
-#define cg_specialTagPlacement (cg.specialTagPlacement)
-#define g_cgScreenReadyState (cg.screenReadyState)
-#define cg_unreferencedViewEffectState (cg.field_31fd8)
-#define cg_shakeSources (cg.shakeSources)
-#define cg_shakeSpinPhase (cg.shakeSpinPhase)
-#define cg_shakeExternAmplitude (cg.shakeExternAmplitude)
-#define cg_shakeRestartLatch (cg.shakeRestartLatch)
-#define cg_hudSpinBaseTime (cg.hudSpinBaseTime)
-#define cg_hudSpinAngle (cg.hudSpinAngle)
-#define cg_hudSpinVel (cg.hudSpinVel)
-#define cg_compassRefYaw (cg.compassRefYaw)
-#define cg_compassRefVel (cg.compassRefVel)
-#define cg_compassFriendlies (cg.compassFriendlies)
-#define cg_compassTanks (cg.compassTanks)
-#define cg_shellShockSwayParams (cg.shellShockSwayParams)
-#define cg_shellShockSwayStartTime (cg.shellShockSwayStartTime)
-#define cg_shellShockSwayDuration (cg.shellShockSwayDuration)
-#define cg_shellshockSoundEndTime (cg.shellshockSoundEndTime)
-#define cg_shellshockMouseSensitivityScale (cg.shellshockMouseSensitivityScale)
-#define cg_shellshockScreenBlurX (cg.shellshockScreenBlurX)
-#define cg_shellshockScreenBlurY (cg.shellshockScreenBlurY)
-#define cg_fadeOverlayActive (cg.fadeOverlayActive)
-#define cg_shellShockStartTime (cg.shellShockStartTime)
-#define cg_shellShockDuration (cg.shellShockDuration)
-#define cg_adsViewErrorLatched (cg.adsViewErrorLatched)
 /* 0x3048c030 RESOLVED: cg_crosshairNoGun_vmCvar.string (+0x10 of the vmCvar at
  * 0x3048c020, cg_cvarTable entry 45 "cg_crosshairNoGun", default
  * "gfx/reticle/hud@center_ads.tga"). CG_DrawCrosshair (0x3001a007,
@@ -4996,7 +4846,7 @@ _Static_assert(offsetof(cg_t, adsViewErrorLatched) == 0x32ec4, "cg.adsViewErrorL
 /* 0x3052e8c8 .data refs=2 width=imm first=0x3003c9fb owner=debugdumpanims */
 
 /* 0x3052ea4c .data — cg_hudDamageIconTime_vmCvar.integer: display lifetime (ms) copied
- * into cg_damageDirIndicators[best].duration by CG_DamageFeedback (0x30034c8c) when
+ * into cg.damageDirIndicators[best].duration by CG_DamageFeedback (0x30034c8c) when
  * registering a damage-direction arrow. Read-only here; renamed from the size-match
  * owner label. */
 
@@ -5078,7 +4928,7 @@ extern vmCvar_t cg_viewSizeCvar;
  * registration string is not reconstructed here but the dev-gate role is proven. */
 /* 0x3052fb28 .data refs=1 width=4 first=0x30044e31 owner=setclientviewangle */
 /* 0x3052fc4c .data refs=1 width=4 first=0x3001a5ce owner=pm_jumpforsurface */
-/* 0x3052fc4c: default duration copied into cg_overlayFadeDuration. */
+/* 0x3052fc4c: default duration copied into cg.overlayFadeDuration. */
 
 /* 0x3052ffa8 .data refs=2 (0x3002cac7, 0x3002caf3) width=4. Sole consumer:
  * CG_PlaySoundAliasByName (0x3002ca80), which loads it as a float (FLD float ptr) and
@@ -5401,7 +5251,7 @@ extern int32_t cg_hudEmitCount; /* 0x305385e0 */
 
 /* 0x3053a030 .data refs=14: cg_effectTime, the effect subsystem's current time
  * base in ms. CG_InstallSnapshotResetEffects (0x3003c9d0) mirrors the installed
- * snapshot's serverTime here alongside cg_time; effect/trajectory code FILDs it
+ * snapshot's serverTime here alongside cg.time; effect/trajectory code FILDs it
  * (0x30004da0 loads it as an integer -> float in several effect computations) and
  * subtracts it for elapsed-time math. Provisional role name (bg_evaluatetrajectory
  * owner label is the mechanical first-toucher, not the subsystem). */

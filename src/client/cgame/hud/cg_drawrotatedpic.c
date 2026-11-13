@@ -6,7 +6,7 @@
 // no anim-table walk. This is a pure x87 float rotation of a 2D quad followed by a
 // single cgame 2D-poly draw syscall). The name CG_DrawRotatedPic (0x3001cb60) was
 // already established in the corpus by its callers (e.g. CG_DrawSpinningPic
-// 0x3002f910 feeds cg_hudSpinAngle as `angle`); this reconstruction proves the
+// 0x3002f910 feeds cg.hudSpinAngle as `angle`); this reconstruction proves the
 // byte-level signature and body match that decl.
 //
 // Behavior (all proven against the .mcode instruction stream):

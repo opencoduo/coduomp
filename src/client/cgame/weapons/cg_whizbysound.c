@@ -46,7 +46,7 @@ enum { CG_WHIZBY_ENTITYNUM_WORLD = 1022 };
 //   0x3007c000 =  64.0f   (min projection t along the ray)
 //
 // Globals:
-//   0x30487a90/94/98 = cg_refdef.vieworg (the current view/listener origin vec3).
+//   0x30487a90/94/98 = cg.refdef.vieworg (the current view/listener origin vec3).
 //   0x3044c1e4       = the registered "whizby" sound handle (soundName arg).
 
 void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle)
@@ -64,7 +64,7 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle)
     vec3_t dir;
     VectorNormalize2(diff, dir);
 
-    /* 0x30048120..0x3004814e: t = dot(cg_refdef.vieworg - muzzle, dir) — the scalar
+    /* 0x30048120..0x3004814e: t = dot(cg.refdef.vieworg - muzzle, dir) — the scalar
      * projection of the listener onto the shot ray measured from the muzzle. The
      * three (viewOrg - muzzle) terms are each multiplied by the matching dir
      * component and summed in one 80-bit-register chain (FMUL dir.z / FXCH /
@@ -74,11 +74,11 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle)
      * carrier for that x87 register residency; the runtime control word governs
      * the precision of the arithmetic instructions that honor PC. */
     long double t =
-        ((long double)cg_refdef.vieworg[2] - (long double)muzzle[2]) *
+        ((long double)cg.refdef.vieworg[2] - (long double)muzzle[2]) *
             (long double)dir[2] +
-        ((long double)cg_refdef.vieworg[1] - (long double)muzzle[1]) *
+        ((long double)cg.refdef.vieworg[1] - (long double)muzzle[1]) *
             (long double)dir[1] +
-        ((long double)cg_refdef.vieworg[0] - (long double)muzzle[0]) *
+        ((long double)cg.refdef.vieworg[0] - (long double)muzzle[0]) *
             (long double)dir[0];
     float tRounded = (float)t; /* 0x3004814e FST DWORD [ESP+0x8] */
 
@@ -119,18 +119,18 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle)
     point[2] = (float)((long double)muzzle[2] +
                        (long double)tRounded * (long double)dir[2]);
 
-    /* 0x300481be..0x300481fd: dist = |cg_refdef.vieworg - point|; FCOMP 140.0 /
+    /* 0x300481be..0x300481fd: dist = |cg.refdef.vieworg - point|; FCOMP 140.0 /
      * TEST AH,0x41 / JZ skip. ex/ey/ez and the FSQRT result stay on the x87
      * stack (no float store), so the native-x87 adapter emits the inline FSQRT at
      * 0x300481ea. ex uses the unrounded point0; ey/ez use the reloaded rounded
      * point[1]/point[2]. The mask
      * C3|C0 with JZ skips (does nothing) when dist > 140.0f, so the sound fires only
      * when the closest approach is within 140 units (dist <= 140.0f, equal included). */
-    long double ex = point0 - cg_refdef.vieworg[0];
+    long double ex = point0 - cg.refdef.vieworg[0];
     long double ey =
-        (long double)point[1] - (long double)cg_refdef.vieworg[1];
+        (long double)point[1] - (long double)cg.refdef.vieworg[1];
     long double ez =
-        (long double)point[2] - (long double)cg_refdef.vieworg[2];
+        (long double)point[2] - (long double)cg.refdef.vieworg[2];
     long double dist = coduo_x87_sqrtl(
         ez * ez + ey * ey + ex * ex);
     if (dist > 140.0f) {

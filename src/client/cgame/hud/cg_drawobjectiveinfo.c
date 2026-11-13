@@ -168,7 +168,7 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx,
 
     y += SCOREBOARD_OBJECTIVE_BOTTOM_PAD;
 
-    if (cg_snap == NULL && cg_updateScreenActive == 0) {
+    if (cg.snap == NULL && cg_updateScreenActive == 0) {
         char hunkUsageString[LOADING_HUNK_USAGE_BUFFER_SIZE];
         const char *serverInfo;
         const char *mapName;

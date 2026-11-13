@@ -14,8 +14,8 @@
 //     "hudScoreboardScroll_*", registers scoreboard shaders, and immediately after
 //     the call compares 432.0 (screen height, 0x3007bdc0) minus this returned
 //     height to decide whether the list needs scrolling;
-//   - it reads the scoreboard-state globals cg_scoreboardNumClients (0x30489f20)
-//     and cg_scoreboardTeamCount[] (0x30489f44), which the scoreboard build
+//   - it reads the scoreboard-state globals cg.numScores (0x30489f20)
+//     and cg.scoreboardTeamCount[] (0x30489f44), which the scoreboard build
 //     routine at 0x30038000 fills (client count clamped to MAX_CLIENTS at
 //     0x30038082; per-team counts incremented at 0x30038295
 //     `inc [0x30489f44 + eax*4]`).
@@ -58,29 +58,29 @@ float CG_ScoreboardHeight(int32_t *lineCount)
     // 0x30036e5c..0x30036e6e: if either scored team (AXIS or ALLIES) has any
     // rows, the scoreboard shows the team-scores header instead of the bare list.
     // 0x30036e70 FSTP ST0 discards the 10.0 base; 0x30036e78 FLD 66.0 replaces it.
-    if (cg_scoreboardTeamCount[TEAM_AXIS] != 0 ||
-        cg_scoreboardTeamCount[TEAM_ALLIES] != 0) {
+    if (cg.scoreboardTeamCount[TEAM_AXIS] != 0 ||
+        cg.scoreboardTeamCount[TEAM_ALLIES] != 0) {
         *lineCount = SB_HEADER_LINES;
         height = (float)SB_HEADER_HEIGHT;
     }
 
     // 0x30036e7e..0x30036e91: free-for-all players get their own banner section.
-    if (cg_scoreboardTeamCount[TEAM_FREE] != 0) {
+    if (cg.scoreboardTeamCount[TEAM_FREE] != 0) {
         height += (float)SB_TEAM_BANNER_HEIGHT;
         *lineCount = coduo_int32_from_bits((uint32_t)*lineCount + 1u);
     }
 
     // 0x30036e93..0x30036ea6: spectators get their own banner section.
-    if (cg_scoreboardTeamCount[TEAM_SPECTATOR] != 0) {
+    if (cg.scoreboardTeamCount[TEAM_SPECTATOR] != 0) {
         height += (float)SB_TEAM_BANNER_HEIGHT;
         *lineCount = coduo_int32_from_bits((uint32_t)*lineCount + 1u);
     }
 
     // 0x30036ea8..0x30036ec8: one row per collected client. The loop bound
-    // cg_scoreboardNumClients is reloaded each iteration and the compare is
+    // cg.numScores is reloaded each iteration and the compare is
     // signed (TEST/JLE guard, CMP/JL back-edge), so a non-positive count draws
     // no rows.
-    for (int32_t i = 0; i < cg_scoreboardNumClients; i++) {
+    for (int32_t i = 0; i < cg.numScores; i++) {
         height += (float)SB_ROW_HEIGHT;
         *lineCount = coduo_int32_from_bits((uint32_t)*lineCount + 1u);
     }

@@ -5,8 +5,8 @@
 // crosshair hint overlay (pick-up ammo/weapon/health, swap weapons, LMG mount,
 // generic activate/use). Its seed/latch half is CG_LatchOverlaySource
 // (0x3001a5b0), whose only caller is this drawer (call at 0x300303db); that
-// routine copies cg_snap source fields into the persistent overlay block
-// (cg_usableHintKind/ColorByte/CommandIndex + the CG_FadeColor timing pair) and
+// routine copies cg.snap source fields into the persistent overlay block
+// (cg.usableHintKind/ColorByte/CommandIndex + the CG_FadeColor timing pair) and
 // this function immediately consumes them.
 //
 // NAME ADJUDICATION: the .mcode header names this PM_Footsteps, an explicit SIZE
@@ -58,7 +58,7 @@ enum {
     HINT_STYLE_WOBBLE       = 3   // sine-wobble the hint rect height; suppress pulse
 };
 
-// Latched serverCursorHint (cg_usableHintKind, 0x3048ae08) dispatch values.
+// Latched serverCursorHint (cg.usableHintKind, 0x3048ae08) dispatch values.
 // Values 0..9 use the shared cursorHint_t names. Values above that base
 // encode the two per-weapon pickup ranges proved below; they are hint selectors,
 // not EV_* entity-event ids.
@@ -152,14 +152,14 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
         return;  // 0x300303d4 JZ -> canary + epilogue, no draw.
     }
 
-    // 0x300303db: seed the overlay source from cg_snap.
+    // 0x300303db: seed the overlay source from cg.snap.
     CG_LatchOverlaySource();
 
     // 0x300303e0: dispatch selector + validity-table gate. The original indexes
     // one physically contiguous qhandle_t band beginning at 0x3044b6f8:
     // selector -1 is cgs_media_hudNoWeaponIcon, 0..9 are fixed hint shaders,
     // 10..137 are weapon HUD icons, and 138..265 are weapon ammo icons.
-    int32_t kind = cg_usableHintKind;                 // [0x3048ae08]
+    int32_t kind = cg.usableHintKind;                 // [0x3048ae08]
     qhandle_t hintShader = 0;
 
     /* The instruction is one flat unchecked load, but its sole snapshot
@@ -193,12 +193,12 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
 
     // 0x30030406: fade the hint color. EDX=startMsec, ECX=totalMsec.
     vec_t *fadeColor = CG_FadeColor(
-        coduo_int32_from_bits((uint32_t)cg_overlayFadeStartTime),
-        coduo_int32_from_bits((uint32_t)cg_overlayFadeDuration));
+        coduo_int32_from_bits((uint32_t)cg.overlayFadeStartTime),
+        coduo_int32_from_bits((uint32_t)cg.overlayFadeDuration));
     if (fadeColor == (vec_t *)0) {
         // 0x30030422: fully faded -> reset draw color, clear the latch, stop.
         cgame_syscall(CG_R_SETCOLOR, (uint32_t)0);
-        cg_usableHintKind = CURSOR_HINT_OFF;          // MOV [0x3048ae08],EDI (EDI==0)
+        cg.usableHintKind = CURSOR_HINT_OFF;          // MOV [0x3048ae08],EDI (EDI==0)
         return;
     }
 
@@ -206,16 +206,16 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
     int32_t style = cg_cursorHints_vmCvar.integer;               // [0x305301ec]
 
     // 0x30030455: style 3 sine-modulates the fade color's alpha in place.
-    //   fadeColor[3] = (sin(cg_time * 1/150) + 1.0) * fadeColor[3] * 0.5
+    //   fadeColor[3] = (sin(cg.time * 1/150) + 1.0) * fadeColor[3] * 0.5
     // (FILD cg.time; FMUL 1/150; FSIN; FADD 1.0; FMUL [EDI+0xc]; FMUL 0.5; FSTP [EDI+0xc]).
     if (style == HINT_STYLE_WOBBLE) {
         const long double phase = coduo_x87_sinl(
-            (long double)cg_time *
+            (long double)cg.time *
             (long double)HINT_PHASE_RATE);
         fadeColor[3] = (float)((phase + 1.0L) *
                                (long double)fadeColor[3] * 0.5L);
         style = cg_cursorHints_vmCvar.integer;                   // 0x30030475 reload
-        kind  = cg_usableHintKind;                    // 0x3003047a reload ESI
+        kind  = cg.usableHintKind;                    // 0x3003047a reload ESI
     }
 
     // 0x30030483..0x300304eb: compute the pulse color scale. pulseScale goes to
@@ -229,13 +229,13 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
             // fractional milliseconds of the pickup timer (0x3048ae0c reused as a
             // signed ms value % 1000), scaled by 1/100.
             int32_t rem =
-                coduo_int32_from_bits((uint32_t)cg_overlayFadeStartTime) % 1000;
+                coduo_int32_from_bits((uint32_t)cg.overlayFadeStartTime) % 1000;
             pulseScale = (float)((long double)rem *
                                  (long double)HINT_MS_TO_FRAC);
         } else {
             // default style: fixed sine pulse (sin+1.0)*0.5*10.0.
             const long double phase = coduo_x87_sinl(
-                (long double)cg_time *
+                (long double)cg.time *
                 (long double)HINT_PHASE_RATE);
             pulseScale = (float)((phase + 1.0L) * 0.5L * 10.0L);
         }
@@ -273,13 +273,13 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
         // 0x3003053d: is there a free inventory slot for this weapon?
         //   ECX = weaponIndex, EDX = &cg.predictedPlayerState (0x304831c4).
         int32_t emptySlot =
-            BG_GetEmptySlotForWeapon(&cg_predictedPlayerState, weaponIndex);
+            BG_GetEmptySlotForWeapon(&cg.predictedPlayerState, weaponIndex);
         if (emptySlot == 0) {
             // 0x30030551: no free slot -> "swap weapons" hint (or nothing if identical).
             Controls_GetConfig();
             UI_KeysStringForBinding("+activate", &activateKey);
 
-            int32_t curWeaponIndex = cg_predictedPlayerState.currentWeapon;      // [0x3048329c]
+            int32_t curWeaponIndex = cg.predictedPlayerState.currentWeapon;      // [0x3048329c]
             weaponInfo_t *curWeap = bg_weaponInfos[curWeaponIndex];
             if (curWeap->slot == weap->slot) {
                 // 0x30030581: same slot.
@@ -311,9 +311,9 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
                 drawText = va("%s %s %s %s", swapMsg, curName, forStr, pickName);
             } else {
                 // 0x300305e9: different slot -> use the picked-up weapon's own
-                // predicted-slot occupant (cg_predictedPlayerState.weaponSlots[weap->slot]).
+                // predicted-slot occupant (cg.predictedPlayerState.weaponSlots[weap->slot]).
                 int32_t occupant =
-                    (int8_t)cg_predictedPlayerState.weaponSlots[weap->slot];   // MOVSX byte
+                    (int8_t)cg.predictedPlayerState.weaponSlots[weap->slot];   // MOVSX byte
                 if (occupant == weaponIndex) {
                     return;  // 0x300305f2 -> draw nothing.
                 }
@@ -321,7 +321,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
                 const char *swapFmt = CG_SafeTranslateString_Internal("cgame", "CGAME_SWAPWEAPONS");
                 const char *pickName = cgWeap->displayName;
                 int32_t occSlotWeapon =
-                    (int8_t)cg_predictedPlayerState.weaponSlots[weap->slot]; // MOVSX [ECX+0x30483708]
+                    (int8_t)cg.predictedPlayerState.weaponSlots[weap->slot]; // MOVSX [ECX+0x30483708]
                 /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
                 if ((uint32_t)occSlotWeapon >= MAX_WEAPONS) {
                     Com_Printf(
@@ -441,11 +441,11 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
         goto measure_and_paint;
     }
 
-    // 0x30030973: raw-command / mount-health branch, keyed by cg_usableHintCommandIndex.
-    if (cg_usableHintCommandIndex >= 0) {
+    // 0x30030973: raw-command / mount-health branch, keyed by cg.usableHintCommandIndex.
+    if (cg.usableHintCommandIndex >= 0) {
         // ---- gameState hint config string (index + 0x555). ----
         const int32_t cfgIndex = coduo_int32_from_bits(
-            (uint32_t)cg_usableHintCommandIndex + HINT_CFGSTRING_BASE);
+            (uint32_t)cg.usableHintCommandIndex + HINT_CFGSTRING_BASE);
         const char *cfg = CG_ConfigString(cfgIndex);
         if (cfg == 0 || *cfg == '\0') {
             // 0x30030990/0x30030999: empty -> JZ 0x30030b8c, i.e. straight to the
@@ -566,11 +566,11 @@ set_color_and_icon:
     cgame_syscall(CG_R_SETCOLOR, (uint32_t)0);
 
     // 0x30030be1: optional filled-bar overlay keyed by the latched color byte.
-    if (cg_usableHintColorByte != 0) {
+    if (cg.usableHintColorByte != 0) {
         // 0x30030bed: the bar color {0, 0, 1.0, 0.5} is written THROUGH the
         // CG_FadeColor buffer (MOV [EDI],0 / [EDI+4],0 / [EDI+8],1.0 / [EDI+0xc],0.5).
         float frac = (float)(
-            (long double)coduo_int32_from_bits((uint32_t)cg_usableHintColorByte) *
+            (long double)coduo_int32_from_bits((uint32_t)cg.usableHintColorByte) *
             (long double)HINT_BYTE_TO_FRAC);
         fadeColor[0] = 0.0f;
         fadeColor[1] = 0.0f;

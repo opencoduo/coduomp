@@ -23,9 +23,9 @@
  *   1. trap(220, cg_soundChannelFullVolumes, 0) // restore 10 channel volumes
  *   2. trap(221, "generic", 0, 0)          // reset the room environment
  * Then, only if a shellshock sound is still active
- * (cg_shellshockSoundEndTime != 0):
+ * (cg.shellshockSoundEndTime != 0):
  *   3. handle = trap(196, "shellshock_end_abort", vec3_origin)
- *      cg_shellshockSoundEndTime = 0;                                // clear state
+ *      cg.shellshockSoundEndTime = 0;                                // clear state
  *   4. trap(198, handle, 1023, vec3_origin, 0)
  *
  * The traps go through cgame_syscall (*0x30085e9c). Trap ids 220/221/196/198 are
@@ -46,14 +46,14 @@
  *   3003c112 PUSH 0x3007a3e4                     trap221 arg0 = "generic"
  *   3003c117 PUSH 0xdd                           trap id 221
  *   3003c11c CALL [0x30085e9c]                  cgame_syscall(221, "generic", 0, 0)
- *   3003c122 MOV  EAX,[0x3048bfe8]              EAX = cg_shellshockSoundEndTime
+ *   3003c122 MOV  EAX,[0x3048bfe8]              EAX = cg.shellshockSoundEndTime
  *   3003c127 ADD  ESP,0x1c                       clean trap220(3)+trap221(4)=7 dwords
  *   3003c12a TEST EAX,EAX
  *   3003c12c JZ   3003c168                       if (endTime == 0) return
  *   3003c12e PUSH 0x30071f58                     trap196 arg1 = &vec3_origin
  *   3003c133 PUSH 0x3007a3cc                     trap196 arg0 = "shellshock_end_abort"
  *   3003c138 PUSH 0xc4                           trap id 196
- *   3003c13d MOV  [0x3048bfe8],0x0              cg_shellshockSoundEndTime = 0
+ *   3003c13d MOV  [0x3048bfe8],0x0              cg.shellshockSoundEndTime = 0
  *   3003c147 CALL [0x30085e9c]                  EAX = handle = trap(196, name, &vec3_origin)
  *   3003c14d PUSH 0x0                            trap198 arg3 = 0
  *   3003c14f PUSH 0x30071f58                     trap198 arg2 = &vec3_origin
@@ -77,11 +77,11 @@ void CG_EndShellShockSound(void)
 
     /* Only if a shellshock sound was still scheduled/active: register and play
      * the "shellshock_end_abort" sound, then clear the active-sound state. */
-    if (cg_shellshockSoundEndTime != 0) {
-        /* The store to cg_shellshockSoundEndTime (0x3003c13d) precedes the trap-196
+    if (cg.shellshockSoundEndTime != 0) {
+        /* The store to cg.shellshockSoundEndTime (0x3003c13d) precedes the trap-196
          * CALL (0x3003c147) in the machine code; trap 196 does not read the global,
          * so the observable order is preserved either way. */
-        cg_shellshockSoundEndTime = 0;
+        cg.shellshockSoundEndTime = 0;
         snd_alias_t *alias = trap_Com_PickSoundAlias(
             cg_shellshockEndAbortAliasName, vec3_origin);
         (void)trap_MSS_PlaySoundAlias(alias, 1023, vec3_origin, 0);

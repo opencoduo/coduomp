@@ -44,7 +44,7 @@ void CG_DrawPlayerWeaponModeIcon(int mode, const rectDef_t *rect,
                                  const float *color)
 {
     /* 0x3002eec0 MOV EAX,[0x30483248]: cg.predictedPlayerState.entityStateFlags. */
-    uint32_t flags = cg_predictedPlayerState.entityStateFlags;
+    uint32_t flags = cg.predictedPlayerState.entityStateFlags;
 
     /* 0x3002eec5 TEST AH,0x60 / 0x3002eec8 JNZ ret: bits 13|14 (0x2000|0x4000)
      * are the scope/zoom FOV pair. If either is set, draw nothing. */
@@ -76,11 +76,11 @@ void CG_DrawPlayerWeaponModeIcon(int mode, const rectDef_t *rect,
      * mode!=0 path) do the vehicle-state gates apply. */
     if (stateFlag20 != 0) {
         /* 0x3002eeee CMP [0x304837dc],0x1 / 0x3002eef5 JNZ ret. */
-        if (cg_predictedPlayerState.vehicleType != 1) {
+        if (cg.predictedPlayerState.vehicleType != 1) {
             return;
         }
         /* 0x3002eefb CMP [0x304837d8],0x3 / 0x3002ef02 JNZ ret. */
-        if (cg_predictedPlayerState.vehiclePosition != 3) {
+        if (cg.predictedPlayerState.vehiclePosition != 3) {
             return;
         }
     }
@@ -88,10 +88,10 @@ void CG_DrawPlayerWeaponModeIcon(int mode, const rectDef_t *rect,
     /* 0x3002ef08 MOV EAX,[0x3048329c] / 0x3002ef0d TEST EAX,EAX / 0x3002ef0f JNZ:
      * cg.predictedPlayerState.currentWeapon. When it is 0 (no weapon currently
      * selected) the icon is drawn only while the post-switch fade is still live:
-     * 0x3002ef11 CG_FadeColor(cg_weaponSelectTime, 1800) — EDX=start, ECX=total.
+     * 0x3002ef11 CG_FadeColor(cg.weaponSelectTime, 1800) — EDX=start, ECX=total.
      * 0x3002ef21 TEST EAX,EAX / 0x3002ef23 JZ ret: fade expired -> nothing. */
-    if (cg_predictedPlayerState.currentWeapon == 0) {
-        if (CG_FadeColor(cg_weaponSelectTime, 1800) == NULL) {
+    if (cg.predictedPlayerState.currentWeapon == 0) {
+        if (CG_FadeColor(cg.weaponSelectTime, 1800) == NULL) {
             return;
         }
     }
@@ -103,12 +103,12 @@ void CG_DrawPlayerWeaponModeIcon(int mode, const rectDef_t *rect,
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (weapon >= 0 && weapon <= bg_numWeapons &&
-        (cg_predictedPlayerState.weaponBits[(uint32_t)weapon >> 5] & (1u << ((uint32_t)weapon & 31))) != 0) {
+        (cg.predictedPlayerState.weaponBits[(uint32_t)weapon >> 5] & (1u << ((uint32_t)weapon & 31))) != 0) {
         /* 0x3002ef55 EDX = bg_weaponInfos / 0x3002ef5b EAX = bg_weaponInfos[weapon]. */
         weaponInfo = bg_weaponInfos[weapon];
     } else {
-        /* 0x3002ef60 EAX = cg_currentWeaponInfo. */
-        weaponInfo = cg_currentWeaponInfo;
+        /* 0x3002ef60 EAX = cg.currentWeaponInfo. */
+        weaponInfo = cg.currentWeaponInfo;
     }
 
     /* 0x3002ef65 MOV EAX,[EAX]: weaponInfo_t::weaponIndex (+0), the parallel index

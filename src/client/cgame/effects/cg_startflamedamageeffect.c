@@ -16,7 +16,7 @@
 //   * cg_flameInfo[clientNum].damageActive = 1  (0x3002400c:
 //       MOV dword ptr [EDX + 0x300ab7f4],0x1  with EDX = clientNum*0xb8). This is
 //     the per-client flame-damage flag consumed by the pain-effect updater
-//     FUN_300291c0 (which reads slot +0x04/+0x08 against cg_time and plays the
+//     FUN_300291c0 (which reads slot +0x04/+0x08 against cg.time and plays the
 //     "fdc %i" sound).
 //   * For each of the four limb bones "Bip01 L Hand", "Bip01 R Hand",
 //     "Bip01 L Calf", "Bip01 R Calf" (a NUL-terminated local pointer array), spawn

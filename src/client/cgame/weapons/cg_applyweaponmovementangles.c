@@ -2,7 +2,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30045070_300450d3.mcode
 //
 // CG_ApplyWeaponMovementAngles — compute this frame's weapon-movement view-angle offset, record it
-// in the global cg_weaponMovementAngles vec3, and add it into the caller's view
+// in the global cg.weaponPosition.weaponMovementAngles vec3, and add it into the caller's view
 // angle accumulator.
 //
 // Name adjudication: the mechanical header names this "Com_DPrintf", a pure
@@ -35,9 +35,9 @@ void CG_ApplyWeaponMovementAngles(vec3_t angles /* EDI: view-angle accumulator, 
     // 30045095..300450b0: publish the computed movement to the global vec3. The
     // machine code copies the three float slots through EAX/ECX/EDX as raw
     // dwords (integer MOVs) — a bit-exact copy, i.e. plain float assignment.
-    cg_weaponMovementAngles[0] = movement[0];
-    cg_weaponMovementAngles[1] = movement[1];
-    cg_weaponMovementAngles[2] = movement[2];
+    cg.weaponPosition.weaponMovementAngles[0] = movement[0];
+    cg.weaponPosition.weaponMovementAngles[1] = movement[1];
+    cg.weaponPosition.weaponMovementAngles[2] = movement[2];
 
     // 300450b6..300450cc: add the movement componentwise into the caller's angles.
     // (In the binary the FLD of movement[0] precedes the global stores and the

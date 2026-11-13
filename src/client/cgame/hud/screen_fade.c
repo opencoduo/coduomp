@@ -29,7 +29,7 @@
 // Machine-code proof of behavior (per-instruction):
 //   endTime = cg_fovFade.startTime + cg_fovFade.durationMs        (EAX+EDX)
 //   ECX = 0                                                        (XOR ECX,ECX)
-//   if (endTime < cg_time)  -> snap currentValue = startValue      (CMP;JL 0xa877)
+//   if (endTime < cg.time)  -> snap currentValue = startValue      (CMP;JL 0xa877)
 //   else:
 //     if (currentValue == startValue) -> go draw                  (FUCOMPP;JNP 0xa881)
 //     now = trap_Milliseconds();  ECX = now                       (PUSH 6;CALL syscall)
@@ -81,7 +81,7 @@ void CG_ScreenFade(void)
     int32_t durationMs = cg_fovFade.durationMs;
     int32_t endTime = coduo_int32_from_bits((uint32_t)startTime +
                                        (uint32_t)durationMs);
-    int32_t cgameTime = cg_time;
+    int32_t cgameTime = cg.time;
 
     if (endTime < cgameTime) {
         /* 0xa877: schedule expired -> settle immediately at the target. */

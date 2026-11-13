@@ -20,7 +20,7 @@
  * on the x87 stack before the scoreboard branch. The Y coordinate is the constant
  * 6.0f. Like CG_DrawScoreboardFadeElement it fades: when the scoreboard is showing
  * it multiplies cg_hudAlpha_vmCvar.value by the alpha component (color[3]) of
- * CG_FadeColor(cg_scoreboardShowTime, 100) and draws nothing when that fade has
+ * CG_FadeColor(cg.scoreFadeTime, 100) and draws nothing when that fade has
  * fully expired (NULL); otherwise it passes cg_hudAlpha_vmCvar.value unscaled.
  *
  * Name: the .mcode size-guess "ByteToDir" is REJECTED. ByteToDir is a Quake3
@@ -36,8 +36,8 @@
  *          -> X = 345.0 - (cg_hudCompassSize_vmCvar.value - 1.0)*160.0 + 12.0, spilled to
  *          [ESP+4] as a float (0x3001af13..0x3001af40).
  *   - [ESP+8] = 6.0f (0x40c00000), the Y coordinate constant (0x3001af26).
- *   - EAX = cg_scoreboardShowing; if != 0:                        (MOV/TEST/JZ)
- *         color = CG_FadeColor(cg_scoreboardShowTime, 100)        (EDX/ECX regparm)
+ *   - EAX = cg.showScores; if != 0:                        (MOV/TEST/JZ)
+ *         color = CG_FadeColor(cg.scoreFadeTime, 100)        (EDX/ECX regparm)
  *         if color == NULL: skip the draw                         (TEST EAX / JZ)
  *         alpha = cg_hudAlpha_vmCvar.value * color[3]                    (FLD/FMUL/FSTP)
  *     else:
@@ -68,7 +68,7 @@ void CG_DrawSlidingFadeElement(void)
      * subtract: 345.0 - st0) / FADD 12.0, spilled to [ESP+4] as a float.
      */
     long double xRaw = (long double)cg_hudCompassSize_vmCvar.value;
-    qboolean scoreboardShowing = cg_scoreboardShowing != 0;
+    qboolean scoreboardShowing = cg.showScores != 0;
     xRaw -= (long double)1.0f;
     float y_coord = 6.0f;
     xRaw *= (long double)160.0f;
@@ -77,17 +77,17 @@ void CG_DrawSlidingFadeElement(void)
     x_coord = (float)xRaw;
 
     /*
-     * 0x3001af19 MOV EAX,[cg_scoreboardShowing] / 0x3001af1e TEST / 0x3001af44 JZ:
+     * 0x3001af19 MOV EAX,[cg.showScores] / 0x3001af1e TEST / 0x3001af44 JZ:
      * when the scoreboard is up, fade the element's alpha; otherwise draw it at the
      * fixed cg_hudAlpha_vmCvar.value level.
      */
     if (scoreboardShowing) {
         /*
-         * 0x3001af46/af4c CG_FadeColor(cg_scoreboardShowTime, 100): startMsec in
+         * 0x3001af46/af4c CG_FadeColor(cg.scoreFadeTime, 100): startMsec in
          * EDX, totalMsec in ECX (regparm). NULL means the scoreboard fade has fully
          * expired, in which case nothing is drawn.
          */
-        int32_t scoreboardShowTime = cg_scoreboardShowTime;
+        int32_t scoreboardShowTime = cg.scoreFadeTime;
         const vec_t *color = CG_FadeColor(
             scoreboardShowTime, CG_FADE_TIME);
         if (color == NULL) {

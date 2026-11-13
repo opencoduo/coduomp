@@ -50,7 +50,7 @@ void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime,
 {
     /* [ECX+0x68]: disabled mouse effect restores neutral limits. */
     if (params->mouseEnabled == 0) {
-        cg_shellshockMouseSensitivityScale = 1.0f;
+        cg.shellshockMouseSensitivityScale = 1.0f;
         cgame_syscall(CG_SET_SHELLSHOCK_MOUSE_LIMITS, 0, 0);
         return;
     }
@@ -77,7 +77,7 @@ void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime,
             /* Interpolate sensitivity from 1.0f toward the configured scale.
              * The subtraction remains live through the multiply and add;
              * only the final sensitivity has a float store. */
-            cg_shellshockMouseSensitivityScale =
+            cg.shellshockMouseSensitivityScale =
                 ((long double)params->mouseSensitivityScale - 1.0f) * frac + 1.0f;
 
             /* Scale both mouse-speed limits by 1.0f/frac (FDIVR 1.0f at
@@ -97,7 +97,7 @@ void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime,
     }
 
     /* Finished (t >= duration, or frac exactly 1.0f): use the end-state values. */
-    cg_shellshockMouseSensitivityScale = params->mouseSensitivityScale;
+    cg.shellshockMouseSensitivityScale = params->mouseSensitivityScale;
 
     int32_t colorArg, alphaArg;
     memcpy(&colorArg, &params->mouseMaxPitchSpeed, sizeof colorArg);

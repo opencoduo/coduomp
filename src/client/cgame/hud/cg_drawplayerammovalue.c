@@ -50,7 +50,7 @@ void CG_DrawPlayerAmmoValue(int32_t viewMode /*ECX*/,
                             int32_t textStyle /*stack arg2*/)
 {
     /* EAX at entry: cg.predictedPlayerState.entityStateFlags (0x30483248). */
-    uint32_t entityFlags = cg_predictedPlayerState.entityStateFlags;
+    uint32_t entityFlags = cg.predictedPlayerState.entityStateFlags;
 
     /* 0x30030c6b TEST AH,0x60 / JNZ: any scope/zoom-FOV bit set suppresses the
      * whole HUD ammo element. */
@@ -77,32 +77,32 @@ void CG_DrawPlayerAmmoValue(int32_t viewMode /*ECX*/,
      * vehicleType == 1 and vehiclePosition == 3. When flag20 is clear (viewMode==0)
      * this block is skipped. */
     if (flag20 != 0) {
-        if (cg_predictedPlayerState.vehicleType != 1) {
+        if (cg.predictedPlayerState.vehicleType != 1) {
             return;
         }
-        if (cg_predictedPlayerState.vehiclePosition != 3) {
+        if (cg.predictedPlayerState.vehiclePosition != 3) {
             return;
         }
     }
 
     /* 0x30030cb6: require a current weapon. */
-    if (cg_predictedPlayerState.currentWeapon == 0) {
+    if (cg.predictedPlayerState.currentWeapon == 0) {
         return;
     }
 
     /* 0x30030cc2..0x30030cff: resolve which weapon index to display ammo for.
      * Default is the followed/local snapshot entity's weaponIndex (the
-     * centity_t at cg_entities[cg_snap->ps.psClientNum]); but for the active local
+     * centity_t at cg_entities[cg.snap->ps.psClientNum]); but for the active local
      * player, use a valid local weapon selection instead. */
-    const snapshot_t *snap = cg_snap;
+    const snapshot_t *snap = cg.snap;
 
     int32_t weapon;
     {
         /* cg_entities base 0x3048c6e0, stride 0x288 (centity_t), indexed by
-         * snapshot clientNum (0x30030cc8: [cg_snap+0xe0], IMUL 0x288, ADD base). */
+         * snapshot clientNum (0x30030cc8: [cg.snap+0xe0], IMUL 0x288, ADD base). */
         const centity_t *ent =
             cg_entities + snap->ps.psClientNum;
-        uint32_t psFlags = snap->ps.playerStateFlags; /* [cg_snap+0x18] */
+        uint32_t psFlags = snap->ps.playerStateFlags; /* [cg.snap+0x18] */
 
         weapon = ent->currentState.weapon; /* default: [ent+0xcc] */
         if ((psFlags & PSF_ACTIVE_PLAYER) != 0) {
@@ -123,7 +123,7 @@ void CG_DrawPlayerAmmoValue(int32_t viewMode /*ECX*/,
 
     /* 0x30030d14: total reserve+clip ammo usable through this weapon. */
     int32_t ammoValue =
-        BG_GetTotalAmmoReserve(&cg_predictedPlayerState, weapon);
+        BG_GetTotalAmmoReserve(&cg.predictedPlayerState, weapon);
 
     weaponInfo_t *wi = bg_weaponInfos[weapon]; /* [0x30134cd8 + weapon*4] */
 
@@ -137,7 +137,7 @@ void CG_DrawPlayerAmmoValue(int32_t viewMode /*ECX*/,
         clipValue = -1;
         clipShown = 0;
     } else {
-        clipValue = cg_predictedPlayerState.clips[wi->clipIndex]; /* [clipIndex*4 + 0x304834f8] */
+        clipValue = cg.predictedPlayerState.clips[wi->clipIndex]; /* [clipIndex*4 + 0x304834f8] */
         if (clipValue < 0) {
             clipShown = 0;
         }

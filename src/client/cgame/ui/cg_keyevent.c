@@ -9,13 +9,13 @@
 //
 // Machine-code facts proven:
 //   30032780  TEST ECX,ECX / JZ  -> return qfalse when down == 0 (key-release).
-//   30032784  MOV ECX,[cg_scoreboardShowing] / TEST / JZ -> return qfalse when
+//   30032784  MOV ECX,[cg.showScores] / TEST / JZ -> return qfalse when
 //             the scoreboard is not showing.
 //   3003278e..300327b6  CMP EAX against the six scroll keycodes (all 32-bit,
 //             exact-equality JZ/JNZ); any non-match returns qfalse.
 //   300327b8  down keys -> CALL CG_ScrollScoreboardDown, then return qtrue.
 //   300327c3  up keys   -> inline scroll-up:
-//                 MOV EAX,[cg_scoreboardScrollPos]; TEST EAX,EAX; JLE done  (signed <= 0)
+//                 MOV EAX,[cg.scoreboardScrollPos]; TEST EAX,EAX; JLE done  (signed <= 0)
 //                 SUB EAX,[cg_scoreboardScrollStep_vmCvar.integer]; store;
 //                 JNS done  (signed: keep when result >= 0)
 //                 else store 0; done -> return qtrue.
@@ -33,7 +33,7 @@ qboolean CG_KeyEvent(int32_t key, qboolean down)
     }
 
     /* 0x30032784: scroll keys are live only while the scoreboard is showing. */
-    if (!cg_scoreboardShowing) {
+    if (!cg.showScores) {
         return qfalse;
     }
 
@@ -50,15 +50,15 @@ qboolean CG_KeyEvent(int32_t key, qboolean down)
     case K_PGUP:      /* 0xa4 */
     case K_KP_PGUP:   /* 0xb8 */
         /* 0x300327c3: JLE is signed; only scroll up when already past the top. */
-        if (cg_scoreboardScrollPos > 0) {
+        if (cg.scoreboardScrollPos > 0) {
             /* 0x300327cc is a target dword SUB. Windows/i386 MSVC preserves
              * modulo-2^32 arithmetic even when the signed result wraps. */
-            cg_scoreboardScrollPos = coduo_int32_from_bits(
-                (uint32_t)cg_scoreboardScrollPos -
+            cg.scoreboardScrollPos = coduo_int32_from_bits(
+                (uint32_t)cg.scoreboardScrollPos -
                 (uint32_t)cg_scoreboardScrollStep_vmCvar.integer);
             /* 0x300327d7: JNS -> clamp a negative result up to the top line. */
-            if (cg_scoreboardScrollPos < 0) {
-                cg_scoreboardScrollPos = 0;
+            if (cg.scoreboardScrollPos < 0) {
+                cg.scoreboardScrollPos = 0;
             }
         }
         return qtrue;

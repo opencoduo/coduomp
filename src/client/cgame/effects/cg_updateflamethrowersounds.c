@@ -80,7 +80,7 @@ void CG_UpdateFlamethrowerSounds(void)
      * a (float) cast here would round it. coduo_fp_to_i32_extended takes long double
      * for exactly this. (Same shape as CG_FireFlameChunks 0x30027d30/0x30027d38.)
      * EBP holds flameTime for the rest of the function. */
-    int32_t signedTime = cg_time;
+    int32_t signedTime = cg.time;
     double timeD = (double)signedTime;
     int32_t flameTime = coduo_fp_to_i32_extended(floor(timeD + timeD));
 
@@ -153,7 +153,7 @@ void CG_UpdateFlamethrowerSounds(void)
             /* 0x300292d8..0x300292f8: if this emitter was touched this/last frame
              * AND its flame-info gate (field_5c) is set, this chunk is done. */
             int32_t previousFrame = coduo_int32_from_bits(
-                (uint32_t)cg_clientFrame - 1u); /* 0x300292ec DEC ECX */
+                (uint32_t)cg.clientFrame - 1u); /* 0x300292ec DEC ECX */
             if (cg_flameInfo[idx].clientFrame >= previousFrame &&
                 cg_flameInfo[idx].soundPathFlag == 1) { /* CMP ...,0x1 ; JZ 0x30029351 */
                 goto stamp_owner;                      /* fall through to the stamp label */
@@ -162,9 +162,9 @@ void CG_UpdateFlamethrowerSounds(void)
             /* 0x300292fa..0x30029324: envB += cg.frametime * 0.001f * chunk.soundAmpRate
              *                              * 5.0f, clamped to <= 1.0. The FILD at
              * 0x300292fa feeds the FMUL at 0x30029306 with no intervening store, so
-             * cg_frametime stays exact in 80-bit -- no (float) cast. */
+             * cg.frametime stays exact in 80-bit -- no (float) cast. */
             float envB = (float)(
-                (long double)cg_frametime *
+                (long double)cg.frametime *
                     (long double)FLAME_MS_TO_SEC *
                     (long double)chunk->soundAmpRate *
                     (long double)FLAME_ENVB_GAIN5 +
@@ -186,7 +186,7 @@ void CG_UpdateFlamethrowerSounds(void)
          * matches the current chunk, and its gate (field_5c) == 1. */
         {
             int32_t previousFrame = coduo_int32_from_bits(
-                (uint32_t)cg_clientFrame - 1u); /* 0x30029373 DEC EDI */
+                (uint32_t)cg.clientFrame - 1u); /* 0x30029373 DEC EDI */
             if (cg_flameInfo[idx].clientFrame >= previousFrame && /* JL 0x300293e9 */
                 cg_flameInfo[idx].ownerChunk == chunk &&  /* CMP ...,EBX ; JNZ */
                 cg_flameInfo[idx].soundPathFlag == 1) {   /* CMP ...,0x1 ; JNZ */
@@ -194,7 +194,7 @@ void CG_UpdateFlamethrowerSounds(void)
                  *                              * chunk.soundAmpRate * 0.5f. FILD at
                  * 0x30029392 feeds the FMUL directly (no store) -- no (float) cast. */
                 float envB = (float)(
-                    (long double)cg_frametime *
+                    (long double)cg.frametime *
                         (long double)FLAME_MS_TO_SEC *
                         (long double)chunk->soundAmpRate *
                         (long double)FLAME_ENVB_GAIN_HALF +
@@ -273,7 +273,7 @@ void CG_UpdateFlamethrowerSounds(void)
              * and its last-emit stamp (field_44) is not already this frame's flameTime. */
             cgFlameInfo_t *fi = &cg_flameInfo[idx];
             int32_t previousFrame = coduo_int32_from_bits(
-                (uint32_t)cg_clientFrame - 1u);
+                (uint32_t)cg.clientFrame - 1u);
             if (fi->activeFlag != 0 &&                            /* TEST ESI ; JZ 0x3002958a */
                 fi->clientFrame >= previousFrame &&            /* CMP ...,EDI ; JL 0x3002958a */
                 fi->lastUpdateTime != flameTime) {                    /* CMP ...,EBP ; JZ 0x3002958a */
@@ -466,7 +466,7 @@ void CG_UpdateFlamethrowerSounds(void)
             if (newEnvB != FLAME_ZEROF &&
                 fi->activeFlag != 0 &&                           /* CMP [ESI],0 ; JZ skip */
                 fi->clientFrame < coduo_int32_from_bits(
-                    (uint32_t)cg_clientFrame - 1u)) {         /* DEC EDX; CMP; JGE skip */
+                    (uint32_t)cg.clientFrame - 1u)) {         /* DEC EDX; CMP; JGE skip */
                 /* 0x300296d8..0x300296e3: clear the live-emit flag and start the
                  * flamethrower-cooldown local sound positioned on this slot.
                  * CG_PlaySoundAliasByName(channelObj=&cg_entities[i].lerpOrigin (ECX=EBP),

@@ -7,7 +7,7 @@
 // against game_mp_uo coverage, win size 0x123 == matched size 0x123) is REJECTED
 // per the "never name by size" rule: this body does no playerState/viewangle
 // kick math. It builds a cg_shakeSource_t on the stack and REP MOVSDs it (9 dwords
-// == 0x24) into a slot of the fixed 4-slot cg_shakeSources[] table at 0x3048b52c.
+// == 0x24) into a slot of the fixed 4-slot cg.shakeSources[] table at 0x3048b52c.
 // That is the write side of the camera-shake trio whose evaluator
 // (CG_EvaluateCameraShakeSource, 0x3001b390) and aggregate walker (0x3001b550)
 // are already recovered; the struct/field names come from that proven trio.
@@ -41,7 +41,7 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
     /* Build the new source on the stack, then copy it into the chosen slot.
      * Field assignment proven by tracing the stack writes at 0x3001b443..b470
      * against the cg_shakeSource_t offsets the evaluator reads:
-     *   +0x00 startMsec       <- cg_time            (MOV [ESP+8],EDI)
+     *   +0x00 startMsec       <- cg.time            (MOV [ESP+8],EDI)
      *   +0x04 amplitude       <- amplitude (arg1)   (MOV [ESP+8],EAX before EDI store at +0x04 slot)
      *   +0x08 duration        <- (float)duration    (FILD [ESP+2c] / FSTP [ESP+0xc])
      *   +0x0c radius          <- radius (arg3)       (MOV [ESP+0x14],EDX)
@@ -62,7 +62,7 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
     src.duration = (float)durationValue;                /* FSTP m32 */
     memcpy(&originYBits, &origin[1], 4);
     memcpy(&originZBits, &origin[2], 4);
-    int32_t now = cg_time;
+    int32_t now = cg.time;
     memcpy(&radiusBits, &radius, 4);
     memcpy(&src.origin[0], &originXBits, 4);
     src.startMsec = now;
@@ -89,7 +89,7 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
     int slot = -1;
     int i;
     for (i = 0; i < 4; i++) {
-        int32_t startMsec = cg_shakeSources[i].startMsec;   /* MOV EAX,[ECX] */
+        int32_t startMsec = cg.shakeSources[i].startMsec;   /* MOV EAX,[ECX] */
         if (startMsec > now) {                              /* CMP EAX,EDI / JG */
             slot = i;
             break;
@@ -100,8 +100,8 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
          * JZ is taken when C0 == 0, i.e. now >= start+duration => the slot's shake
          * has fully elapsed => reuse it. */
         long double slotEnd = (long double)startMsec;
-        slotEnd += (long double)cg_shakeSources[i].duration;
-        int32_t comparisonNow = cg_time;
+        slotEnd += (long double)cg.shakeSources[i].duration;
+        int32_t comparisonNow = cg.time;
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if ((long double)comparisonNow >= slotEnd) {
             slot = i;
@@ -123,19 +123,19 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
         /* FLD slot0.scaledAmplitude / FCOMP threshold; TEST AH,5 / JP skip.
          * AH bit0 = C0 (ST0 < mem). JP not taken (fall through) => C0 set =>
          * slot value < current minimum => update. Repeated for slots 0..3. */
-        if (cg_shakeSources[0].scaledAmplitude < minAmplitude) {
+        if (cg.shakeSources[0].scaledAmplitude < minAmplitude) {
             minIndex = 0;
-            minAmplitude = cg_shakeSources[0].scaledAmplitude;
+            minAmplitude = cg.shakeSources[0].scaledAmplitude;
         }
-        if (cg_shakeSources[1].scaledAmplitude < minAmplitude) {
+        if (cg.shakeSources[1].scaledAmplitude < minAmplitude) {
             minIndex = 1;
-            minAmplitude = cg_shakeSources[1].scaledAmplitude;
+            minAmplitude = cg.shakeSources[1].scaledAmplitude;
         }
-        if (cg_shakeSources[2].scaledAmplitude < minAmplitude) {
+        if (cg.shakeSources[2].scaledAmplitude < minAmplitude) {
             minIndex = 2;
-            minAmplitude = cg_shakeSources[2].scaledAmplitude;
+            minAmplitude = cg.shakeSources[2].scaledAmplitude;
         }
-        if (cg_shakeSources[3].scaledAmplitude < minAmplitude) {
+        if (cg.shakeSources[3].scaledAmplitude < minAmplitude) {
             minIndex = 3;
             /* minAmplitude no longer used after this last compare */
         }
@@ -148,6 +148,6 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
     }
 
     /* 3001b528..3001b53b: LEA EDI,[EDX+EDX*8] / LEA EDI,[EDI*4 + 0x3048b52c] gives
-     * &cg_shakeSources[slot] (slot*0x24); REP MOVSD copies the 0x24-byte source. */
-    memcpy(&cg_shakeSources[slot], &src, sizeof(src));
+     * &cg.shakeSources[slot] (slot*0x24); REP MOVSD copies the 0x24-byte source. */
+    memcpy(&cg.shakeSources[slot], &src, sizeof(src));
 }

@@ -2,11 +2,11 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3001a4d0_3001a5ab.mcode
 //
 // CG_ScanForCrosshairEntity — trace a "shot" ray from the camera origin
-// (cg_refdef.vieworg) 8192 units along the current aim/view forward direction
-// (cg_refdef.viewaxis[0]) and, if it hits a hittable-contents entity that is below
+// (cg.refdef.vieworg) 8192 units along the current aim/view forward direction
+// (cg.refdef.viewaxis[0]) and, if it hits a hittable-contents entity that is below
 // MAX_CLIENTS and is not the local player, latch that entity as the crosshair
-// target (cg_crosshairEntNum) together with the current cg_time
-// (cg_crosshairEntTime). When the trace hits a vehicle (currentState.eType ==
+// target (cg.crosshairClientNum) together with the current cg.time
+// (cg.crosshairClientTime). When the trace hits a vehicle (currentState.eType ==
 // ET_VEHICLE, 12), the target is redirected to the vehicle's occupant
 // (currentState.vehicleEntityNum). The crosshair-name HUD drawer at 0x3001a604
 // (this function's sole caller) then fades in the player's name via CG_FadeColor.
@@ -20,9 +20,9 @@
 // Provisional-by-role; exact CoD symbol unconfirmed.
 //
 // Machine-code facts proven for every behavior-affecting statement:
-//   Endpoint (a4d3..a535): for each axis i, endpoint[i] = cg_refdef.viewaxis[0][i]
-//     * 8192.0f + cg_refdef.vieworg[i]  (FLD dir[i]; FMUL [0x3007c14c]==8192.0f;
-//     FADD viewOrg[i]; FSTP endpoint[i]). Start point = cg_refdef.vieworg copied to
+//   Endpoint (a4d3..a535): for each axis i, endpoint[i] = cg.refdef.viewaxis[0][i]
+//     * 8192.0f + cg.refdef.vieworg[i]  (FLD dir[i]; FMUL [0x3007c14c]==8192.0f;
+//     FADD viewOrg[i]; FSTP endpoint[i]). Start point = cg.refdef.vieworg copied to
 //     the stack (a4f0/a4fb/a4ff store viewOrg.x/y/z).
 //   Trace call (a539..a554): CG_Trace(0x30035310) with the custom ABI
 //     EAX=handle, ECX=origin, EBX=flags, then stack (out, arg1, arg2, arg3):
@@ -30,7 +30,7 @@
 //       flags  = 0x30071f58 (EBX/pushed, the &vec3_origin address used as a flag/arg)
 //       out    = &trace buffer (EAX=LEA[ESP+0x28], a546/a54a)
 //       arg1   = &start point (EDX=LEA[ESP+0x4], a50e/a545)
-//       arg2   = 0x30071f58 (a540) ; arg3 = cg_snap->ps.psClientNum ([EAX+0xe0], a539)
+//       arg2   = 0x30071f58 (a540) ; arg3 = cg.snap->ps.psClientNum ([EAX+0xe0], a539)
 //   Result read (a559/a55d): contents = trace.contents (dword @+0x20);
 //     entityNum = (uint16)trace.entityNum (MOVZX word @+0x28).
 //   a565 TEST contents,0x211 ; a56b JZ -> skip the vehicle redirect when none of
@@ -39,9 +39,9 @@
 //     (ET_VEHICLE) then entityNum = cg_entities[idx].vehicleEntityNum
 //     (CMP [idx*0x288 + 0x3048c6e4],0xc ; MOV ECX,[idx*0x288 + 0x3048c754], where
 //     0x3048c6e0 is the cg_entities[] base, +0x4 == eType, +0x74 == vehicleEntityNum).
-//   a584..a595 gate: if entityNum == cg_snap->ps.psClientNum -> skip (JZ); if
+//   a584..a595 gate: if entityNum == cg.snap->ps.psClientNum -> skip (JZ); if
 //     entityNum >= 0x40 (MAX_CLIENTS, signed JGE) -> skip.
-//   a597..a5a2 latch: cg_crosshairEntNum = entityNum ; cg_crosshairEntTime = cg_time.
+//   a597..a5a2 latch: cg.crosshairClientNum = entityNum ; cg.crosshairClientTime = cg.time.
 //   a5a7 ADD ESP,0x48 ; RET (no return value; EBX callee-saved via PUSH/POP).
 //
 // TRACE-BUFFER NOTE: the buffer is the shared 48-byte trace_t. Recomputing the
@@ -58,8 +58,8 @@
  * entityNum is latched only when it is below this (signed CMP entityNum,0x40 / JGE
  * at 0x3001a592). The shared limit retains that retail default. */
 
-/* Trace/aim distance: the endpoint is cg_refdef.vieworg + CG_CROSSHAIR_TRACE_DIST *
- * cg_refdef.viewaxis[0]. Read from the .rdata float at 0x3007c14c (8192.0f), FMUL'd
+/* Trace/aim distance: the endpoint is cg.refdef.vieworg + CG_CROSSHAIR_TRACE_DIST *
+ * cg.refdef.viewaxis[0]. Read from the .rdata float at 0x3007c14c (8192.0f), FMUL'd
  * into each direction component at 0x3001a4de/512/52b. */
 #define CG_CROSSHAIR_TRACE_DIST 8192.0f
 
@@ -95,26 +95,26 @@ void CG_ScanForCrosshairEntity(void)
     int32_t entityNum;
 
     /* 0x3001a4d3..0x3001a535: preserve the staggered source reads and three
-     * independent x87 chains; the initial cg_snap pointer is captured while
+     * independent x87 chains; the initial cg.snap pointer is captured while
      * end.x is live, before the y/z endpoint work. */
-    endX = (long double)cg_refdef.viewaxis[0][0];
-    originX = cg_refdef.vieworg[0];
+    endX = (long double)cg.refdef.viewaxis[0][0];
+    originX = cg.refdef.vieworg[0];
     endX *= (long double)CG_CROSSHAIR_TRACE_DIST;
-    originY = cg_refdef.vieworg[1];
-    originZ = cg_refdef.vieworg[2];
+    originY = cg.refdef.vieworg[1];
+    originZ = cg.refdef.vieworg[2];
     start[0] = originX;
     endX += (long double)start[0];
-    snap = cg_snap;
+    snap = cg.snap;
     start[1] = originY;
     start[2] = originZ;
     end[0] = (float)endX;
 
-    endY = (long double)cg_refdef.viewaxis[0][1];
+    endY = (long double)cg.refdef.viewaxis[0][1];
     endY *= (long double)CG_CROSSHAIR_TRACE_DIST;
     endY += (long double)start[1];
     end[1] = (float)endY;
 
-    endZ = (long double)cg_refdef.viewaxis[0][2];
+    endZ = (long double)cg.refdef.viewaxis[0][2];
     endZ *= (long double)CG_CROSSHAIR_TRACE_DIST;
     endZ += (long double)start[2];
     end[2] = (float)endZ;
@@ -123,7 +123,7 @@ void CG_ScanForCrosshairEntity(void)
     /* 0x3001a539..0x3001a554: CG_Trace into the local trace buffer.
      * Register/stack ABI (see header): handle=CG_CROSSHAIR_TRACE_MASK, origin=end,
      * flags=&vec3_origin, out=&trace, arg1=&start, arg2=&vec3_origin,
-     * arg3=cg_snap->ps.psClientNum. */
+     * arg3=cg.snap->ps.psClientNum. */
     CG_Trace(CG_CROSSHAIR_TRACE_MASK, end,
                        vec3_origin,
                        &trace,
@@ -149,14 +149,14 @@ void CG_ScanForCrosshairEntity(void)
     }
 
     /* 0x3001a584..0x3001a5a2: latch the crosshair target unless it is the local
-     * player (entityNum == cg_snap->ps.psClientNum) or a non-client entity
+     * player (entityNum == cg.snap->ps.psClientNum) or a non-client entity
      * (entityNum >= MAX_CLIENTS, signed compare). */
-    snap = cg_snap;
+    snap = cg.snap;
     if (entityNum != snap->ps.psClientNum && entityNum < MAX_CLIENTS) {
-        int32_t crosshairTime = cg_time;
+        int32_t crosshairTime = cg.time;
 
-        cg_crosshairEntNum = entityNum;
-        cg_crosshairEntTime = crosshairTime;
+        cg.crosshairClientNum = entityNum;
+        cg.crosshairClientTime = crosshairTime;
     }
     /* 0x3001a5a7: RET (no return value). */
 }

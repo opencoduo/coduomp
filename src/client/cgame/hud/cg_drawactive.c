@@ -3,16 +3,16 @@
 //
 // CG_DrawActive(stereoFrame_t stereoView) — the cgame per-frame top-level draw
 // entry. It has two mutually exclusive halves keyed on whether a snapshot is
-// installed (cg_snap):
+// installed (cg.snap):
 //
-//   * NO snapshot (cg_snap == NULL): the LOADING/CONNECT screen. Reentry-guarded
+//   * NO snapshot (cg.snap == NULL): the LOADING/CONNECT screen. Reentry-guarded
 //     by cg_updateScreenActive, it clears the three "cl_serverload*" cvars the
 //     server set, draws the current map's levelshot (or the "unknownmap" art)
 //     full-screen via trap_R_DrawStretchPic, then draws a horizontal progress bar
 //     whose fraction is trap(0x3f) / Q_atoi("com_expectedhunkusage") clamped to
 //     1.0, and forces a synchronous present via trap_UpdateScreen (trap 0x19).
 //
-//   * snapshot present (cg_snap != NULL): the normal 3D view. It applies stereo
+//   * snapshot present (cg.snap != NULL): the normal 3D view. It applies stereo
 //     eye-separation to the view origin per `stereoView` (0=mono, 1=left*-0.5,
 //     2=right*+0.5, else fatal "CG_DrawActive: Undefined stereoView"), sets the
 //     refdef no-world bit per cg_skybox_vmCvar.integer, submits the scene with
@@ -27,7 +27,7 @@
 // work: it is a cgame CLIENT draw function, proven by the client-only cvars it
 // resets ("cl_serverloadmap", "cl_serverloadgametype", "cl_serverloadwaiting"),
 // the "levelshots/%s.tga" / "menu/art/unknownmap" shaders it registers, the
-// cg_snap gate, the cg.refdef view-origin/stereo math, and above all the
+// cg.snap gate, the cg.refdef view-origin/stereo math, and above all the
 // diagnostic string it emits on a bad stereo argument: "CG_DrawActive: Undefined
 // stereoView". The role name CG_DrawActive is the id-Tech/CoD symbol that owns
 // that exact error string. Its sole caller (0x30042782) is a per-frame draw
@@ -72,7 +72,7 @@ enum {
 void CG_DrawActive(int32_t stereoView)
 {
     /* ---- LOADING/CONNECT screen: no snapshot installed yet ---- */
-    if (cg_snap == NULL) {                                /* 0x3001c12c TEST/JNZ */
+    if (cg.snap == NULL) {                                /* 0x3001c12c TEST/JNZ */
         char hunkUsageStr[64];                            /* [ESP+0x30], CvarVariableStringBuffer dst */
         int32_t expectedHunkUsage;
         const char *mapName;
@@ -226,7 +226,7 @@ void CG_DrawActive(int32_t stereoView)
     /* ---- Normal 3D view: a snapshot is installed ---- */
     {
         float stereoSep;
-        vec3_t savedOrigin;   /* [ESP+0xc..0x14]: saved cg_refdef.vieworg before the eye shift */
+        vec3_t savedOrigin;   /* [ESP+0xc..0x14]: saved cg.refdef.vieworg before the eye shift */
         uint32_t refFlags;
 
         /* Eye separation from the stereo frame selector. */
@@ -251,25 +251,25 @@ void CG_DrawActive(int32_t stereoView)
 
         /* Snapshot the current view origin with the three raw dword moves at
          * 0x3001c391/39a/3a0; this also preserves NaN payload bits exactly. */
-        memcpy(&savedOrigin[0], &cg_refdef.vieworg[0], 4);
-        memcpy(&savedOrigin[1], &cg_refdef.vieworg[1], 4);
-        memcpy(&savedOrigin[2], &cg_refdef.vieworg[2], 4);
+        memcpy(&savedOrigin[0], &cg.refdef.vieworg[0], 4);
+        memcpy(&savedOrigin[1], &cg.refdef.vieworg[1], 4);
+        memcpy(&savedOrigin[2], &cg.refdef.vieworg[2], 4);
 
         /* If there is a separation, shift the origin along viewaxis[1] by -sep. */
         if (stereoSep != 0.0f) {                           /* 0x3001c38b..0x3001c3b9 FUCOMPP 0.0 / JNP */
             long double negSep = -(long double)stereoSep;  /* 0x3001c3bb FLD [ESP+8]; FCHS */
-            cg_refdef.vieworg[0] = (float)(
-                (long double)cg_refdef.viewaxis[1][0] *
+            cg.refdef.vieworg[0] = (float)(
+                (long double)cg.refdef.viewaxis[1][0] *
                     negSep +
-                (long double)cg_refdef.vieworg[0]); /* 0x3001c3c1..0x3001c3cf */
-            cg_refdef.vieworg[1] = (float)(
-                (long double)cg_refdef.viewaxis[1][1] *
+                (long double)cg.refdef.vieworg[0]); /* 0x3001c3c1..0x3001c3cf */
+            cg.refdef.vieworg[1] = (float)(
+                (long double)cg.refdef.viewaxis[1][1] *
                     negSep +
-                (long double)cg_refdef.vieworg[1]); /* 0x3001c3d5..0x3001c3e3 */
-            cg_refdef.vieworg[2] = (float)(
-                (long double)cg_refdef.viewaxis[1][2] *
+                (long double)cg.refdef.vieworg[1]); /* 0x3001c3d5..0x3001c3e3 */
+            cg.refdef.vieworg[2] = (float)(
+                (long double)cg.refdef.viewaxis[1][2] *
                     negSep +
-                (long double)cg_refdef.vieworg[2]); /* 0x3001c3e9..0x3001c3f5 */
+                (long double)cg.refdef.vieworg[2]); /* 0x3001c3e9..0x3001c3f5 */
         }
 
         /* Set the refdef skybox-portal-active bit (0x10), then clear it again only when
@@ -277,38 +277,38 @@ void CG_DrawActive(int32_t stereoView)
          * when integer != 0, so the AND ~0x10 runs on the fall-through (integer==0)
          * path: the bit is KEPT when the cvar is nonzero, CLEARED when zero. (A
          * prior pass inverted this to `!= 0`, contradicting globals.h:5404.) */
-        refFlags = cg_refdef.rdflags;                           /* 0x3001c3fb MOV ECX */
+        refFlags = cg.refdef.rdflags;                           /* 0x3001c3fb MOV ECX */
         {
             int32_t skyboxEnabled = cg_skybox_vmCvar.integer;   /* 0x3001c401 MOV EAX */
             refFlags |= RDF_SKYBOX_PORTAL_ACTIVE;               /* 0x3001c406 OR 0x10 */
-            cg_refdef.rdflags = refFlags;                       /* 0x3001c40b store */
+            cg.refdef.rdflags = refFlags;                       /* 0x3001c40b store */
             if (skyboxEnabled == 0) {                           /* 0x3001c409 TEST/JNZ-skip */
-                cg_refdef.rdflags =
+                cg.refdef.rdflags =
                     refFlags & ~(uint32_t)RDF_SKYBOX_PORTAL_ACTIVE; /* 0x3001c413..0x3001c418 */
             }
         }
 
         /* Submit the scene to the engine renderer. */
         cgame_syscall(CG_R_RENDER_SCENE,
-                      (intptr_t)&cg_refdef.x);  /* 0x3001c41d..0x3001c424 trap(0x45,&refdef) */
+                      (intptr_t)&cg.refdef.x);  /* 0x3001c41d..0x3001c424 trap(0x45,&refdef) */
 
         /* Restore the pre-shift origin when a separation was applied. */
         if (stereoSep != 0.0f) {                            /* 0x3001c42a..0x3001c43e FUCOMPP 0.0 / JNP */
-            memcpy(&cg_refdef.vieworg[0], &savedOrigin[0], 4); /* 0x3001c440..0x3001c44c */
-            memcpy(&cg_refdef.vieworg[1], &savedOrigin[1], 4); /* 0x3001c451 */
-            memcpy(&cg_refdef.vieworg[2], &savedOrigin[2], 4); /* 0x3001c457 */
+            memcpy(&cg.refdef.vieworg[0], &savedOrigin[0], 4); /* 0x3001c440..0x3001c44c */
+            memcpy(&cg.refdef.vieworg[1], &savedOrigin[1], 4); /* 0x3001c451 */
+            memcpy(&cg.refdef.vieworg[2], &savedOrigin[2], 4); /* 0x3001c457 */
         }
 
         /*
          * Advance the shell-shock fade overlay for this frame (register-arg ABI:
          * ESI=overlay/params, EAX=startTime, ECX=duration/endTime). The machine
-         * loads ESI=[cg_shellShockSwayParams], EAX=[cg_shellShockSwayStartTime],
-         * ECX=[cg_shellShockSwayDuration]; forward them positionally.
+         * loads ESI=[cg.shellShockSwayParams], EAX=[cg.shellShockSwayStartTime],
+         * ECX=[cg.shellShockSwayDuration]; forward them positionally.
          */
         {
-            int32_t swayDuration = cg_shellShockSwayDuration; /* 0x3001c45d ECX */
-            int32_t swayStart = cg_shellShockSwayStartTime;   /* 0x3001c463 EAX */
-            shellshock_t *swayParams = cg_shellShockSwayParams; /* 0x3001c468 ESI */
+            int32_t swayDuration = cg.shellShockSwayDuration; /* 0x3001c45d ECX */
+            int32_t swayStart = cg.shellShockSwayStartTime;   /* 0x3001c463 EAX */
+            shellshock_t *swayParams = cg.shellShockSwayParams; /* 0x3001c468 ESI */
             CG_UpdateFadeOverlay(swayParams, swayStart, swayDuration);
         }
 

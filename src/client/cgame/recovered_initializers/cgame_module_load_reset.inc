@@ -149,11 +149,11 @@ CG_ZERO_LOAD_OBJECT(cg_skyboxFogConfigured);
 CG_ZERO_LOAD_OBJECT(cg_weaponSelectPreviousSlot);
 CG_ZERO_LOAD_OBJECT(cg_weaponSelectPreviousWeapon);
 CG_ZERO_LOAD_OBJECT(cg_weaponSelectTransition);
-CG_ZERO_LOAD_OBJECT(cg_weaponSelectTimeA);
-CG_ZERO_LOAD_OBJECT(cg_weaponSelectTimeB);
-CG_ZERO_LOAD_OBJECT(cg_weaponSelectTime);
-CG_ZERO_LOAD_OBJECT(cg_weaponSelectSlotScale);
-CG_ZERO_LOAD_OBJECT(cg_weaponSelectLastTime);
+CG_ZERO_LOAD_OBJECT(cg.weaponSelectTimeA);
+CG_ZERO_LOAD_OBJECT(cg.weaponSelectTimeB);
+CG_ZERO_LOAD_OBJECT(cg.weaponSelectTime);
+CG_ZERO_LOAD_OBJECT(cg.weaponSelectSlotScale);
+CG_ZERO_LOAD_OBJECT(cg.weaponSelectLastTime);
 
 CG_ZERO_LOAD_OBJECT(cg_localEntities);
 CG_ZERO_LOAD_OBJECT(cg_freeLocalEntities);

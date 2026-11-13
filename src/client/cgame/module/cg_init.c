@@ -43,7 +43,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     bgs.soundAliasCallback = trap_Com_SoundAliasString;
     bgs.soundEventCallback = CG_PlayEntitySoundAliasByName;
 
-    cg_clientNum = clientNum;
+    cg.clientNum = clientNum;
     cg_processedSnapshotNum = serverMessageNum;
     cgs_serverCommandSequence = serverCommandSequence;
 
@@ -95,7 +95,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     String_Init();
 
     CG_LoadingString("graphics");
-    memset(&cg_refdef, 0, sizeof(cg_refdef));
+    memset(&cg.refdef, 0, sizeof(cg.refdef));
     cgame_syscall(CG_R_CLEAR_SCENE);
 
     CG_LoadingString(cgs_mapname);
@@ -119,12 +119,12 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     /* 0x3002e2eb clears the visible loading label before config-string assets
      * begin registering and pumping the screen. This is distinct from the full
      * empty-label CG_LoadingString operation that follows. */
-    cg_loadingScratch[0] = '\0';
+    cg.infoScreenText[0] = '\0';
     CG_RegisterConfigStringAssets();
 
     CG_LoadingString("");
 
-    cg_hudSpinBaseTime = (float)coduo_compat_atof(
+    cg.hudSpinBaseTime = (float)coduo_compat_atof(
         &cg_gameState.stringData[cg_gameState.stringOffsets[11]]);
 
     cgame_syscall(CG_R_FINISH_LOADING_MODELS);

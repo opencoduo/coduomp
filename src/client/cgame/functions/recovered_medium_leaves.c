@@ -40,10 +40,10 @@ void CG_LoadingString(const char *text) /* 0x3002a4e0 */
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (text == NULL) {
-        cg_loadingScratch[0] = '\0';
+        cg.infoScreenText[0] = '\0';
     } else {
-        strncpy(cg_loadingScratch, text, sizeof(cg_loadingScratch) - 1);
-        cg_loadingScratch[sizeof(cg_loadingScratch) - 1] = '\0';
+        strncpy(cg.infoScreenText, text, sizeof(cg.infoScreenText) - 1);
+        cg.infoScreenText[sizeof(cg.infoScreenText) - 1] = '\0';
     }
     if (text != NULL && text[0] != '\0') {
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
@@ -71,10 +71,10 @@ void VectorLerp(const vec3_t from, const vec3_t to, float fraction,
 qboolean CG_CheckDrawScoreboardLine(int32_t *line, float y,
                                      float height) /* 0x30036ed0 */
 {
-    if (cg_scoreboardOverflowed != 0) {
+    if (cg.scoreboardOverflowed != 0) {
         return qfalse;
     }
-    if (*line < cg_scoreboardScrollPos) {
+    if (*line < cg.scoreboardScrollPos) {
         *line = coduo_int32_from_bits((uint32_t)*line + 1u);
         return qfalse;
     }
@@ -84,6 +84,6 @@ qboolean CG_CheckDrawScoreboardLine(int32_t *line, float y,
         *line = coduo_int32_from_bits((uint32_t)*line + 1u);
         return qtrue;
     }
-    cg_scoreboardOverflowed = qtrue;
+    cg.scoreboardOverflowed = qtrue;
     return qfalse;
 }

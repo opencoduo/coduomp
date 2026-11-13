@@ -56,11 +56,11 @@ void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
             /* BG_EvaluateTrajectory uses the client register ABI (result in ECX,
              * trajectory in EBX, atTime in EAX); modeled here as a normal call.
              * The apos trajectory is evaluated into emitBuf0, the pos trajectory
-             * into origin, both at cg_latestSnapshotTime. */
+             * into origin, both at cg.physicsTime. */
             BG_EvaluateTrajectory(&cent->currentState.apos,
-                                  cg_latestSnapshotTime, angles);
+                                  cg.physicsTime, angles);
             BG_EvaluateTrajectory(&cent->currentState.pos,
-                                  cg_latestSnapshotTime, origin);
+                                  cg.physicsTime, origin);
         } else {
             /* Decode the packed entityState.solid bounds. */
             uint32_t encodedSolid = cent->currentState.solid;

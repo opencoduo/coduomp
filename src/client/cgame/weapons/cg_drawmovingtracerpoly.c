@@ -28,30 +28,30 @@ void CG_DrawMovingTracerPoly(const vec3_t tailPoint, const vec3_t headPoint,
      * then lane 0. Keep that x87 dependency order instead of expressing the
      * algebra in ascending C-array order. */
     dotRight =
-        (long double)cg_refdef.viewaxis[1][2] * (long double)direction[2] +
-        (long double)cg_refdef.viewaxis[1][1] * (long double)direction[1] +
-        (long double)cg_refdef.viewaxis[1][0] * (long double)direction[0];
+        (long double)cg.refdef.viewaxis[1][2] * (long double)direction[2] +
+        (long double)cg.refdef.viewaxis[1][1] * (long double)direction[1] +
+        (long double)cg.refdef.viewaxis[1][0] * (long double)direction[0];
     dotUp =
-        (long double)cg_refdef.viewaxis[2][2] * (long double)direction[2] +
-        (long double)cg_refdef.viewaxis[2][1] * (long double)direction[1] +
-        (long double)cg_refdef.viewaxis[2][0] * (long double)direction[0];
+        (long double)cg.refdef.viewaxis[2][2] * (long double)direction[2] +
+        (long double)cg.refdef.viewaxis[2][1] * (long double)direction[1] +
+        (long double)cg.refdef.viewaxis[2][0] * (long double)direction[0];
 
     /* 0x300484e2/0x300484ff: lanes 0 and 1 spill right*dotUp to float before
      * adding up*(-dotRight). Lane 2 remains live through its final add. */
     {
         float rightPartial0 = (float)(
-            (long double)cg_refdef.viewaxis[1][0] * dotUp);
+            (long double)cg.refdef.viewaxis[1][0] * dotUp);
         float rightPartial1 = (float)(
-            (long double)cg_refdef.viewaxis[1][1] * dotUp);
+            (long double)cg.refdef.viewaxis[1][1] * dotUp);
         side[0] = (float)(
             (long double)rightPartial0 +
-            (long double)cg_refdef.viewaxis[2][0] * -dotRight);
+            (long double)cg.refdef.viewaxis[2][0] * -dotRight);
         side[1] = (float)(
             (long double)rightPartial1 +
-            (long double)cg_refdef.viewaxis[2][1] * -dotRight);
+            (long double)cg.refdef.viewaxis[2][1] * -dotRight);
         side[2] = (float)(
-            (long double)cg_refdef.viewaxis[1][2] * dotUp +
-            (long double)cg_refdef.viewaxis[2][2] * -dotRight);
+            (long double)cg.refdef.viewaxis[1][2] * dotUp +
+            (long double)cg.refdef.viewaxis[2][2] * -dotRight);
     }
     VectorNormalize(side);
 
@@ -105,16 +105,16 @@ void CG_DrawMovingTracerPoly(const vec3_t tailPoint, const vec3_t headPoint,
 
         for (i = 0; i < 3; ++i) {
             plusRight[i] =
-                (long double)cg_refdef.viewaxis[1][i] * (long double)width +
+                (long double)cg.refdef.viewaxis[1][i] * (long double)width +
                 (long double)center[i];
             minusRight[i] =
-                (long double)cg_refdef.viewaxis[1][i] *
+                (long double)cg.refdef.viewaxis[1][i] *
                     -(long double)width +
                 (long double)center[i];
             plusUp[i] =
-                (long double)cg_refdef.viewaxis[2][i] * (long double)width;
+                (long double)cg.refdef.viewaxis[2][i] * (long double)width;
             minusUp[i] =
-                (long double)cg_refdef.viewaxis[2][i] *
+                (long double)cg.refdef.viewaxis[2][i] *
                     -(long double)width;
             plusRightRounded[i] = (float)plusRight[i];
             minusRightRounded[i] = (float)minusRight[i];

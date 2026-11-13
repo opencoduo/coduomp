@@ -11,7 +11,7 @@
 // count of gathered HUD-element pointers, not a per-weapon value. The name
 // CG_GetSortedHudElems is proven by behavior + call graph:
 //   - it walks the two hud arrays embedded in the local playerState (reached via
-//     cg_snap + 0x0c = ps base, then ps+0x7f8 and ps+0x267c);
+//     cg.snap + 0x0c = ps base, then ps+0x7f8 and ps+0x267c);
 //   - it gathers the ACTIVE entries (type != 0) into the caller's list and qsorts
 //     them by the float sort key at hudElem_t+0x6c (comparator at 0x3002a400);
 //   - its only caller, CG_DrawHudElems (0x3002a4a0), then calls CG_DrawSingleHudElem
@@ -24,7 +24,7 @@
 // (plain `RET`, no stack cleanup). ESI/EDI are callee-saved (PUSH/POP). The list
 // slots hold POINTERS to the hud elements (the qsort element size is 4).
 
-#include "client/cgame/globals.h"          /* cg_snap, snapshot_t, hudElem_t, HUD count */
+#include "client/cgame/globals.h"          /* cg.snap, snapshot_t, hudElem_t, HUD count */
 #include "client/cgame/client_recovered.h"
 #include "compat/crt/qsort_compat.h"
 
@@ -44,9 +44,9 @@
  */
 int CG_GetSortedHudElems(hudElem_t **sortedList)
 {
-    /* MOV EDI,[0x30459160]; ADD EDI,0xc  ->  ps = &cg_snap->ps, modeled here as
+    /* MOV EDI,[0x30459160]; ADD EDI,0xc  ->  ps = &cg.snap->ps, modeled here as
      * the snapshot base since the two hud arrays are members of snapshot_t. */
-    snapshot_t *snap = cg_snap;
+    snapshot_t *snap = cg.snap;
     int count = 0;   /* ESI: running total across both arrays */
     int i;           /* ECX: per-array index, reset between the two loops */
 

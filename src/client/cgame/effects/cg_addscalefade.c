@@ -26,16 +26,16 @@
  * radius, and a view-distance cull), the canonical Quake3 CG_AddScaleFade.
  *
  * Fade/round math is identical in shape to the sibling CG_AddFadeRGB (0x3002abc0):
- *   P = (float)(le->endTime - cg_time) * le->lifeRate              (0x3002ac2f-0x3002ac36)
+ *   P = (float)(le->endTime - cg.time) * le->lifeRate              (0x3002ac2f-0x3002ac36)
  * Only the ALPHA channel is packed here (CG_AddFadeRGB packs all four):
  *   le->refEntity.shaderRGBA[3] = (uint8_t)_ftol2(P * le->color[3] * 255.0f)
  *   (FLD ST0 copy of P kept in ST1; the alpha branch multiplies the copy)
  *   (0x3002ac39-0x3002ac49; the surviving P is popped at 0x3002ac66).
  *
  * Instruction-level proof of every statement:
- *   3002ac21  ECX = cg_time                         [int32 global 0x304831b0]
+ *   3002ac21  ECX = cg.time                         [int32 global 0x304831b0]
  *   3002ac27  EAX = le->endTime          (int32 @ +0x10)
- *   3002ac2a  EAX = EAX - ECX            (endTime - cg_time), 32-bit wrap
+ *   3002ac2a  EAX = EAX - ECX            (endTime - cg.time), 32-bit wrap
  *   3002ac2f  FILD [ESP]                 -> P0 = (float) of that signed int32
  *   3002ac33  EDI = &le->refEntity       (LEA ESI+0x50; live through the tail)
  *   3002ac36  FMUL le->lifeRate          (float @ +0x14)  => P (ST0)
@@ -56,11 +56,11 @@
  *
  *   -- view-distance of the sprite from the camera --
  *   3002ac68  FLD refEntity.origin[0] (EDI+0x44)
- *   3002ac6b  FSUB cg_refdef.vieworg[0] (0x30487a90)     => dx
+ *   3002ac6b  FSUB cg.refdef.vieworg[0] (0x30487a90)     => dx
  *   3002ac71  FLD refEntity.origin[1] (EDI+0x48)
- *   3002ac74  FSUB cg_refdef.vieworg[1] (0x30487a94)     => dy
+ *   3002ac74  FSUB cg.refdef.vieworg[1] (0x30487a94)     => dy
  *   3002ac7a  FLD refEntity.origin[2] (EDI+0x4c)
- *   3002ac7d  FSUB cg_refdef.vieworg[2] (0x30487a98)     => dz
+ *   3002ac7d  FSUB cg.refdef.vieworg[2] (0x30487a98)     => dz
  *   3002ac83-93  dist = sqrt(dx*dx + dy*dy + dz*dz)     (FLD/FMUL/FADDP x2, FSQRT)
  *   3002ac95-99  FSTP ST3/FSTP ST0/FSTP ST0            drop the dx/dy/dz temporaries
  *   3002ac9b  FCOMP le->radius (ESI+0x4c) ; FNSTSW AX ; TEST AH,5 ; JP 0x3002ace3
@@ -98,9 +98,9 @@ void CG_AddScaleFade(localEntity_t *le)
      * The ms delta carries no (float) cast: the DLL FILDs the integer straight
      * into the FMUL with no FSTP DWORD, so it enters exact. Under -std=c11 an
      * explicit (float) really rounds (fildl/fstps/flds) and would diverge once
-     * |endTime - cg_time| exceeds 2^24 ms (~4.66 h of uptime). */
+     * |endTime - cg.time| exceeds 2^24 ms (~4.66 h of uptime). */
     int32_t remaining = coduo_int32_from_bits(
-        (uint32_t)le->endTime - (uint32_t)cg_time);
+        (uint32_t)le->endTime - (uint32_t)cg.time);
     long double phase =
         (long double)remaining * (long double)le->lifeRate;
 
@@ -115,18 +115,18 @@ void CG_AddScaleFade(localEntity_t *le)
         re->radius = (1.0f - phase) * le->radius + 8.0f;
     }
 
-    /* Distance from the camera (cg_refdef.vieworg) to the sprite origin.
+    /* Distance from the camera (cg.refdef.vieworg) to the sprite origin.
      * 0x3002ac68..0x3002ac9b: the whole chain — the three subtractions, the
      * squares, the FADDPs (summed z,y,x), the FSQRT and the FCOMP against
      * le->radius — stays in 80-bit st registers with NO float store, so the
      * locals are long double (BoxOnPlaneSide precedent); float locals would
      * round before the cull compare. */
     long double dx =
-        (long double)re->origin[0] - (long double)cg_refdef.vieworg[0];
+        (long double)re->origin[0] - (long double)cg.refdef.vieworg[0];
     long double dy =
-        (long double)re->origin[1] - (long double)cg_refdef.vieworg[1];
+        (long double)re->origin[1] - (long double)cg.refdef.vieworg[1];
     long double dz =
-        (long double)re->origin[2] - (long double)cg_refdef.vieworg[2];
+        (long double)re->origin[2] - (long double)cg.refdef.vieworg[2];
     long double dist = coduo_x87_sqrtl(
         dz * dz + dy * dy + dx * dx);
 

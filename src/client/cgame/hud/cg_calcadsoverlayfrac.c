@@ -12,12 +12,12 @@
 //
 // Behavior (all steps proven against the .mcode):
 //   *outFrac = 0.0f;                                            (30019526)
-//   wi = cg_currentWeaponInfo;                                  (3001952c)
+//   wi = cg.currentWeaponInfo;                                  (3001952c)
 //   if (wi->adsOverlayShader[0] == '\0' &&                      (30019535..3001953e)
 //       wi->adsOverlayReticle == 0) return qfalse;              (30019540..30019548)
 //   if (adsFraction != 0.0f) {                                  (3001954e..3001955e; FUCOMPP)
 //       // zooming in uses adsZoomInFrac, else adsZoomOutFrac
-//       frac = wi->adsZoom{In,Out}Frac;                         (mode = cg_adsZoomingIn)
+//       frac = wi->adsZoom{In,Out}Frac;                         (mode = cg.weaponPosition.adsZoomingIn)
 //       num  = adsFraction - (1.0f - frac);                     (FLD 1.0; FSUB frac; FSUBR t)
 //       *outFrac = num;                                         (FST [ECX], no pop)
 //       if (num > 0.0f) *outFrac = num / frac;                  (FCOM 0.0; only divide if >0)
@@ -26,9 +26,9 @@
 // The final TEST/JP treats unordered as active, exactly like a value > 0.01.
 //
 // Constants recovered from .rdata: [0x3007bcec]=0.0f, [0x3007bce0]=1.0f,
-// [0x3007bdb4]=0.01f. cg_currentWeaponInfo (0x30487980) is bg_weaponInfos[current-
-// weapon] cached per frame; cg_adsZoomingIn (0x30487954) is set at 0x30045521 when
-// this frame's adsFraction rose above last frame's; cg_predictedPlayerState.adsFraction
+// [0x3007bdb4]=0.01f. cg.currentWeaponInfo (0x30487980) is bg_weaponInfos[current-
+// weapon] cached per frame; cg.weaponPosition.adsZoomingIn (0x30487954) is set at 0x30045521 when
+// this frame's adsFraction rose above last frame's; cg.predictedPlayerState.adsFraction
 // (0x304832a4) is cg.predictedPlayerState.adsFraction (+0xe0).
 //
 // Name evidence: the ADS-overlay gate (adsOverlayShader[0]/adsOverlayReticle),
@@ -39,8 +39,8 @@
 // weaponInfo/adsFraction globals, with no strings, entity args, or trap calls.
 // (size 0xba was matched by size alone, which the contract forbids.)
 
-#include "client/cgame/globals.h"          /* cg_currentWeaponInfo, cg_adsZoomingIn,
-                               * cg_predictedPlayerState.adsFraction */
+#include "client/cgame/globals.h"          /* cg.currentWeaponInfo, cg.weaponPosition.adsZoomingIn,
+                               * cg.predictedPlayerState.adsFraction */
 #include "client/cgame/client_recovered.h" /* weaponInfo_t */
 
 /* Overlay is "active" once its computed fraction exceeds this small threshold. */
@@ -58,10 +58,10 @@ qboolean CG_CalcAdsOverlayFrac(float *outFrac)
 
     /* MOV EAX,[0x304832a4] read before the *outFrac clear (order preserved via
      * the [ESP] scratch slot); MOV dword ptr [ECX],0 zeroes the output. */
-    adsFraction = cg_predictedPlayerState.adsFraction;
+    adsFraction = cg.predictedPlayerState.adsFraction;
     *outFrac = 0.0f;
 
-    wi = cg_currentWeaponInfo;
+    wi = cg.currentWeaponInfo;
 
     /* 3001953b CMP byte ptr [EAX],0 / 30019546 TEST EAX,EAX: proceed only if the
      * weapon has an ADS overlay shader OR the overlay-reticle ADS-reduce gate is
@@ -75,7 +75,7 @@ qboolean CG_CalcAdsOverlayFrac(float *outFrac)
     if (adsFraction != 0.0f) {
         /* 30019560 MOV EAX,[0x30487954] / TEST / JZ: select the easing fraction
          * for the current zoom direction. */
-        zoomingIn = cg_adsZoomingIn;
+        zoomingIn = cg.weaponPosition.adsZoomingIn;
         if (zoomingIn) {
             frac = wi->adsZoomInFrac;    /* +0x278 */
         } else {
@@ -92,10 +92,10 @@ qboolean CG_CalcAdsOverlayFrac(float *outFrac)
         /* FCOM 0.0 / TEST AH,0x41 / JNZ: divide by the easing fraction only when
          * the numerator is strictly positive; otherwise keep the raw value. */
         if (num > 0.0f) {
-            /* The target reloads cg_currentWeaponInfo after the numerator store,
+            /* The target reloads cg.currentWeaponInfo after the numerator store,
              * then reads the divisor from the branch selected by the earlier
-             * cg_adsZoomingIn load. */
-            weaponInfo_t *divisionWi = cg_currentWeaponInfo;
+             * cg.weaponPosition.adsZoomingIn load. */
+            weaponInfo_t *divisionWi = cg.currentWeaponInfo;
             float divisor = zoomingIn
                 ? divisionWi->adsZoomInFrac
                 : divisionWi->adsZoomOutFrac;

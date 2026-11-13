@@ -18,9 +18,9 @@
 //      using cg_hudCompassSize_vmCvar.value (0x3048c4a8, the HUD slide/scale factor) and fixed
 //      anchor constants (-25, 25, 345, 160). The x/y anchors keep the element pinned
 //      while w/h scale directly.
-//   2. Advance and read the rotating element's spin angle (cg_hudSpinAngle,
+//   2. Advance and read the rotating element's spin angle (cg.hudSpinAngle,
 //      0x3048b5cc) via CG_UpdateHudSpinAngle (0x3001d3a0), which derives it from
-//      cg_time. The four scaled coordinates (h, w, y, x) are its cdecl float args;
+//      cg.time. The four scaled coordinates (h, w, y, x) are its cdecl float args;
 //      its return value is discarded.
 //   3. trap_R_SetColor(color) -> CG_DrawRotatedPic(x, y, w, h, spinAngle, hShader) ->
 //      trap_R_SetColor(NULL) (tail-call resetting the 2D draw color to opaque white).
@@ -70,7 +70,7 @@ void CG_DrawSpinningPic(const rectDef_t *rect, qhandle_t hShader,
     float h = cg_hudCompassSize_vmCvar.value * rect->h;
 
     // 0x3002f971  CALL 0x3001d3a0 — advance the spinning HUD element's angle from
-    // cg_time toward its target. The four scaled floats (h, w, y, x) sit in the
+    // cg.time toward its target. The four scaled floats (h, w, y, x) sit in the
     // outgoing stack slots because the compiler reused this frame, but the callee
     // reads NONE of them (proven from its own .mcode): CG_UpdateHudSpinAngle takes
     // no arguments and its return value is ignored.
@@ -81,9 +81,9 @@ void CG_DrawSpinningPic(const rectDef_t *rect, qhandle_t hShader,
     trap_R_SetColor(color);
 
     // 0x3002f983..0x3002fa3  read back the freshly-updated spin angle and draw:
-    //   CG_DrawRotatedPic(x, y, w, h, cg_hudSpinAngle, hShader).
-    // Push order (right-to-left): hShader, cg_hudSpinAngle, h, w, y, x.
-    CG_DrawRotatedPic(x, y, w, h, cg_hudSpinAngle, hShader);
+    //   CG_DrawRotatedPic(x, y, w, h, cg.hudSpinAngle, hShader).
+    // Push order (right-to-left): hShader, cg.hudSpinAngle, h, w, y, x.
+    CG_DrawRotatedPic(x, y, w, h, cg.hudSpinAngle, hShader);
 
     // 0x3002f9ab..0x3002f9bb  MOV [ESP+8],0; MOV [ESP+4],0x48; JMP [cgame_syscall]:
     //   tail-call trap(72, NULL) -> reset the draw color to opaque white.

@@ -39,8 +39,8 @@ enum {
 //   3001b2cb LEA EAX,[ESP+0x1044] ; PUSH EAX     &lineC   (P + 0x1040)
 //   3001b2d3 LEA ECX,[ESP+0x48]   ; PUSH ECX     &lineB   (P + 0x40)
 //   3001b2d8 LEA EDX,[ESP+0xc]    ; PUSH EDX     &lineA   (P + 0)
-//   3001b2dd PUSH 0x30487a9c            &(refdef scalar after cg_refdef.vieworg)
-//   3001b2e2 PUSH 0x30487a90            &cg_refdef.vieworg (camera origin vec3)
+//   3001b2dd PUSH 0x30487a9c            &(refdef scalar after cg.refdef.vieworg)
+//   3001b2e2 PUSH 0x30487a90            &cg.refdef.vieworg (camera origin vec3)
 //   3001b2e7 PUSH 0x6e                  trap id CG_GET_VIEW_INFO (110)
 //   3001b2e9 CALL *0x30085e9c           EAX = cgame_syscall(110, ...)
 //   3001b2ef ADD ESP,0x1c               caller-clean the 7 pushed dwords
@@ -81,7 +81,7 @@ enum {
 // 32-bit bit patterns through the trap ABI, matching the callee.
 //
 // The trap-110 argument at 0x30487a9c is the refdef scalar immediately following
-// the cg_refdef.vieworg vec3 (0x30487a90..0x30487a98). Its precise identity is not
+// the cg.refdef.vieworg vec3 (0x30487a90..0x30487a98). Its precise identity is not
 // resolved here (it is only forwarded as a pointer to the unrecovered trap-110
 // service), so it is referenced by its existing mechanical globals.h name.
 
@@ -96,15 +96,15 @@ void CG_DrawViewInfoOverlay(void)
     char surfaceFlags[CG_VIEW_INFO_TEXT_CAPACITY];
     char contents[CG_VIEW_INFO_TEXT_CAPACITY];
 
-    /* cgame_syscall(110, &cg_refdef.vieworg, &cg_refdef.viewaxis[0],
+    /* cgame_syscall(110, &cg.refdef.vieworg, &cg.refdef.viewaxis[0],
      *               materialName, surfaceFlags, contents, 4096)
      * returns nonzero on success.
      * The two global vec3 addresses (view origin + forward direction, adjacent in
      * memory) are forwarded as pointers; the three buffers are output text lines. */
     if (coduo_int32_from_bits((uint32_t)cgame_syscall(
             CG_GET_VIEW_INFO,
-            (intptr_t)cg_refdef.vieworg,
-            (intptr_t)cg_refdef.viewaxis[0],
+            (intptr_t)cg.refdef.vieworg,
+            (intptr_t)cg.refdef.viewaxis[0],
             (intptr_t)materialName,
             (intptr_t)surfaceFlags,
             (intptr_t)contents,

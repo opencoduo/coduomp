@@ -9,15 +9,15 @@
 // sway time window and the active weapon's swayShellShockScale, eases a smoothstep
 // envelope, and calls the weapon-sway core BG_CalculateWeaponPosition_Sway
 // (0x30015ca0). The mechanical global owner label bg_smoothweaponswayvalue (on
-// cg_predictedPlayerState.currentWeapon, first-touched here) and the same-module PPC
+// cg.predictedPlayerState.currentWeapon, first-touched here) and the same-module PPC
 // BG_CalculateWeaponPosition_Sway family corroborate the weapon-sway identity.
 // Name provisional by proven role; exact original source name unresolved.
 //
 // The smoothstep envelope, matching the machine code exactly:
-//   remaining = cg_shellShockSwayStartTime + cg_shellShockSwayDuration - cg.time
+//   remaining = cg.shellShockSwayStartTime + cg.shellShockSwayDuration - cg.time
 //   if (remaining <= 0)             scale = 1.0f;                 // 0x30044c88
 //   else {
-//       duration = cg_shellShockSwayParams->duration;            // *(int*)0x3048bfdc
+//       duration = cg.shellShockSwayParams->duration;            // *(int*)0x3048bfdc
 //       x = (remaining >= duration) ? 1.0f                       // JGE keeps FLD 1.0f
 //                                   : remaining / duration;       // FILD/FIDIV (exact ints)
 //       s = x * x * (3.0f - 2.0f * x);                           // smoothstep
@@ -51,7 +51,7 @@ void CG_WeaponSway_ApplyShellShock(void)
     /* bg_weaponInfos[cg.predictedPlayerState.currentWeapon] (0x30044c13..0x30044c1e):
      * EAX = currentWeapon; ECX = bg_weaponInfos; EDX = bg_weaponInfos[EAX]. */
     const weaponInfo_t *weapon =
-        bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+        bg_weaponInfos[cg.predictedPlayerState.currentWeapon];
 
     /* remaining = (duration - cg.time) + startTime, evaluated as signed 32-bit
      * (0x30044c21..0x30044c34: MOV EAX,[end]; SUB EAX,[cg.time]; ADD EAX,ESI[=start];
@@ -59,8 +59,8 @@ void CG_WeaponSway_ApplyShellShock(void)
      * 32-bit values and the result is reinterpreted as int32_t, so the <= 0 branch
      * stays signed like the ALU op. */
     int32_t remaining = coduo_int32_from_bits(
-        ((uint32_t)cg_shellShockSwayDuration - (uint32_t)cg_time) +
-        (uint32_t)cg_shellShockSwayStartTime);
+        ((uint32_t)cg.shellShockSwayDuration - (uint32_t)cg.time) +
+        (uint32_t)cg.shellShockSwayStartTime);
 
     float scale;
 
@@ -68,9 +68,9 @@ void CG_WeaponSway_ApplyShellShock(void)
         /* 0x30044c88: MOV [ESP+8],0x3f800000 -> 1.0f. */
         scale = 1.0f;
     } else {
-        /* duration = *cg_shellShockSwayParams (0x30044c3e MOV ECX,[params];
+        /* duration = *cg.shellShockSwayParams (0x30044c3e MOV ECX,[params];
          * 0x30044c4a MOV ECX,[ECX]). Treated as a signed count for the CMP/FIDIV. */
-        int32_t duration = cg_shellShockSwayParams->blurDivisor;
+        int32_t duration = cg.shellShockSwayParams->blurDivisor;
 
         /* x: FLD 1.0f is pre-loaded (0x30044c44); the JGE at 0x30044c52 KEEPS that
          * 1.0f when remaining >= duration (envelope saturated). Only when
@@ -107,9 +107,9 @@ void CG_WeaponSway_ApplyShellShock(void)
      * ESI = &cg.predictedPlayerState (0x304831c4).
      * Caller cleans the 3 pushed dwords (ADD ESP,0xc at 0x30044cb5). */
     BG_CalculateWeaponPosition_Sway(
-        &cg_predictedPlayerState,
-        cg_weaponSwayViewAngles,                   /* stack: previous view angles */
-        cg_weaponSwayOffset,                       /* EAX: positional sway */
-        cg_weaponSwayAngles,                       /* EDI: sway angles */
-        scale, cg_frametime);
+        &cg.predictedPlayerState,
+        cg.weaponSwayViewAngles,                   /* stack: previous view angles */
+        cg.weaponSwayOffset,                       /* EAX: positional sway */
+        cg.weaponSwayAngles,                       /* EDI: sway angles */
+        scale, cg.frametime);
 }

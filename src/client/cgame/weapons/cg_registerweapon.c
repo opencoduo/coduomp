@@ -218,7 +218,7 @@ void CG_RegisterWeapon(int weaponIndex)
         CG_RegisterMaterial(item->ammoIcon, CG_REGISTER_WEAPON_SHADER_SORT);
 
     if (weapon->reticleCenter[0] != '\0') {
-        if (cg_snap == NULL && cg_updateScreenActive == 0) {
+        if (cg.snap == NULL && cg_updateScreenActive == 0) {
             char expectedUsageString[CG_LOADING_CVAR_BUFFER_SIZE];
             int32_t levelShot = 0;
             const char *serverInfo;
@@ -298,7 +298,7 @@ void CG_RegisterWeapon(int weaponIndex)
             CG_REGISTER_WEAPON_SHADER_SORT);
     }
     if (weapon->reticleSide[0] != '\0') {
-        if (cg_snap == NULL && cg_updateScreenActive == 0) {
+        if (cg.snap == NULL && cg_updateScreenActive == 0) {
             char expectedUsageString[CG_LOADING_CVAR_BUFFER_SIZE];
             int32_t levelShot = 0;
             const char *serverInfo;
@@ -369,7 +369,7 @@ void CG_RegisterWeapon(int weaponIndex)
             CG_REGISTER_WEAPON_SHADER_SORT);
     }
     if (weapon->adsOverlayShader[0] != '\0') {
-        if (cg_snap == NULL && cg_updateScreenActive == 0) {
+        if (cg.snap == NULL && cg_updateScreenActive == 0) {
             char expectedUsageString[CG_LOADING_CVAR_BUFFER_SIZE];
             int32_t levelShot = 0;
             const char *serverInfo;

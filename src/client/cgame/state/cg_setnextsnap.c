@@ -2,7 +2,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3003cc10_3003d21c.mcode
 //
 // CG_SetNextSnap - install and transition the incoming snapshot. The former
-// CG_FakeTrajectoryEffects label was a size-only match; the cg_nextSnap store,
+// CG_FakeTrajectoryEffects label was a size-only match; the cg.nextSnap store,
 // interpolation math, client-state refresh, and entity transition graph prove
 // the same-module CG_SetNextSnap identity.
 
@@ -14,27 +14,27 @@
 
 void CG_SetNextSnap(snapshot_t *snap)
 {
-    cg_nextSnap = snap;
+    cg.nextSnap = snap;
     cgame_syscall(CG_DOBJ_INVALIDATE_SKELS);
 
-    if (snap->serverTime == cg_snap->serverTime) {
-        cg_frameInterpolation = 0.0f;
+    if (snap->serverTime == cg.snap->serverTime) {
+        cg.frameInterpolation = 0.0f;
     } else {
         /* 0x3003cc54 FILD num / 0x3003cc58 FIDIV den: the numerator is loaded as an
          * integer and divided by the integer denominator operand in 80-bit (both
          * exact) -- this is NOT a float/float divide, so keep the operands wide.
          * 0x3003cc5c FST (store-and-keep) rounds the quotient into
-         * cg_frameInterpolation while 0x3003cc62 FCOMP tests the UNROUNDED st0
+         * cg.frameInterpolation while 0x3003cc62 FCOMP tests the UNROUNDED st0
          * against 0.0f -- so the sign test must read the wide quotient, not the
          * float lvalue. */
         int32_t numerator = coduo_int32_from_bits(
-            (uint32_t)cg_time - (uint32_t)cg_snap->serverTime);
+            (uint32_t)cg.time - (uint32_t)cg.snap->serverTime);
         int32_t denominator = coduo_int32_from_bits(
-            (uint32_t)snap->serverTime - (uint32_t)cg_snap->serverTime);
+            (uint32_t)snap->serverTime - (uint32_t)cg.snap->serverTime);
         long double frac = (long double)numerator / (long double)denominator;
-        cg_frameInterpolation = (float)frac;
+        cg.frameInterpolation = (float)frac;
         if (frac < 0.0f) {
-            cg_frameInterpolation = 0.0f;
+            cg.frameInterpolation = 0.0f;
         }
     }
 
@@ -93,49 +93,49 @@ void CG_SetNextSnap(snapshot_t *snap)
     CG_RefreshWeaponInfosForConfigString(
         CG_ConfigString(snap->ps.viewModelIndex + 405));
 
-    cg_crosshairHealthEntNum = snap->ps.stats[STAT_IDENT_CLIENT_NUM];
-    cg_crosshairHealth = snap->ps.stats[STAT_IDENT_CLIENT_HEALTH];
+    cg.crosshairHealthEntNum = snap->ps.stats[STAT_IDENT_CLIENT_NUM];
+    cg.crosshairHealth = snap->ps.stats[STAT_IDENT_CLIENT_HEALTH];
 
-    if (snap->ps.psClientNum != cg_snap->ps.psClientNum) {
-        cg_entities[cg_snap->ps.psClientNum].currentValid = 0;
+    if (snap->ps.psClientNum != cg.snap->ps.psClientNum) {
+        cg_entities[cg.snap->ps.psClientNum].currentValid = 0;
     }
 
     qboolean spawnCountChanged =
         snap->ps.stats[STAT_SPAWN_COUNT] !=
-            cg_snap->ps.stats[STAT_SPAWN_COUNT];
+            cg.snap->ps.stats[STAT_SPAWN_COUNT];
 
     if ((snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0) {
         centity_t *cent = &cg_entities[snap->ps.psClientNum];
         qboolean resetPlayerState =
-            cg_initialSnapshotPending != 0 ||
+            cg.mapRestart != 0 ||
             spawnCountChanged ||
-            snap->ps.psClientNum != cg_snap->ps.psClientNum;
+            snap->ps.psClientNum != cg.snap->ps.psClientNum;
 
         BG_PlayerStateToEntityState(&snap->ps, &cent->nextState, qfalse);
 
         if (resetPlayerState || cent->currentValid == 0 ||
             ((cent->nextState.eFlags ^ cent->currentState.eFlags) & EF_DOBJ_STATE_CHANGED) != 0) {
-            memcpy(&cg_snap->ps, &snap->ps,
+            memcpy(&cg.snap->ps, &snap->ps,
                    sizeof(playerState_t));
             CG_TransitionEntity(cent);
 
             /* 0x3003d009..0x3003d031 selects the reset branch from the
-             * old cg_snap state before the REP MOVSD at 0x3003d08f. The
+             * old cg.snap state before the REP MOVSD at 0x3003d08f. The
              * previous reconstruction repeated these comparisons after the
              * copy, when health and clientNum necessarily matched, and
              * therefore skipped CG_SnapshotTransitionStage2 on a spawn. */
             if (resetPlayerState) {
                 CG_SnapshotTransitionStage2();
             } else {
-                cg_predictedError[0] = 0.0f;
-                cg_predictedError[1] = 0.0f;
-                cg_predictedError[2] = 0.0f;
+                cg.predictedError[0] = 0.0f;
+                cg.predictedError[1] = 0.0f;
+                cg.predictedError[2] = 0.0f;
             }
         }
-    } else if (cg_initialSnapshotPending != 0 ||
+    } else if (cg.mapRestart != 0 ||
                spawnCountChanged ||
-               snap->ps.psClientNum != cg_snap->ps.psClientNum) {
-        memcpy(&cg_snap->ps, &snap->ps,
+               snap->ps.psClientNum != cg.snap->ps.psClientNum) {
+        memcpy(&cg.snap->ps, &snap->ps,
                sizeof(playerState_t));
         CG_SnapshotTransitionStage2();
     }

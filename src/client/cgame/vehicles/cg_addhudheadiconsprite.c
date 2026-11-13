@@ -14,7 +14,7 @@
 // the renderer. Resolved by behavior + call graph:
 //   - trap id 0x3d through *cgame_syscall = trap_R_AddRefEntityToScene (one refEntity_t*);
 //   - reType 4 = RT_SPRITE (camera-facing icon sprite);
-//   - reads cg_snap (0x30459160), cg_refdef.vieworg (0x30487a90) and the view-follow
+//   - reads cg.snap (0x30459160), cg.refdef.vieworg (0x30487a90) and the view-follow
 //     gate 0x304831c0 exactly like the sibling sprite builder CG_AddHeadIconSprite
 //     (0x30032910); this is the head-tag-less variant that always uses cent+0x208.
 // The existing caller-observed provisional decl in client_recovered.h already carries
@@ -45,9 +45,9 @@ void CG_AddHudHeadIconSprite(centity_t *cent, qhandle_t material, int32_t yaw,
      * gate (0x304831c0) is clear — so the player's own icon is suppressed except in
      * the third-person render pass. Otherwise 0. */
     int32_t renderfx = 0;                                                /* XOR EDX,EDX default */
-    if ((cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&/* TEST [cg_snap+0x18],0xc0000 / JZ */
-        cent->currentState.number == cg_snap->ps.psClientNum &&                         /* CMP [ESI],[cg_snap+0xe0] / JNZ */
-        cg_thirdPerson == 0) {                                         /* TEST [0x304831c0] / JNZ */
+    if ((cg.snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&/* TEST [cg.snap+0x18],0xc0000 / JZ */
+        cent->currentState.number == cg.snap->ps.psClientNum &&                         /* CMP [ESI],[cg.snap+0xe0] / JNZ */
+        cg.renderingThirdPerson == 0) {                                         /* TEST [0x304831c0] / JNZ */
         /* 0x304831c0: per-frame follow/intermission view gate (its mechanical owner
          * label "pm_viewheighttablelerp" is wrong and its exact source name is not
          * resolved from current evidence, so the mechanical symbol is kept, no alias).
@@ -67,7 +67,7 @@ void CG_AddHudHeadIconSprite(centity_t *cent, qhandle_t material, int32_t yaw,
 
     /* ---- Distance-based radius / z-lift (0x30021428..0x3002149f) -------------------
      * When drawFlag is set, scale the sprite by its distance from the current
-     * view/camera origin (cg_refdef.vieworg, .data vec3 @0x30487a90..0x30487a98) and
+     * view/camera origin (cg.refdef.vieworg, .data vec3 @0x30487a90..0x30487a98) and
      * lift its z; otherwise use a fixed radius and leave z alone. */
     long double radius;   /* ST0 at the store block (refEntity.radius / radius2) */
     long double finalZ;   /* origin.z at the store block */
@@ -75,11 +75,11 @@ void CG_AddHudHeadIconSprite(centity_t *cent, qhandle_t material, int32_t yaw,
     if (drawFlag != 0) {                                                 /* TEST [EBP+0x14]; JZ 0x30021499 */
         float originY = CG_FloatFromBits((uint32_t)originYBits);
         long double dx =
-            (long double)originX - (long double)cg_refdef.vieworg[0];
+            (long double)originX - (long double)cg.refdef.vieworg[0];
         long double dy =
-            (long double)originY - (long double)cg_refdef.vieworg[1];
+            (long double)originY - (long double)cg.refdef.vieworg[1];
         long double dz =
-            originZ - (long double)cg_refdef.vieworg[2];
+            originZ - (long double)cg.refdef.vieworg[2];
         long double dist = coduo_x87_sqrtl(
             dz * dz + dy * dy + dx * dx);
 

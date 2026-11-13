@@ -46,7 +46,7 @@ void CG_DrawPlayerAmmoBackdrop(int32_t wantVehicleView,
 {
     // 0x3002eb90 MOV EAX,[0x30483248]; 0x3002eb95 TEST AH,0x60; 0x3002eb98 JNZ ret.
     // AH holds bits 8..15 of entityStateFlags, so AH&0x60 tests flags&0x6000.
-    uint32_t flags = cg_predictedPlayerState.entityStateFlags;
+    uint32_t flags = cg.predictedPlayerState.entityStateFlags;
     if ((flags & 0x6000u) != 0u) {
         return;
     }
@@ -70,17 +70,17 @@ void CG_DrawPlayerAmmoBackdrop(int32_t wantVehicleView,
         // 0x3002ebad TEST EAX,EAX / JZ 0xebc3: EAX==0x100000 here (nonzero), so the
         // vehicle-state checks below run.
         // 0x3002ebb1 CMP [0x304837dc],1 / JNZ ret: vehicleType must be 1.
-        if (cg_predictedPlayerState.vehicleType != 1) {
+        if (cg.predictedPlayerState.vehicleType != 1) {
             return;
         }
         // 0x3002ebba CMP [0x304837d8],3 / JNZ ret: vehiclePosition must be 3.
-        if (cg_predictedPlayerState.vehiclePosition != 3) {
+        if (cg.predictedPlayerState.vehiclePosition != 3) {
             return;
         }
     }
 
     // 0x3002ebc3 MOV EAX,[0x3048329c]; 0x3002ebc8 TEST EAX,EAX; 0x3002ebca JZ ret.
-    if (cg_predictedPlayerState.currentWeapon == 0) {
+    if (cg.predictedPlayerState.currentWeapon == 0) {
         return;
     }
 

@@ -5,7 +5,7 @@
 //
 // CG_CalcAdsViewOffset — compute the aim-down-sight (ADS) view-relative offset
 // for a world point `pos`, storing the result into the cgame global vec3
-// cg_adsViewOffset, or zeroing it when ADS is not active.
+// cg.adsViewOffset, or zeroing it when ADS is not active.
 //
 // The .mcode header's size-matched guess "script_method_scriptbuiltin_setrightarc"
 // is REJECTED: that is a server GSC script builtin (takes script arguments,
@@ -32,7 +32,7 @@ void CG_CalcAdsViewOffset(const vec3_t pos)
      * zeroing path.
      */
     const weaponInfo_t *weaponInfo =
-        bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+        bg_weaponInfos[cg.predictedPlayerState.currentWeapon];
 
     if (weaponInfo->adsEnabled != 0) {
         /*
@@ -48,28 +48,28 @@ void CG_CalcAdsViewOffset(const vec3_t pos)
          * the compute path. The FLD ST1 copy leaves adsFraction on the x87 stack
          * (ST0) as the multiplier used by the compute path below.
          */
-        if (cg_predictedPlayerState.adsFraction != 0.0f) {
+        if (cg.predictedPlayerState.adsFraction != 0.0f) {
             /*
              * 0x300451cf..0x30045201: project `pos` relative to the view origin
              * and scale each component by adsFraction.
              *   FLD [ECX+i]  - pos[i]
-             *   FSUB [cg_refdef.vieworg+i]
+             *   FSUB [cg.refdef.vieworg+i]
              *   FMUL ST1     - * adsFraction (the copy still on the stack)
-             *   FSTP [cg_adsViewOffset+i]
+             *   FSTP [cg.adsViewOffset+i]
              * The trailing FSTP ST0 (0x30045201) pops the leftover adsFraction.
              */
-            cg_adsViewOffset[0] =
+            cg.adsViewOffset[0] =
                 (float)(((long double)pos[0] -
-                         (long double)cg_refdef.vieworg[0]) *
-                        (long double)cg_predictedPlayerState.adsFraction);
-            cg_adsViewOffset[1] =
+                         (long double)cg.refdef.vieworg[0]) *
+                        (long double)cg.predictedPlayerState.adsFraction);
+            cg.adsViewOffset[1] =
                 (float)(((long double)pos[1] -
-                         (long double)cg_refdef.vieworg[1]) *
-                        (long double)cg_predictedPlayerState.adsFraction);
-            cg_adsViewOffset[2] =
+                         (long double)cg.refdef.vieworg[1]) *
+                        (long double)cg.predictedPlayerState.adsFraction);
+            cg.adsViewOffset[2] =
                 (float)(((long double)pos[2] -
-                         (long double)cg_refdef.vieworg[2]) *
-                        (long double)cg_predictedPlayerState.adsFraction);
+                         (long double)cg.refdef.vieworg[2]) *
+                        (long double)cg.predictedPlayerState.adsFraction);
             return;
         }
         /* 0x30045204: FSTP ST0 pops the adsFraction copy before zeroing. */
@@ -79,7 +79,7 @@ void CG_CalcAdsViewOffset(const vec3_t pos)
      * 0x30045206..0x30045224: ADS inactive (weapon has no ADS, or adsFraction is
      * exactly 0). Zero the offset vector as three raw dwords.
      */
-    cg_adsViewOffset[0] = 0.0f;
-    cg_adsViewOffset[1] = 0.0f;
-    cg_adsViewOffset[2] = 0.0f;
+    cg.adsViewOffset[0] = 0.0f;
+    cg.adsViewOffset[1] = 0.0f;
+    cg.adsViewOffset[2] = 0.0f;
 }

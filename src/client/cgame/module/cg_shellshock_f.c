@@ -26,8 +26,8 @@
 //     (seconds * 1000) to an integer millisecond duration, resolves the loaded
 //     cg_shock_* cvars into the manual shellshock parameter block
 //     cg_consoleShellShock (CG_SetShellShockParams), and arms the effect by
-//     recording the current cg.time as cg_shellShockStartTime and the rounded
-//     duration as cg_shellShockDuration. The scene reader (0x30042160) then plays
+//     recording the current cg.time as cg.shellShockStartTime and the rounded
+//     duration as cg.shellShockDuration. The scene reader (0x30042160) then plays
 //     the manual shellshock from these three globals.
 //
 // The .mcode's mechanical name `ConcatArgs` is a pure size match (win 0xde ==
@@ -104,6 +104,6 @@ void CG_ShellShock_f(void)
 
     /* 0x30017569..0x30017577: arm the manual shellshock for the scene reader:
      * record the current game time as the start and the rounded duration. */
-    cg_shellShockStartTime = cg_time;
-    cg_shellShockDuration = durationMs;
+    cg.shellShockStartTime = cg.time;
+    cg.shellShockDuration = durationMs;
 }

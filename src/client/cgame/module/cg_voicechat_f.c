@@ -10,7 +10,7 @@
 //   - If trap_Argc() is odd, do nothing (the `& 1` gate below).
 //   - Otherwise decide by the local player's snapshot state whether voice chat is
 //     allowed:
-//       * If cg_snap is present AND ps.pmType != PM_TYPE_INTERMISSION (5) AND
+//       * If cg.snap is present AND ps.pmType != PM_TYPE_INTERMISSION (5) AND
 //         ps.playerStateFlags bit 0x80000 is clear (a normal, live participant),
 //         refuse with the localized "CGAME_NOSPECTATORVOICECHAT" message.
 //       * Otherwise (no snapshot yet, or an intermission/spectating player) forward
@@ -36,8 +36,8 @@
 //   0x3001779c JNS +5                         canonicalization (bit31|bit0); the
 //   0x3001779e DEC EAX / OR EAX,-2 / INC EAX / fixup only runs for negative argc
 //   0x300177a3 JNZ 0x30017813              -> if (argc & 1) do nothing, return
-//   0x300177a5 MOV EAX,[0x30459160]         EAX = cg_snap
-//   0x300177aa TEST EAX,EAX / JZ 0x300177e7 -> if (!cg_snap) send-vsay path
+//   0x300177a5 MOV EAX,[0x30459160]         EAX = cg.snap
+//   0x300177aa TEST EAX,EAX / JZ 0x300177e7 -> if (!cg.snap) send-vsay path
 //   0x300177ae CMP [EAX+0x10],0x5 / JZ ...  -> if (ps.pmType==5) send-vsay path
 //   0x300177b4 TEST [EAX+0x18],0x80000/JNZ  -> if (flags&0x80000) send-vsay path
 //   0x300177bd MOV EAX,0x30077b28           "cgame"           (domain, in EAX)
@@ -80,7 +80,7 @@ void CG_VoiceChat_f(void)
     // 0x300177a5..0x300177bb: a non-intermission spectator (snapshot present but
     // not PSF_ACTIVE_PLAYER) is refused voice chat. An active player, intermission,
     // or missing snapshot falls through to the send path below.
-    snapshot_t *snap = cg_snap;
+    snapshot_t *snap = cg.snap;
     if (snap != NULL &&
         snap->ps.pmType != PM_TYPE_INTERMISSION &&
         (snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {

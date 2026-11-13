@@ -15,7 +15,7 @@
  * view-projection pass reported its special mark-render result.
  *
  * The .mcode's PM_UFOMove label is rejected: PM_UFOMove is already proven at
- * 0x300098c0, while this body exclusively owns cg_refdef setup and dispatches the
+ * 0x300098c0, while this body exclusively owns cg.refdef setup and dispatches the
  * locked, intermission, turret/vehicle, first-person, and third-person view
  * helpers. CG_CalcViewValues is the same-module PPC name whose behavior and call
  * graph match this dispatcher; no size correspondence is used.
@@ -41,34 +41,34 @@ static const vec3_t cg_viewCollisionMaxs = {  8.0f,  8.0f,  8.0f };
 qboolean CG_CalcViewValues(void)
 {
     /* 0x30041a35..0x30041a41: exactly 20 dwords (sizeof refdef_t) cleared. */
-    memset(&cg_refdef, 0, sizeof(cg_refdef));
+    memset(&cg.refdef, 0, sizeof(cg.refdef));
 
     /* Locked/cube-face rendering owns a complete special refdef and never runs
      * the normal FOV/projection path. */
-    if (cg_lockedViewFace != 0) {
+    if (cg.lockedViewFace != 0) {
         CG_BuildLockedViewRefdef();
         return qfalse;
     }
 
     CG_CalcVrect();
 
-    if (g_cgScreenReadyState != 0) {
+    if (cg.screenReadyState != 0) {
         Com_ErrorMessage(cg_cinematicCameraUnavailableMessage);
     }
 
-    if (cg_predictedPlayerState.pmType == PM_TYPE_INTERMISSION) {
+    if (cg.predictedPlayerState.pmType == PM_TYPE_INTERMISSION) {
         vec3_t right;
 
-        memcpy(cg_refdef.vieworg, cg_predictedPlayerState.psOrigin,
-               sizeof(cg_refdef.vieworg));
-        memcpy(cg_refdefViewAngles, cg_predictedPlayerState.viewAngles,
-               sizeof(cg_refdefViewAngles));
+        memcpy(cg.refdef.vieworg, cg.predictedPlayerState.psOrigin,
+               sizeof(cg.refdef.vieworg));
+        memcpy(cg.refdefViewAngles, cg.predictedPlayerState.viewAngles,
+               sizeof(cg.refdefViewAngles));
 
-        AngleVectors(cg_refdefViewAngles, cg_refdef.viewaxis[0], right,
-                     cg_refdef.viewaxis[2]);
-        cg_refdef.viewaxis[1][0] = -right[0];
-        cg_refdef.viewaxis[1][1] = -right[1];
-        cg_refdef.viewaxis[1][2] = -right[2];
+        AngleVectors(cg.refdefViewAngles, cg.refdef.viewaxis[0], right,
+                     cg.refdef.viewaxis[2]);
+        cg.refdef.viewaxis[1][0] = -right[0];
+        cg.refdef.viewaxis[1][1] = -right[1];
+        cg.refdef.viewaxis[1][2] = -right[2];
 
         return CG_CalcViewProjection();
     }
@@ -77,28 +77,28 @@ qboolean CG_CalcViewValues(void)
      * by first-person/weapon bob. The bit-0x10 path suppresses it for 500 ms,
      * then uses vertical speed; the ordinary path uses horizontal magnitude. */
     {
-        float bobByte = (float)(cg_predictedPlayerState.bobCycle & 255);
-        cg_bobCyclePhase = (float)(
+        float bobByte = (float)(cg.predictedPlayerState.bobCycle & 255);
+        cg.bobCyclePhase = (float)(
             ((long double)bobByte / (long double)CG_BOB_CYCLE_DIVISOR) *
             (long double)CG_BOB_PHASE_TWO_PI +
             (long double)CG_BOB_PHASE_TWO_PI);
 
-        if ((cg_predictedPlayerState.playerStateFlags &
+        if ((cg.predictedPlayerState.playerStateFlags &
              CG_VIEW_BOB_VERTICAL_SPEED_FLAG) != 0) {
             int32_t elapsed = coduo_int32_from_bits(
-                (uint32_t)cg_time - (uint32_t)cg_predictedPlayerState.lastJumpCommandTime);
-            cg_weaponMoveSpeed =
+                (uint32_t)cg.time - (uint32_t)cg.predictedPlayerState.lastJumpCommandTime);
+            cg.xyspeed =
                 (elapsed < CG_VIEW_BOB_VERTICAL_DELAY_MS)
                     ? 0.0f
-                    : cg_predictedPlayerState.velocity[2];
+                    : cg.predictedPlayerState.velocity[2];
         } else {
-            float vx = cg_predictedPlayerState.velocity[0];
-            float vy = cg_predictedPlayerState.velocity[1];
+            float vx = cg.predictedPlayerState.velocity[0];
+            float vy = cg.predictedPlayerState.velocity[1];
             /* 0x30041b91: _CIsqrt consumes the sum-of-squares as a raw st(0)
              * (80-bit, never rounded to float). sqrtl keeps the argument 80-bit;
-             * the store to cg_weaponMoveSpeed (0x30041b96 FSTP DWORD) is the only
+             * the store to cg.xyspeed (0x30041b96 FSTP DWORD) is the only
              * rounding to float. sqrtf would round the argument first. */
-            cg_weaponMoveSpeed = (float)coduomp_crt_sqrtl(
+            cg.xyspeed = (float)coduomp_crt_sqrtl(
                 (long double)vy * (long double)vy +
                 (long double)vx * (long double)vx);
         }
@@ -107,16 +107,16 @@ qboolean CG_CalcViewValues(void)
     /* Vehicle/turret angle state is updated before the predicted angles are
      * copied into the refdef; the callee may update playerState.viewAngles. */
     CG_CalcVehicleViewValues();
-    memcpy(cg_refdef.vieworg, cg_predictedPlayerState.psOrigin,
-           sizeof(cg_refdef.vieworg));
-    memcpy(cg_refdefViewAngles, cg_predictedPlayerState.viewAngles,
-           sizeof(cg_refdefViewAngles));
+    memcpy(cg.refdef.vieworg, cg.predictedPlayerState.psOrigin,
+           sizeof(cg.refdef.vieworg));
+    memcpy(cg.refdefViewAngles, cg.predictedPlayerState.viewAngles,
+           sizeof(cg.refdefViewAngles));
 
     /* 0x30041bb0..0x30041c9e: decay the prediction-origin error only for a
      * strictly interior fraction. The timestamp is cleared outside (0,1). */
     if (cg_errordecay_vmCvar.value > 0.0f) {
         int32_t elapsed = coduo_int32_from_bits(
-            (uint32_t)cg_time - (uint32_t)cg_predictedErrorTime);
+            (uint32_t)cg.time - (uint32_t)cg.predictedErrorTime);
         float elapsedFloat = (float)elapsed;
         float decay = (float)(
             ((long double)cg_errordecay_vmCvar.value -
@@ -126,22 +126,22 @@ qboolean CG_CalcViewValues(void)
         if (decay > 0.0f && decay < 1.0f) {
             /* Each scaled error stays wide until it has been added to the
              * origin; only the resulting coordinate is rounded to float. */
-            cg_refdef.vieworg[0] = (float)((long double)cg_predictedError[0] * decay + cg_refdef.vieworg[0]);
-            cg_refdef.vieworg[1] = (float)((long double)cg_predictedError[1] * decay + cg_refdef.vieworg[1]);
-            cg_refdef.vieworg[2] = (float)((long double)cg_predictedError[2] * decay + cg_refdef.vieworg[2]);
+            cg.refdef.vieworg[0] = (float)((long double)cg.predictedError[0] * decay + cg.refdef.vieworg[0]);
+            cg.refdef.vieworg[1] = (float)((long double)cg.predictedError[1] * decay + cg.refdef.vieworg[1]);
+            cg.refdef.vieworg[2] = (float)((long double)cg.predictedError[2] * decay + cg.refdef.vieworg[2]);
         } else {
-            cg_predictedErrorTime = 0;
+            cg.predictedErrorTime = 0;
         }
     }
 
     CG_CalcTurretViewValues();
 
     /* 0x30041ca9..0x30041cdc: choose the final positional view offset. */
-    if (cg_thirdPerson != 0) {
+    if (cg.renderingThirdPerson != 0) {
         CG_OffsetThirdPersonView();
-    } else if ((cg_predictedPlayerState.entityStateFlags &
+    } else if ((cg.predictedPlayerState.entityStateFlags &
                 EF_IN_VEHICLE) != 0 &&
-               cg_predictedPlayerState.viewLockedEntityNum != ENTITYNUM_NONE) {
+               cg.predictedPlayerState.viewLockedEntityNum != ENTITYNUM_NONE) {
         CG_CalcVehicleViewPos();
     } else {
         CG_OffsetFirstPersonView();
@@ -153,11 +153,11 @@ qboolean CG_CalcViewValues(void)
      * the content probe at vieworg-8 gates an 8-unit box trace from vieworg+200
      * down to that lower point. A hit (fraction < 1) replaces vieworg with
      * trace.endpos. */
-    if (cg_predictedPlayerState.pmType != PM_TYPE_NOCLIP) {
+    if (cg.predictedPlayerState.pmType != PM_TYPE_NOCLIP) {
         vec3_t lowerPoint;
-        lowerPoint[0] = cg_refdef.vieworg[0];
-        lowerPoint[1] = cg_refdef.vieworg[1];
-        lowerPoint[2] = cg_refdef.vieworg[2] - CG_VIEW_COLLISION_DOWN;
+        lowerPoint[0] = cg.refdef.vieworg[0];
+        lowerPoint[1] = cg.refdef.vieworg[1];
+        lowerPoint[2] = cg.refdef.vieworg[2] - CG_VIEW_COLLISION_DOWN;
 
         if (CG_PointContents(lowerPoint,
                                         CG_VIEW_TRACE_EXCLUDE_NONE,
@@ -165,9 +165,9 @@ qboolean CG_CalcViewValues(void)
             vec3_t upperPoint;
             trace_t trace;
 
-            upperPoint[0] = cg_refdef.vieworg[0];
-            upperPoint[1] = cg_refdef.vieworg[1];
-            upperPoint[2] = cg_refdef.vieworg[2] + CG_VIEW_COLLISION_UP;
+            upperPoint[0] = cg.refdef.vieworg[0];
+            upperPoint[1] = cg.refdef.vieworg[1];
+            upperPoint[2] = cg.refdef.vieworg[2] + CG_VIEW_COLLISION_UP;
 
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
             CG_Trace(CG_VIEW_COLLISION_HANDLE, lowerPoint,
@@ -178,8 +178,8 @@ qboolean CG_CalcViewValues(void)
                      CG_VIEW_TRACE_EXCLUDE_NONE);
 
             if (trace.fraction < 1.0f) {
-                memcpy(cg_refdef.vieworg, trace.endpos,
-                       sizeof(cg_refdef.vieworg));
+                memcpy(cg.refdef.vieworg, trace.endpos,
+                       sizeof(cg.refdef.vieworg));
                 cameraClipped = qtrue;
             }
         }
@@ -189,11 +189,11 @@ qboolean CG_CalcViewValues(void)
      * renderer axis convention stores its negation as row 1. */
     {
         vec3_t right;
-        AngleVectors(cg_refdefViewAngles, cg_refdef.viewaxis[0], right,
-                     cg_refdef.viewaxis[2]);
-        cg_refdef.viewaxis[1][0] = -right[0];
-        cg_refdef.viewaxis[1][1] = -right[1];
-        cg_refdef.viewaxis[1][2] = -right[2];
+        AngleVectors(cg.refdefViewAngles, cg.refdef.viewaxis[0], right,
+                     cg.refdef.viewaxis[2]);
+        cg.refdef.viewaxis[1][0] = -right[0];
+        cg.refdef.viewaxis[1][1] = -right[1];
+        cg.refdef.viewaxis[1][2] = -right[2];
     }
 
     if (CG_CalcViewProjection() != qfalse || cameraClipped != qfalse) {

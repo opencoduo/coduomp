@@ -12,7 +12,7 @@
 //   1. cg_descriptiveText_vmCvar.integer (.data 0x3052f6ac) — a cvar-integer mirror read
 //      as a boolean enable flag. `if (!cg_descriptiveText_vmCvar.integer) return;`
 //      (MOV EAX,[0x3052f6ac]; TEST EAX,EAX; JZ end at 0x3001bd53/bd58/bd7a).
-//   2. cg_snap->ps.playerStateFlags (cg_snap = 0x30459160, field +0x18) must carry
+//   2. cg.snap->ps.playerStateFlags (cg.snap = 0x30459160, field +0x18) must carry
 //      at least one of the follow bits: `if (!(flags & 0x300000)) return;`
 //      (TEST [EAX+0x18],0x300000; JZ end at 0x3001bd85/bd8c).
 //
@@ -43,7 +43,7 @@
 //
 // Name adjudication: the .mcode header's "PM_AirMove" is a pure win-size==0x188
 // corpus match with zero behavioral basis and is REJECTED — this is a cgame HUD
-// draw routine (reads cg_snap, calls UI_* key-binding helpers, CG_SafeTranslateString_Internal,
+// draw routine (reads cg.snap, calls UI_* key-binding helpers, CG_SafeTranslateString_Internal,
 // va, and the trap_R_Text_Paint 2D text emitter), not a bg_pmove air-acceleration step
 // (no velocity/wishdir/accel math, no pmove_t). Named by proven role. The gate
 // global 0x3052f6ac is renamed cg_descriptiveText_vmCvar.integer (its sole DLL reference
@@ -91,7 +91,7 @@ void CG_DrawSpectatorFollowHints(void)
     }
 
     // Both follow bits must be resolvable before doing any work.
-    if (!(cg_snap->ps.playerStateFlags & 0x300000u)) {
+    if (!(cg.snap->ps.playerStateFlags & 0x300000u)) {
         return;
     }
 
@@ -99,7 +99,7 @@ void CG_DrawSpectatorFollowHints(void)
     Controls_GetConfig();
 
     /* 0x3001bd97 snapshots the post-update flags before the running-y store. */
-    uint32_t nextPreviousFlags = cg_snap->ps.playerStateFlags;
+    uint32_t nextPreviousFlags = cg.snap->ps.playerStateFlags;
     float stopLineY = 416.0f;
 
     if (nextPreviousFlags & 0x100000u) {
@@ -137,7 +137,7 @@ void CG_DrawSpectatorFollowHints(void)
         stopLineY = 436.0f;
     }
 
-    if (cg_snap->ps.playerStateFlags & 0x200000u) {
+    if (cg.snap->ps.playerStateFlags & 0x200000u) {
         char *keyStr;
         const char *translatedLabel;
         const char *text;

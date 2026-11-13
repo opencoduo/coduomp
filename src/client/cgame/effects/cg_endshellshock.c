@@ -12,7 +12,7 @@
 //      cg_shellshockEndAbortAliasName at 0x3007a3cc).
 //   2. Restore the shellshock mouse-sensitivity scale at 0x3048bfec to 1.0f and
 //      clear the engine pitch/yaw speed limits via trap(246, 0, 0).
-//   3. Reset the screen-blur pair cg_shellshockScreenBlurX/Y (0x3048bff0/0x3048bff4)
+//   3. Reset the screen-blur pair cg.shellshockScreenBlurX/Y (0x3048bff0/0x3048bff4)
 //      to 0.0f and push the cleared blur amount via trap(0x57, 0).
 //
 // Naming: the .mcode header's size-matched "BG_IsCrouchingAnim" guess is REJECTED —
@@ -46,11 +46,11 @@ void CG_EndShellShock(void)
     CG_EndShellShockSound();
 
     /* Restore neutral mouse sensitivity and clear the pitch/yaw speed limits. */
-    cg_shellshockMouseSensitivityScale = 1.0f;
+    cg.shellshockMouseSensitivityScale = 1.0f;
     cgame_syscall(CG_SET_SHELLSHOCK_MOUSE_LIMITS, 0, 0);
 
     /* Clear the screen blur: both components 0, push the cleared amount. */
-    cg_shellshockScreenBlurX = 0.0f;
-    cg_shellshockScreenBlurY = 0.0f;
+    cg.shellshockScreenBlurX = 0.0f;
+    cg.shellshockScreenBlurY = 0.0f;
     cgame_syscall(CG_SET_SHELLSHOCK_SCREEN_BLUR, 0);
 }

@@ -28,7 +28,7 @@
 #include "client/cgame/client_recovered.h"
 
 /* rep-stosd count from the machine code: MOV ECX,0x18 at 0x300395a3 clears 24
- * dwords starting at 0x3048ae74 — i.e. the whole cg_damageDirIndicators[8] ring
+ * dwords starting at 0x3048ae74 — i.e. the whole cg.damageDirIndicators[8] ring
  * (8 slots * 3 dwords = 24 dwords = 0x60 bytes). The array is typed in globals.h;
  * the raw 24-dword count is retained here only as a cross-check on the STOSD. */
 
@@ -51,9 +51,9 @@ void CG_MapRestart(qboolean restart)
     /* Reset the center-print / weapon-select / fade-overlay timers and the
      * tracer-state pair to their idle values (ESI == 0 throughout; the -1 is the
      * explicit 0xffffffff immediate at 0x30039549). */
-    cg_centerPrintTime = 0;                     /* MOV [0x3048a9ac],ESI */
-    cg_weaponSelectTimeA = 0;          /* MOV [0x3048ae3c],ESI */
-    cg_overlayFadeDuration = 0;                 /* MOV [0x3048ae10],ESI */
+    cg.centerPrintTime = 0;                     /* MOV [0x3048a9ac],ESI */
+    cg.weaponSelectTimeA = 0;          /* MOV [0x3048ae3c],ESI */
+    cg.overlayFadeDuration = 0;                 /* MOV [0x3048ae10],ESI */
     cg_complaintClientNum = -1;                 /* MOV [0x3044caf4],-1 */
     cg_complaintEndTime = 0;                    /* MOV [0x3044caf8],ESI */
 
@@ -70,7 +70,7 @@ void CG_MapRestart(qboolean restart)
      * and the id-0xd7 site pushes ESI==0 as its single argument). */
     cg_voteTime = 0;                            /* MOV [0x30447ca0],ESI */
     cg_timeoutEndTime = 0;             /* MOV [0x30447fd0],ESI */
-    cg_initialSnapshotPending = 1;        /* MOV [0x304831bc],1 */
+    cg.mapRestart = 1;        /* MOV [0x304831bc],1 */
     cgame_syscall(CG_MSS_STOP_SOUNDS, 0);              /* PUSH 0(ESI); PUSH 0xd7; CALL *cgame_syscall */
     /* 0x30039590: re-register config-string 3's sound alias immediately after
      * the engine reset and submit its nonnegative time delta. */
@@ -81,15 +81,15 @@ void CG_MapRestart(qboolean restart)
      * at 0x30039595); ESI is also 0. Order matches the machine code: two scalar
      * zeros, then the 24-dword rep-stosd of the brass buffer, then the trailing
      * scalar zeros of the same restart block. */
-    cg_shakeRestartLatch = 0;                   /* MOV [0x3048b5c4],ESI */
-    cg_damageFlashEndTime = 0;                  /* MOV [0x3048af0c],ESI */
+    cg.shakeRestartLatch = 0;                   /* MOV [0x3048b5c4],ESI */
+    cg.v_dmg_time = 0;                  /* MOV [0x3048af0c],ESI */
     /* REP STOSD: EAX=0, ECX=0x18, EDI=0x3048ae74 -> zero the whole
-     * cg_damageDirIndicators[8] ring (24 dwords == sizeof the array). */
-    memset(cg_damageDirIndicators, 0, sizeof(cg_damageDirIndicators));
-    memset(cg_weaponSelectSlotScale, 0, sizeof(cg_weaponSelectSlotScale));
-    cg_weaponSelectLastTime = 0;                /* MOV [0x3048ae70],ESI */
+     * cg.damageDirIndicators[8] ring (24 dwords == sizeof the array). */
+    memset(cg.damageDirIndicators, 0, sizeof(cg.damageDirIndicators));
+    memset(cg.weaponSelectSlotScale, 0, sizeof(cg.weaponSelectSlotScale));
+    cg.weaponSelectLastTime = 0;                /* MOV [0x3048ae70],ESI */
 
-    /* Force cg_thirdPerson=0 and cl_stance=0 (both value string "0" at 0x30076cc8)
+    /* Force cg.renderingThirdPerson=0 and cl_stance=0 (both value string "0" at 0x30076cc8)
      * via trap_Cvar_Set(name, value); the id-9 sites push (value, name, 9). */
     trap_Cvar_Set("cg_thirdPerson", "0");       /* PUSH "0"; PUSH "cg_thirdPerson"; PUSH 9 */
     trap_Cvar_Set("cl_stance", "0");            /* PUSH "0"; PUSH "cl_stance"; PUSH 9 */
@@ -109,13 +109,13 @@ void CG_MapRestart(qboolean restart)
     }
     cgame_syscall(CG_MAP_RESTART_RESET_RENDERER);                 /* PUSH 0x7e; CALL *cgame_syscall (always) */
 
-    /* If the scoreboard is up, clear it and latch cg_time as the fade start.
-     *   EAX = cg_scoreboardShowing; if (EAX) { ECX = cg_time;
-     *         cg_scoreboardShowing = 0; cg_scoreboardShowTime = ECX; } */
-    if (cg_scoreboardShowing != 0) {
-        int32_t now = cg_time;
-        cg_scoreboardShowing = qfalse;          /* MOV [0x3048a554],ESI */
-        cg_scoreboardShowTime = now;            /* MOV [0x3048a55c],ECX */
+    /* If the scoreboard is up, clear it and latch cg.time as the fade start.
+     *   EAX = cg.showScores; if (EAX) { ECX = cg.time;
+     *         cg.showScores = 0; cg.scoreFadeTime = ECX; } */
+    if (cg.showScores != 0) {
+        int32_t now = cg.time;
+        cg.showScores = qfalse;          /* MOV [0x3048a554],ESI */
+        cg.scoreFadeTime = now;            /* MOV [0x3048a55c],ECX */
     }
 
     /* Clear the objective text: trap_Cvar_Set("cg_objectiveText", "") — value is
@@ -123,22 +123,22 @@ void CG_MapRestart(qboolean restart)
     trap_Cvar_Set("cg_objectiveText", "");      /* PUSH ""; PUSH "cg_objectiveText"; PUSH 9 */
 
     /* If the predicted player currently holds a weapon, re-seed its XAnim tree.
-     *   EAX = cg_snap->ps.currentWeapon (+0xe4); if (EAX > 0 [signed, JLE]) {
+     *   EAX = cg.snap->ps.currentWeapon (+0xe4); if (EAX > 0 [signed, JLE]) {
      *       EBX = cgame_syscall(0xb5, cg_weaponInfos[EAX].viewDObjSelf);  // runtime tree
-     *       EAX = cg_snap->ps.currentWeapon;                                 // reloaded
+     *       EAX = cg.snap->ps.currentWeapon;                                 // reloaded
      *       CG_StopAllWeaponAnims(weaponIndex=EAX, animTree=EBX);  }
      * 0x30042a30 is CG_StopAllWeaponAnims (reconstructed body: IMUL 0x1c4 stride +
      * per-node trap-0x8f loop), NOT a sound refresh — it consumes the runtime
      * XAnim tree returned by trap 0xb5 in EBX. */
-    if (cg_snap->ps.currentWeapon > 0) {
-        int weapon = cg_snap->ps.currentWeapon;
+    if (cg.snap->ps.currentWeapon > 0) {
+        int weapon = cg.snap->ps.currentWeapon;
         /* IMUL EAX,0x1c4; MOV EAX,[EAX+0x30413580] -> cg_weaponInfos[weapon].viewDObjSelf. */
         intptr_t animTree = cgame_syscall(
             CG_DOBJ_GET_TREE,
             (intptr_t)cg_weaponInfos[weapon].viewDObjSelf);
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (animTree != 0) {
-            CG_StopAllWeaponAnims(cg_snap->ps.currentWeapon, animTree);
+            CG_StopAllWeaponAnims(cg.snap->ps.currentWeapon, animTree);
         }
     }
 

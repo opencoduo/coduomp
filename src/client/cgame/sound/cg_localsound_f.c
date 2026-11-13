@@ -29,7 +29,7 @@
 //   - CG_ConfigString(0x3002c990)                 -> gameState config string lookup
 //   - CG_PlaySoundAliasByName(0x3002ca80)              -> play it (custom register ABI)
 //   - Com_PrintMessage(0x3002b2b0)                -> variadic print backend
-//   - cg_snap == *(snapshot_t **)0x30459160     -> current snapshot pointer
+//   - cg.snap == *(snapshot_t **)0x30459160     -> current snapshot pointer
 //   - g_textScratchBuffer == 0x300da488[1024]     -> shared 1024-byte text buffer
 //   All comparisons are signed (JLE at 0x3003ac4f, JG at 0x3003ac56); 0x295 == 661
 //   is CS_SOUNDS and 0x100 == 256 is CS_SOUNDS_COUNT (both natural-form constants).
@@ -77,9 +77,9 @@ void CG_LocalSound_f(void)
      *    is cleaned together with the clientNum push by the trailing ADD ESP,8). */
     const char *soundName = CG_ConfigString(CS_SOUNDS + soundIndex);
 
-    /* MOV EDX,[cg_snap] ; LEA ECX,[EDX+0x20] ; MOV EDX,[EDX+0xe0] ; PUSH EDX
+    /* MOV EDX,[cg.snap] ; LEA ECX,[EDX+0x20] ; MOV EDX,[EDX+0xe0] ; PUSH EDX
      * ; CALL CG_PlaySoundAliasByName (0x3002ca80) ; ADD ESP,8 ; RET
-     * ECX(this) = &cg_snap->ps.psOrigin, EAX = soundName, stack = clientNum. */
-    CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
-                            &cg_snap->ps.psOrigin, soundName);
+     * ECX(this) = &cg.snap->ps.psOrigin, EAX = soundName, stack = clientNum. */
+    CG_PlaySoundAliasByName(cg.snap->ps.psClientNum,
+                            &cg.snap->ps.psOrigin, soundName);
 }

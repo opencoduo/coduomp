@@ -114,7 +114,7 @@ void CG_Obituary(centity_t *self)
     targetTeam = targetInfo->obituaryTeam;
     CG_DrawScoreboard_GetTeamColor(targetTeam, targetColor);
 
-    if (bgs.clientinfo[cg_clientNum].infoValid == 0) {
+    if (bgs.clientinfo[cg.clientNum].infoValid == 0) {
         return;
     }
 
@@ -130,10 +130,10 @@ void CG_Obituary(centity_t *self)
         team_t attackerColorTeam = attackerInfo->obituaryTeam;
         CG_DrawScoreboard_GetTeamColor(attackerColorTeam, attackerColor);
 
-        if (target == cg_snap->ps.psClientNum) {
-            Q_strncpyz(cg_fraggedByName, attackerName,
+        if (target == cg.snap->ps.psClientNum) {
+            Q_strncpyz(cg.killerName, attackerName,
                        CG_OBITUARY_NAME_SIZE);
-            cg_fraggedByName[CG_OBITUARY_NAME_SIZE - 1] = '\0';
+            cg.killerName[CG_OBITUARY_NAME_SIZE - 1] = '\0';
         }
     } else {
         attacker = CG_OBITUARY_WORLD_ATTACKER;
@@ -142,8 +142,8 @@ void CG_Obituary(centity_t *self)
 
     if (attacker == target) {
         attackerName[0] = '\0';
-    } else if (attacker == cg_snap->ps.psClientNum &&
-               (cg_snap->ps.playerStateFlags &
+    } else if (attacker == cg.snap->ps.psClientNum &&
+               (cg.snap->ps.playerStateFlags &
                 CG_OBITUARY_CENTERPRINT_SUPPRESS_FLAG) == 0) {
         const char *message;
         /* 0x30022567 reloads the attacker team after the name/color helpers,

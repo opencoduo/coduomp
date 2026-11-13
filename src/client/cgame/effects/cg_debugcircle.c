@@ -19,7 +19,7 @@
 // The assigned .mcode name "BG_CalculateView_DamageKick" is REJECTED: it is a
 // SIZE-MATCH ONLY (win 0x174 == a same-size corpus function) with zero
 // behavioral basis. The body touches NO view-kick / weapon-movement globals
-// (cg_viewKickAngles / cg_viewKickVel / cg_weaponMovementAngles are never
+// (cg.viewKickAngles / cg.viewKickVel / cg.weaponPosition.weaponMovementAngles are never
 // referenced), does no angle/velocity integration, and computes no view kick.
 // It is pure vector-frame math feeding CG_ADD_DEBUG_LINE, exactly the debug-draw
 // idiom of its two neighbors. Name role-derived from the same-module debug-draw

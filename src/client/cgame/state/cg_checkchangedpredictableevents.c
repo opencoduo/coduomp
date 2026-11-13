@@ -10,7 +10,7 @@ void CG_CheckChangedPredictableEvents(playerState_t *ps)
     int32_t sequence = coduo_int32_from_bits(
         (uint32_t)ps->eventIndex - (uint32_t)MAX_PS_EVENTS);
     while (sequence < ps->eventIndex) {
-        int32_t predictedSequence = cg_predictedEventSequence;
+        int32_t predictedSequence = cg.eventSequence;
         int32_t oldestPredicted = coduo_int32_from_bits(
             (uint32_t)predictedSequence -
             (uint32_t)MAX_PREDICTED_EVENTS);
@@ -22,16 +22,16 @@ void CG_CheckChangedPredictableEvents(playerState_t *ps)
         const int32_t psSlot = sequence & (MAX_PS_EVENTS - 1);
         const int32_t predictedSlot = sequence & (MAX_PREDICTED_EVENTS - 1);
         const int32_t event = ps->events[psSlot];
-        if (event == cg_predictedEvents[predictedSlot]) {
+        if (event == cg.predictableEvents[predictedSlot]) {
             goto next_sequence;
         }
 
-        cg_predictedEventEntity.currentState.eventParm = ps->eventParms[psSlot];
+        cg.predictedPlayerEntity.currentState.eventParm = ps->eventParms[psSlot];
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        CG_EntityEvent(&cg_predictedEventEntity,
+        CG_EntityEvent(&cg.predictedPlayerEntity,
                        event, qtrue);
         int32_t showMiss = cg_showmiss_vmCvar.integer;
-        cg_predictedEvents[predictedSlot] = event;
+        cg.predictableEvents[predictedSlot] = event;
         if (showMiss != 0) {
             Com_PrintMessage("WARNING: changed predicted event\n");
         }

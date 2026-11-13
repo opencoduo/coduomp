@@ -11,8 +11,8 @@
 //
 // Naming: the .mcode's size-matched "DynaSink" guess is rejected. DynaSink is a
 // Windows networking API name, unrelated to this code; this function is a CoD HUD
-// draw. Behavior + call graph resolve it: it gates on cg_snap, uses the
-// cg_damageFlashEndTime/cg_damageFlashScale effect state (set to cg_time+500 on
+// draw. Behavior + call graph resolve it: it gates on cg.snap, uses the
+// cg.v_dmg_time/cg.v_dmg_pitch effect state (set to cg.time+500 on
 // damage at 0x30034d1e), and paints a red full-screen rect via CG_FillRect. The
 // same-module PPC bank lists cgame_mp!CG_DrawFlashDamage among the flash/blend
 // draws; this matches its red-flash role (its sibling CG_DrawFlashFade is a
@@ -22,12 +22,12 @@
 // S = E-0x14; the 5 arg PUSHes then move ESP to S-0x14, and the color[] locals
 // live at S+4..S+0x10):
 //
-//   MOV EAX,[cg_snap]; SUB ESP,0x14; TEST EAX,EAX; JZ  end   ; no snapshot -> skip
-//   MOV EAX,[cg_damageFlashEndTime]; MOV ECX,[cg_time]
+//   MOV EAX,[cg.snap]; SUB ESP,0x14; TEST EAX,EAX; JZ  end   ; no snapshot -> skip
+//   MOV EAX,[cg.v_dmg_time]; MOV ECX,[cg.time]
 //   CMP EAX,ECX; JLE end                                     ; signed endTime<=now -> skip
-//   SUB EAX,ECX; MOV [S+0],EAX; FILD [S+0]                   ; remaining = endTime-cg_time (int)
+//   SUB EAX,ECX; MOV [S+0],EAX; FILD [S+0]                   ; remaining = endTime-cg.time (int)
 //   FMUL [0.002 = 1/500]        (0x3007bf28)                 ; remaining/500
-//   FMUL [cg_damageFlashScale]  (0x3048af10)                 ; * scale (signed)
+//   FMUL [cg.v_dmg_pitch]  (0x3048af10)                 ; * scale (signed)
 //   FABS
 //   FCOM [5.0] (0x3007bde0); FNSTSW AX; TEST AH,0x41; JNZ keep
 //     ; TEST AH,0x41 tests C3|C0 (ST0<=5.0); if set (<=5.0) keep, else clamp:
@@ -56,18 +56,18 @@
 void CG_DrawFlashDamage(void)
 {
     // Gate: nothing to draw until a snapshot is installed.
-    if (cg_snap == NULL) {
+    if (cg.snap == NULL) {
         return;
     }
 
     // Signed CMP/JLE: both dwords are retained for the following SUB.
-    int32_t endTime = cg_damageFlashEndTime;
-    int32_t cgameTime = cg_time;
+    int32_t endTime = cg.v_dmg_time;
+    int32_t cgameTime = cg.time;
     if (endTime <= cgameTime) {
         return;
     }
 
-    // remaining = endTime - cg_time, converted int -> float by FILD.
+    // remaining = endTime - cg.time, converted int -> float by FILD.
     int32_t remaining = coduo_int32_from_bits((uint32_t)endTime -
                                          (uint32_t)cgameTime);
 
@@ -78,7 +78,7 @@ void CG_DrawFlashDamage(void)
     // at the color[3] store (FSTP [ESP+0x24], 0x3001a94f):
     //   FILD remaining        (0x3001a904; no float store of the cast)
     //   FMUL 0.002f           (0x3001a907, [0x3007bf28] = 1/500)
-    //   FMUL cg_damageFlashScale (0x3001a90d, [0x3048af10])
+    //   FMUL cg.v_dmg_pitch (0x3001a90d, [0x3048af10])
     //   FABS                  (0x3001a913; the bare x87 op, not a float fabsf)
     //   FCOM 5.0f             (0x3001a915; compares the UNROUNDED st0)
     //   FMUL 0.2f / FMUL 0.7f (0x3001a92a / 0x3001a93f)
@@ -87,7 +87,7 @@ void CG_DrawFlashDamage(void)
     // not perform. The clamp's not-taken path (FSTP ST0; FLD 5.0f, 0x3001a922)
     // DISCARDS st0 and reloads the float 5.0f, which the assignment models.
     long double alpha = fabsl((long double)remaining * (1.0f / 500.0f)
-                                        * cg_damageFlashScale);
+                                        * cg.v_dmg_pitch);
     if (alpha > 5.0f) {
         alpha = 5.0f;
     }

@@ -24,7 +24,7 @@
 // dot), only integer engine syscalls and a DObj-registration table. The name
 // CG_RefreshEntityDObjAnimTree is the caller-observed name already recorded in
 // client_recovered.h for 0x30021ea0 (assigned by the CG_General reconstruction),
-// adopted here; the DObj-info table names (cg_dObjInfoKeys/cg_dObjInfoHandles)
+// adopted here; the DObj-info table names (cg.dObjInfoKeys/cg.dObjInfoHandles)
 // follow the same-module cgame PPC accessor cluster CG_SetDObjInfo /
 // CG_CheckDObjInfoMatches / CG_Free*DObjInfo. Exact engine symbol unproven (no
 // cgame syscall-id table recovered); role-named from behavior + call graph.
@@ -77,18 +77,18 @@ intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
          *   release+clear path. Otherwise compare the cached info; when the cached
          *   (key,handle) already equals (arg0, wrappedModel) there is nothing to do.
          * 30021ece MOV EAX,[ESP+0x20] -> arg0 (eType), the cached key.
-         * 30021ed2 CMP cg_dObjInfoKeys[entityNum],EAX
-         * 30021edb CMP cg_dObjInfoHandles[entityNum],EDI */
+         * 30021ed2 CMP cg.dObjInfoKeys[entityNum],EAX
+         * 30021edb CMP cg.dObjInfoHandles[entityNum],EDI */
         if (wrappedModel == 0 ||
-            cg_dObjInfoKeys[entityNum] != (uint32_t)eType ||
-            cg_dObjInfoHandles[entityNum] != wrappedModel) {
+            cg.dObjInfoKeys[entityNum] != (uint32_t)eType ||
+            cg.dObjInfoHandles[entityNum] != wrappedModel) {
             /* 30021ee8 PUSH 0x1 / PUSH ESI / PUSH 0xa8 / CALL -> release the stale
              *   DObj registration for this index (flag 1). ADD ESP,0xc.
              * 30021ef9 XOR EBX,EBX ; store 0 into both cached table slots. */
             cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE, entityNum, 1);
             dObjHandle = 0;
-            cg_dObjInfoKeys[entityNum] = 0;
-            cg_dObjInfoHandles[entityNum] = 0;
+            cg.dObjInfoKeys[entityNum] = 0;
+            cg.dObjInfoHandles[entityNum] = 0;
         } else {
             /* 30021ee2 JZ 0x30021f94: cached info matches -> return the cached
              *   handle (EAX = EBX = dObjHandle) unchanged. */
@@ -146,8 +146,8 @@ intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
     /* 30021f70..0x30021f84 publishes both cache words between pushing the
      * entity-number argument and invoking CG_DOBJ_GET_HANDLE. In logical source
      * order, both stores therefore precede the re-acquisition callback. */
-    cg_dObjInfoKeys[entityNum] = (uint32_t)eType;
-    cg_dObjInfoHandles[entityNum] = wrappedModel;
+    cg.dObjInfoKeys[entityNum] = (uint32_t)eType;
+    cg.dObjInfoHandles[entityNum] = wrappedModel;
     intptr_t reacquired = cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
 
     /* 30021f8d.. epilogue: the build path returns via 0x30021f93 (RET) WITHOUT the

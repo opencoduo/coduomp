@@ -20,9 +20,9 @@
  * this reconstruction relies on.
  *
  * Behaviour, proven instruction-by-instruction:
- *   - store the snapshot pointer into cg_snap                    (MOV [0x30459160],EAX)
+ *   - store the snapshot pointer into cg.snap                    (MOV [0x30459160],EAX)
  *   - read snap->serverTime (+0x08)                              (MOV EAX,[EAX+8])
- *   - mirror it into the three time bases cg_time, cg_effectTime,
+ *   - mirror it into the three time bases cg.time, cg_effectTime,
  *     and g_data_pmovesingle_304831b4                            (three MOV stores)
  *   - clear cg_entities[i].currentValid (+0x1e8) for every entity       (zeroing loop)
  *   - issue cgame trap 0xdb with the float 1.0 and flag 0        (syscall)
@@ -38,14 +38,14 @@ void CG_InstallSnapshotResetEffects(snapshot_t *snap)
     int32_t serverTime;
     int i;
 
-    /* cg_snap = snap; (0x30459160 holds the current snapshot pointer) */
-    cg_snap = snap;
+    /* cg.snap = snap; (0x30459160 holds the current snapshot pointer) */
+    cg.snap = snap;
 
     /* serverTime = snap->serverTime; then mirror into the time bases. */
     serverTime = snap->serverTime;
-    cg_time = serverTime;
+    cg.time = serverTime;
     cg_effectTime = (uint32_t)serverTime;
-    cg_physicsTime = serverTime;
+    cg.oldTime = serverTime;
 
     /* 0x3048c8c8 is cg_entities[0]+0x1e8. The loop walks that field with the
      * entity stride to the 0x3052e8c8 sentinel, exactly MAX_GENTITIES times. */

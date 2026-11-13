@@ -16,13 +16,13 @@
  * the local player's predicted-event centity from the predicted playerState, and
  * (3) adds every snapshot entity — plus that predicted-event centity — to the
  * render/sound scene via CG_AddCEntity (0x30022170). Proven from:
- *   - iterating cg_nextSnap->entities[0..numEntities) twice (stride 0xf4 = the
+ *   - iterating cg.nextSnap->entities[0..numEntities) twice (stride 0xf4 = the
  *     CoD entityState_t size), the classic CG_AddPacketEntities loop shape;
  *   - CG_AddCEntity (0x30022170) being invoked on each entity and on
- *     cg_predictedEventEntity, i.e. adding client entities to the scene;
+ *     cg.predictedPlayerEntity, i.e. adding client entities to the scene;
  *   - BG_PlayerStateToEntityState (0x30006590) projecting cg.predictedPlayerState
  *     into the local-player entityState template, then MOVSD.REP-copying that
- *     0x3d-dword (244-byte = entityState_t) template into cg_predictedEventEntity;
+ *     0x3d-dword (244-byte = entityState_t) template into cg.predictedPlayerEntity;
  *   - the DObj begin/anim-advance/notetrack traps (0x97/0x98/0x99) that drive
  *     each entity's skeletal animation.
  * Its sole caller is the top-level frame builder at 0x30042160.
@@ -37,7 +37,7 @@
  * memory access, call order/args, constant, x87 op, and loop bound.
  */
 
-/* cg_frametime (int ms) -> seconds; the machine code FILDs cg_frametime, rounds it
+/* cg.frametime (int ms) -> seconds; the machine code FILDs cg.frametime, rounds it
  * to float (FSTP/FLD [esp+0x14]), then FMULs by the FLOAT constant at 0x3007bd94
  * (0x3a83126f == 0.001f). The multiplier is written as the literal 0.001f: a
  * `1.0f / 1000.0f` expression would evaluate in extended precision under x87
@@ -59,41 +59,41 @@ void CG_AddPacketEntities(void)
     cgame_syscall(CG_DOBJ_INVALIDATE_SKELS);
 
     /* First pass: advance each incoming-snapshot entity's DObj animation.
-     * 3001f822: EAX = cg_nextSnap; ECX = cg_nextSnap->numEntities. EBX = i (loop
+     * 3001f822: EAX = cg.nextSnap; ECX = cg.nextSnap->numEntities. EBX = i (loop
      * counter), ESI = i*0xf4 byte offset into entities[]. */
-    for (i = 0; i < cg_nextSnap->numEntities; i++) {
-        /* 3001f840: entityNum = cg_nextSnap->entities[i].number. */
-        int32_t entityNum = cg_nextSnap->entities[i].number;
+    for (i = 0; i < cg.nextSnap->numEntities; i++) {
+        /* 3001f840: entityNum = cg.nextSnap->entities[i].number. */
+        int32_t entityNum = cg.nextSnap->entities[i].number;
 
         /* 3001f847: dObjHandle = trap(0xa5, entityNum) (ADD ESP,8). */
         intptr_t dObjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
         if (dObjHandle != 0) {
-            /* 3001f85a: advance the animation by cg_frametime seconds. FILD
-             * cg_frametime; FMUL 0.001f; trap(0x98, dObjHandle, dtSeconds). */
-            float frameMilliseconds = (float)cg_frametime;
+            /* 3001f85a: advance the animation by cg.frametime seconds. FILD
+             * cg.frametime; FMUL 0.001f; trap(0x98, dObjHandle, dtSeconds). */
+            float frameMilliseconds = (float)cg.frametime;
             float dtSeconds = (float)(
                 (long double)frameMilliseconds * (long double)0.001f);
             cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME, dObjHandle, CG_FloatBits(dtSeconds));
 
-            /* 3001f883: re-read cg_nextSnap->entities[i].number into EDI, then
+            /* 3001f883: re-read cg.nextSnap->entities[i].number into EDI, then
              * CG_SetGunHandFromNotetracks(entityNum) (CALL 0x3001f760). The reload
              * is the compiler re-fetching the entity number across the trap call. */
-            CG_SetGunHandFromNotetracks(cg_nextSnap->entities[i].number);
+            CG_SetGunHandFromNotetracks(cg.nextSnap->entities[i].number);
         }
     }
 
     /* Second stage: rebuild the local player's predicted-event centity.
      *
      * 3001f8ae..3001f965: build the three per-frame preview orientations from
-     * cg.time. Each record's spin yaw = ((cg_time & mask) * 360) / divisor, with
+     * cg.time. Each record's spin yaw = ((cg.time & mask) * 360) / divisor, with
      * (mask, divisor) = (0xfff, 4095.0f), (0x7ff, 2048.0f), (0x3ff, 1024.0f); the
      * 0x168 (=360) IMUL runs on the masked integer, which is then FILD'd and FDIV'd
      * by the (float) divisor. pitch and roll are 0 (EBP). */
     {
-        uint32_t t = (uint32_t)cg_time;
-        cgDObjPreviewOrientation_t *o0 = &cg_dobjPreviewOrientations[0];
-        cgDObjPreviewOrientation_t *o1 = &cg_dobjPreviewOrientations[1];
-        cgDObjPreviewOrientation_t *o2 = &cg_dobjPreviewOrientations[2];
+        uint32_t t = (uint32_t)cg.time;
+        cgDObjPreviewOrientation_t *o0 = &cg.dobjPreviewOrientations[0];
+        cgDObjPreviewOrientation_t *o1 = &cg.dobjPreviewOrientations[1];
+        cgDObjPreviewOrientation_t *o2 = &cg.dobjPreviewOrientations[2];
 
         /* Integer masked-and-scaled products (0x168 == 360). Written before the
          * FILD/FDIV so the exact 32-bit multiply is preserved. */
@@ -107,10 +107,10 @@ void CG_AddPacketEntities(void)
         long double yaw0Carrier =
             (long double)spin0AsFloat / (long double)4095.0f;
 
-        /* 3001f901: cg_shakeExternAmplitude cleared to 0 (MOV [0x3048b5c0],EBP with
+        /* 3001f901: cg.shakeExternAmplitude cleared to 0 (MOV [0x3048b5c0],EBP with
          * EBP==0). Consumed by CG_CalcViewShake (0x3001b550), which merges it as an
          * external amplitude candidate into the camera-shake maximum. */
-        cg_shakeExternAmplitude = 0.0f;
+        cg.shakeExternAmplitude = 0.0f;
 
         /* pitch=roll=0 for every record (EBP stores at +0x00 and +0x08). */
         o0->angles[0] = 0.0f;
@@ -165,43 +165,43 @@ void CG_AddPacketEntities(void)
     }
 
     /* 3001fa3c: project the predicted playerState into the local-player entityState
-     * template. Register ABI: es=ESI=&cg_predictedEventEntity.nextState,
+     * template. Register ABI: es=ESI=&cg.predictedPlayerEntity.nextState,
      * ps=EDI=cg.predictedPlayerState (0x304831c4), snap=EAX=0. The template lives at
      * 0x304877bc, the source of the MOVSD.REP copy just below. */
-    BG_PlayerStateToEntityState(&cg_predictedPlayerState,
-                                &cg_predictedEventEntity.nextState, qfalse);
+    BG_PlayerStateToEntityState(&cg.predictedPlayerState,
+                                &cg.predictedPlayerEntity.nextState, qfalse);
 
     /* 3001fa41: MOVSD.REP of 0x3d (=61) dwords from the template (0x304877bc) into
-     * cg_predictedEventEntity (0x304876c8). 61 dwords == 244 bytes == one
+     * cg.predictedPlayerEntity (0x304876c8). 61 dwords == 244 bytes == one
      * entityState_t / the leading currentState of the centity. */
-    memcpy(&cg_predictedEventEntity, &cg_predictedEventEntity.nextState,
-           sizeof(cg_predictedEventEntity.nextState));
+    memcpy(&cg.predictedPlayerEntity, &cg.predictedPlayerEntity.nextState,
+           sizeof(cg.predictedPlayerEntity.nextState));
 
     /* 3001fa52..3001fad6: this whole stage runs ONLY when the local player has a
      * live first-person DObj (ps.playerStateFlags & 0xc0000). The JZ at 0x3001fa5e
      * jumps past the entire block (including the predicted-entity add below) to the
-     * second entity loop at 0x3001fadb. cg_nextSnap->ps.playerStateFlags is
+     * second entity loop at 0x3001fadb. cg.nextSnap->ps.playerStateFlags is
      * ps.playerStateFlags at snapshot+0x18; clientNum is at +0xe0. */
-    if ((cg_nextSnap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0) {
-        /* 3001fa60: dObjHandle = trap(0xa5, cg_nextSnap->ps.psClientNum). */
+    if ((cg.nextSnap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0) {
+        /* 3001fa60: dObjHandle = trap(0xa5, cg.nextSnap->ps.psClientNum). */
         intptr_t dObjHandle =
-            cgame_syscall(CG_DOBJ_GET_HANDLE, cg_nextSnap->ps.psClientNum);
+            cgame_syscall(CG_DOBJ_GET_HANDLE, cg.nextSnap->ps.psClientNum);
         /* 3001fa77: JZ 0x3001fab6 — a zero handle skips only the anim-advance and
          * falls into the predicted-entity add. */
         if (dObjHandle != 0) {
-            /* 3001fa79: advance by cg_frametime seconds (same idiom as loop 1). */
-            float frameMilliseconds = (float)cg_frametime;
+            /* 3001fa79: advance by cg.frametime seconds (same idiom as loop 1). */
+            float frameMilliseconds = (float)cg.frametime;
             float dtSeconds = (float)(
                 (long double)frameMilliseconds * (long double)0.001f);
             cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME, dObjHandle, CG_FloatBits(dtSeconds));
-            /* 3001faa2: CG_SetGunHandFromNotetracks(cg_nextSnap->ps.psClientNum). */
-            CG_SetGunHandFromNotetracks(cg_nextSnap->ps.psClientNum);
+            /* 3001faa2: CG_SetGunHandFromNotetracks(cg.nextSnap->ps.psClientNum). */
+            CG_SetGunHandFromNotetracks(cg.nextSnap->ps.psClientNum);
         }
 
         /* 3001fab6: add the predicted-event centity to the scene when its eType
          * is below ET_EVENTS, the ordinary CG_AddCEntity switch domain. */
         {
-            centity_t *predicted = &cg_predictedEventEntity;
+            centity_t *predicted = &cg.predictedPlayerEntity;
             if (predicted->currentState.eType < ET_EVENTS) {
                 /* 3001fabf: CG_CalcEntityLerpPositions(predicted) (stack arg). */
                 CG_CalcEntityLerpPositions(predicted);
@@ -212,12 +212,12 @@ void CG_AddPacketEntities(void)
     }
 
     /* Second pass: add every snapshot entity to the scene.
-     * 3001fadb: reload EAX=cg_nextSnap, ECX=numEntities. EBX = i, EDI = i*0xf4. */
-    for (i = 0; i < cg_nextSnap->numEntities; i++) {
-        /* 3001faf0: cent = &cg_entities[ cg_nextSnap->entities[i].number ]
+     * 3001fadb: reload EAX=cg.nextSnap, ECX=numEntities. EBX = i, EDI = i*0xf4. */
+    for (i = 0; i < cg.nextSnap->numEntities; i++) {
+        /* 3001faf0: cent = &cg_entities[ cg.nextSnap->entities[i].number ]
          * (stride 0x288, base 0x3048c6e0 — the established cg_entities[] view). */
         centity_t *cent = cg_entities +
-                               cg_nextSnap->entities[i].number;
+                               cg.nextSnap->entities[i].number;
 
         /* 3001fb03: only ordinary entity types below ET_EVENTS are added. */
         if (cent->currentState.eType < ET_EVENTS) {

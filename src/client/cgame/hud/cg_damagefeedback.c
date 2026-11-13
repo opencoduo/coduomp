@@ -33,8 +33,8 @@
 // Callees: 0x3005b879 = rand() (CRT, jitters the indicator arrow yaw);
 //          0x3006be3c = _ftol2 (CRT, TRUNCATES float->int for the AngleMod wrap).
 //
-// The x87 FSINCOS pairs and the two DotProducts against cg_refdef.viewaxis[0] /
-// cg_refdef.viewaxis[1] build the classic AngleVectors "forward" unit vector from the
+// The x87 FSINCOS pairs and the two DotProducts against cg.refdef.viewaxis[0] /
+// cg.refdef.viewaxis[1] build the classic AngleVectors "forward" unit vector from the
 // (pitch, yaw) damage direction and project it onto the view basis to get the
 // screen-space {X, value} damage blend. The all-directions sentinel (yaw==255 &&
 // pitch==255) skips the projection and paints a plain full-screen flash.
@@ -55,8 +55,8 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
     /* 0x30034ac3..0x30034ad1: FILD damage remains live across the cg.time load and
      * feedback-time store, then is committed to a binary32 stack slot. */
     long double damageRaw = (long double)damage;
-    int32_t feedbackTime = cg_time;
-    cg_damageFeedbackTime = feedbackTime;
+    int32_t feedbackTime = cg.time;
+    cg.damageFeedbackTime = feedbackTime;
     float damageFloat = (float)damageRaw;
 
     // 0x30034ad6..0x30034b19: view-kick magnitude = clamp(damage * 0.2, 5, 90).
@@ -72,8 +72,8 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
         pitch == CG_DAMAGE_DIRECTION_ALL) {
         // 0x30034b26..0x30034b42: attacker direction unknown / all-around damage —
         // no directional arrow, just the plain screen flash: X=0, value=-kick.
-        cg_damageFlashX = 0.0f;           // 0x3048af14
-        cg_damageFlashScale = -kick;      // 0x3048af10 (FCHS then store)
+        cg.v_dmg_roll = 0.0f;           // 0x3048af14
+        cg.v_dmg_pitch = -kick;      // 0x3048af10 (FCHS then store)
     } else {
         // 0x30034b47..0x30034b99: decode the two quantised angles.
         // The wire yaw/pitch are 0..255 fractions of a full turn:
@@ -114,37 +114,37 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
 
         // 0x30034c17..0x30034c6b: project the damage direction onto the view basis
         // to get the screen-space blend pair, scaled by the kick magnitude.
-        //   X     = -DotProduct(cg_refdef.viewaxis[1], dir) * kick   (horizontal)
-        //   value =  DotProduct(cg_refdef.viewaxis[0], dir) * kick (toward/away)
+        //   X     = -DotProduct(cg.refdef.viewaxis[1], dir) * kick   (horizontal)
+        //   value =  DotProduct(cg.refdef.viewaxis[0], dir) * kick (toward/away)
         // x87 FADDP chain order is z-first: (v[2]*d[2] + v[1]*d[1]) + v[0]*d[0]
         // (FLD [..ab0]; FMUL d2; FLD [..aac]; FMUL d1; FADDP; FLD [..aa8];
         //  FMUL d0; FADDP; FMUL kick; [FCHS;] FSTP) -- term order preserved here.
         long double horizontalRaw =
-            ((long double)cg_refdef.viewaxis[1][2]
+            ((long double)cg.refdef.viewaxis[1][2]
                  * (long double)damageDir[2]
-             + (long double)cg_refdef.viewaxis[1][1]
+             + (long double)cg.refdef.viewaxis[1][1]
                  * (long double)damageDir[1])
-            + (long double)cg_refdef.viewaxis[1][0]
+            + (long double)cg.refdef.viewaxis[1][0]
                  * (long double)damageDir[0];
         horizontalRaw *= (long double)kick;
-        cg_damageFlashX = (float)-horizontalRaw;
+        cg.v_dmg_roll = (float)-horizontalRaw;
 
         long double forwardRaw =
-            ((long double)cg_refdef.viewaxis[0][2]
+            ((long double)cg.refdef.viewaxis[0][2]
                  * (long double)damageDir[2]
-             + (long double)cg_refdef.viewaxis[0][1]
+             + (long double)cg.refdef.viewaxis[0][1]
                  * (long double)damageDir[1])
-            + (long double)cg_refdef.viewaxis[0][0]
+            + (long double)cg.refdef.viewaxis[0][0]
                  * (long double)damageDir[0];
         forwardRaw *= (long double)kick;
-        cg_damageFlashScale = (float)forwardRaw;
+        cg.v_dmg_pitch = (float)forwardRaw;
 
         // 0x30034c71..0x30034c8a: find the least-recently-used indicator slot
         // (minimum serverTime) among the 8-slot damage-direction ring.
         int32_t best = 0;
         for (int32_t i = 1; i < CG_DAMAGE_DIRECTION_SLOT_COUNT; i++) {
-            int32_t candidateTime = cg_damageDirIndicators[i].serverTime;
-            int32_t bestTime = cg_damageDirIndicators[best].serverTime;
+            int32_t candidateTime = cg.damageDirIndicators[i].serverTime;
+            int32_t bestTime = cg.damageDirIndicators[best].serverTime;
             if (candidateTime < bestTime) {
                 best = i;
             }
@@ -153,9 +153,9 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
         /* 0x30034c8c..0x30034ca7: the duration global is read before the snapshot
          * pointer and serverTime, then the two dwords are stored in that order. */
         int32_t duration = cg_hudDamageIconTime_vmCvar.integer;
-        snapshot_t *snap = cg_snap;
+        snapshot_t *snap = cg.snap;
         int32_t serverTime = snap->serverTime;
-        cg_damageDirIndicator_t *indicator = &cg_damageDirIndicators[best];
+        cg_damageDirIndicator_t *indicator = &cg.damageDirIndicators[best];
         indicator->serverTime = serverTime;
         indicator->duration = duration;
 
@@ -182,11 +182,11 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
 
     /* 0x30034d0c..0x30034d28: snapshot both globals before the target-width ADD,
      * store the wrapped deadline, then dereference the retained snapshot. */
-    int32_t now = cg_time;
-    snapshot_t *snap = cg_snap;
+    int32_t now = cg.time;
+    snapshot_t *snap = cg.snap;
     int32_t flashEndTime = coduo_int32_from_bits(
         (uint32_t)now + (uint32_t)CG_DAMAGE_FLASH_DURATION_MS);
-    cg_damageFlashEndTime = flashEndTime;
+    cg.v_dmg_time = flashEndTime;
     int32_t latestServerTime = snap->serverTime;
-    cg_damageDirLatestServerTime = latestServerTime;
+    cg.damageDirLatestServerTime = latestServerTime;
 }

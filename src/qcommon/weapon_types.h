@@ -769,7 +769,7 @@ typedef struct weaponInfo_s {
                                * centering acceleration (deg/s^2 scale) applied to the ADS
                                * view-kick offset. CG_UpdateViewKick (0x3003f9f0) selects this
                                * field over hipViewKickCenterSpeed when the predicted player's
-                               * adsFraction (cg_predictedPlayerState.adsFraction) is >= 0.5, then
+                               * adsFraction (cg.predictedPlayerState.adsFraction) is >= 0.5, then
                                * multiplies it by the signed restoring direction and dt to
                                * integrate the view-kick velocity. Read as FMUL float [EAX+0x404]
                                * at 0x3003fa8d. Matches server weaponInfo_s::adsViewKickCenterSpeed

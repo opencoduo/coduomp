@@ -30,24 +30,24 @@ void CG_ParseScores(void)
     int32_t team;
 
     trap_Argv(1, g_textScratchBuffer, (int32_t)sizeof(g_textScratchBuffer));
-    cg_scoreboardNumClients = coduo_crt_atoi(g_textScratchBuffer);
-    if (cg_scoreboardNumClients > CG_SCORE_MAX_CLIENTS) {
-        cg_scoreboardNumClients = CG_SCORE_MAX_CLIENTS;
+    cg.numScores = coduo_crt_atoi(g_textScratchBuffer);
+    if (cg.numScores > CG_SCORE_MAX_CLIENTS) {
+        cg.numScores = CG_SCORE_MAX_CLIENTS;
     }
 
-    memset(cg_scoreboardTeamScores, 0, sizeof(cg_scoreboardTeamScores));
+    memset(cg.teamScores, 0, sizeof(cg.teamScores));
 
     trap_Argv(2, g_textScratchBuffer, (int32_t)sizeof(g_textScratchBuffer));
-    cg_scoreboardTeamScores[1] = coduo_crt_atoi(g_textScratchBuffer);
+    cg.teamScores[1] = coduo_crt_atoi(g_textScratchBuffer);
     trap_Argv(3, g_textScratchBuffer, (int32_t)sizeof(g_textScratchBuffer));
-    cg_scoreboardTeamScores[2] = coduo_crt_atoi(g_textScratchBuffer);
+    cg.teamScores[2] = coduo_crt_atoi(g_textScratchBuffer);
 
-    memset(cg_scoreboardEntries, 0, sizeof(cg_scoreboardEntries));
-    memset(cg_scoreboardTeamPings, 0, sizeof(cg_scoreboardTeamPings));
-    memset(cg_scoreboardTeamCount, 0, sizeof(cg_scoreboardTeamCount));
+    memset(cg.scores, 0, sizeof(cg.scores));
+    memset(cg.scoreboardTeamPings, 0, sizeof(cg.scoreboardTeamPings));
+    memset(cg.scoreboardTeamCount, 0, sizeof(cg.scoreboardTeamCount));
 
     clientArg = CG_SCORE_FIRST_CLIENT_ARG;
-    for (i = 0; i < cg_scoreboardNumClients;
+    for (i = 0; i < cg.numScores;
          i = coduo_int32_from_bits((uint32_t)i + 1u),
          clientArg = coduo_int32_from_bits((uint32_t)clientArg +
                                       CG_SCORE_ARGS_PER_CLIENT)) {
@@ -57,48 +57,48 @@ void CG_ParseScores(void)
         trap_Argv(clientArg, g_textScratchBuffer,
                   (int32_t)sizeof(g_textScratchBuffer));
         client = coduo_crt_atoi(g_textScratchBuffer);
-        cg_scoreboardEntries[i].client = client;
+        cg.scores[i].client = client;
 
         trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 1u),
                   g_textScratchBuffer,
                   (int32_t)sizeof(g_textScratchBuffer));
-        cg_scoreboardEntries[i].score = coduo_crt_atoi(g_textScratchBuffer);
+        cg.scores[i].score = coduo_crt_atoi(g_textScratchBuffer);
 
         trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 2u),
                   g_textScratchBuffer,
                   (int32_t)sizeof(g_textScratchBuffer));
-        cg_scoreboardEntries[i].ping = coduo_crt_atoi(g_textScratchBuffer);
+        cg.scores[i].ping = coduo_crt_atoi(g_textScratchBuffer);
 
         trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 3u),
                   g_textScratchBuffer,
                   (int32_t)sizeof(g_textScratchBuffer));
-        cg_scoreboardEntries[i].deaths = coduo_crt_atoi(g_textScratchBuffer);
+        cg.scores[i].deaths = coduo_crt_atoi(g_textScratchBuffer);
 
         trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 4u),
                   g_textScratchBuffer,
                   (int32_t)sizeof(g_textScratchBuffer));
         status = coduo_crt_atoi(g_textScratchBuffer);
-        cg_scoreboardEntries[i].statusIcon = status;
+        cg.scores[i].statusIcon = status;
 
         if (status >= CG_SCORE_STATUS_FIRST && status <= CG_SCORE_STATUS_LAST) {
             const char *shaderName =
                 CG_ConfigString(status + CG_SCORE_STATUS_CONFIG_BASE);
             CG_DrawInformation(0);
-            cg_scoreboardEntries[i].statusIcon = coduo_int32_from_bits(
+            cg.scores[i].statusIcon = coduo_int32_from_bits(
                 (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
                                         (intptr_t)shaderName, 5));
         }
 
         if (client < 0 || client >= CG_SCORE_MAX_CLIENTS) {
             client = 0;
-            cg_scoreboardEntries[i].client = 0;
+            cg.scores[i].client = 0;
         }
 
         /* 0x30038278 MOV [eax+0x305e1f68],edx: store this row's score
          * ([esi+0x4]) in clientInfo_t.score (+0x34), read by retail owner-draw
          * CG_PLAYER_SCORE (21). The server command producer at 0x20021864..82
          * supplies each row as clientNum, score, ping, deaths, statusIcon. */
-        bgs.clientinfo[client].score = cg_scoreboardEntries[i].score;
+        bgs.clientinfo[client].score = cg.scores[i].score;
 
         team_t clientTeam;
         if (bgs.clientinfo[client].infoValid != 0) {
@@ -106,24 +106,24 @@ void CG_ParseScores(void)
         } else {
             clientTeam = TEAM_FREE;
         }
-        cg_scoreboardEntries[i].team = clientTeam;
+        cg.scores[i].team = clientTeam;
 
         /* clientState_t.team is a two-bit snapshot netfield, so the direct
          * four-row aggregate lookup at 0x30038295/0x300382a2 has domain 0..3. */
-        cg_scoreboardTeamCount[clientTeam] = coduo_int32_from_bits(
-            (uint32_t)cg_scoreboardTeamCount[clientTeam] + 1u);
-        cg_scoreboardTeamPings[clientTeam] = coduo_int32_from_bits(
-            (uint32_t)cg_scoreboardTeamPings[clientTeam] +
-            (uint32_t)cg_scoreboardEntries[i].ping);
+        cg.scoreboardTeamCount[clientTeam] = coduo_int32_from_bits(
+            (uint32_t)cg.scoreboardTeamCount[clientTeam] + 1u);
+        cg.scoreboardTeamPings[clientTeam] = coduo_int32_from_bits(
+            (uint32_t)cg.scoreboardTeamPings[clientTeam] +
+            (uint32_t)cg.scores[i].ping);
     }
 
     for (team = 0; team < 4;
          team = coduo_int32_from_bits((uint32_t)team + 1u)) {
-        if (cg_scoreboardTeamCount[team] >= 1
-            && cg_scoreboardTeamPings[team] >= 1) {
-            cg_scoreboardTeamPings[team] /= cg_scoreboardTeamCount[team];
+        if (cg.scoreboardTeamCount[team] >= 1
+            && cg.scoreboardTeamPings[team] >= 1) {
+            cg.scoreboardTeamPings[team] /= cg.scoreboardTeamCount[team];
         } else {
-            cg_scoreboardTeamPings[team] = 0;
+            cg.scoreboardTeamPings[team] = 0;
         }
     }
 }

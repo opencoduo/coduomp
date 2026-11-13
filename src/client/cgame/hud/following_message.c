@@ -20,22 +20,22 @@
  * "script_method_hudelem_moveovertime" is REJECTED. This is not a hudElem script
  * method: it takes no script/console arguments, parses nothing, sets no start/end
  * lerp fields, and performs no interpolation. Its behavior is a fixed 2D HUD draw
- * driven off cg_snap. The guess was purely a size collision (win size 0xf9 == a
+ * driven off cg.snap. The guess was purely a size collision (win size 0xf9 == a
  * game_mp_uo function of the same byte count) with no behavioral basis. The engine
  * services behind traps 52/54/57 are unproven (no cgame syscall-id table
  * recovered), so they keep the honest CG_R_TEXT_WIDTH/54/57 role ids used across the
  * emitter family (see client_recovered.h); this function keeps a behavioral name.
  *
  * Follow gate, proven 0x3001bee3..0x3001bf16:
- *   EAX = cg_snap;                                 (MOV EAX,[0x30459160])
- *   if (!(cg_snap->ps.playerStateFlags & 0x40000))  (TEST [EAX+0x18],0x40000; JNZ)
+ *   EAX = cg.snap;                                 (MOV EAX,[0x30459160])
+ *   if (!(cg.snap->ps.playerStateFlags & 0x40000))  (TEST [EAX+0x18],0x40000; JNZ)
  *       return 0;                                  (XOR EAX,EAX; ADD ESP,0x20; RET)
  * 0x40000 is PSF_FOLLOWING (the follow-view flag; see globals.h). The
  * scratch color slots at [ESP+0x10..0x1c] are pre-filled with 1.0f (0x3f800000)
  * before the gate is even tested; they become the white draw color further down.
  *
  * Followed-name resolution, proven 0x3001bf17..0x3001bf3c:
- *   idx  = cg_snap->ps.psClientNum;                     (MOV EAX,[EAX+0xe0])
+ *   idx  = cg.snap->ps.psClientNum;                     (MOV EAX,[EAX+0xe0])
  *   elem = &bgs.clientinfo[idx];               (IMUL EAX,0x4d0; base 0x305e1f34)
  *   name = elem->infoValid ? elem->name : "?";
  *      (MOV ECX,[EAX+0x305e1f34] == elem->infoValid (+0x00); TEST ECX,ECX;
@@ -121,9 +121,9 @@ static const char CG_FOLLOW_KEY[]    = "spectator follow string";
 
 qboolean CG_DrawFollowingMessage(void)
 {
-    /* 0x3001bee3 snapshots cg_snap before writing the color, then uses that
+    /* 0x3001bee3 snapshots cg.snap before writing the color, then uses that
      * exact pointer for both the flag and followed-client-number reads. */
-    snapshot_t *snap = cg_snap;
+    snapshot_t *snap = cg.snap;
     vec4_t color = {1.0f, 1.0f, 1.0f, 1.0f};
     const char *name;
     const char *text;

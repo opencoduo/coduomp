@@ -21,7 +21,7 @@
 //
 // LOADING-SCREEN INLINING: three ~150-instruction blocks (0x3002bddf.., 0x3002c003..,
 // 0x3002c237..) are byte-for-byte the inlined body of the load-screen updater at
-// 0x3002a530 (guarded by cg_snap==0 && cg_updateScreenActive==0, clearing the
+// 0x3002a530 (guarded by cg.snap==0 && cg_updateScreenActive==0, clearing the
 // cl_serverload* cvars, drawing the levelshot + hunk-usage progress bar, and issuing
 // trap_UpdateScreen). The original source called that helper by name; the compiler
 // inlined it. We represent each occurrence as a call to the existing 0x3002a530 symbol
@@ -67,8 +67,8 @@ enum {
 
 /* The three inlined load-screen updates are the body of CG_DrawInformation at
  * 0x3002a530, inlined by the compiler: levelshot, loading text/progress and
- * trap_UpdateScreen under the cg_snap/cg_updateScreenActive guards. Each block
- * first returns when cg_snap is non-NULL and clears the three cl_serverload*
+ * trap_UpdateScreen under the cg.snap/cg_updateScreenActive guards. Each block
+ * first returns when cg.snap is non-NULL and clears the three cl_serverload*
  * cvars when it runs, proving force==qfalse. */
 
 void CG_RegisterGraphics(void)

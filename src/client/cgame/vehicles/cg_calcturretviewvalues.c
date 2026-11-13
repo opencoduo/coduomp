@@ -29,11 +29,11 @@ enum {
 
 void CG_CalcTurretViewValues(void)
 {
-    if ((cg_predictedPlayerState.entityStateFlags & CG_TURRET_VIEW_FLAG_MASK) == 0) {
+    if ((cg.predictedPlayerState.entityStateFlags & CG_TURRET_VIEW_FLAG_MASK) == 0) {
         return;
     }
 
-    int32_t entityNum = cg_predictedPlayerState.viewLockedEntityNum;
+    int32_t entityNum = cg.predictedPlayerState.viewLockedEntityNum;
     if (entityNum == CG_TURRET_ENTITY_NONE) {
         return;
     }
@@ -65,22 +65,22 @@ void CG_CalcTurretViewValues(void)
      * angle scalars with the snapshot interpolation fraction. */
     float baseYaw = LerpAngle(cent->currentState.iconBaseYaw,
                               cent->nextState.leanf,
-                              cg_frameInterpolation);
+                              cg.frameInterpolation);
     float currentBodyPitch = CG_FloatFromBits(
         (uint32_t)turret->currentState.vehicleBodyPitchPacked);
     float nextBodyPitch = CG_FloatFromBits(
         (uint32_t)turret->nextState.vehicleBodyPitchPacked);
     float bodyPitch = LerpAngle(currentBodyPitch, nextBodyPitch,
-                                cg_frameInterpolation);
+                                cg.frameInterpolation);
     float secondaryYaw = LerpAngle(turret->currentState.vehicleSecondaryBaseYaw,
                                    turret->nextState.vehicleSecondaryBaseYaw,
-                                   cg_frameInterpolation);
+                                   cg.frameInterpolation);
     float currentBodyRoll = CG_FloatFromBits(
         (uint32_t)turret->currentState.vehicleBodyRollPacked);
     float nextBodyRoll = CG_FloatFromBits(
         (uint32_t)turret->nextState.vehicleBodyRollPacked);
     float bodyRoll = LerpAngle(currentBodyRoll, nextBodyRoll,
-                               cg_frameInterpolation);
+                               cg.frameInterpolation);
 
     /* The machine updates pitch and yaw only. Each component is a symmetric clamp
      * of the signed refdef/entity delta into [lowerAdds[axis], limits[axis]]:
@@ -93,19 +93,19 @@ void CG_CalcTurretViewValues(void)
     float limits[2] = { baseYaw, bodyPitch };
     float lowerAdds[2] = { secondaryYaw, bodyRoll };
     for (int axis = 0; axis < 2; ++axis) {
-        float delta = AngleSubtract(cg_refdefViewAngles[axis],
+        float delta = AngleSubtract(cg.refdefViewAngles[axis],
                                     cent->lerpAngles[axis]);
         if (delta > limits[axis]) {
-            cg_refdefViewAngles[axis] =
+            cg.refdefViewAngles[axis] =
                 cent->lerpAngles[axis] + limits[axis];
         } else if (delta < lowerAdds[axis]) {
-            cg_refdefViewAngles[axis] =
+            cg.refdefViewAngles[axis] =
                 cent->lerpAngles[axis] + lowerAdds[axis];
         }
     }
 
     vec3_t adjustedAngles;
-    /* Stage 1 (0x300416fa..0x30041725): adjustedAngles[i] = cg_refdefViewAngles[i]
+    /* Stage 1 (0x300416fa..0x30041725): adjustedAngles[i] = cg.refdefViewAngles[i]
      * - deltaScale[i], a PLAIN componentwise subtraction. The DLL emits three
      * inline FSUB here (0x30041700/0x30041713/0x30041721), NOT calls -- only the
      * SECOND stage below (0x30041729 CALL AngleSubtract) normalizes. Using
@@ -116,29 +116,29 @@ void CG_CalcTurretViewValues(void)
      * temp -- the (float) int cast is faithful (FILD; FSTP DWORD; FLD DWORD). */
     for (int axis = 0; axis < 3; ++axis) {
         float deltaInteger = (float)coduo_int32_from_bits(
-            (uint32_t)cg_predictedPlayerState.deltaAngles[axis]);
+            (uint32_t)cg.predictedPlayerState.deltaAngles[axis]);
         float deltaScale = (float)((long double)deltaInteger *
                                    (long double)CG_SHORT_TO_ANGLE_SCALE);
         adjustedAngles[axis] = (float)(
-            (long double)cg_refdefViewAngles[axis] - (long double)deltaScale);
+            (long double)cg.refdefViewAngles[axis] - (long double)deltaScale);
     }
     /* Stage 2 (0x30041729/0x3004173d/0x30041752): here the DLL DOES call
      * AngleSubtract (= a - b then AngleNormalize180Accurate). */
-    adjustedAngles[0] = AngleSubtract(adjustedAngles[0], cg_adsViewErrorAngles[0]);
-    adjustedAngles[1] = AngleSubtract(adjustedAngles[1], cg_adsViewErrorAngles[1]);
-    adjustedAngles[2] = AngleSubtract(adjustedAngles[2], cg_adsViewErrorAngles[2]);
+    adjustedAngles[0] = AngleSubtract(adjustedAngles[0], cg.adsViewErrorAngles[0]);
+    adjustedAngles[1] = AngleSubtract(adjustedAngles[1], cg.adsViewErrorAngles[1]);
+    adjustedAngles[2] = AngleSubtract(adjustedAngles[2], cg.adsViewErrorAngles[2]);
     cgame_syscall(CG_VEH_VIEW_ANGLE_DELTA, (intptr_t)adjustedAngles);
 
     playerState_t swayState;
-    memcpy(&swayState, &cg_predictedPlayerState, sizeof(swayState));
+    memcpy(&swayState, &cg.predictedPlayerState, sizeof(swayState));
     swayState.currentWeapon = BG_GetWeaponIndexForName("thompson_MP");
     BG_CalculateWeaponPosition_Sway(&swayState,
                                     cg_turretViewSwayPreviousViewAngles,
                                     cg_turretViewSwayOffset,
                                     cg_turretViewSwayViewAngles,
-                                    CG_TURRET_SWAY_SCALE, cg_frametime);
+                                    CG_TURRET_SWAY_SCALE, cg.frametime);
 
-    int32_t phase = cg_time % CG_TURRET_OSCILLATION_PERIOD;
+    int32_t phase = cg.time % CG_TURRET_OSCILLATION_PERIOD;
     if (phase > CG_TURRET_OSCILLATION_HALF_PERIOD) {
         phase = CG_TURRET_OSCILLATION_PERIOD - phase;
     }
@@ -151,13 +151,13 @@ void CG_CalcTurretViewValues(void)
         return;
     }
 
-    cg_refdef.vieworg[0] = tagPlayerMatrix.origin[0];
-    cg_refdef.vieworg[1] = tagPlayerMatrix.origin[1];
-    cg_refdef.vieworg[2] =
-        tagPlayerMatrix.origin[2] - cg_predictedPlayerState.viewHeightCurrent;
+    cg.refdef.vieworg[0] = tagPlayerMatrix.origin[0];
+    cg.refdef.vieworg[1] = tagPlayerMatrix.origin[1];
+    cg.refdef.vieworg[2] =
+        tagPlayerMatrix.origin[2] - cg.predictedPlayerState.viewHeightCurrent;
 
     vec3_t displacement = { 0.0f, 0.0f, 0.0f };
-    if ((cg_snap->ps.entityStateFlags & CG_TURRET_SWAY_FLAG) != 0 &&
+    if ((cg.snap->ps.entityStateFlags & CG_TURRET_SWAY_FLAG) != 0 &&
         cent->currentState.hudTagMask == 0) {
         float kick = phaseScale * CG_TURRET_FORWARD_KICK_SCALE;
         displacement[0] = kick * tagPlayerMatrix.axis[0][0];
@@ -175,11 +175,11 @@ void CG_CalcTurretViewValues(void)
     displacement[1] += tagPlayerMatrix.axis[2][1] * -cg_turretViewSwayOffset[2];
     displacement[2] += tagPlayerMatrix.axis[2][2] * -cg_turretViewSwayOffset[2];
 
-    cg_refdef.vieworg[0] += displacement[0];
-    cg_refdef.vieworg[1] += displacement[1];
-    cg_refdef.vieworg[2] += displacement[2];
+    cg.refdef.vieworg[0] += displacement[0];
+    cg.refdef.vieworg[1] += displacement[1];
+    cg.refdef.vieworg[2] += displacement[2];
 
-    if ((cg_snap->ps.entityStateFlags & CG_TURRET_SWAY_FLAG) != 0 &&
+    if ((cg.snap->ps.entityStateFlags & CG_TURRET_SWAY_FLAG) != 0 &&
         cent->currentState.hudTagMask == 0) {
         const weaponInfo_t *weapon = bg_weaponInfos[cent->currentState.weapon];
         /* The signed-random ((float)rand/32768)*2-1 is kept in st(0) and multiplied by
@@ -190,17 +190,17 @@ void CG_CalcTurretViewValues(void)
         long double pitchRandom =
             ((long double)pitchRandomInteger /
              (long double)CG_RANDOM_SIGNED_DENOMINATOR) * 2.0L - 1.0L;
-        cg_refdefViewAngles[0] = (float)(
+        cg.refdefViewAngles[0] = (float)(
             pitchRandom * (long double)weapon->vertViewJitter +
-            (long double)cg_refdefViewAngles[0]);
+            (long double)cg.refdefViewAngles[0]);
 
         float yawRandomInteger = (float)coduo_crt_rand();
         long double yawRandom =
             ((long double)yawRandomInteger /
              (long double)CG_RANDOM_SIGNED_DENOMINATOR) * 2.0L - 1.0L;
-        cg_refdefViewAngles[1] = (float)(
+        cg.refdefViewAngles[1] = (float)(
             yawRandom * (long double)weapon->horizViewJitter +
-            (long double)cg_refdefViewAngles[1]);
+            (long double)cg.refdefViewAngles[1]);
     }
 
 }

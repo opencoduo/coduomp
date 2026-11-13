@@ -45,7 +45,7 @@ void CG_SpawnRailCoreSegment(const vec3_t start, const vec3_t end,
      * 300430ca ADD EDX,ECX; 300430cc MOV [EAX+0x10],EDX:
      * le->endTime = cg.time + cg_railTrailTime_vmCvar.integer. */
     le->endTime = coduo_int32_from_bits(
-        (uint32_t)cg_time + (uint32_t)cg_railTrailTime_vmCvar.integer);
+        (uint32_t)cg.time + (uint32_t)cg_railTrailTime_vmCvar.integer);
 
     /* 300430cf FILD [cg_railTrailTime_vmCvar.integer]; 300430d5 FSTP [ESP+8] (spill to float);
      * 300430d9 FLD [0x3007bce0](=1.0f); 300430df FDIV [ESP+8];
@@ -61,7 +61,7 @@ void CG_SpawnRailCoreSegment(const vec3_t start, const vec3_t end,
     /* 300430e6 FILD [cg.time]; 300430f3 FSTP [ESP+8]; 300430f7 FLD [ESP+8];
      * 300430fb FDIV [0x3007be88](=1000.0f); 30043101 FSTP [EAX+0xc8]:
      * le->refEntity.shaderTime = (float)cg.time / 1000.0f (ms -> seconds). */
-    float timeMilliseconds = (float)cg_time;
+    float timeMilliseconds = (float)cg.time;
     le->refEntity.shaderTime = (float)(
         (long double)timeMilliseconds / 1000.0L);
 

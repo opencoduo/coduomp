@@ -9,9 +9,9 @@
 //     vec4: CG_DrawScoreboard_GetTeamColor(team, rowColor) fills rowColor[0..2]
 //     (0x30037821 CALL 0x30036f20 with the color buffer in ESI), then
 //     rowColor[3] is set to drawCtx->color[3] (+0xc, 0x3003782f/0x30037839).
-//   * It then iterates cg_scoreboardEntries[0 .. cg_scoreboardNumClients-1]
+//   * It then iterates cg.scores[0 .. cg.numScores-1]
 //     (base 0x30489f54, stride 0x18 = sizeof(cgScore_t); count from
-//     cg_scoreboardNumClients at 0x30489f20, a SIGNED loop bound — JLE/JL).
+//     cg.numScores at 0x30489f20, a SIGNED loop bound — JLE/JL).
 //   * For each entry it skips clients whose per-client anim/player state is not
 //     live: EAX = entry->client; bgs.clientinfo[client].infoValid
 //     (0x305e1f34 + client*0x4d0, +0x00) must be non-zero (0x30037858 TEST/JZ).
@@ -58,9 +58,9 @@ float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx,
     alternateShade = 0; /* 0x3003781f XOR EDI,EDI */
 
     /* 0x3003782a/0x30037896: signed row-count loop over the collected entries. */
-    for (i = 0; i < cg_scoreboardNumClients;
+    for (i = 0; i < cg.numScores;
          i = coduo_int32_from_bits((uint32_t)i + 1u)) {
-        const cgScore_t *entry = &cg_scoreboardEntries[i];
+        const cgScore_t *entry = &cg.scores[i];
 
         /* 0x30037852..0x30037860: only rows whose client anim/player state has
          * advanced (infoValid != 0) are live. CG_ParseScores has already

@@ -90,7 +90,7 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
         if (ownerChunk != NULL &&
             chunk->emitCounter == info->emitCounter &&            /* [EBP+0x128] == info+0x90 */
             info->clientFrame >= coduo_int32_from_bits(
-                (uint32_t)cg_clientFrame - 1u))  /* DEC EDX; current/recent emitter */
+                (uint32_t)cg.clientFrame - 1u))  /* DEC EDX; current/recent emitter */
         {
             /* Emit-basis (field_100/104/108) delta between the owner chunk and this
              * chunk, each component folded to (-180,180] via AngleNormalize180;

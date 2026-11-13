@@ -14,7 +14,7 @@
 // the source name.
 //
 // Machine-code notes:
-//  - 0x30042c41  MOV EAX,[cg_predictedPlayerState.currentWeapon] (0x3048329c); JZ ret
+//  - 0x30042c41  MOV EAX,[cg.predictedPlayerState.currentWeapon] (0x3048329c); JZ ret
 //                when 0 (no weapon equipped). EDI (playedHandle) pre-zeroed.
 //  - 0x30042c51  IMUL EAX,EAX,0x1c4 ; ADD EAX,0x30413580  ->  &cg_weaponInfos[w].
 //  - 0x30042c5f  push &list ; push 0x99 ; call [0x30085e9c] ; add esp,8
@@ -24,9 +24,9 @@
 //                first match loads the matching weapon handle (+0x118..+0x124) into
 //                EDI and breaks the compare chain. Note the +0x04 kind word is NOT
 //                read here (it is in the sibling CG_SetGunHandFromNotetracks).
-//  - 0x30042d02  if (playedHandle != 0): LEA ECX,[cg_snap+0x20]
-//                (&cg_snap->ps.psOrigin, the ECX/this arg); EAX = playedHandle
-//                (soundName); push cg_snap->ps.psClientNum (+0xe0, entityNum);
+//  - 0x30042d02  if (playedHandle != 0): LEA ECX,[cg.snap+0x20]
+//                (&cg.snap->ps.psOrigin, the ECX/this arg); EAX = playedHandle
+//                (soundName); push cg.snap->ps.psClientNum (+0xe0, entityNum);
 //                call CG_PlaySoundAliasByName (0x3002ca80); add esp,4.
 //  - loop DEC EBP (count) / JNZ back to top.
 
@@ -36,7 +36,7 @@
 void CG_ProcessWeaponNoteTracks(void)
 {
     /* 0x30042c41: no equipped weapon -> nothing to play. */
-    int weaponIndex = cg_predictedPlayerState.currentWeapon;
+    int weaponIndex = cg.predictedPlayerState.currentWeapon;
     if (weaponIndex == 0) {
         return;
     }
@@ -81,12 +81,12 @@ void CG_ProcessWeaponNoteTracks(void)
          * nonzero (the matched track's handle; stock could also see a stale
          * nonzero handle here, which the per-track reset above eliminates). */
         if (playedAliasName != NULL) {
-            /* 0x30042d06..0x30042d1c: CG_PlaySoundAliasByName(&cg_snap->ps.psOrigin,
-             * (const char *)handle, cg_snap->ps.psClientNum). channelObj (ECX/this) =
-             * cg_snap + 0x20; soundName (EAX) = the registered handle; entityNum
-             * (stack) = cg_snap->ps.psClientNum (+0xe0). */
-            CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
-                                    &cg_snap->ps.psOrigin,
+            /* 0x30042d06..0x30042d1c: CG_PlaySoundAliasByName(&cg.snap->ps.psOrigin,
+             * (const char *)handle, cg.snap->ps.psClientNum). channelObj (ECX/this) =
+             * cg.snap + 0x20; soundName (EAX) = the registered handle; entityNum
+             * (stack) = cg.snap->ps.psClientNum (+0xe0). */
+            CG_PlaySoundAliasByName(cg.snap->ps.psClientNum,
+                                    &cg.snap->ps.psOrigin,
                                     playedAliasName);
         }
     }

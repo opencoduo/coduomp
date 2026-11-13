@@ -34,7 +34,7 @@ void CG_DrawSkyBoxPortal(void)
         return;
     }
 
-    saved = cg_refdef;
+    saved = cg.refdef;
 
     if (cg_skybox_vmCvar.integer) {
         parse = (char *)config;
@@ -43,19 +43,19 @@ void CG_DrawSkyBoxPortal(void)
         if (token == NULL || token[0] == '\0') {
             Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
         }
-        cg_refdef.vieworg[0] = (float)coduo_compat_atof(token);
+        cg.refdef.vieworg[0] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(&parse);
         if (token == NULL || token[0] == '\0') {
             Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
         }
-        cg_refdef.vieworg[1] = (float)coduo_compat_atof(token);
+        cg.refdef.vieworg[1] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(&parse);
         if (token == NULL || token[0] == '\0') {
             Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
         }
-        cg_refdef.vieworg[2] = (float)coduo_compat_atof(token);
+        cg.refdef.vieworg[2] = (float)coduo_compat_atof(token);
 
         /* The fourth required integer is parsed for format compatibility but is not
          * consumed afterward by this build (CALL Q_atoi, result overwritten). */
@@ -112,23 +112,23 @@ void CG_DrawSkyBoxPortal(void)
             cg_skyboxFogConfigured = qtrue;
         }
 
-        cg_refdef.fov_x = CG_CalcFov();
+        cg.refdef.fov_x = CG_CalcFov();
         long double tangent = coduo_x87_tanl(
-            (long double)cg_refdef.fov_x *
+            (long double)cg.refdef.fov_x *
             (long double)DEG_TO_HALF_RAD);
-        cg_refdef.fov_y = (float)(coduo_x87_atan2l(
-            (long double)coduo_int32_from_bits((uint32_t)cg_refdef.height),
-            (long double)coduo_int32_from_bits((uint32_t)cg_refdef.width) /
+        cg.refdef.fov_y = (float)(coduo_x87_atan2l(
+            (long double)coduo_int32_from_bits((uint32_t)cg.refdef.height),
+            (long double)coduo_int32_from_bits((uint32_t)cg.refdef.width) /
                 tangent) *
             (long double)HALF_RAD_TO_DEG);
-        cg_refdef.rdflags |= RDF_SKYBOX_PORTAL | RDF_SKYBOX_PORTAL_ACTIVE;
+        cg.refdef.rdflags |= RDF_SKYBOX_PORTAL | RDF_SKYBOX_PORTAL_ACTIVE;
     } else {
-        cg_refdef.rdflags &= ~(uint32_t)RDF_SKYBOX_PORTAL_ACTIVE;
-        cg_refdef.rdflags |= RDF_SKYBOX_PORTAL;
+        cg.refdef.rdflags &= ~(uint32_t)RDF_SKYBOX_PORTAL_ACTIVE;
+        cg.refdef.rdflags |= RDF_SKYBOX_PORTAL;
     }
-    cg_refdef.time = cg_time;
+    cg.refdef.time = cg.time;
 
-    cgame_syscall(CG_R_RENDER_SCENE, (intptr_t)&cg_refdef);
+    cgame_syscall(CG_R_RENDER_SCENE, (intptr_t)&cg.refdef);
 
-    cg_refdef = saved;
+    cg.refdef = saved;
 }

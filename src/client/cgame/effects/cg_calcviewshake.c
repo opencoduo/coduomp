@@ -3,16 +3,16 @@
 //
 // CG_CalcViewShake — apply the aggregate camera-shake ("earthquake") to the current
 // view for this frame. This is the read/apply end of the camera-shake trio:
-//   - CG_AddCameraShake (0x3001b420) registers sources into cg_shakeSources[4];
+//   - CG_AddCameraShake (0x3001b420) registers sources into cg.shakeSources[4];
 //   - CG_EvaluateCameraShakeSource (0x3001b390) scores one live source;
 //   - this walks all four, takes the strongest surviving source's scaledAmplitude
-//     (also merging an external amplitude cg_shakeExternAmplitude), then jitters the
+//     (also merging an external amplitude cg.shakeExternAmplitude), then jitters the
 //     view origin and drives three sinusoidal view-sway angles by that magnitude.
 //
 // The .mcode size-guess name "Item_Slider_Paint" is REJECTED (the real
 // Item_Slider_Paint is 0x30056c80). This body does no widget/slider drawing: it reads
-// cg_time and cg_shakeSources[], calls CG_EvaluateCameraShakeSource, and accumulates
-// onto cg_refdef.vieworg and the effect spin-angle triple — camera-shake view math.
+// cg.time and cg.shakeSources[], calls CG_EvaluateCameraShakeSource, and accumulates
+// onto cg.refdef.vieworg and the effect spin-angle triple — camera-shake view math.
 // Name is role-derived from that proven call graph; exact original symbol unproved.
 //
 // cdecl, no source args (operates on file-scope client globals); plain RET. The two
@@ -47,14 +47,14 @@
 
 void CG_CalcViewShake(void)
 {
-    // 0x3001b553-0x3001b576: timePhase = cg_time * (1/600). cg_time is FILD'd as
+    // 0x3001b553-0x3001b576: timePhase = cg.time * (1/600). cg.time is FILD'd as
     // a signed int32 (0x3001b553 `db 05`) straight into the FMUL at 0x3001b563
     // with no FSTP DWORD between them, so the integer enters the multiply exact;
     // the sole rounding is the FSTP float [ESP+0x10] at 0x3001b576 that lands in
-    // timePhase. An explicit (float) on cg_time would round it first (a real
+    // timePhase. An explicit (float) on cg.time would round it first (a real
     // fildl/fstps/flds under -std=c11) and diverge past 2^24 ms, ~4.66 h uptime.
     // The remaining (int32_t) is an integer signedness cast, not a rounding.
-    long double timePhaseValue = (long double)cg_time;
+    long double timePhaseValue = (long double)cg.time;
 
     // 0x3001b55b/0x3001b569: the running "strongest source" pair, zero-initialized.
     // maxAmplitude tracks the largest scaledAmplitude (+0x1c) among live sources;
@@ -69,7 +69,7 @@ void CG_CalcViewShake(void)
     // it together with its timeFalloff. The FCOMP/TEST AH,0x41/JNZ skip keeps a strict
     // running maximum (skip when scaledAmplitude <= maxAmplitude).
     for (int i = 0; i < 4; i++) {
-        cg_shakeSource_t *source = &cg_shakeSources[i];
+        cg_shakeSource_t *source = &cg.shakeSources[i];
         if (CG_EvaluateCameraShakeSource(source)) {
             if (source->scaledAmplitude > maxAmplitude) {
                 maxAmplitude = source->scaledAmplitude;
@@ -81,9 +81,9 @@ void CG_CalcViewShake(void)
     // 0x3001b5b1-0x3001b5d0: merge the externally-supplied amplitude (written by
     // 0x3001f901) into the max the same way; when it wins it supplies both the amplitude
     // and the falloff (the DLL copies it into both stack slots).
-    float externalForCompare = cg_shakeExternAmplitude;
+    float externalForCompare = cg.shakeExternAmplitude;
     if (externalForCompare > maxAmplitude) {
-        float externalForStore = cg_shakeExternAmplitude;
+        float externalForStore = cg.shakeExternAmplitude;
         maxAmplitude = externalForStore;
         maxTimeFalloff = externalForStore;
     }
@@ -92,14 +92,14 @@ void CG_CalcViewShake(void)
     // frame. JP takes the active path for ordered positive and unordered (NaN)
     // values. In the inactive case, re-roll the sway phase and return.
     if (maxAmplitude <= 0.0f) {
-        // 0x3001b5e3-0x3001b60f: cg_shakeSpinPhase = randSigned * PI  (a fresh phase in
+        // 0x3001b5e3-0x3001b60f: cg.shakeSpinPhase = randSigned * PI  (a fresh phase in
         // [-PI, PI) held for the next active frame's sin terms), then RET.
         long double phaseRandom = (long double)coduo_crt_rand();
         phaseRandom *= CG_SHAKE_RAND_NORM;
         phaseRandom = phaseRandom + phaseRandom;
         phaseRandom -= 1.0f;
         phaseRandom *= CG_SHAKE_PI;
-        cg_shakeSpinPhase = (float)phaseRandom;
+        cg.shakeSpinPhase = (float)phaseRandom;
         return;
     }
 
@@ -125,12 +125,12 @@ void CG_CalcViewShake(void)
     }
 
     // 0x3001b669-0x3001b695: jitter the view origin by the three random offsets.
-    cg_refdef.vieworg[0] = cg_refdef.vieworg[0] + orgOffset[0];
-    cg_refdef.vieworg[1] = cg_refdef.vieworg[1] + orgOffset[1];
-    cg_refdef.vieworg[2] = cg_refdef.vieworg[2] + orgOffset[2];
+    cg.refdef.vieworg[0] = cg.refdef.vieworg[0] + orgOffset[0];
+    cg.refdef.vieworg[1] = cg.refdef.vieworg[1] + orgOffset[1];
+    cg.refdef.vieworg[2] = cg.refdef.vieworg[2] + orgOffset[2];
 
     // 0x3001b69b-0x3001b716: advance the three effect spin angles with independent
-    // sinusoidal sway. Each: angle += sin(timePhase * freq + cg_shakeSpinPhase)
+    // sinusoidal sway. Each: angle += sin(timePhase * freq + cg.shakeSpinPhase)
     //                               * maxAmplitude * maxTimeFalloff * gain.
     // freq/gain per axis (from .rdata): pitch 8*PI / 18.0f, yaw 15*PI / 16.0f,
     // roll 12*PI / 10.0f. Each statement is one unbroken x87 chain
@@ -139,31 +139,31 @@ void CG_CalcViewShake(void)
     // so the sine is sinl (sinf would round both the argument and the result).
     long double pitch = (long double)timePhase;
     pitch *= 25.132741928100586f; /* 0x3007bf14, 8*PI */
-    pitch += (long double)cg_shakeSpinPhase;
+    pitch += (long double)cg.shakeSpinPhase;
     pitch = coduo_x87_sinl(pitch);
     pitch *= (long double)maxAmplitude;
     pitch *= (long double)maxTimeFalloff;
     pitch *= 18.0f;
-    pitch += (long double)cg_refdefViewAngles[0];
-    cg_refdefViewAngles[0] = (float)pitch;
+    pitch += (long double)cg.refdefViewAngles[0];
+    cg.refdefViewAngles[0] = (float)pitch;
 
     long double yaw = (long double)timePhase;
     yaw *= 47.12389f; /* 0x3007bf0c, 15*PI */
-    yaw += (long double)cg_shakeSpinPhase;
+    yaw += (long double)cg.shakeSpinPhase;
     yaw = coduo_x87_sinl(yaw);
     yaw *= (long double)maxAmplitude;
     yaw *= (long double)maxTimeFalloff;
     yaw *= 16.0f;
-    yaw += (long double)cg_refdefViewAngles[1];
-    cg_refdefViewAngles[1] = (float)yaw;
+    yaw += (long double)cg.refdefViewAngles[1];
+    cg.refdefViewAngles[1] = (float)yaw;
 
     long double roll = (long double)timePhase;
     roll *= 37.69911193847656f; /* 0x3007bf08, 12*PI */
-    roll += (long double)cg_shakeSpinPhase;
+    roll += (long double)cg.shakeSpinPhase;
     roll = coduo_x87_sinl(roll);
     roll *= (long double)maxAmplitude;
     roll *= (long double)maxTimeFalloff;
     roll *= 10.0f;
-    roll += (long double)cg_refdefViewAngles[2];
-    cg_refdefViewAngles[2] = (float)roll;
+    roll += (long double)cg.refdefViewAngles[2];
+    cg.refdefViewAngles[2] = (float)roll;
 }

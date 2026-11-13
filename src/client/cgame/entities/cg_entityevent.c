@@ -66,7 +66,7 @@
  * stack args (self, self, event, subFlag). */
 
 /* Mechanical globals referenced by role. cg_debugevents_vmCvar.integer gates the event trace;
- * cg_footsteps gates the surface step sounds; cg_predictedClientNum is the local client
+ * cg_footsteps gates the surface step sounds; cg.predictedPlayerState.psClientNum is the local client
  * number; cg_eventDemoGate gates the voice-cvar paths; cg_eventNames[event] is the
  * event-name string table used by the trace/unknown diagnostics. The three
  * fire-mode gates block the local-player low-ammo prediction. Identities resolved
@@ -74,7 +74,6 @@
 /* cg_debugevents_vmCvar.integer is now a resolved extern in globals.h (was the mechanical
  * g_data_cmd_callvote_f_30456f8c); no local alias needed. */
 #define cg_footsteps       cg_footsteps_vmCvar.integer   /* nonzero: play step sounds */
-#define cg_predictedClientNum cg_predictedPlayerState.psClientNum   /* local client number */
 #define cg_eventDemoGate   cl_stanceTemp_vmCvar.integer   /* nonzero: suppress voice cvar */
 #define cg_fireGateTurretA cg_nopredict_vmCvar.integer
 #define cg_fireGateTurretB g_synchronousClients_vmCvar.integer
@@ -103,7 +102,7 @@ enum {
     CS_WEAPON_SOUND_BASE = 0x295,  /* eventParm + 661 -> config string (event 0xb1) */
     LOCAL_SOUND_ENTITY   = 0x3fe,  /* fixed entityNum for positional plays */
 
-    WEAPON_FIRE_FLAGS = 0xc0000,   /* cg_snap->ps.playerStateFlags bits gating fire tick */
+    WEAPON_FIRE_FLAGS = 0xc0000,   /* cg.snap->ps.playerStateFlags bits gating fire tick */
     EFLAGS_PROJECTILE_HIT_VEHICLE = 0x100000,
     EFLAGS_STEP_ALT = 0xc,         /* self->currentState.eType bits selecting event 0xd0 variant */
 
@@ -258,9 +257,9 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     if (event >= EV_FLESH_LO && event < EV_FLESH_HI) {
         CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                             cg_landSurfaceSounds[event - EV_FLESH_LO]);
-        if (clientNum == (int)cg_predictedClientNum) {
-            cg_impactViewKickTime = cg_time;
-            cg_impactViewKick = -(long double)eventParm; /* FILD raw; FCHS; FSTP (0x30022a0a..0x30022a1c): no pre-store round */
+        if (clientNum == cg.predictedPlayerState.psClientNum) {
+            cg.landTime = cg.time;
+            cg.landChange = -(long double)eventParm; /* FILD raw; FCHS; FSTP (0x30022a0a..0x30022a1c): no pre-store round */
         }
         return;
     }
@@ -272,7 +271,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                             cg_landSurfaceSounds[event - EV_BODY_LO]);
         CG_PlayEntitySoundAliasByName(entNum, cg_soundLandDamage);
-        if (clientNum == (int)cg_predictedClientNum) {
+        if (clientNum == cg.predictedPlayerState.psClientNum) {
             /* envelope = (hi - lo) * eventParm * 0.01 + lo; FCOM against 12.0.
              * TEST AH,0x41 followed by JNP at 0x30022a97 skips the kick only for
              * less-than/equal; greater-than and unordered both continue. */
@@ -305,8 +304,8 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
                     }
                     eventParm = n;
                 }
-                cg_impactViewKickTime = cg_time;
-                cg_impactViewKick = -(long double)eventParm; /* FILD raw; FCHS; FSTP (0x30022ad5..0x30022ae5): no pre-store round */
+                cg.landTime = cg.time;
+                cg.landChange = -(long double)eventParm; /* FILD raw; FCHS; FSTP (0x30022ad5..0x30022ae5): no pre-store round */
             }
         }
         return;
@@ -347,7 +346,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         const char *voice = (event == EV_STANCE_FORCE_STAND) ? "0"
                           : (event == EV_STANCE_FORCE_CROUCH) ? "1"
                                              : "2";
-        if (clientNum != (int)cg_predictedClientNum) {
+        if (clientNum != cg.predictedPlayerState.psClientNum) {
             Com_DPrintf("Event %s just for client %i was sent to other clients\n",
                         cg_eventNames[event], clientNum);
             return;
@@ -362,18 +361,18 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     /* 0x91 (0x30022c1f): weapon-changed / low-ammo warning. For a non-local client
      * this behaves as the 0x8e voice-diagnostic path (JNZ 0x30022b5e). */
     case EV_STEP_VIEW:
-        if (clientNum != (int)cg_predictedClientNum) {
+        if (clientNum != cg.predictedPlayerState.psClientNum) {
             Com_DPrintf("Event %s just for client %i was sent to other clients\n",
                         cg_eventNames[event], clientNum);
             return;
         }
-        if (cg_demoPlayback != 0 || cg_fireGateTurretA != 0 || cg_fireGateTurretB != 0) {
+        if (cg.demoPlayback != 0 || cg_fireGateTurretA != 0 || cg_fireGateTurretB != 0) {
             return;
         }
         {
-            int32_t now = cg_time;
+            int32_t now = cg.time;
             int32_t sinceLast = coduo_int32_from_bits(
-                (uint32_t)now - (uint32_t)cg_weaponChangeViewOffsetTime);
+                (uint32_t)now - (uint32_t)cg.stepTime);
             /* base is never stored: both legs leave it in st (the product at
              * 0x30022c72..0x30022c82, or FLD 0.0f at 0x30022c8a) and it is added to
              * the raw-FILD (eventParm-128) straight out of st1 (0x30022c9f), with the
@@ -386,7 +385,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
                     100u - (uint32_t)sinceLast);
                 base =
                     ((long double)remaining *
-                         (long double)cg_weaponChangeViewOffset) *
+                         (long double)cg.stepChange) *
                     (long double)0.01f * (long double)0.9f;
             } else {
                 base = (long double)0.0f;
@@ -395,20 +394,20 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
 
             int32_t eventOffset = coduo_int32_from_bits(
                 (uint32_t)eventParm - 128u);
-            cg_weaponChangeViewOffset = (long double)eventOffset + base;
+            cg.stepChange = (long double)eventOffset + base;
 
             /* FCOMP 24.0; TEST AH,0x41; JNZ -> the >24.0 fall-through clamps DOWN to
              * 24.0 and returns; when <= 24.0 the code proceeds to the -16.0 clamp. */
-            if (cg_weaponChangeViewOffset > 24.0f) {
-                cg_weaponChangeViewOffset = 24.0f;   /* 0x41c00000 */
-                cg_weaponChangeViewOffsetTime = now;
+            if (cg.stepChange > 24.0f) {
+                cg.stepChange = 24.0f;   /* 0x41c00000 */
+                cg.stepTime = now;
                 return;
             }
             /* FCOMP -16.0; TEST AH,0x5; JP -> clamp UP to -16.0 when below it. */
-            if (cg_weaponChangeViewOffset < -16.0f) {
-                cg_weaponChangeViewOffset = -16.0f;  /* 0xc1800000 */
+            if (cg.stepChange < -16.0f) {
+                cg.stepChange = -16.0f;  /* 0xc1800000 */
             }
-            cg_weaponChangeViewOffsetTime = now;
+            cg.stepTime = now;
             return;
         }
 
@@ -438,8 +437,8 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         } else {
             CG_PlayEntitySoundAliasByName(self->currentState.number, rec->pickupSoundAlt);
         }
-        if ((cg_snap->ps.playerStateFlags & WEAPON_FIRE_FLAGS) != 0
-            && (uint32_t)self->currentState.number == (uint32_t)cg_snap->ps.psClientNum) {
+        if ((cg.snap->ps.playerStateFlags & WEAPON_FIRE_FLAGS) != 0
+            && (uint32_t)self->currentState.number == (uint32_t)cg.snap->ps.psClientNum) {
             CG_SetSelectedWeapon(wparm);
         }
         return;
@@ -452,8 +451,8 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         if (wparm < 1 || wparm >= 0x86) {
             return;
         }
-        if ((cg_snap->ps.playerStateFlags & WEAPON_FIRE_FLAGS) != 0
-            && (uint32_t)self->currentState.number == (uint32_t)cg_snap->ps.psClientNum) {
+        if ((cg.snap->ps.playerStateFlags & WEAPON_FIRE_FLAGS) != 0
+            && (uint32_t)self->currentState.number == (uint32_t)cg.snap->ps.psClientNum) {
             CG_SetSelectedWeapon(wparm);
         }
         return;
@@ -536,8 +535,8 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
                 CG_PlayEntitySoundAliasByName(self->currentState.number, w->putawaySound);
             }
         }
-        if ((cg_snap->ps.playerStateFlags & WEAPON_FIRE_FLAGS) != 0
-            && (uint32_t)self->currentState.number == (uint32_t)cg_snap->ps.psClientNum) {
+        if ((cg.snap->ps.playerStateFlags & WEAPON_FIRE_FLAGS) != 0
+            && (uint32_t)self->currentState.number == (uint32_t)cg.snap->ps.psClientNum) {
             CG_OutOfAmmoChange();
         }
         return;
@@ -993,7 +992,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
 
     /* 0xcc (0x300231c2): stamp cg.time into self->miscTime, then play 0x3044bbcc. */
     case EV_ITEM_RESPAWN:
-        self->miscTime = cg_time;
+        self->miscTime = cg.time;
         CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundItemRespawn);
         return;
 

@@ -10,24 +10,24 @@
 // function references — "CG_ProcessSnapshots: n < cg.latestSnapshotNum" (0x3007a454)
 // and "CG_ProcessSnapshots: Server time went backwards" (0x3007a424) — which name it
 // outright, and from its call graph (CG_ReadNextSnapshot, CG_SetNextSnap,
-// CG_InstallSnapshotResetEffects, CG_SetFrameInterpolation) and its cg_snap /
-// cg_nextSnap / cg.time state machine. This is the stock id-Tech/CoD CG_ProcessSnapshots.
+// CG_InstallSnapshotResetEffects, CG_SetFrameInterpolation) and its cg.snap /
+// cg.nextSnap / cg.time state machine. This is the stock id-Tech/CoD CG_ProcessSnapshots.
 //
 // Behavior (all proven against the .mcode):
 //   1. Ask the engine for the latest snapshot number and its server time via
-//      cgame_syscall(CG_GET_CURRENT_SNAPSHOT_NUMBER, &n, &cg_latestSnapshotServerTime).
+//      cgame_syscall(CG_GET_CURRENT_SNAPSHOT_NUMBER, &n, &cg.latestSnapshotTime).
 //      Mirror that server time into cg_effectAnimTime.
-//   2. Advance cg_latestSnapshotNum toward n, complaining via Com_ErrorMessage if n
+//   2. Advance cg.latestSnapshotNum toward n, complaining via Com_ErrorMessage if n
 //      regressed below it.
-//   3. If cg_snap is not yet set, spin CG_ReadNextSnapshot until one arrives, install
+//   3. If cg.snap is not yet set, spin CG_ReadNextSnapshot until one arrives, install
 //      the first usable snapshot (skipping SNAPFLAG_NOT_ACTIVE ones), reset the client
 //      time bases + effect pool, and prime the DObj/effect subsystem.
-//   4. Once cg_snap exists, run the transition loop: pull the next snapshot, detect a
+//   4. Once cg.snap exists, run the transition loop: pull the next snapshot, detect a
 //      server restart via the SNAPFLAG_SERVERCOUNT toggle, complain about backwards
-//      server time, and step cg_snap/cg_nextSnap forward until cg.time lies within the
-//      [cg_snap.serverTime, cg_nextSnap.serverTime) window.
-//   5. On the way out, if cg.time is still behind cg_snap.serverTime, clamp cg.time
-//      (and cg_effectTime) forward to cg_snap.serverTime.
+//      server time, and step cg.snap/cg.nextSnap forward until cg.time lies within the
+//      [cg.snap.serverTime, cg.nextSnap.serverTime) window.
+//   5. On the way out, if cg.time is still behind cg.snap.serverTime, clamp cg.time
+//      (and cg_effectTime) forward to cg.snap.serverTime.
 //
 // Callee/return conventions proven at the call sites:
 //   - cgame_syscall (0x30085e9c): variadic int trap; args pushed right-to-left, id
@@ -49,30 +49,30 @@ void CG_ProcessSnapshots(void)
     int32_t n;
 
     /* 3003d2d0..3003d2e6: cgame_syscall(CG_GET_CURRENT_SNAPSHOT_NUMBER, &n,
-     * &cg_latestSnapshotServerTime). &n is a stack local (ESP+8); the second out is
+     * &cg.latestSnapshotTime). &n is a stack local (ESP+8); the second out is
      * the .data global. */
-    cgame_syscall(CG_GET_CURRENT_SNAPSHOT_NUMBER, &n, &cg_latestSnapshotServerTime);
+    cgame_syscall(CG_GET_CURRENT_SNAPSHOT_NUMBER, &n, &cg.latestSnapshotTime);
 
-    /* 3003d2ea..3003d30a: advance cg_latestSnapshotNum toward n.
+    /* 3003d2ea..3003d30a: advance cg.latestSnapshotNum toward n.
      *   n == latestSnapshotNum -> nothing;
      *   n  > latestSnapshotNum -> latestSnapshotNum = n (JGE skips the warning);
      *   n  < latestSnapshotNum -> Com_ErrorMessage, then reload n and set it. */
-    if (n != cg_latestSnapshotNum) {
-        if (n < cg_latestSnapshotNum) {
+    if (n != cg.latestSnapshotNum) {
+        if (n < cg.latestSnapshotNum) {
             Com_ErrorMessage("CG_ProcessSnapshots: n < cg.latestSnapshotNum");
             /* 3003d303: n is reloaded from the stack local before the store. */
         }
-        cg_latestSnapshotNum = n;
+        cg.latestSnapshotNum = n;
     }
 
     /* 3003d316..3003d31c: mirror the latest snapshot's server time into the effect
      * animation clock, regardless of which branch below is taken. */
-    cg_effectAnimTime = cg_latestSnapshotServerTime;
+    cg_effectAnimTime = cg.latestSnapshotTime;
 
     /* 3003d30f..3003d322: if we have no current snapshot yet, run the initial-install
      * loop; otherwise jump straight to the transition loop below. */
-    if (cg_snap == NULL) {
-        /* 3003d328..3003d3a9: keep reading snapshots until one installs as cg_snap. */
+    if (cg.snap == NULL) {
+        /* 3003d328..3003d3a9: keep reading snapshots until one installs as cg.snap. */
         do {
             snapshot_t *snap = CG_ReadNextSnapshot();  /* 3003d328 */
             if (snap == NULL) {
@@ -80,16 +80,16 @@ void CG_ProcessSnapshots(void)
                 return;
             }
 
-            /* 3003d337: an inactive snapshot cannot become the initial cg_snap;
-             * fall through to the "still no cg_snap?" retest and loop again. */
+            /* 3003d337: an inactive snapshot cannot become the initial cg.snap;
+             * fall through to the "still no cg.snap?" retest and loop again. */
             if ((snap->snapFlags & SNAPFLAG_NOT_ACTIVE) == 0) {
                 /* 3003d33c: install this snapshot as the current one. */
-                cg_snap = snap;
+                cg.snap = snap;
 
                 /* 3003d342..3003d34f: seed the client time bases from its serverTime. */
-                cg_time = snap->serverTime;
+                cg.time = snap->serverTime;
                 cg_effectTime = (uint32_t)snap->serverTime;
-                cg_physicsTime = snap->serverTime;
+                cg.oldTime = snap->serverTime;
 
                 /* 3003d354..3003d370: clear cg_entities[i]+0x1e8. */
                 for (int32_t i = 0; i < MAX_GENTITIES; i++) {
@@ -108,23 +108,23 @@ void CG_ProcessSnapshots(void)
                 CG_TransitionSnapshot();
             }
 
-            /* 3003d3a2..3003d3a9: retry until a snapshot actually became cg_snap. */
-        } while (cg_snap == NULL);
+            /* 3003d3a2..3003d3a9: retry until a snapshot actually became cg.snap. */
+        } while (cg.snap == NULL);
 
     }
 
-    /* 3003d322 jumps here when cg_snap was already installed, and the initial-
+    /* 3003d322 jumps here when cg.snap was already installed, and the initial-
      * snapshot path falls through here after its install loop.  The original
      * therefore recomputes the fraction on every frame, before entering the
      * transition loop. */
     CG_SetFrameInterpolation();
 
-    /* 3003d3c0..3003d443: transition loop. Step cg_snap/cg_nextSnap forward until
+    /* 3003d3c0..3003d443: transition loop. Step cg.snap/cg.nextSnap forward until
      * cg.time falls inside the current snapshot pair's time window. */
     for (;;) {
         /* 3003d3c0..3003d3cb: if next != current we already have a pending next
          * snapshot; skip straight to the window check. */
-        if (cg_nextSnap == cg_snap) {
+        if (cg.nextSnap == cg.snap) {
             /* 3003d3cd: pull a fresh next snapshot. */
             snapshot_t *snap = CG_ReadNextSnapshot();
             if (snap == NULL) {
@@ -134,7 +134,7 @@ void CG_ProcessSnapshots(void)
 
             /* 3003d3dd..3003d3e4: a toggle of SNAPFLAG_SERVERCOUNT between the current
              * snapshot and the new one marks a server restart. */
-            if (((snap->snapFlags ^ cg_snap->snapFlags) & SNAPFLAG_SERVERCOUNT) != 0) {
+            if (((snap->snapFlags ^ cg.snap->snapFlags) & SNAPFLAG_SERVERCOUNT) != 0) {
                 /* 3003d3e6..3003d3fb: full reset — reinstall from scratch and restart
                  * the loop. CG_InstallSnapshotResetEffects receives `snap` in EAX. */
                 CG_InstallSnapshotResetEffects(snap);
@@ -145,40 +145,40 @@ void CG_ProcessSnapshots(void)
 
             /* 3003d3fd..3003d40f: same server session — guard against backwards time. */
             if (coduo_int32_from_bits((uint32_t)snap->serverTime -
-                                 (uint32_t)cg_snap->serverTime) < 0) {
+                                 (uint32_t)cg.snap->serverTime) < 0) {
                 Com_ErrorMessage("CG_ProcessSnapshots: Server time went backwards");
             }
 
-            /* 3003d412: adopt the new snapshot as cg_nextSnap. */
+            /* 3003d412: adopt the new snapshot as cg.nextSnap. */
             CG_SetNextSnap(snap);
         }
 
         /* 3003d41b..3003d43c: exit the loop once cg.time sits within the window,
-         * i.e. cg.time >= cg_snap.serverTime AND cg.time < cg_nextSnap.serverTime.
+         * i.e. cg.time >= cg.snap.serverTime AND cg.time < cg.nextSnap.serverTime.
          * The i386 forms both as signed subtractions and tests the sign bit (JS). */
-        if (coduo_int32_from_bits((uint32_t)cg_time -
-                             (uint32_t)cg_snap->serverTime) >= 0) {
-            if (coduo_int32_from_bits((uint32_t)cg_time -
-                                 (uint32_t)cg_nextSnap->serverTime) < 0) {
+        if (coduo_int32_from_bits((uint32_t)cg.time -
+                             (uint32_t)cg.snap->serverTime) >= 0) {
+            if (coduo_int32_from_bits((uint32_t)cg.time -
+                                 (uint32_t)cg.nextSnap->serverTime) < 0) {
                 /* 3003d43c: cg.time is before the next snapshot — window found. */
                 break;
             }
         }
 
-        /* 3003d43e..3003d443: cg.time is at/after cg_nextSnap.serverTime (or before
-         * cg_snap.serverTime); reset entities and step to the next pair. */
+        /* 3003d43e..3003d443: cg.time is at/after cg.nextSnap.serverTime (or before
+         * cg.snap.serverTime); reset entities and step to the next pair. */
         CG_TransitionSnapshot();
     }
 
-    /* 3003d448..3003d466: final clamp. If cg.time is still behind cg_snap.serverTime,
+    /* 3003d448..3003d466: final clamp. If cg.time is still behind cg.snap.serverTime,
      * snap cg.time (and cg_effectTime) forward to it so nothing runs before the
      * installed snapshot's time. Reached both from the break above (with EAX = cg.time)
      * and from the CG_ReadNextSnapshot==NULL exit (which loads cg.time at 0x3003d448). */
     {
-        int32_t snapServerTime = cg_snap->serverTime;
-        /* 3003d456..3003d458: JNS -> skip when cg.time >= cg_snap.serverTime. */
-        if (coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)snapServerTime) < 0) {
-            cg_time = snapServerTime;
+        int32_t snapServerTime = cg.snap->serverTime;
+        /* 3003d456..3003d458: JNS -> skip when cg.time >= cg.snap.serverTime. */
+        if (coduo_int32_from_bits((uint32_t)cg.time - (uint32_t)snapServerTime) < 0) {
+            cg.time = snapServerTime;
             cg_effectTime = (uint32_t)snapServerTime;
         }
     }

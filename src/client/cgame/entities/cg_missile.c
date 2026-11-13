@@ -34,7 +34,7 @@
 //   * AnglesToAxisNegRight (0x3004c200) takes out-axis in EAX and source angles in EDX.
 //
 // Constants (exact .rdata/.data values, dumped with objdump -s):
-//   0x30487a90/94/98 = cg_refdef.vieworg vec3 (client view/camera origin).
+//   0x30487a90/94/98 = cg.refdef.vieworg vec3 (client view/camera origin).
 //   0x3007c144 = 4000.0f, 0x3007c140 = -4000.0f, 0x3007c13c = 700.0f,
 //   0x3007c138 = 1/700 (0.0014285714f), 0x3007c134 = 1/4000 (0.00025f),
 //   0x3007bce0 = 1.0f, 0x3007bce8 = 0.5f, 0x3007bcec = 0.0f.
@@ -101,15 +101,15 @@ void CG_Missile(centity_t *cent /* EBX */)
             memcpy(&laserDir[1], &cent->currentState.laserDir[1], sizeof(laserDir[1]));
             memcpy(&laserDir[2], &cent->currentState.laserDir[2], sizeof(laserDir[2]));
 
-            /* 0x3001ee69: toCamera = cg_refdef.vieworg - cent->lerpOrigin (the muzzle
+            /* 0x3001ee69: toCamera = cg.refdef.vieworg - cent->lerpOrigin (the muzzle
              * origin). Computed at single precision and normalized in place; its
              * pre-normalization length is the muzzle->camera distance. */
             vec3_t toCamera;
-            toCamera[0] = (float)((long double)cg_refdef.vieworg[0] -
+            toCamera[0] = (float)((long double)cg.refdef.vieworg[0] -
                                   (long double)cent->lerpOrigin[0]);
-            toCamera[1] = (float)((long double)cg_refdef.vieworg[1] -
+            toCamera[1] = (float)((long double)cg.refdef.vieworg[1] -
                                   (long double)cent->lerpOrigin[1]);
-            toCamera[2] = (float)((long double)cg_refdef.vieworg[2] -
+            toCamera[2] = (float)((long double)cg.refdef.vieworg[2] -
                                   (long double)cent->lerpOrigin[2]);
             float camDist = VectorNormalize(toCamera);
 

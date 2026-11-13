@@ -7,10 +7,10 @@
 // CG_DrawDamageDirectionIndicators — draw the fading "damage direction" arrow ring around the
 // crosshair. This is the directional companion of CG_DrawFlashDamage (0x3001a8e0,
 // the red full-screen flash); both share the damage-feedback state block at
-// 0x3048ae74.. (cg_damageDirIndicators[] plus cg_damageFlashEndTime/Scale).
+// 0x3048ae74.. (cg.damageDirIndicators[] plus cg.v_dmg_time/Scale).
 //
 // Naming: the .mcode header's size-matched guess "CG_EjectWeaponBrass" is REJECTED.
-// Nothing here ejects a 3D shell or spawns a local entity: it reads cg_snap only as a
+// Nothing here ejects a 3D shell or spawns a local entity: it reads cg.snap only as a
 // present-frame gate, builds a 2D icon quad in virtual 640x480 space, rotates it by a
 // view-relative yaw, and submits it through the 2D-draw traps CG_R_SETCOLOR (72) and
 // CG_DrawTurretTagQuad (trap 76). The 320.0/240.0 anchor constants are the 640x480
@@ -24,7 +24,7 @@
 // Behavior (all proven against the .mcode instruction stream, frame reconstructed by
 // tracking ESP across the PUSH ESI/EDI/EBX and the two trailing call arg batches):
 //
-//   * Gate on cg_snap (MOV EAX,[cg_snap]; TEST; JZ epilogue). The color[] slots are
+//   * Gate on cg.snap (MOV EAX,[cg.snap]; TEST; JZ epilogue). The color[] slots are
 //     pre-seeded to white (1,1,1,0) before the gate but only used on the drawing path.
 //
 //   * Anchor the ring (sx,sy):
@@ -42,11 +42,11 @@
 //       corners = (-h,yTop),(+h,yTop),(+h,yBot),(-h,yBot).
 //     (The eight floats are stored interleaved by the FST/FSTP pairs at 0x3001aa25..53.)
 //
-//   * Walk cg_damageDirIndicators[8] (ESI from 0x3048ae74, stride 0xc, until the hard
-//     end address 0x3048aed4 == &cg_damageDirIndicators[8]). For each slot:
+//   * Walk cg.damageDirIndicators[8] (ESI from 0x3048ae74, stride 0xc, until the hard
+//     end address 0x3048aed4 == &cg.damageDirIndicators[8]). For each slot:
 //       elapsed = cg.time - slot->serverTime;
 //       skip if elapsed <= 0 or elapsed >= slot->duration;   (signed JLE / JGE)
-//       yaw       = vectoyaw(cg_refdef.viewaxis[0]) - slot->yaw;   (view-relative angle)
+//       yaw       = vectoyaw(cg.refdef.viewaxis[0]) - slot->yaw;   (view-relative angle)
 //       alpha     = 2.0f - 2.0f*elapsed/slot->duration;  clamped to a max of 1.0f
 //                   (FCOMP 1.0; the arrow holds full alpha for the first half of its
 //                    lifetime, then fades to 0 over the second half);
@@ -72,7 +72,7 @@ void CG_DrawDamageDirectionIndicators(void)
 {
     /* 0x3001a983: take the snapshot pointer before initializing the color
      * scratch.  The original tests this retained value after all four stores. */
-    snapshot_t *snap = cg_snap;
+    snapshot_t *snap = cg.snap;
 
     /* Pre-seed white draw color (0x3001a98a..0x3001a9a2: [+0..+2]=1.0f, [+3]=0.0f).
      * Only the drawing path below consumes it; alpha is filled per arrow. */
@@ -134,12 +134,12 @@ void CG_DrawDamageDirectionIndicators(void)
 
     /* Walk the arrow ring; draw each live slot. */
     for (int i = 0; i < CG_DAMAGE_DIRECTION_SLOT_COUNT; ++i) {
-        cg_damageDirIndicator_t *ind = &cg_damageDirIndicators[i];
+        cg_damageDirIndicator_t *ind = &cg.damageDirIndicators[i];
 
         /* 0x3001aa60..0x3001aa72: the current time, start time, and duration are
          * all snapshotted before either local is consumed. SUB is target i386
          * two's-complement wrapping arithmetic. */
-        int32_t now = cg_time;
+        int32_t now = cg.time;
         int32_t serverTime = ind->serverTime;
         int32_t duration = ind->duration;
         int32_t elapsed = coduo_int32_from_bits(
@@ -153,7 +153,7 @@ void CG_DrawDamageDirectionIndicators(void)
 
         /* Rotate the icon by the attacker direction relative to the current view. */
         float yaw = (float)(
-            (long double)vectoyaw(cg_refdef.viewaxis[0])
+            (long double)vectoyaw(cg.refdef.viewaxis[0])
             - (long double)ind->yaw);
 
         /* alpha = 2 - 2*elapsed/duration, held at a max of 1.0 (full for the first

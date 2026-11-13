@@ -17,7 +17,7 @@
 // Machine-code derivation (frame base F = ESP right after `SUB ESP,0x3c`, before
 // the PUSH ESI / PUSH EAX prologue pushes):
 //
-//   0x300164b3  MOV EAX,[cg_refdefViewAngles[1]]            ; float angle, by-value copy
+//   0x300164b3  MOV EAX,[cg.refdefViewAngles[1]]            ; float angle, by-value copy
 //   0x300164b8  PUSH ESI                                ; save ESI (callee-saved)
 //   0x300164b9  PUSH EAX                                ; stack arg = spin angle
 //   0x300164ba  LEA ESI,[ESP+8]  = &right (locals[F])    ; ESI output
@@ -31,7 +31,7 @@
 //   axis[1] = -right               = (-sin,  cos, 0)   (F+0x24..) via FLD 0.0/FSUB
 //   axis[2] = ( 0, 0, 1 )                              (F+0x30..) two zeroed dwords
 //                                                       + 1.0f (0x3f800000)
-//   origin[i] = right[i]*256.0 + cg_refdef.vieworg[i]    (F+0xc..) FMUL 256/FADD org
+//   origin[i] = right[i]*256.0 + cg.refdef.vieworg[i]    (F+0xc..) FMUL 256/FADD org
 // This axis is exactly a rotation about +Z by the spin angle.
 //
 // Syscall (0x30016559  CALL [cgame_syscall @ 0x30085e9c]) args, pushed low->high:
@@ -58,14 +58,14 @@ void CG_PlaySpinningViewEffect(int effectId)
      * 0x300164b3..0x300164c2: build the two 2D basis vectors from the animated
      * spin angle. forward=(cos,sin,0), right=(sin,-cos,0).
      */
-    YawVectors(cg_refdefViewAngles[1], axis[0], right);
+    YawVectors(cg.refdefViewAngles[1], axis[0], right);
 
     /*
      * 0x300164c7..0x30016555: assemble the Z-rotation orientation.
      *   axis[0] = right
      *   axis[1] = -right         (FLD 0.0 ; FSUB right[i])
      *   axis[2] = (0, 0, 1)
-     * and the origin = right*256 + cg_refdef.vieworg.
+     * and the origin = right*256 + cg.refdef.vieworg.
      */
     axis[1][0] = (float)((long double)0.0f - (long double)right[0]);
     long double axisLeftY = (long double)0.0f - (long double)right[1];
@@ -79,11 +79,11 @@ void CG_PlaySpinningViewEffect(int effectId)
     axis[1][2] = (float)axisLeftZ;
 
     origin[0] = (float)((long double)axis[0][0] * (long double)256.0f +
-                        (long double)cg_refdef.vieworg[0]);
+                        (long double)cg.refdef.vieworg[0]);
     origin[1] = (float)((long double)axis[0][1] * (long double)256.0f +
-                        (long double)cg_refdef.vieworg[1]);
+                        (long double)cg.refdef.vieworg[1]);
     origin[2] = (float)((long double)axis[0][2] * (long double)256.0f +
-                        (long double)cg_refdef.vieworg[2]);
+                        (long double)cg.refdef.vieworg[2]);
 
     /*
      * 0x30016559: fire the effect. cg_effectDefs[effectId] is the engine handle

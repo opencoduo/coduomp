@@ -27,11 +27,11 @@ int32_t CG_FeederCount(float feederID) /* 0x3002d480 */
         feederID == CG_FEEDER_ALLIES_PLAYERS) {
         team_t team = feederID == CG_FEEDER_AXIS_PLAYERS
             ? TEAM_AXIS : TEAM_ALLIES;
-        for (int32_t i = 0; i < cg_scoreboardNumClients; ++i)
-            if (cg_scoreboardEntries[i].team == team) ++count;
+        for (int32_t i = 0; i < cg.numScores; ++i)
+            if (cg.scores[i].team == team) ++count;
         return count;
     }
-    return feederID == CG_FEEDER_ALL_PLAYERS ? cg_scoreboardNumClients : 0;
+    return feederID == CG_FEEDER_ALL_PLAYERS ? cg.numScores : 0;
 }
 
 qboolean CG_OwnerDrawVisible(int32_t flags) /* 0x300318d0 */
@@ -59,7 +59,7 @@ qboolean CG_OwnerDrawVisible(int32_t flags) /* 0x300318d0 */
      * a branch whose corresponding visibility bit is set. Keep the two field
      * reads branch-local; an unconditional cached read changes the no-health-
      * flag path and also erases the second load when both bits are present. */
-    const snapshot_t *snap = cg_snap;
+    const snapshot_t *snap = cg.snap;
     if (((uint32_t)flags & OWNER_VISIBLE_HEALTH_BELOW_25) != 0) {
         if (snap->ps.stats[STAT_HEALTH] < OWNER_VISIBLE_HEALTH_THRESHOLD)
             return qtrue;
@@ -92,7 +92,7 @@ int32_t CG_ClientNumFromName(const char *name) /* 0x300327f0 */
 void CG_GetTeamColor(vec4_t color) /* 0x30032890 */
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    const int32_t clientNum = cg_snap->ps.psClientNum;
+    const int32_t clientNum = cg.snap->ps.psClientNum;
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
                   "\x15" "CG_GetTeamColor: invalid client number %i",
@@ -157,12 +157,12 @@ void CG_HudColorForValue(int32_t value, vec4_t color)
 }
 
 /* 0x3001d2f0..0x3001d376 is the display-context callback form of the same
- * source expression.  Its MOV chain proves the value is cg_snap+0x128. */
+ * source expression.  Its MOV chain proves the value is cg.snap+0x128. */
 // Source RVA: 0x3001d2f0
 void CG_GetHudEmitColor(vec4_t color)
 {
     /* This is a second inline copy in the DLL, not a call to 0x3001d270. */
-    int32_t value = cg_snap->ps.stats[STAT_HEALTH];
+    int32_t value = cg.snap->ps.stats[STAT_HEALTH];
 
     if (value <= 0) {
         color[2] = 0.0f;

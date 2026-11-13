@@ -37,7 +37,7 @@
  * 360/65536 SHORT2ANGLE scale (0x3007bd5c), 0.0f (0x3007bcec), pi 3.14159274f
  * (0x3007bd88), 180.0f (0x3007bd50), and the double 43.75 (0x3007c1e8).
  * cgs_screenXScale/cgs_screenYScale (0x30447aa4/0x30447aa8) scale virtual-640x480 draw
- * coordinates to the real framebuffer. cg_refdef.vieworg (0x30487a90) is the view origin.
+ * coordinates to the real framebuffer. cg.refdef.vieworg (0x30487a90) is the view origin.
  */
 
 /* ANGLE2SHORT / SHORT2ANGLE scale factors (Quake3/CoD): a full turn maps to 65536
@@ -86,10 +86,10 @@ void CG_DrawObjectivePointers(const rectDef_t *rect, const vec3_t color)
     const float centerY = (float)(centerYAnchor - centerYSlide);
 
     /* 0x3002fe8b..0x3002feab: gate on the local player's animation state being valid
-     * (bgs.clientinfo[cg_snap->ps.psClientNum].infoValid != 0). ECX = cg_snap is
+     * (bgs.clientinfo[cg.snap->ps.psClientNum].infoValid != 0). ECX = cg.snap is
      * reloaded each iteration; the objectives array lives in the snapshot. */
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    const int32_t clientNum = cg_snap->ps.psClientNum;
+    const int32_t clientNum = cg.snap->ps.psClientNum;
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
                   "\x15" "CG_DrawObjectivePointers: invalid client number %i",
@@ -104,7 +104,7 @@ void CG_DrawObjectivePointers(const rectDef_t *rect, const vec3_t color)
      * of the icon quad). */
 
     for (int i = 0; i < PLAYERSTATE_OBJECTIVE_COUNT; ++i) {
-        objective_t *obj = &cg_snap->ps.objectives[i];
+        objective_t *obj = &cg.snap->ps.objectives[i];
 
         /* 0x3002fef0..0x3002ff01: only "current" objectives are drawn. */
         if (obj->state != OBJECTIVE_STATE_CURRENT)
@@ -130,15 +130,15 @@ void CG_DrawObjectivePointers(const rectDef_t *rect, const vec3_t color)
         }
 
         /* 0x3002ff51..0x3002ffc3: the reference point the bearing/distance are measured
-         * from. Normally the view origin (cg_refdef.vieworg); when the local player is
+         * from. Normally the view origin (cg.refdef.vieworg); when the local player is
          * following another entity in first person (psEFlags bit 0x100000) and that
          * followed entity is valid, measure relative to the followed entity's position
          * from the same entity pool instead. */
         vec3_t dir;
-        if ((cg_snap->ps.entityStateFlags & EF_IN_VEHICLE) &&
-            cg_snap->ps.viewLockedEntityNum != ENTITYNUM_NONE) {
+        if ((cg.snap->ps.entityStateFlags & EF_IN_VEHICLE) &&
+            cg.snap->ps.viewLockedEntityNum != ENTITYNUM_NONE) {
             const int32_t followedEntityNum =
-                cg_snap->ps.viewLockedEntityNum;
+                cg.snap->ps.viewLockedEntityNum;
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
             if ((uint32_t)followedEntityNum >=
                 (uint32_t)MAX_GENTITIES) {
@@ -154,16 +154,16 @@ void CG_DrawObjectivePointers(const rectDef_t *rect, const vec3_t color)
             dir[1] = objPos[1] - followed->lerpOrigin[1];
             dir[2] = objPos[2] - followed->lerpOrigin[2];
         } else {
-            dir[0] = objPos[0] - cg_refdef.vieworg[0]; /* 0x30487a90 */
-            dir[1] = objPos[1] - cg_refdef.vieworg[1]; /* 0x30487a94 */
-            dir[2] = objPos[2] - cg_refdef.vieworg[2]; /* 0x30487a98 */
+            dir[0] = objPos[0] - cg.refdef.vieworg[0]; /* 0x30487a90 */
+            dir[1] = objPos[1] - cg.refdef.vieworg[1]; /* 0x30487a94 */
+            dir[2] = objPos[2] - cg.refdef.vieworg[2]; /* 0x30487a98 */
         }
 
         /* 0x3002ffcb..0x3002fffc: screen-relative bearing. Take the world yaw of the
          * horizontal direction, subtract the compass reference yaw, fold through
          * ANGLE2SHORT (round + mask to 16 bits) then SHORT2ANGLE to normalize into
          * [0,360). vectoyaw reads dir[0],dir[1]. */
-        /* 0x3002ffcb CALL vectoyaw; 0x3002ffd0 FSUB cg_compassRefYaw; 0x3002ffd6
+        /* 0x3002ffcb CALL vectoyaw; 0x3002ffd0 FSUB cg.compassRefYaw; 0x3002ffd6
          * FMUL ANGLE2SHORT_SCALE; 0x3002ffdc CALL _ftol2 -- the whole product is one
          * 80-bit chain fed RAW to _ftol2, with NO intermediate store. Kept as a single
          * expression so no float rounding is inserted before the truncation (a `float
@@ -171,7 +171,7 @@ void CG_DrawObjectivePointers(const rectDef_t *rect, const vec3_t color)
         uint32_t shortAngle =
             (uint32_t)coduo_fp_to_i32_extended(
                 ((long double)vectoyaw(dir) -
-                 (long double)cg_compassRefYaw) *
+                 (long double)cg.compassRefYaw) *
                 (long double)OBJPTR_ANGLE2SHORT_SCALE)
             & OBJPTR_ANGLE2SHORT_MASK;
         float bearingDeg = (float)(int32_t)shortAngle * OBJPTR_SHORT2ANGLE_SCALE;

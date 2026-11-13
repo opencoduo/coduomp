@@ -11,8 +11,8 @@
 // by" obituary line, horizontally centered on the string's measured pixel width.
 //
 // Behavior:
-//   - Early-out if cg_fraggedByName[0] == 0 (no target name set): draw nothing.
-//   - Format the line twice with va("Fragged by %s", cg_fraggedByName). Because va()
+//   - Early-out if cg.killerName[0] == 0 (no target name set): draw nothing.
+//   - Format the line twice with va("Fragged by %s", cg.killerName). Because va()
 //     rotates a small ring of buffers, the two calls return two distinct pointers:
 //     the first (str1) is drawn; the second (str2) is fed to the width-measuring
 //     trap as its key. The machine code re-checks the name-set byte before the
@@ -49,7 +49,7 @@
 //
 // Instruction map (frame base F = ESP after `SUB ESP,0x14`; incoming stack args at
 // F+0x18=arg0, F+0x1c=arg1, F+0x20=arg2; locals in F+0x0..F+0x10):
-//   30031a90 MOV  AL,[cg_fraggedByName]      gate byte = name[0]
+//   30031a90 MOV  AL,[cg.killerName]      gate byte = name[0]
 //   30031a98 TEST AL,AL / JZ 0x30031b59      if empty, skip whole body
 //   30031aa0 FLD  [ESI+0x8]                  st0 = obj->w
 //   30031aa4 FMUL [0x3007bce8]               st0 = obj->w * 0.5f
@@ -91,8 +91,8 @@
 void CG_DrawObituaryLine(rectDef_t *obj, intptr_t regWord,
                          intptr_t arg0, intptr_t arg1, intptr_t arg2)
 {
-    /* 0x30031a90 MOV AL,[cg_fraggedByName]; TEST AL,AL; JZ epilogue */
-    if (cg_fraggedByName[0] == 0)
+    /* 0x30031a90 MOV AL,[cg.killerName]; TEST AL,AL; JZ epilogue */
+    if (cg.killerName[0] == 0)
         return;
 
     /*
@@ -103,13 +103,13 @@ void CG_DrawObituaryLine(rectDef_t *obj, intptr_t regWord,
 
     /* Two va() calls: str1 is drawn, str2 keys the width measurement. va() rotates
      * buffers, so the two pointers differ. */
-    const char *str1 = va("Fragged by %s", cg_fraggedByName);
+    const char *str1 = va("Fragged by %s", cg.killerName);
     const char *str2 = "";
     /* 0x30031abf..0x30031ae2 re-reads the global byte after the first va().
      * It is normally still nonzero, but the retail load and empty-string
      * fallback are part of the observable operation graph. */
-    if (cg_fraggedByName[0] != '\0') {
-        str2 = va("Fragged by %s", cg_fraggedByName);
+    if (cg.killerName[0] != '\0') {
+        str2 = va("Fragged by %s", cg.killerName);
     }
 
     /* CG_R_TEXT_WIDTH measures the string's pixel width (int32 return). */

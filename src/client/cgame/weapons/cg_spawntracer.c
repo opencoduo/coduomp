@@ -71,11 +71,11 @@ void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
     /* 30048d98..30048dc1: suppress the tracer (whiz-by test only) when this shot is the
      * local player's own and the local first-person view is active.
      * 30048d9a IMUL ECX,ESI,0x288 ; 30048da0 CMP [cg_entities[entityNum].eType],12 ; JZ ->
-     *   (skip flags test) ; 30048dae TEST [cg_snap->ps.playerStateFlags],0xc0000 ; JZ ->
-     *   do tracer ; 30048db7 CMP entityNum, cg_snap->ps.psClientNum ; JZ -> whiz-by test only. */
+     *   (skip flags test) ; 30048dae TEST [cg.snap->ps.playerStateFlags],0xc0000 ; JZ ->
+     *   do tracer ; 30048db7 CMP entityNum, cg.snap->ps.psClientNum ; JZ -> whiz-by test only. */
     if (cgame_compat_unchecked_cgentity(entityNum)->currentState.eType == ET_VEHICLE ||
-        (cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0u) {
-        if (entityNum == cg_snap->ps.psClientNum) {
+        (cg.snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0u) {
+        if (entityNum == cg.snap->ps.psClientNum) {
             /* 30048e4e: evaluate only the whiz-by sound and return. */
             CG_WhizbySound(impactOrigin, muzzle);
             return;

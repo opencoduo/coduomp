@@ -4,14 +4,14 @@
 // CG_FlameDamage (0x300265c0) — client flame-damage proximity + line-of-sight
 // test for one flame source against the LOCAL player. Given a flame source world position
 // `flamePos`, its owner client number, a base radius, and the owning flame chunk, decide
-// whether the local player (described by the current snapshot cg_snap) is close enough to,
+// whether the local player (described by the current snapshot cg.snap) is close enough to,
 // and in line of sight of, the flame; if so, latch the once-per-frame flame-damage flag and
 // send a throttled flame-damage command to the server for the local player's client number.
 //
 // NAMING: the .mcode pre-hint `# name Item_ListBox_OverLB` is REJECTED. It is a pure
 // size-match ("win size 0x317, matched size 0x318") and is contradicted by the body: there
 // is no listbox/itemDef_t/rectDef_t access, no cursor rect hit-test, and no ui_shared code
-// at all. This function does 3D world math over cg_snap (predicted player origin at +0x20,
+// at all. This function does 3D world math over cg.snap (predicted player origin at +0x20,
 // player bounds psFlameTraceA/B at +0x568/+0x574, clientNum at +0xe0), calls VectorDistance
 // (0x300495b0), the CRT sqrt helper sqrt_f (0x3006bee0), the projection trace
 // CG_Trace (0x30035310) and the flame-damage command sender CG_SendFlameDamageCommand
@@ -23,7 +23,7 @@
 // ABI (proven from the sole call site 0x3002698c):
 //   EDI (register)   = flamePos      -> LEA EDI,[caller+0xd8] : pointer to a vec3 world pos
 //   [ESP+0x64] arg0  = ownerClientNum-> caller pushes [caller+0x38]; kept in EBP; compared to
-//                      cg_snap->ps.psClientNum and forwarded to CG_SendFlameDamageCommand as painId
+//                      cg.snap->ps.psClientNum and forwarded to CG_SendFlameDamageCommand as painId
 //   [ESP+0x68] arg1  = radiusBase    -> caller pushes [caller+0xe4] (a float, FLD [ESP+0x68])
 //   [ESP+0x6c] arg2  = chunk         -> caller pushes its own EBP (a flameChunk_t *); only
 //                      chunk->lifeFraction (+0xe8, a float) is read here (FLD [EAX+0xe8])
@@ -73,7 +73,7 @@ void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum,
         return;
     }
 
-    snap = cg_snap;                                   /* 0x30026613 MOV ESI,[0x30459160] */
+    snap = cg.snap;                                   /* 0x30026613 MOV ESI,[0x30459160] */
 
     /* 0x3002660e..0x30026654: damage radius = radiusBase * 0.4, halved when the flame
      * owner IS the local player (self-flame), then floored at 14.0f. The JNZ at 0x3002662b
@@ -212,8 +212,8 @@ void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum,
 
             /* 0x30026899..0x300268b7: accept when the projection reached the flame
              * (out.fraction == 1.0f, compared as raw bits 0x3f800000) OR when it struck
-             * the local player's own entity (out.entityNum == cg_snap->ps.psClientNum). */
-            snap = cg_snap;                              /* 0x300268a5 reload MOV EAX,[0x30459160] */
+             * the local player's own entity (out.entityNum == cg.snap->ps.psClientNum). */
+            snap = cg.snap;                              /* 0x300268a5 reload MOV EAX,[0x30459160] */
             if (CG_FloatBits(out.fraction) != 0x3f800000) { /* 0x300268a0 raw dword CMP; JZ */
                 /* With the wrapper's four live arguments removed, [ESP+0x60] is
                  * out+0x28: the standard trace_t.entityNum word. */

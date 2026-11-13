@@ -13,7 +13,7 @@
 //   CG_PLAY_EFFECT_ORIENTED (0xe8), and the input-command pair
 //   CG_GET_CURRENT_CMD_NUMBER (0x53) / CG_GET_USER_CMD (0x54).
 // It interpolates the vehicle's turret / barrel / secondary-gun / wheel angles
-// between the previous and new snapshot states by cg_frameInterpolation, writes
+// between the previous and new snapshot states by cg.frameInterpolation, writes
 // them as DObj local tags, and — for each wheel bone — traces the ground and plays
 // the matching tread/wheel dust effect keyed by the traced surface material.
 //
@@ -91,7 +91,7 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
         CG_DOBJ_GET_HANDLE, veh->currentState.number);
 
     /* --- Interpolate the vehicle-part angles (LerpAngle calls) ------------- *
-     * cg_frameInterpolation (0x304831a8) is the [0,1) snapshot lerp weight.
+     * cg.frameInterpolation (0x304831a8) is the [0,1) snapshot lerp weight.
      * The packed-int fields are rounded to float and then unpacked; the float
      * fields are passed straight through. Result-slot mapping is proven from the
      * FSTP targets across 0x30020574..0x3002069a. */
@@ -99,7 +99,7 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
         /* Each FILD is rounded through a DWORD stack slot before the
          * FSUB/FMUL/FDIV chain (0x30020574..0x30020653). */
         float nextPitchPacked = (float)veh->nextState.vehicleBodyPitchPacked;
-        float initialLerpFraction = cg_frameInterpolation;
+        float initialLerpFraction = cg.frameInterpolation;
         float currentPitchPacked = (float)veh->currentState.vehicleBodyPitchPacked;
         float nextPitch = (float)(
             (((long double)nextPitchPacked - (long double)VEH_ANGLE_BIAS) *
@@ -148,7 +148,7 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
                                     (long double)VEH_MILLI_SCALE);
         interpolatedTimeSeconds = (float)(
             ((long double)nextTime - (long double)currentTime) *
-                (long double)cg_frameInterpolation +
+                (long double)cg.frameInterpolation +
             (long double)currentTime);
     }
 
@@ -187,20 +187,20 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
     }
 
     /* --- First-person follow blend (0x300207c0..0x30020a46) --------------- *
-     * Gate: (cg_snap->psEFlags & EF_IN_VEHICLE) &&
-     *       cg_snap->ps.vehiclePosition == 2 && cg_snap->ps.viewLockedEntityNum == entityNum.
+     * Gate: (cg.snap->psEFlags & EF_IN_VEHICLE) &&
+     *       cg.snap->ps.vehiclePosition == 2 && cg.snap->ps.viewLockedEntityNum == entityNum.
      * When following THIS vehicle in first person, the body/secondary angles are
      * recomputed from veh->viewAngles + the locally predicted view instead of the
      * raw snapshot; otherwise the two remaining body angles are plain LerpAngles. */
-    if ((cg_snap->ps.entityStateFlags & EF_IN_VEHICLE) != 0 &&
-        cg_snap->ps.vehiclePosition == VEHICLE_FOLLOW_MODE_GUNNER &&
-        cg_snap->ps.viewLockedEntityNum == veh->currentState.number) {
+    if ((cg.snap->ps.entityStateFlags & EF_IN_VEHICLE) != 0 &&
+        cg.snap->ps.vehiclePosition == VEHICLE_FOLLOW_MODE_GUNNER &&
+        cg.snap->ps.viewLockedEntityNum == veh->currentState.number) {
         playerState_t localPs;
         vec3_t vehicleViewAngles;
         memcpy(vehicleViewAngles, veh->lerpAngles, sizeof(vehicleViewAngles));
         vehicleViewAngles[0] = (float)(
             (long double)vehicleViewAngles[0] + (long double)bodyAngles[0]);
-        memcpy(&localPs, &cg_predictedPlayerState, sizeof(localPs)); /* REP MOVSD, 0x1141 dwords */
+        memcpy(&localPs, &cg.predictedPlayerState, sizeof(localPs)); /* REP MOVSD, 0x1141 dwords */
         vehicleViewAngles[1] = (float)((long double)vehicleViewAngles[1] + 0.0L);
         vehicleViewAngles[2] = (float)(
             (long double)vehicleViewAngles[2] + (long double)bodyAngles[2]);
@@ -211,8 +211,8 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
 
         /* Live input is folded into the local player-state copy only outside demo
          * playback and when the snapshot's 0x40000 follow bit is clear. */
-        if ((cg_snap->ps.playerStateFlags & PSF_FOLLOWING) == 0 &&
-            cg_demoPlayback == qfalse) {
+        if ((cg.snap->ps.playerStateFlags & PSF_FOLLOWING) == 0 &&
+            cg.demoPlayback == qfalse) {
             usercmd_t cmd;
             int32_t cmdNumber = coduo_int32_from_bits(
                 (uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER));
@@ -273,7 +273,7 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
     } else {
         /* Non-follow path (0x30020a48): the two remaining body angles are plain
          * LerpAngles of the (+0x60,+0x154) and (+0x70,+0x164) float pairs. */
-        float nonFollowFraction = cg_frameInterpolation;
+        float nonFollowFraction = cg.frameInterpolation;
         wheelAngles[1] = LerpAngle(veh->currentState.vehicleSecondaryBaseYaw,
                                    veh->nextState.vehicleSecondaryBaseYaw,
                                    nonFollowFraction);       /* [EBP+0x3c] */
@@ -340,10 +340,10 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
         auxAngles[0] = VEH_STEERING_WHEEL_PITCH;
         auxAngles[1] = 0.0f;
 
-        if ((cg_snap->ps.entityStateFlags & EF_IN_VEHICLE) != 0 &&
-            cg_snap->ps.vehiclePosition == VEHICLE_FOLLOW_MODE_DRIVER &&
-            cg_snap->ps.viewLockedEntityNum == veh->currentState.number &&
-            cg_snap->ps.adsFraction == 0.0f) {
+        if ((cg.snap->ps.entityStateFlags & EF_IN_VEHICLE) != 0 &&
+            cg.snap->ps.vehiclePosition == VEHICLE_FOLLOW_MODE_DRIVER &&
+            cg.snap->ps.viewLockedEntityNum == veh->currentState.number &&
+            cg.snap->ps.adsFraction == 0.0f) {
             spinScale = 4.0f;
         }
         auxAngles[2] = (float)(

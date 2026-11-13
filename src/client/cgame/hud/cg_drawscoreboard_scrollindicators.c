@@ -7,9 +7,9 @@
 // scrollbar column is needed. Four elements:
 //   1. a dimmed "black" track bar (trap_R_DrawStretchPic) spanning the window,
 //   2. a dimmer "white" proportional thumb (trap_R_DrawStretchPic) whose position
-//      tracks cg_scoreboardScrollPos and whose height tracks the visible fraction,
+//      tracks cg.scoreboardScrollPos and whose height tracks the visible fraction,
 //   3. an up-arrow + up-key glyph pair (CG_DrawPic) at the top, only when scrolled
-//      down from the top (cg_scoreboardScrollPos > 0),
+//      down from the top (cg.scoreboardScrollPos > 0),
 //   4. a down-arrow + down-key glyph pair (CG_DrawPic) at the bottom, only when more
 //      rows remain below (visibleLineCount < lineCount).
 //
@@ -150,18 +150,18 @@ void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY,
     float thumbHeight = (float)(trackHeight -
                                 (long double)CG_SB_SCROLL_THUMB_MARGIN);
 
-    if (cg_scoreboardScrollPos != 0 && lineCount != 0) {
+    if (cg.scoreboardScrollPos != 0 && lineCount != 0) {
         /* 0x3003798a FILD scrollPos; 0x30037990 FIDIV dword lineCount -- both operands
          * are integers fed straight into the FP divide, kept exact in 80-bit (no float
          * store). (long double)/int keeps that structure; (float) casts would round
          * each int first. Value-identical for the reachable line counts, but faithful. */
-        thumbY = (float)(((long double)cg_scoreboardScrollPos /
+        thumbY = (float)(((long double)cg.scoreboardScrollPos /
                           (long double)lineCount) *
                          (long double)thumbHeight + (long double)thumbY);
     }
 
     int visibleRows = coduo_int32_from_bits((uint32_t)visibleLineCount -
-                                       (uint32_t)cg_scoreboardScrollPos);
+                                       (uint32_t)cg.scoreboardScrollPos);
     if (visibleRows > 1 && lineCount > 1) {
         /* 0x300379b2 FILD visibleRows; 0x300379b6 FIDIV dword lineCount -- same exact
          * integer FP-divide as above; no (float) rounding of the operands. */
@@ -203,7 +203,7 @@ void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY,
     /* ---- 3. up-arrow + up-key (only when scrolled down from the top) ----------
      * 0x30037a5d..0x30037ad5. Both glyphs are 16x16 at x=521. The up-arrow sits on
      * the header baseline (y=topY); the up-key sits 18px below it (y=topY+18). */
-    if (cg_scoreboardScrollPos > 0) {
+    if (cg.scoreboardScrollPos > 0) {
         CG_DrawInformation(0);
         qhandle_t upArrow = coduo_int32_from_bits(
             (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,

@@ -33,6 +33,6 @@
 
 void CG_EndShellShockMouse(void)
 {
-    cg_shellshockMouseSensitivityScale = 1.0f;
+    cg.shellshockMouseSensitivityScale = 1.0f;
     cgame_syscall(CG_SET_SHELLSHOCK_MOUSE_LIMITS, 0, 0);
 }

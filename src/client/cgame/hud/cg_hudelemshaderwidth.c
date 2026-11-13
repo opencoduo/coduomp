@@ -7,7 +7,7 @@
 // symbol is `qboolean PM_Weapon_FinishRechamber(void)` (items.c / pmove) and
 // was matched only by byte size (win 0x5d == server 0x5d), which the naming
 // rules forbid. This function instead returns a scalar in ST0, reads the client
-// game clock cg_time, and time-lerps a scalar property from a start value toward
+// game clock cg.time, and time-lerps a scalar property from a start value toward
 // a target value. Its callers (FUN_300299e0, FUN_3002a1d0, FUN_3002a000) pair it
 // with a sibling at 0x30029980 to produce UI item X/Y coordinates and colors, so
 // it is a UI menu-item animated-scalar helper, not weapon/pmove code.
@@ -58,10 +58,10 @@ long double CG_HudElemShaderWidth(const hudElem_t *elem,
     }
 
     /*
-     * 0x30029940..0x3002994f: elapsed = cg_time - anim->startTime (signed).
+     * 0x30029940..0x3002994f: elapsed = cg.time - anim->startTime (signed).
      * If elapsed >= duration the animation has completed: return the end value.
      */
-    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg_time -
+    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg.time -
                                       (uint32_t)elem->scaleStartTime);
     if (elapsed >= duration) {
         return endValue;

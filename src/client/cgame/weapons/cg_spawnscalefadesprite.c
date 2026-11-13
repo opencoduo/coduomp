@@ -10,7 +10,7 @@ void CG_SpawnScaleFadeSprite(const vec3_t origin, qhandle_t shader,
     le->leType = LE_SCALE_FADE;
     le->leFlags = LEF_SCALE_FADE_NO_RADIUS;
     le->endTime = coduo_int32_from_bits(
-        (uint32_t)cg_time + (uint32_t)duration);
+        (uint32_t)cg.time + (uint32_t)duration);
     /* duration enters via a bare FILD fed straight into FDIVR (0x30048055 FILD;
      * 0x30048061 FDIVR 1.0f) with no FSTP DWORD between, so drop the (float) cast
      * (Class 4). */
@@ -25,9 +25,9 @@ void CG_SpawnScaleFadeSprite(const vec3_t origin, qhandle_t shader,
     le->refEntity.shaderRGBA[1] = 255;
     le->refEntity.shaderRGBA[2] = 255;
     le->refEntity.shaderRGBA[3] = 255;
-    /* cg_time enters via a bare FILD fed straight into FMUL 0.001f (0x3004809a FILD;
+    /* cg.time enters via a bare FILD fed straight into FMUL 0.001f (0x3004809a FILD;
      * 0x300480a9 FMUL) with no FSTP DWORD between, so drop the (float) cast (Class 4). */
-    le->refEntity.shaderTime = cg_time * 0.001f;
+    le->refEntity.shaderTime = cg.time * 0.001f;
     le->refEntity.radius = (float)radius;
     le->color[3] = 1.0f;
 }

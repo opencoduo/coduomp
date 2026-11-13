@@ -30,7 +30,7 @@
 // straight into EBX at the top and used as the new-state pointer everywhere), and
 // `ops` arrives in ESI (used only to read ops->damageEvent and then handed to
 // CG_CheckPlayerstateEvents). Neither pointer is set up in the prologue, so both are
-// register-passed. CG_OutOfAmmoChange takes no arguments (it reads cg_snap globally).
+// register-passed. CG_OutOfAmmoChange takes no arguments (it reads cg.snap globally).
 // Expressed below as a normal two-parameter C function; the EAX/ESI split is an ABI
 // detail, not source-level behavior.
 

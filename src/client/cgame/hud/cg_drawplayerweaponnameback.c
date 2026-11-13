@@ -45,21 +45,21 @@
  *     calling-convention attribute is added (syntax-only build does not need one).
  *
  * Control flow (proven instruction-by-instruction against the .mcode):
- *   0x3002ed66 if (cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) {
+ *   0x3002ed66 if (cg.predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) {
  *                 // vehicle/turret HUD view: draw only while riding as driver
- *                 if (cg_predictedPlayerState.vehicleType != 1) return;      // 0x3002ed72
- *                 if (cg_predictedPlayerState.vehiclePosition != 3) return;  // 0x3002ed7f
+ *                 if (cg.predictedPlayerState.vehicleType != 1) return;      // 0x3002ed72
+ *                 if (cg.predictedPlayerState.vehiclePosition != 3) return;  // 0x3002ed7f
  *              }
- *   0x3002ed8c fade = CG_FadeColor(cg_weaponSelectTime, 1800);   // EDX=start, ECX=total
+ *   0x3002ed8c fade = CG_FadeColor(cg.weaponSelectTime, 1800);   // EDX=start, ECX=total
  *   0x3002ed9e if (fade == NULL) return;
  *   0x3002eda4..edc2 color4[0..2] = color[0..2]; color4[3] = fade[3]; // raw dword copies
  *   0x3002edbb..edf3 select weaponInfo_t:
  *              int w = cg_weaponSelect_vmCvar.integer;                          // 0x3044034c
  *              if (w >= 0 && w < bg_numWeapons &&
- *                  (cg_predictedPlayerState.weaponBits[w>>5] & (1u << (w&31))))     // SAR 5 / AND 0x1f
+ *                  (cg.predictedPlayerState.weaponBits[w>>5] & (1u << (w&31))))     // SAR 5 / AND 0x1f
  *                  wi = bg_weaponInfos[w];
  *              else
- *                  wi = cg_currentWeaponInfo;
+ *                  wi = cg.currentWeaponInfo;
  *   0x3002edfb weaponIndex = wi->weaponIndex; if (weaponIndex == 0) return;
  *   0x3002ee05..ee47 name = (wi->modeName && wi->modeName[0])
  *                          ? va("%s / %s", cwi->displayName, cwi->modeName)
@@ -90,7 +90,7 @@ enum { CG_WEAPON_NAME_FADE_MS = 1800 };
  * 0x3002ed7f). The vehicle type uses the shared parsed domain; the
  * vehiclePosition name remains unproven. */
 enum {
-    CG_VEHICLE_POSITION_DRIVER = 3   /* cg_predictedPlayerState.vehiclePosition == 3 to draw */
+    CG_VEHICLE_POSITION_DRIVER = 3   /* cg.predictedPlayerState.vehiclePosition == 3 to draw */
 };
 
 void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect,
@@ -103,23 +103,23 @@ void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect,
     int32_t w;
 
     /*
-     * 0x3002ed66 TEST cg_predictedPlayerState.entityStateFlags, EF_IN_VEHICLE:
+     * 0x3002ed66 TEST cg.predictedPlayerState.entityStateFlags, EF_IN_VEHICLE:
      * when set (vehicle/turret HUD view), draw only while riding in the driver
      * position; otherwise the flag path is skipped entirely (JZ 0x3002ed8c).
      */
-    if (cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) {
-        if (cg_predictedPlayerState.vehicleType != VEHICLE_TYPE_4_WHEEL)
+    if (cg.predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) {
+        if (cg.predictedPlayerState.vehicleType != VEHICLE_TYPE_4_WHEEL)
             return;
-        if (cg_predictedPlayerState.vehiclePosition != CG_VEHICLE_POSITION_DRIVER)
+        if (cg.predictedPlayerState.vehiclePosition != CG_VEHICLE_POSITION_DRIVER)
             return;
     }
 
     /*
-     * 0x3002ed8c CG_FadeColor(cg_weaponSelectTime, 1800): NULL once the ~1800 ms
+     * 0x3002ed8c CG_FadeColor(cg.weaponSelectTime, 1800): NULL once the ~1800 ms
      * post-switch fade has expired (or has not started) -> draw nothing.
      */
     {
-        vec_t *fade = CG_FadeColor(cg_weaponSelectTime, CG_WEAPON_NAME_FADE_MS);
+        vec_t *fade = CG_FadeColor(cg.weaponSelectTime, CG_WEAPON_NAME_FADE_MS);
         if (fade == NULL)
             return;
 
@@ -135,14 +135,14 @@ void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect,
     /*
      * 0x3002edbb..edf3: choose the weaponInfo_t record for the selected weapon.
      * bg_weaponInfos[cg_weaponSelect_vmCvar.integer] is used only when the index is in range and
-     * the weapon's held bit is set; otherwise the cached cg_currentWeaponInfo.
+     * the weapon's held bit is set; otherwise the cached cg.currentWeaponInfo.
      */
     w = cg_weaponSelect_vmCvar.integer;
     if (w >= 0 && w < bg_numWeapons &&
-        (cg_predictedPlayerState.weaponBits[(uint32_t)w >> 5] & (1u << ((uint32_t)w & 31)))) {
+        (cg.predictedPlayerState.weaponBits[(uint32_t)w >> 5] & (1u << ((uint32_t)w & 31)))) {
         wi = bg_weaponInfos[w];
     } else {
-        wi = cg_currentWeaponInfo;
+        wi = cg.currentWeaponInfo;
     }
 
     /* 0x3002edfb..edff: weaponIndex 0 means "no weapon" -> draw nothing. */

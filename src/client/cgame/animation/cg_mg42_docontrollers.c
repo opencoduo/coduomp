@@ -126,21 +126,21 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
     /* 0x3001ea0a..0x3001ea2f: aim-tag gate. Take the clamped-aim path only when this
      * predicted-player entity is in the scope/zoom-FOV state (entityStateFlags & 0x6000,
      * TEST AH,0x60), is the entity the effect pass is currently drawing
-     * (cg_predictedPlayerState.viewLockedEntityNum), and the view-state flag at 0x304831c0 is clear (its exact
+     * (cg.predictedPlayerState.viewLockedEntityNum), and the view-state flag at 0x304831c0 is clear (its exact
      * identity is disputed between consumers — see globals.h — so it stays mechanical).
      * Otherwise (else block) the aim angles come straight from a single interpolated
      * pair with no clamp. */
     float aim[2]; /* C[0], C[1] */
     qboolean aimGate =
-        (cg_predictedPlayerState.entityStateFlags & EF_ZOOM_FOV_MASK) != 0 &&
-        cg_predictedPlayerState.viewLockedEntityNum ==
+        (cg.predictedPlayerState.entityStateFlags & EF_ZOOM_FOV_MASK) != 0 &&
+        cg.predictedPlayerState.viewLockedEntityNum ==
             part->currentState.number &&
-        cg_thirdPerson == 0;
+        cg.renderingThirdPerson == 0;
 
     if (aimGate) {
-        /* 0x3001ea35..0x3001ea8e: four LerpAngle bounds, blended by cg_frameInterpolation.
+        /* 0x3001ea35..0x3001ea8e: four LerpAngle bounds, blended by cg.frameInterpolation.
          * Upper bounds B[] and lower bounds A[] for the two aim-cone components. */
-        float frac = cg_frameInterpolation;
+        float frac = cg.frameInterpolation;
         float maxAngle[2];
         float minAngle[2];
         maxAngle[0] = LerpAngle(part->currentState.leanf,      nextState->leanf,      frac); /* B[0] */
@@ -152,7 +152,7 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
          * angular difference between the animated spin angle and the model's aim basis,
          * then clamp it into [minAngle, maxAngle]. spinAngles[] is the contiguous
          * {pitch, yaw} spin-angle pair at 0x30487ac8 (indexed by the ECX byte offset). */
-        const float spinAngles[2] = { cg_refdefViewAngles[0], cg_refdefViewAngles[1] };
+        const float spinAngles[2] = { cg.refdefViewAngles[0], cg.refdefViewAngles[1] };
         for (int k = 0; k < 2; ++k) {
             float d = AngleSubtract(spinAngles[k], part->lerpAngles[k]);
             aim[k] = clamp_angle(d, minAngle[k], maxAngle[k]);
@@ -160,7 +160,7 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
     } else {
         /* 0x3001eae9..0x3001eb19: the non-aim path — the two aim angles are just the
          * interpolated current pair (no bounds, no clamp). */
-        float frac = cg_frameInterpolation;
+        float frac = cg.frameInterpolation;
         aim[0] = LerpAngle(part->currentState.angles2[0], nextState->angles2[0], frac);
         aim[1] = LerpAngle(part->currentState.angles2[1], nextState->angles2[1], frac);
     }
@@ -198,7 +198,7 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
      * the vector is {flashAngle, 0, 0}. Same bone-resolve / control-bind / set flow. */
     {
         float flashAngle = LerpAngle(part->currentState.angles2[2], nextState->angles2[2],
-                                     cg_frameInterpolation);
+                                     cg.frameInterpolation);
         vec3_t flashAngles = { flashAngle, 0.0f, 0.0f };
         int32_t boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
             CG_DOBJ_GET_BONE_INDEX, self,
@@ -219,10 +219,10 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
      * firing turret whose overheat state is clear, in which case mode 2. The aim gate
      * here re-tests the same first-person / current-effect-entity condition as above. */
     qboolean aimGate2 =
-        (cg_predictedPlayerState.entityStateFlags & EF_ZOOM_FOV_MASK) != 0 &&
-        cg_predictedPlayerState.viewLockedEntityNum ==
+        (cg.predictedPlayerState.entityStateFlags & EF_ZOOM_FOV_MASK) != 0 &&
+        cg.predictedPlayerState.viewLockedEntityNum ==
             part->currentState.number &&
-        cg_thirdPerson == 0;
+        cg.renderingThirdPerson == 0;
 
     int32_t overlayMode;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */

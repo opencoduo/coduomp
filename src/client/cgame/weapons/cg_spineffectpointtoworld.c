@@ -37,13 +37,13 @@
  *   30045111  CALL 0x3004a200              AngleVectors(angles, forward, right, up)
  *
  * The angles source is the three CONTIGUOUS floats at 0x30487ac8/0xacc/0xad0
- * (cg_refdefViewAngles[0], cg_refdefViewAngles[1]/yaw, and the roll partner at
+ * (cg.refdefViewAngles[0], cg.refdefViewAngles[1]/yaw, and the roll partner at
  * 0x30487ad0). AngleVectors requires a vec3_t base; the base of that triple is the
- * already-named scalar cg_refdefViewAngles[0] (0x30487ac8), so its address is
+ * already-named scalar cg.refdefViewAngles[0] (0x30487ac8), so its address is
  * taken as the vec3 origin rather than minting a second alias symbol for the same
  * address.
  *
- * The result vec is first seeded with cg_refdef.vieworg (the current view origin,
+ * The result vec is first seeded with cg.refdef.vieworg (the current view origin,
  * 0x30487a90/0x94/0x98) via three integer dword copies (MOV [EBP],EAX from
  * [0x30487a90] etc.), then the FP block accumulates the transformed point onto it:
  *
@@ -73,20 +73,20 @@ void CG_SpinEffectPointToWorld(vec3_t point /* one 32-bit stack arg: vec3_t * */
     const long double negPy = -(long double)py;
 
     /* AngleVectors reads the contiguous spin-angle vec3 at 0x30487ac8..0x30487ad0;
-     * cg_refdefViewAngles[0] is component [0] (the vec3 base). */
-    AngleVectors(cg_refdefViewAngles, forward, right, up);
+     * cg.refdefViewAngles[0] is component [0] (the vec3 base). */
+    AngleVectors(cg.refdefViewAngles, forward, right, up);
 
     /* Seed with the view origin (copied as three dwords), then add the transform. */
     point[0] = (float)((((negPy * (long double)right[0]) +
                          (long double)pz * (long double)up[0]) +
                         (long double)px * (long double)forward[0]) +
-                       (long double)cg_refdef.vieworg[0]);
+                       (long double)cg.refdef.vieworg[0]);
     point[1] = (float)((((negPy * (long double)right[1]) +
                          (long double)pz * (long double)up[1]) +
                         (long double)px * (long double)forward[1]) +
-                       (long double)cg_refdef.vieworg[1]);
+                       (long double)cg.refdef.vieworg[1]);
     point[2] = (float)((((negPy * (long double)right[2]) +
                          (long double)pz * (long double)up[2]) +
                         (long double)px * (long double)forward[2]) +
-                       (long double)cg_refdef.vieworg[2]);
+                       (long double)cg.refdef.vieworg[2]);
 }

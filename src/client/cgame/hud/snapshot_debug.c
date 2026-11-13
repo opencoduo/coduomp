@@ -18,16 +18,16 @@
 //                                     the Q_DrawStrlen result at [ESP+0xc]).
 //   30018021 MOV EAX,[0x30447ab0]     cgs.serverCommandSequence  ("cmd:%i")
 //   30018026 MOV ECX,[0x30459158]     cg.latestSnapshotNum       ("snap:%i")
-//   3001802c MOV EDX,[0x30459160]     cg_snap (current snapshot ptr)
+//   3001802c MOV EDX,[0x30459160]     cg.snap (current snapshot ptr)
 //   30018032 PUSH EAX                 va vararg 3 = cgs.serverCommandSequence
-//   30018033 MOV EAX,[EDX+0x8]        cg_snap->serverTime        ("time:%i")
+//   30018033 MOV EAX,[EDX+0x8]        cg.snap->serverTime        ("time:%i")
 //   30018036 PUSH ECX                 va vararg 2 = cg.latestSnapshotNum
-//   30018037 PUSH EAX                 va vararg 1 = cg_snap->serverTime
+//   30018037 PUSH EAX                 va vararg 1 = cg.snap->serverTime
 //   30018038 PUSH 0x30076d70          format "time:%i snap:%i cmd:%i"
 //   3001803d CALL 0x3004e8a0          s = va(fmt, serverTime, latestSnapshotNum,
 //                                              serverCommandSequence); EAX = s.
 //   Argument order: va args are consumed in va_list order (first %i = the arg at
-//   the lowest pushed address = cg_snap->serverTime), so the three %i map to
+//   the lowest pushed address = cg.snap->serverTime), so the three %i map to
 //   time / snap / cmd exactly as printed.
 //
 //   30018042 FLD  float [ESP+0x18]    st0 = y   (entry [ESP+4], the float param)
@@ -76,8 +76,8 @@ float CG_DrawSnapshot(float y)
     int w;
 
     int32_t commandSequence = cgs_serverCommandSequence;
-    int32_t snapshotNumber = cg_latestSnapshotNum;
-    snapshot_t *snapshot = cg_snap;
+    int32_t snapshotNumber = cg.latestSnapshotNum;
+    snapshot_t *snapshot = cg.snap;
     int32_t serverTime = snapshot->serverTime;
     s = va("time:%i snap:%i cmd:%i",
            serverTime, snapshotNumber, commandSequence);

@@ -44,8 +44,8 @@ _Static_assert(offsetof(centity_t, miscTime) == 0x1fc,
                "centity miscTime at +0x1fc (MOV [EDI+0x1fc],ECX)");
 
 // The predicted player state is the typed object based at the fixed cgame address
-// 0x304831c4 (declared in globals.h as cg_predictedPlayerState). The machine code forms
-// &cg_predictedPlayerState twice as two
+// 0x304831c4 (declared in globals.h as cg.predictedPlayerState). The machine code forms
+// &cg.predictedPlayerState twice as two
 // differently-typed views:
 //   ESI = 0x304831c4 -> BG_PlayerTouchesItem reference base (reads origin +0x14),
 //   EAX = 0x304831c4 -> playerState_t for BG_CanItemBeGrabbed (psClientNum +0xd4,
@@ -53,7 +53,7 @@ _Static_assert(offsetof(centity_t, miscTime) == 0x1fc,
 // Each callee still carries a provisional parameter view type, so the shared base
 // is cast to the matching view at the call boundary (one symbol, one storage; not
 // an alias). Its event rings are consumed through the individually-declared field
-// globals cg_predictedPlayerState.eventIndex/Events/EventParms.
+// globals cg.predictedPlayerState.eventIndex/Events/EventParms.
 
 void CG_TouchItem(centity_t *cent)
 {
@@ -63,24 +63,24 @@ void CG_TouchItem(centity_t *cent)
     }
 
     // 3003568d..300356a2: BG_PlayerTouchesItem tests whether the predicted player
-    // origin is inside this item's pickup box at cg.time. atTime = cg_time
+    // origin is inside this item's pickup box at cg.time. atTime = cg.time
     // arrives in EAX; the entity in ECX; the reference base (&cg.predictedPlayerState)
     // in ESI. Bail if the player is not touching the item.
     if (!CG_TrajectoryPointInBounds(
-            cent, &cg_predictedPlayerState,
-            cg_time)) {
+            cent, &cg.predictedPlayerState,
+            cg.time)) {
         return;
     }
 
     // 300356a4..300356b0: don't touch the same item twice in one frame.
-    if (cent->miscTime == cg_time) {
+    if (cent->miscTime == cg.time) {
         return;
     }
 
     // 300356b2..300356c5: BG_CanItemBeGrabbed(item, ps, canTake=1); bail if the
     // player cannot currently hold this item.
     if (!BG_CanItemBeGrabbed(&cent->currentState,
-                             &cg_predictedPlayerState, 1)) {
+                             &cg.predictedPlayerState, 1)) {
         return;
     }
 
@@ -90,7 +90,7 @@ void CG_TouchItem(centity_t *cent)
     // 300356ce/300356d4/300356da: record the touch time and cache the item id.
     // EAX holds cent->currentState.itemIndex from here through the parm store below.
     int32_t modelindex = cent->currentState.itemIndex;
-    cent->miscTime = cg_time;
+    cent->miscTime = cg.time;
 
     // 300356e0..30035707: append the predictable pickup event to the player state
     // event rings (BG_AddPredictableEventToPlayerstate, inlined):
@@ -99,10 +99,10 @@ void CG_TouchItem(centity_t *cent)
     //   eventIndex++;
     // Note the machine code re-reads eventIndex for the parm store; the mask is
     // recomputed each time but the value is unchanged until the final INC.
-    cg_predictedPlayerState.events[cg_predictedPlayerState.eventIndex & (MAX_PS_EVENTS - 1)] =
+    cg.predictedPlayerState.events[cg.predictedPlayerState.eventIndex & (MAX_PS_EVENTS - 1)] =
         EV_ITEM_PICKUP;
-    cg_predictedPlayerState.eventParms[cg_predictedPlayerState.eventIndex & (MAX_PS_EVENTS - 1)] =
+    cg.predictedPlayerState.eventParms[cg.predictedPlayerState.eventIndex & (MAX_PS_EVENTS - 1)] =
         (int32_t)(uint32_t)(uint8_t)modelindex;
-    cg_predictedPlayerState.eventIndex = coduo_int32_from_bits(
-        (uint32_t)cg_predictedPlayerState.eventIndex + 1u);
+    cg.predictedPlayerState.eventIndex = coduo_int32_from_bits(
+        (uint32_t)cg.predictedPlayerState.eventIndex + 1u);
 }

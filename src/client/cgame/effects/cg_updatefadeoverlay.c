@@ -6,7 +6,7 @@
 // CG_R_BLEND_SAVED_SCREEN syscall pair.
 //
 // Register-arg ABI (custom, proven from both call sites 0x3001c112 and 0x3001c46e,
-// which set the registers from cg_snap-derived state and clean nothing on return):
+// which set the registers from cg.snap-derived state and clean nothing on return):
 //   EAX = startTime   (the overlay's start time, ms; 0 means "no overlay")
 //   ECX = duration    (the overlay's total lifetime, ms)
 //   ESI = overlay     (the shellshock_t element read for fadeInTime/targetLevel)
@@ -21,7 +21,7 @@
 //
 // The engine syscall pointer cgame_syscall is the .data slot 0x30085e9c that dllEntry
 // (0x3003d470) fills at load time; CG_R_SAVE_SCREEN/71 route through it (see
-// client_recovered.h). cg_time is 0x304831b0; cg_fadeOverlayActive is 0x3048bff8.
+// client_recovered.h). cg.time is 0x304831b0; cg.fadeOverlayActive is 0x3048bff8.
 
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
@@ -34,19 +34,19 @@ qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime,
      * `overlay` (ESI) is not NULL-checked here; it is only dereferenced on the
      * still-visible path below. */
     if (startTime == 0 || duration <= 0) {
-        /* 3003b861: MOV [cg_fadeOverlayActive],0 ; XOR EAX,EAX ; RET */
-        cg_fadeOverlayActive = 0;
+        /* 3003b861: MOV [cg.fadeOverlayActive],0 ; XOR EAX,EAX ; RET */
+        cg.fadeOverlayActive = 0;
         return qfalse;
     }
 
-    /* 3003b7eb SUB EAX,[cg_time] / 3003b7f1 ADD EAX,ECX : remaining ms in overlay's
-     * window = startTime - cg_time + duration. Stored to [ESP] (the FILD source). */
+    /* 3003b7eb SUB EAX,[cg.time] / 3003b7f1 ADD EAX,ECX : remaining ms in overlay's
+     * window = startTime - cg.time + duration. Stored to [ESP] (the FILD source). */
     int32_t remaining = coduo_int32_from_bits(
-        (uint32_t)startTime - (uint32_t)cg_time + (uint32_t)duration);
+        (uint32_t)startTime - (uint32_t)cg.time + (uint32_t)duration);
 
     /* 3003b7f3 TEST EAX,EAX / JLE : overlay expired (remaining <= 0). */
     if (remaining <= 0) {
-        cg_fadeOverlayActive = 0;
+        cg.fadeOverlayActive = 0;
         return qfalse;
     }
 
@@ -76,10 +76,10 @@ qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime,
         level = CG_RoundToNearest(ramp);
     }
 
-    /* 3003b833 MOV EAX,[cg_fadeOverlayActive] / TEST / JZ 0x3003b848 :
+    /* 3003b833 MOV EAX,[cg.fadeOverlayActive] / TEST / JZ 0x3003b848 :
      * only hand the engine the ramped level once the overlay was already active on
      * the previous frame (the first visible frame issues CG_R_SAVE_SCREEN alone). */
-    if (cg_fadeOverlayActive != 0) {
+    if (cg.fadeOverlayActive != 0) {
         /* 3003b83c PUSH EDX(level) ; PUSH 0x47 ; CALL cgame_syscall ; ADD ESP,8 */
         cgame_syscall(CG_R_BLEND_SAVED_SCREEN, level);
     }
@@ -88,7 +88,7 @@ qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime,
      * frame (the zero-argument begin/commit-overlay trap). */
     cgame_syscall(CG_R_SAVE_SCREEN);
 
-    /* 3003b850 MOV EAX,1 / 3003b858 MOV [cg_fadeOverlayActive],EAX / RET */
-    cg_fadeOverlayActive = 1;
+    /* 3003b850 MOV EAX,1 / 3003b858 MOV [cg.fadeOverlayActive],EAX / RET */
+    cg.fadeOverlayActive = 1;
     return qtrue;
 }

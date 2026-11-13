@@ -43,47 +43,47 @@ long double CG_DrawWeapReticle(void)
         return 1.0f;
     }
 
-    weapon = cg_currentWeaponInfo;
+    weapon = cg.currentWeaponInfo;
     weaponIndex = weapon->weaponIndex;
     CG_ProjectDamageDirToScreen(&projectedX, &projectedY);
     /* 0x3001963a reads screenXScale, then 0x30019640 reloads the weapon
      * pointer after the projection call. This one reloaded pointer supplies
      * both overlay dimensions. */
     float widthScale = cgs_screenXScale;
-    weapon = cg_currentWeaponInfo;
+    weapon = cg.currentWeaponInfo;
     width = (float)((long double)widthScale *
                     (long double)weapon->adsOverlayWidth);
     height = (float)((long double)cgs_screenYScale *
                      (long double)weapon->adsOverlayHeight);
-    /* cg_refdef.x/y/width/height are FILD'd / FIADD'd (integer) with no FSTP DWORD
+    /* cg.refdef.x/y/width/height are FILD'd / FIADD'd (integer) with no FSTP DWORD
      * (0x30019670 FILD width; FMUL 0.5f; 0x3001967e FIADD x, and the y/height pair
      * at 0x30019692/0x300196a0), so the implicit int->float conversions stay exact;
      * no (float) casts (they would round under -std=c11). One store rounding each. */
     centerX = (float)(((long double)cgs_screenXScale *
                        (long double)projectedX) +
-                      (long double)cg_refdef.width * 0.5f +
-                      (long double)cg_refdef.x);
+                      (long double)cg.refdef.width * 0.5f +
+                      (long double)cg.refdef.x);
     centerY = (float)(((long double)cgs_screenYScale *
                        (long double)projectedY) +
-                      (long double)cg_refdef.height * 0.5f +
-                      (long double)cg_refdef.y);
+                      (long double)cg.refdef.height * 0.5f +
+                      (long double)cg.refdef.y);
     color[3] = overlayFrac;
     trap_R_SetColor(color);
 
     /* 0x300196b0 reloads the global after SetColor before testing +0x280. */
-    weapon = cg_currentWeaponInfo;
+    weapon = cg.currentWeaponInfo;
     if (weapon->adsOverlayShader[0] != '\0') {
         qhandle_t shader = (qhandle_t)cg_weaponInfos[weaponIndex].adsOverlayShader;
         /* The mask strips anchor to the viewport ORIGIN (0,0) with the raw view
-         * width/height -- NOT the cg_refdef.x/y offset. Proof in the block's bytes:
+         * width/height -- NOT the cg.refdef.x/y offset. Proof in the block's bytes:
          * the left/top guards fcomp against 0.0f (0x30019727 `left > 0`, 0x300197b0
          * `top > 0`), the right/bottom guards and the strip extents fild
-         * cg_refdef.width/height directly (0x30019766/0x30019779/0x30019737/0x300197e6),
+         * cg.refdef.width/height directly (0x30019766/0x30019779/0x30019737/0x300197e6),
          * and every strip pushes literal 0 for its x/y origin -- no fiadd of
-         * cg_refdef.x (0x30487a78) or cg_refdef.y (0x30487a7c) occurs. A prior pass
-         * used cg_refdef.x/y as the origin, which would offset the mask whenever the
+         * cg.refdef.x (0x30487a78) or cg.refdef.y (0x30487a7c) occurs. A prior pass
+         * used cg.refdef.x/y as the origin, which would offset the mask whenever the
          * viewport is inset (splitscreen/letterbox). (centerX/centerY above DO use
-         * cg_refdef.x/y -- 0x3001967e/0x30019692 fiadd -- and are unchanged.) */
+         * cg.refdef.x/y -- 0x3001967e/0x30019692 fiadd -- and are unchanged.) */
         left = (float)((long double)centerX - (long double)width * 0.5f);
         top = (float)((long double)centerY - (long double)height * 0.5f);
 
@@ -91,9 +91,9 @@ long double CG_DrawWeapReticle(void)
                          shader);
         if (left > 0.0f) {
             /* 0x30019737: full-viewport-height strip -- y=viewTop (PUSH 0 @0x3001974e),
-             * h=viewBottom-viewTop (FILD cg_refdef.height @0x30019737), NOT the scope
+             * h=viewBottom-viewTop (FILD cg.refdef.height @0x30019737), NOT the scope
              * band top/height a prior pass used (which left the corners unmasked). */
-            long double viewHeight = (long double)cg_refdef.height;
+            long double viewHeight = (long double)cg.refdef.height;
             DRAW_RETICLE_PIC(0.0f, 0.0f, left,
                              viewHeight,
                              0.0f, 0.0f, 0.0f, 1.0f, shader);
@@ -102,12 +102,12 @@ long double CG_DrawWeapReticle(void)
         /* The right edge is formed only after the first draw and optional
          * left-strip draw. 0x30019766 then loads the current viewport width. */
         float right = (float)((long double)left + (long double)width);
-        long double viewRight = (long double)cg_refdef.width;
+        long double viewRight = (long double)cg.refdef.width;
         if (right < viewRight) {
             /* 0x30019779: full-height strip (y=viewTop, h=viewBottom-viewTop) with
              * texcoords (s1,t1,s2,t2)=(0,0,0,1) -- 0x30019789/0x3001978d PUSH 0 for
              * s2/s1. A prior pass used the scope band top/height and s1=s2=1.0. */
-            long double viewHeight = (long double)cg_refdef.height;
+            long double viewHeight = (long double)cg.refdef.height;
             DRAW_RETICLE_PIC(right, 0.0f, viewRight - (long double)right,
                              viewHeight,
                              0.0f, 0.0f, 0.0f, 1.0f, shader);
@@ -120,7 +120,7 @@ long double CG_DrawWeapReticle(void)
         /* Likewise, the bottom edge and viewport-height load occur only after
          * the top-strip call site. */
         float bottom = (float)((long double)top + (long double)height);
-        long double viewBottom = (long double)cg_refdef.height;
+        long double viewBottom = (long double)cg.refdef.height;
         if (bottom < viewBottom) {
             /* 0x300197f9: texcoords (s1,t1,s2,t2)=(0,0,1,0) -- 0x300197fe/0x30019805
              * PUSH 0 for t2/t1 (same edge coords as the top bar). A prior pass used
@@ -131,7 +131,7 @@ long double CG_DrawWeapReticle(void)
     }
 
     /* 0x30019821 reloads the global after every possible renderer call above. */
-    weapon = cg_currentWeaponInfo;
+    weapon = cg.currentWeaponInfo;
     switch (weapon->adsOverlayReticle) {
     case WEAPON_OVERLAY_RETICLE_NONE:
         break;
@@ -140,7 +140,7 @@ long double CG_DrawWeapReticle(void)
         /* 0x3001983e FILD reticleCenterSize; FLD ST0 -> size stays UNROUNDED in
          * ST0 (duplicated, never FSTP'd) and feeds both w=sx*size and h=sy*size,
          * so it is long double; a float `size` would round it before the two
-         * multiplies. cg_refdef.x/y/width/height are FILD/FIADD'd exact (no FSTP),
+         * multiplies. cg.refdef.x/y/width/height are FILD/FIADD'd exact (no FSTP),
          * so no (float) casts on them either. */
         long double size = weapon->reticleCenterSize;
         float w = (float)((long double)cgs_screenXScale * size);
@@ -151,12 +151,12 @@ long double CG_DrawWeapReticle(void)
          * computes X. */
         float y = (float)(((long double)cgs_screenYScale *
                            (long double)projectedY) +
-                          ((long double)cg_refdef.height - (long double)h) * 0.5f +
-                          (long double)cg_refdef.y);
+                          ((long double)cg.refdef.height - (long double)h) * 0.5f +
+                          (long double)cg.refdef.y);
         float x = (float)(((long double)cgs_screenXScale *
                            (long double)projectedX) +
-                          ((long double)cg_refdef.width - (long double)w) * 0.5f +
-                          (long double)cg_refdef.x);
+                          ((long double)cg.refdef.width - (long double)w) * 0.5f +
+                          (long double)cg.refdef.x);
         DRAW_RETICLE_PIC(x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f,
                          centerShader);
         break;

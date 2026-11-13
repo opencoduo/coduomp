@@ -19,9 +19,9 @@ qhandle_t RegisterWorldModel(const char *name)
 // Source RVA: 0x3001c100
 qboolean UpdateShellshockOverlay(void)
 {
-    return CG_UpdateFadeOverlay(cg_shellShockSwayParams,
-                                cg_shellShockSwayStartTime,
-                                cg_shellShockSwayDuration);
+    return CG_UpdateFadeOverlay(cg.shellShockSwayParams,
+                                cg.shellShockSwayStartTime,
+                                cg.shellShockSwayDuration);
 }
 
 // Source RVA: 0x3002d7f0

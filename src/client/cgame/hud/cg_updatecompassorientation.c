@@ -9,16 +9,16 @@
 
 /*
  * CG_UpdateCompassOrientation (0x3001d6d0) — advance the compass/objective-pointer
- * reference yaw (cg_compassRefYaw) toward the animated effect spin angle
- * (cg_refdefViewAngles[1]) using a critically-damped angular spring, integrated in
+ * reference yaw (cg.compassRefYaw) toward the animated effect spin angle
+ * (cg.refdefViewAngles[1]) using a critically-damped angular spring, integrated in
  * fixed <= 5 ms substeps. The velocity/angle twin of CG_UpdateHudSpinAngle
  * (0x3001d3a0): same integrator shape, different tuning constants, plus a one-shot
  * initialization flag and a per-frame max chase-rate clamp of 10 deg.
  *
  * NAME ADJUDICATION: the .mcode header's pre-hint "VEH_CheckPushClients" (a pure
  * size match against game_mp_uo, the WRONG DLL — win 0x295 vs matched 0x296) is
- * REJECTED. This function touches no vehicle/client-push state; it reads cg_time and
- * compass-spin globals and writes cg_compassRefYaw. The Mac
+ * REJECTED. This function touches no vehicle/client-push state; it reads cg.time and
+ * compass-spin globals and writes cg.compassRefYaw. The Mac
  * CG_UpdateCompassOrientation has the corresponding angle-spring integration
  * call graph, resolving the source name.
  *
@@ -34,11 +34,11 @@
  * State globals (all owned by this function):
  *   cg_hudCompassSpringyPointers_vmCvar.integer (0x30450fec, int)    — one-shot init flag
  *   cg_compassSpinPrevTime    (0x30134ce4, int ms)  — cg.time of prev advance
- *   cg_compassRefYaw          (0x3048b5d4, float deg)— output reference yaw
- *   cg_compassRefVel          (0x3048b5d8, float deg/s)— spring velocity
+ *   cg.compassRefYaw          (0x3048b5d4, float deg)— output reference yaw
+ *   cg.compassRefVel          (0x3048b5d8, float deg/s)— spring velocity
  * Inputs:
- *   cg_refdefViewAngles[1] (0x30487acc, float deg) — animated target angle
- *   cg_time            (0x304831b0, ms)        — current client time
+ *   cg.refdefViewAngles[1] (0x30487acc, float deg) — animated target angle
+ *   cg.time            (0x304831b0, ms)        — current client time
  */
 
 /* .rdata float/double constants used by this function (dumped at the exact
@@ -64,27 +64,27 @@ void CG_UpdateCompassOrientation(void)
      * target angle and return. The init flag is only tested here, never written by
      * this function (an external one-shot must set it). */
     if (cg_hudCompassSpringyPointers_vmCvar.integer == 0) {
-        cg_compassRefYaw = cg_refdefViewAngles[1];
+        cg.compassRefYaw = cg.refdefViewAngles[1];
         return;
     }
 
     int32_t prev = coduo_int32_from_bits(cg_compassSpinPrevTime); /* 0x3001d6ea */
-    int32_t now  = cg_time;                /* 0x3001d6ef */
+    int32_t now  = cg.time;                /* 0x3001d6ef */
 
     /* 0x3001d6f5/0x3001d6f7: nothing to do if no time has passed this frame. */
     if (prev == now) {
         return;
     }
 
-    float target = cg_refdefViewAngles[1];   /* 0x3001d6fd: saved for the whole update */
+    float target = cg.refdefViewAngles[1];   /* 0x3001d6fd: saved for the whole update */
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     /* 0x3001d708: if the signed clock appears to run backwards, resync and snap. */
     if (prev > now) {
         /* 0x3001d947 reset path: prevTime := now; refYaw := target; vel := 0. */
         cg_compassSpinPrevTime = (uint32_t)now;
-        cg_compassRefYaw = target;
-        cg_compassRefVel = 0.0f;
+        cg.compassRefYaw = target;
+        cg.compassRefVel = 0.0f;
         return;
     }
 
@@ -94,15 +94,15 @@ void CG_UpdateCompassOrientation(void)
     if ((long double)elapsed > (long double)COMPASS_MAX_DELTA_MS) {
         /* 0x3001d947 reset path (same as the backwards case). */
         cg_compassSpinPrevTime = (uint32_t)now;
-        cg_compassRefYaw = target;
-        cg_compassRefVel = 0.0f;
+        cg.compassRefYaw = target;
+        cg.compassRefVel = 0.0f;
         return;
     }
 
     /* 0x3001d72b retains the target, 0x3001d72d publishes the new time, and only
      * then does 0x3001d733 load the current yaw for AngleSubtract. */
     cg_compassSpinPrevTime = (uint32_t)now;
-    float currentYaw = cg_compassRefYaw;
+    float currentYaw = cg.compassRefYaw;
 
     /* 0x3001d73b: delta = shortest signed rotation from the current yaw to target.
      * FAITHFULNESS NOTE: the DLL keeps this raw st0 return in an x87 register for the
@@ -126,7 +126,7 @@ void CG_UpdateCompassOrientation(void)
     int32_t remaining = elapsed;
     if (remaining <= 0) {
         /* 0x3001d911 finish. */
-        cg_compassRefYaw = AngleNormalize360(
+        cg.compassRefYaw = AngleNormalize360(
             (float)(step + (long double)target));
         return;
     }
@@ -150,10 +150,10 @@ void CG_UpdateCompassOrientation(void)
         /* 0x3001d79c..0x3001d7c0: settle test. If the pointer is essentially at rest
          * (|step| < 0.5 AND |vel| < 2.0), snap the yaw to the target and stop. */
         if (fabsl(step) < (long double)SETTLE_DELTA &&
-            fabsl((long double)cg_compassRefVel) < (long double)SETTLE_VEL) {
+            fabsl((long double)cg.compassRefVel) < (long double)SETTLE_VEL) {
             /* 0x3001d92c: refYaw := target; vel := 0. */
-            cg_compassRefYaw = target;
-            cg_compassRefVel = 0.0f;
+            cg.compassRefYaw = target;
+            cg.compassRefVel = 0.0f;
             return;
         }
 
@@ -163,7 +163,7 @@ void CG_UpdateCompassOrientation(void)
          * return is NOT: it is FCOM'd against 0 unstored at 0x3001d7dd/0x3001d83c and
          * carried in ST0 for the next substep. */
         float normalizeArg = (float)(
-            (long double)cg_compassRefVel * (long double)stepSec + step);
+            (long double)cg.compassRefVel * (long double)stepSec + step);
         long double newStep =
             (long double)AngleNormalize180(normalizeArg);
 
@@ -172,20 +172,20 @@ void CG_UpdateCompassOrientation(void)
          * `newStep`. long double: the whole per-substep velocity chain (accel/decel at
          * 0x3001d7ed/0x3001d80c, base damping at 0x3001d824, overshoot damping at
          * 0x3001d84e/0x3001d890, and the 2*stepSec bias) stays in st registers and is
-         * rounded to float exactly once, at the store to cg_compassRefVel
+         * rounded to float exactly once, at the store to cg.compassRefVel
          * (0x3001d864 / 0x3001d8a6); a float local would round at every step. */
         long double vel;
         if (newStep > FZERO) {
             /* 0x3001d7ed..0x3001d7fd: still ahead of target -> decelerate. */
-            vel = (long double)cg_compassRefVel -
+            vel = (long double)cg.compassRefVel -
                   (long double)stepSec * (long double)SPRING_ACCEL;
         } else if (newStep < FZERO) {
             /* 0x3001d80c..0x3001d81c: behind target -> accelerate. */
-            vel = (long double)cg_compassRefVel +
+            vel = (long double)cg.compassRefVel +
                   (long double)stepSec * (long double)SPRING_ACCEL;
         } else {
             /* 0x3001d81e: newStep == 0 -> velocity unchanged. */
-            vel = cg_compassRefVel;
+            vel = cg.compassRefVel;
         }
 
         /* 0x3001d824..0x3001d830: base damping vel *= (1 - 3*stepSec). */
@@ -205,10 +205,10 @@ void CG_UpdateCompassOrientation(void)
                             ((long double)stepSec * vel);
             }
             /* 0x3001d85c..0x3001d872: nudge vel down by 2*stepSec; clamp to 0 on cross. */
-            cg_compassRefVel = (float)(
+            cg.compassRefVel = (float)(
                 vel - (long double)BIAS_DAMP * (long double)stepSec);
-            if (cg_compassRefVel < FZERO) {
-                cg_compassRefVel = 0.0f;
+            if (cg.compassRefVel < FZERO) {
+                cg.compassRefVel = 0.0f;
             }
         } else {
             /* 0x3001d88b..0x3001d89c: if vel and newStep share the (-) sign, extra damping.
@@ -218,24 +218,24 @@ void CG_UpdateCompassOrientation(void)
                             ((long double)stepSec * vel);
             }
             /* 0x3001d89e..0x3001d8bf: nudge vel up by 2*stepSec; clamp to 0 on cross. */
-            cg_compassRefVel = (float)(
+            cg.compassRefVel = (float)(
                 vel + (long double)BIAS_DAMP * (long double)stepSec);
-            if (cg_compassRefVel > FZERO) {
-                cg_compassRefVel = 0.0f;
+            if (cg.compassRefVel > FZERO) {
+                cg.compassRefVel = 0.0f;
             }
         }
 
         /* 0x3001d8cd..0x3001d909: clamp vel magnitude to [-2000, 2000]. */
-        if (cg_compassRefVel > COMPASS_VEL_MAX) {
-            cg_compassRefVel = COMPASS_VEL_MAX;
-        } else if (cg_compassRefVel < COMPASS_VEL_MIN) {
-            cg_compassRefVel = COMPASS_VEL_MIN;
+        if (cg.compassRefVel > COMPASS_VEL_MAX) {
+            cg.compassRefVel = COMPASS_VEL_MAX;
+        } else if (cg.compassRefVel < COMPASS_VEL_MIN) {
+            cg.compassRefVel = COMPASS_VEL_MIN;
         }
         /* 0x3001d909/0x3001d90b: loop while ms remain. */
     }
 
     /* 0x3001d911..0x3001d921 finish: requantize (step + target) through 16-bit BAMS
      * and store it as the new reference yaw. */
-    cg_compassRefYaw =
+    cg.compassRefYaw =
         AngleNormalize360((float)(step + (long double)target));
 }

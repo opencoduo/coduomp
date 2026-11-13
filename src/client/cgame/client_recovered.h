@@ -231,8 +231,8 @@ const char *CG_GetTranslatedLocationString(int32_t locationIndex);
  * definition (bg_weaponInfos[cg.predictedPlayerState.currentWeapon]) and, only if
  * that weapon supports ADS (weaponInfo_t::adsEnabled != 0) AND the player is
  * currently zoomed in (cg.predictedPlayerState.adsFraction > 0.0f), stores
- *   cg_adsViewOffset[i] = (pos[i] - cg_refdef.vieworg[i]) * adsFraction
- * for i in {0,1,2}; otherwise it zeroes cg_adsViewOffset. `pos` arrives in ECX
+ *   cg.adsViewOffset[i] = (pos[i] - cg.refdef.vieworg[i]) * adsFraction
+ * for i in {0,1,2}; otherwise it zeroes cg.adsViewOffset. `pos` arrives in ECX
  * (register-arg ABI); modeled here as a normal vec3 pointer parameter. Role name
  * from the ADS-gated projection; the mechanical size-matched
  * "script_method_scriptbuiltin_setrightarc" guess is rejected (that is a server
@@ -278,7 +278,7 @@ void CG_ScreenFade(void);
 /*
  * CG_CalcFov (0x3003ffc0) — compute the current view field of view (degrees),
  * returned as a float. Clamps the base FOV (cg_fov_vmCvar.value) to [80, 160] degrees,
- * forces 90 degrees in game mode 5 (cg_predictedPlayerState.pmType), and — when the local player's
+ * forces 90 degrees in game mode 5 (cg.predictedPlayerState.pmType), and — when the local player's
  * entityStateFlags bit EF_IN_VEHICLE is set (a vehicle/turret view) —
  * blends the FOV toward the current weapon's adsZoomFov by the predicted ADS
  * fraction and maintains the FOV-zoom transition trackers and cg_fovFade animator.
@@ -309,7 +309,7 @@ void CG_AddToTeamChat(const char *str);
  * (exact CoD source symbol unproven). */
 typedef struct cgVoiceChatMsg_s {
     int32_t     clientNum;        /* +0x0: speaking client's number (compared to
-                                   *       cg_snap->ps.psClientNum, else used to index
+                                   *       cg.snap->ps.psClientNum, else used to index
                                    *       cg_entities[]). */
     const char *soundName;        /* +0x4: sound alias to play (CG_PlaySoundAliasByName). */
     int32_t     icon;             /* +0x8: head-icon shader handle to display for the
@@ -372,7 +372,7 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg);
  * by CG_SpinEffectPointToWorld; (3) a recoil Z bump from the last impact-event kick
  * (0x304879e0) — rising over 150 ms then decaying over the next 300 ms since its
  * cg.time stamp (0x304879e4). Finally CG_CalcAdsViewOffset projects the finished
- * point to cg_adsViewOffset. Register-arg ABI (out in EAX/EDI, plain RET); modeled
+ * point to cg.adsViewOffset. Register-arg ABI (out in EAX/EDI, plain RET); modeled
  * as a normal vec3 out-parameter. Name is provisional-by-role; the mechanical
  * size-match "Info_SetValueForKey_Big" is REJECTED (no info-string/key-value work
  * whatsoever — this is dense x87 view math). See FUN_30045230_3004547e.c.
@@ -394,7 +394,7 @@ void CG_CalcViewLeanKickOffset(vec3_t out);
 void CG_CalcWeaponMovementAngles(vec3_t angles);
 /*
  * CG_ApplyWeaponMovementAngles (0x30045070) — compute this frame's weapon-movement view-angle offset
- * (via CG_CalcWeaponMovementAngles), publish it to cg_weaponMovementAngles, and add it
+ * (via CG_CalcWeaponMovementAngles), publish it to cg.weaponPosition.weaponMovementAngles, and add it
  * componentwise into the caller's view-angle accumulator `angles` (in/out, passed
  * in EDI; register-arg ABI). See FUN_30045070_300450d3.c. Mechanical "Com_DPrintf"
  * size-match rejected.
@@ -403,17 +403,17 @@ void CG_ApplyWeaponMovementAngles(vec3_t angles);
 /*
  * CG_SpinEffectPointToWorld (0x300450e0) — transform one point from the spinning
  * view-effect's local axis frame (AngleVectors of the spin-angle triple at
- * 0x30487ac8) into world space anchored at cg_refdef.vieworg, overwriting `point`
+ * 0x30487ac8) into world space anchored at cg.refdef.vieworg, overwriting `point`
  * in place: point = viewOrigin + px*forward - py*right + pz*up. Single stack arg
  * (vec3_t *; caller cleans). See FUN_300450e0_3004519c.c. Mechanical
  * "Item_ListBox_MaxScroll" size-match rejected.
  */
 void CG_SpinEffectPointToWorld(vec3_t point);
 /*
- * CG_PerturbCamera (0x30046490) — recovered. Slides cg_refdef.vieworg along
- * cg_refdef.viewaxis[0] by `dist` (single float stack arg; the lone caller
+ * CG_PerturbCamera (0x30046490) — recovered. Slides cg.refdef.vieworg along
+ * cg.refdef.viewaxis[0] by `dist` (single float stack arg; the lone caller
  * 0x300468e2 passes -19.0f, a third-person pull-back), then recomputes
- * cg_refdefViewAngles[0] as the Q3 vectoangles pitch of the forward axis built
+ * cg.refdefViewAngles[0] as the Q3 vectoangles pitch of the forward axis built
  * by AngleVectors from the spin-angle triple at 0x30487ac8. `dist` is the sole
  * arg (caller cleans it, plain RET). Name is the corpus label kept for its
  * behavioral fit, NOT the rejected size match; see the .c for the derivation.
@@ -816,12 +816,12 @@ int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition,
 
 /*
  * CG_PlayClientSoundAliasByName (0x3002ca30) — convenience wrapper that plays `sound`
- * on the LOCAL player's own snapshot sound channel. Reads cg_snap and forwards
- * CG_PlaySoundAliasByName(cg_snap->ps.psClientNum, &cg_snap->ps.psOrigin, sound). Plain
+ * on the LOCAL player's own snapshot sound channel. Reads cg.snap and forwards
+ * CG_PlaySoundAliasByName(cg.snap->ps.psClientNum, &cg.snap->ps.psOrigin, sound). Plain
  * cdecl, one forwarded argument (callers PUSH one arg / CALL / ADD ESP,4 at
  * 0x3001a158, 0x3003adaf, 0x3003adf2, 0x3003ae6e). Reconstructed in
  * src/sound/cg_playclientsoundaliasbyname.c. Role name (behavioral); the mechanical
- * size-guess "CG_SetDObjInfo" is rejected — the body only reads cg_snap and
+ * size-guess "CG_SetDObjInfo" is rejected — the body only reads cg.snap and
  * tail-forwards to the local-sound starter. */
 void CG_PlayClientSoundAliasByName(const char *sound);
 
@@ -860,7 +860,7 @@ void CG_LocalSound(void);
  * prefixed by `if (!cg_announcerSounds_vmCvar.integer) return;` (MOV EAX,[0x3045884c] /
  * TEST / JZ) before doing the exact same work: trap_Argc()==2 check, trap_Argv(1,
  * g_textScratchBuffer, 1024), Q_atoi, 1..256 range check, CG_ConfigString(CS_SOUNDS
- * + index), CG_PlaySoundAliasByName(&cg_snap->ps.psOrigin, name, cg_snap->ps.psClientNum),
+ * + index), CG_PlaySoundAliasByName(&cg.snap->ps.psOrigin, name, cg.snap->ps.psClientNum),
  * with the same two Com_PrintMessage error paths. Registered as a distinct command
  * in the cgame command dispatch table (0x3003ac90) alongside CG_LocalSound, so it is
  * a separate handler, not an alias. The mechanical size-match name
@@ -873,10 +873,10 @@ void CG_LocalSound_f(void);
  * CG_OutOfAmmoChange (0x30034a00) — per-frame check that plays the
  * "player_out_of_ammo" local warning sound when the local player has run low on
  * ammunition, tracking a persistent state so the sound fires only on the transition
- * into the low/empty state. Reads cg_snap->ps.weaponBits[0] (owned-weapon mask) and,
- * for each owned weapon index 1..bg_numWeapons, sums 1000 * cg_snap->ps.ammo[
+ * into the low/empty state. Reads cg.snap->ps.weaponBits[0] (owned-weapon mask) and,
+ * for each owned weapon index 1..bg_numWeapons, sums 1000 * cg.snap->ps.ammo[
  * bg_weaponInfos[i]->ammoIndex]; if that running total reaches 5000 it clears the
- * warning state (cg_outOfAmmoState = 0) and returns. Otherwise, if the warning state
+ * warning state (cg.lowAmmoWarning = 0) and returns. Otherwise, if the warning state
  * was 0 it plays cg_soundOutOfAmmo via CG_PlaySoundAliasByName, then sets the state to
  * 1 (some ammo left) or 2 (no ammo). Takes no arguments; called from the per-frame
  * predicted-player-update path (0x30035014, 0x3003cbf6). Name is the same-module
@@ -944,8 +944,8 @@ void CG_ExecuteNewServerCommands(int32_t latestSequence);
  * CG_SendFlameDamageCommand (0x300291c0) — throttled per-client flame-damage
  * notification to the server. clientNum arrives in EAX, painId in ECX (register/
  * fastcall convention). If at least 2000 ms have elapsed since
- * cg_flameInfo[clientNum].lastPainTime (signed compare against cg_time-2000),
- * it latches lastPainTime=cg_time, stores painId into painCounter, and sends the
+ * cg_flameInfo[clientNum].lastPainTime (signed compare against cg.time-2000),
+ * it latches lastPainTime=cg.time, stores painId into painCounter, and sends the
  * reliable client command va("fdc %i", painId) via cgame_syscall(CG_SEND_CLIENT_
  * COMMAND, ...). Otherwise it returns without sending (2000ms rate limit, the same
  * throttle idiom as the "score" request in CG_DrawScoreboard). The .mcode
@@ -1020,12 +1020,12 @@ void CG_RegisterScoreboardShaders(void);
  * CG_UpdateCompassOrientation (0x3001d6d0) — advance the compass/objective-pointer
  * reference yaw toward the animated effect spin angle via a critically-damped
  * angular spring, integrated in <=5 ms substeps. Proven from its own .mcode: takes
- * no arguments, returns nothing (bare RET). Reads the target cg_refdefViewAngles[1]
+ * no arguments, returns nothing (bare RET). Reads the target cg.refdefViewAngles[1]
  * (0x30487acc), the time base cg.time (0x304831b0), and its own running state
  * cg_hudCompassSpringyPointers_vmCvar.integer (0x30450fec), cg_compassSpinPrevTime (0x30134ce4),
- * cg_compassRefYaw (0x3048b5d4, output) and cg_compassRefVel
+ * cg.compassRefYaw (0x3048b5d4, output) and cg.compassRefVel
  * (0x3048b5d8, spring velocity). Behavior:
- *   - First run (init flag == 0): snap cg_compassRefYaw = cg_refdefViewAngles[1], return.
+ *   - First run (init flag == 0): snap cg.compassRefYaw = cg.refdefViewAngles[1], return.
  *   - Same-frame (prevTime == cg.time), or time running backwards (prevTime > cg.time),
  *     or a stall of dt > 500 ms: snap refYaw to the target, zero the velocity, return
  *     (the backwards/stall paths also resync prevTime).
@@ -1047,7 +1047,7 @@ void CG_UpdateCompassOrientation(void);
 
 /*
  * CG_DrawObjectivePointers (0x3002fe70) — draw the HUD compass/objective markers.
- * For the local player's snapshot (cg_snap) it iterates all 16
+ * For the local player's snapshot (cg.snap) it iterates all 16
  * playerState.objectives[] entries and, for each whose state ==
  * OBJECTIVE_STATE_CURRENT, computes the objective's screen bearing relative to
  * the view (folding through ANGLE2SHORT/SHORT2ANGLE), a distance-based alpha fade
@@ -1077,16 +1077,16 @@ void Com_ErrorMessage(const char *format, ...);
  * CG_UpdateFadeOverlay (0x3003b7e0) — advance one timed 2D fade overlay for the
  * current frame and, while it is visible, drive it through the engine via the
  * CG_R_SAVE_SCREEN / CG_R_BLEND_SAVED_SCREEN pair. Register-arg ABI proven from both call sites
- * (0x3001c112, 0x3001c46e), which load ESI/EAX/ECX from cg_snap-derived state:
+ * (0x3001c112, 0x3001c46e), which load ESI/EAX/ECX from cg.snap-derived state:
  *   overlay (ESI) — the canonical shellshock_t parameter block,
  *   startTime (EAX) — the overlay's start time (ms), and
  *   duration (ECX) — its total lifetime (ms).
- * It computes remaining = startTime - cg_time + duration; if the overlay is inactive
- * (startTime==0, duration<=0, or remaining<=0) it clears cg_fadeOverlayActive and
+ * It computes remaining = startTime - cg.time + duration; if the overlay is inactive
+ * (startTime==0, duration<=0, or remaining<=0) it clears cg.fadeOverlayActive and
  * returns qfalse. Otherwise it ramps a level using screenBlendFadeTime and
  * screenBlendTime, issues CG_R_BLEND_SAVED_SCREEN(level) only when
  * the overlay was already active last frame, always issues CG_R_SAVE_SCREEN(), latches
- * cg_fadeOverlayActive = 1, and returns qtrue. Role name; the mechanical size-guess
+ * cg.fadeOverlayActive = 1, and returns qtrue. Role name; the mechanical size-guess
  * ItemParse_forecolor is rejected — this parses no menu item and writes no color.
  */
 qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime,
@@ -1418,7 +1418,7 @@ void trap_R_AddLightToScene(const vec3_t org, float intensity,
  * camera-facing icon sprite (reType RT_SPRITE) over an entity's head.
  * Positions it at the "Bip01 Head" DObj tag (+18 units) when the entity has a
  * skeleton, else at the entity placement origin (+72 units), optionally scales the
- * radius by distance from cg_refdef.vieworg, and forces opaque-white shaderRGBA.
+ * radius by distance from cg.refdef.vieworg, and forces opaque-white shaderRGBA.
  * Sets renderfx = RF_THIRD_PERSON when the local player is following/spectating this
  * entity in first person. Register-arg ABI: the subject entity arrives in ESI
  * (modeled as the leading parameter); sfxOrShaderHandle/iconScale/attenuateByDistance
@@ -1495,7 +1495,7 @@ void CG_AddScaleFade(localEntity_t *le);
  * CG_AddMovingTracer (0x3002ab00) — the LE_MOVING_TRACER render handler
  * (reconstructed: src/client/cgame/effects/cg_addmovingtracer.c). Register ABI:
  * localEntity_t * in ESI (also copied to EAX). If both the mode-selected tracer
- * width and length are >= 1e-6, it evaluates le->pos at cg_time, marches the
+ * width and length are >= 1e-6, it evaluates le->pos at cg.time, marches the
  * trajectory point cg_tracerLength* units along the normalized le->pos.trDelta,
  * and hands the result plus cg_tracerWidth* to the tracer poly builder
  * (CG_DrawMovingTracerPoly). Name from the same-module PPC bank
@@ -1537,7 +1537,7 @@ void CG_DrawMovingTracerPoly(const vec3_t tailPoint, const vec3_t headPoint, flo
  * src/client/cgame/weapons/cg_calcmuzzlepoint.c. Resolve the world muzzle/emit point of a
  * shot for entity `entityNum`, using the named model tag `weaponName` ("tag_flash" /
  * "tag_secondary_flash"), writing the vec3 `muzzle`. For the LOCAL predicted first-person
- * player it uses cg_snap's view origin; for other entities it queries the entity's DObj
+ * player it uses cg.snap's view origin; for other entities it queries the entity's DObj
  * tag (trap 0xa5), falling back to the entity lerpOrigin. Returns qtrue when a point was
  * produced. Register-argument ABI proven in its own file: weaponName in EAX, entityNum in
  * ECX, muzzle a single caller-pushed stack pointer. CG_SpawnTracer's call site matches
@@ -1594,7 +1594,7 @@ void CG_SpawnTracerLine(const vec3_t endOrigin, const vec3_t startOrigin, int32_
 /* CG_WhizbySound (0x300480f0) — reconstructed in
  * src/client/cgame/weapons/cg_whizbysound.c. From the bullet impact point (register
  * EAX, a vec3) and the muzzle point (register EBX, a vec3), project the view origin
- * (cg_refdef.vieworg @0x30487a90) onto the shot ray; if the closest approach lies
+ * (cg.refdef.vieworg @0x30487a90) onto the shot ray; if the closest approach lies
  * within the segment (t >= 64, ray length >= t+64) and within 140 units of the
  * listener, play the registered "whizby" sound (0x3044c1e4) at that point pulled 16
  * units back toward the muzzle. The prior caller-guess name CG_TracerMuzzleFlashDist
@@ -1648,7 +1648,7 @@ void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
 /*
  * CG_AddLocalEntities (0x3002ad00) — per-frame local-entity manager. Walks the
  * cg_activeLocalEntities circular list from its .prev link toward the sentinel;
- * for each node, if cg_time has reached le->endTime it unlinks the node and
+ * for each node, if cg.time has reached le->endTime it unlinks the node and
  * pushes it back onto cg_freeLocalEntities (inlined CG_FreeLocalEntity), otherwise
  * it dispatches on le->leType to the LE_* render handler (LE_FADE_RGB ->
  * CG_AddFadeRGB, LE_SCALE_FADE -> CG_AddScaleFade, LE_MOVING_TRACER ->
@@ -1758,7 +1758,7 @@ char *CG_Argv(int32_t n);
  * CG_VoiceChat_f (0x30017780) — the "vsay" console-command handler (one of the
  * cgame `_f` command callbacks; takes no args, reads tokens via the trap_Arg*
  * syscalls). If the argument count is odd it does nothing. Otherwise, when the
- * local player is a live participant (cg_snap present, ps.pmType != INTERMISSION,
+ * local player is a live participant (cg.snap present, ps.pmType != INTERMISSION,
  * and playerStateFlags bit 0x80000 clear) it refuses with the localized
  * "CGAME_NOSPECTATORVOICECHAT" message; for a spectator/intermission player it
  * forwards the chosen voice line to the server as the console command
@@ -1866,16 +1866,16 @@ void CG_SetGunHandFromNotetracks(int clientNum);
 
 /*
  * CG_ProcessWeaponNoteTracks (0x30042c40) — for the local player's currently
- * equipped weapon (cg_predictedPlayerState.currentWeapon), scan the currently-bound
+ * equipped weapon (cg.predictedPlayerState.currentWeapon), scan the currently-bound
  * animation's notetrack list and play any per-weapon "noteTrackSound{A..D}" sound
- * whose track fired this frame. No-ops when cg_predictedPlayerState.currentWeapon == 0.
+ * whose track fired this frame. No-ops when cg.predictedPlayerState.currentWeapon == 0.
  * Otherwise it resolves cg_weaponInfos[currentWeapon] (IMUL idx,0x1c4; ADD base
  * 0x30413580), calls trap_XAnimGetNotetracks(&list) (id 0x99) for the count, and
  * for each notetrack name Q_stricmp-matches it against "noteTrackSoundA/B/C/D"
  * (first match wins, A..D order). On a match it loads the corresponding handle
  * from the weapon record (noteTrackSoundA..D at +0x118..+0x124) and, when nonzero,
- * plays it via CG_PlaySoundAliasByName(&cg_snap->ps.psOrigin, handle,
- * cg_snap->ps.psClientNum). Unlike the sibling CG_SetGunHandFromNotetracks this consumer
+ * plays it via CG_PlaySoundAliasByName(&cg.snap->ps.psOrigin, handle,
+ * cg.snap->ps.psClientNum). Unlike the sibling CG_SetGunHandFromNotetracks this consumer
  * reads only the notetrack name (+0x00), never the kind word (+0x04).
  *
  * Provisional role name: the .mcode's mechanical "finishSpawningKeyedMover" is a
@@ -1970,7 +1970,7 @@ int32_t trap_R_Text_PaintWithCursor(
  * HUD: up to three bottom-of-screen text lines telling a following spectator which
  * keys advance/rewind the followed player and which stops following. Gated by the
  * cvar mirror cg_descriptiveText_vmCvar.integer (0x3052f6ac) and by the local
- * playerState flags in cg_snap->ps.playerStateFlags (+0x18):
+ * playerState flags in cg.snap->ps.playerStateFlags (+0x18):
  *   - bit 0x100000 present in (flags & 0x300000) => "follow next/previous" lines
  *     are shown (label CGAME_FOLLOWNEXTPLAYER on "+attack", CGAME_FOLLOWPREVIOUS-
  *     PLAYER on "toggle cl_run");
@@ -2050,14 +2050,14 @@ void trap_MSS_FadeAllSounds(float targetVolume, int32_t durationMsec);
 /*
  * CG_PriorityCenterPrint (0x30019050) — queue a center-screen HUD message.
  * ABI: str in [esp+4], y in [esp+8] (float), charWidth in [esp+0xc] (float), priority
- * in EAX (register). If a print is already active (cg_centerPrintTime != 0) and
- * the new priority is lower than the current cg_centerPrintPriority, the call is
+ * in EAX (register). If a print is already active (cg.centerPrintTime != 0) and
+ * the new priority is lower than the current cg.centerPrintPriority, the call is
  * ignored. Otherwise it records the priority, localizes the text via
  * CG_TranslateMessage(str, "Center Print"), CRT-strncpy's 1023 bytes into the
- * 1024-byte cg_centerPrintString and terminates byte 1023, sets
- * cg_centerPrintTime = cg_time + 2000, stores cg_centerPrintY/CharWidth via target
+ * 1024-byte cg.centerPrint and terminates byte 1023, sets
+ * cg.centerPrintTime = cg.time + 2000, stores cg.centerPrintY/CharWidth via target
  * _ftol2 truncation, word-wraps the buffer to <=75 glyphs/line (inserting '\n'
- * at spaces via the CG_SE_READ_CHAR_FROM_STRING glyph iterator), and counts cg_centerPrintLines.
+ * at spaces via the CG_SE_READ_CHAR_FROM_STRING glyph iterator), and counts cg.centerPrintLines.
  * The register-passed priority argument is an i386 ABI detail (declared here as a
  * normal parameter). Source: 0x30019050..0x3001918c. */
 void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
@@ -2065,13 +2065,13 @@ void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
 
 /*
  * CG_DrawCenterString (0x300191b0) — paint the queued center-screen HUD message.
- * The draw-side counterpart of CG_PriorityCenterPrint: if cg_centerPrintTime != 0
- * it fades the message via CG_FadeColor(cg_centerPrintTime, cg_centertime_vmCvar.value
+ * The draw-side counterpart of CG_PriorityCenterPrint: if cg.centerPrintTime != 0
+ * it fades the message via CG_FadeColor(cg.centerPrintTime, cg_centertime_vmCvar.value
  * * 1000 ms) and, while the fade is live, draws each '\n'-delimited line horizontally
  * centered ((640 - width)*0.5) using the text metric/draw traps (CG_R_TEXT_HEIGHT height,
  * CG_R_TEXT_WIDTH width, CG_R_TEXT_PAINT draw) with scale =
- * cg_centerPrintCharWidth/32; a NULL fade
- * (expired) clears cg_centerPrintTime/Priority. No arguments; void return; cdecl RET.
+ * cg.centerPrintCharWidth/32; a NULL fade
+ * (expired) clears cg.centerPrintTime/Priority. No arguments; void return; cdecl RET.
  * The .mcode size-guess "script_method_player_setclientcvar" (a server GSC method)
  * is rejected — this is client HUD draw code with no cvar/script interaction.
  * Source: 0x300191b0..0x30019361. */
@@ -2088,7 +2088,7 @@ char *Q_strlwr(char *s);
 
 /*
  * CG_LatchOverlaySource (0x3001a5b0) — the "begin/seed" half of the animated
- * usable-entity / crosshair-hint overlay: latch the current cg_snap source fields
+ * usable-entity / crosshair-hint overlay: latch the current cg.snap source fields
  * into the persistent overlay-effect state block (0x3048ae08..), gated by the
  * cgame-ready flag and a nonzero source field. Its only caller is the draw half
  * CG_DrawCursorhint (0x300303a0), which immediately consumes the block. Full body
@@ -2113,8 +2113,8 @@ void CG_DrawAreaTeamChat(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t 
 /*
  * CG_DrawObituaryLine (0x30031a90) — trap-52-gated member of the trap-54 emitter
  * family. Draws the scoreboard "fragged by" obituary line, horizontally centered on
- * the string's measured pixel width. Early-outs unless cg_fraggedByName[0] is set,
- * formats va("Fragged by %s", cg_fraggedByName), measures the text width via
+ * the string's measured pixel width. Early-outs unless cg.killerName[0] is set,
+ * formats va("Fragged by %s", cg.killerName), measures the text width via
  * cgame_syscall(CG_R_TEXT_WIDTH, str, regWord, arg0, 0), and emits the family's fixed
  * 10-slot draw: cgame_syscall(CG_R_TEXT_PAINT, <centerX-width/2 bits>, <(f_c+f_4) bits>,
  * regWord, arg0, arg1, str, 0, 0, arg2) where centerX = obj->x + obj->w*0.5f.
@@ -2177,8 +2177,8 @@ void CG_HudEmitIconOrValue(qhandle_t hIcon, const rectDef_t *rect,
  * cg_numberShaders[] — one trap_R_DrawStretchPic per character, advancing by
  * Q_rint(charScale*20) with glyph height Q_rint(charScale*32), clamped to 3 glyphs and
  * value range [-99, 999]. The displayed integer is
- * cg_snap->ps.stats[STAT_HEALTH] when the
- * element's bound client (cg_clientNum) is the local player, else the
+ * cg.snap->ps.stats[STAT_HEALTH] when the
+ * element's bound client (cg.clientNum) is the local player, else the
  * cached bgs.clientinfo[client].health (an empty state draws nothing).
  * Non-default register ABI: hIcon in ECX, color in EDX, then two cdecl stack words
  * (rect pointer, charScale float). The .mcode size-match guess "CG_InterpolatePlayerState"
@@ -2243,7 +2243,7 @@ void CG_Draw2ndPlace(rectDef_t *obj,
 /*
  * CG_DrawPlayerLocation (0x30031280) — local-player member of the CG_R_TEXT_PAINT emitter
  * family. It fetches the local player's per-client anim/player state
- * (bgs.clientinfo[cg_snap->ps.psClientNum]); if that state is valid (infoValid
+ * (bgs.clientinfo[cg.snap->ps.psClientNum]); if that state is valid (infoValid
  * != 0) it looks up the current location string via CG_GetTranslatedLocationString and
  * emits cgame_syscall(CG_R_TEXT_PAINT, bits(obj->x), <bits of obj->h + obj->y>, arg0,
  * arg1, arg2, hintString, 0, 0, arg3). The object arrives in ESI; four cdecl stack
@@ -2255,7 +2255,7 @@ void CG_DrawPlayerLocation(rectDef_t *obj,
 /*
  * CG_EmitLocalTeamBackground (0x300316b0) — local-player member of the same HUD emit
  * family as CG_DrawPlayerLocation. It fetches the local player's per-client anim/player
- * state (bgs.clientinfo[cg_snap->ps.psClientNum]); if that state is valid (infoValid
+ * state (bgs.clientinfo[cg.snap->ps.psClientNum]); if that state is valid (infoValid
  * != 0) it draws a team-colored background bar behind the HUD element by calling
  * CG_DrawTeamBackground(ps->team, rect->x, rect->y, rect->w, rect->h, color[3]).
  * The rect/object arrives in ECX (a rectDef_t holding four floats x,y,w,h) and one
@@ -2396,9 +2396,9 @@ void CGScr_LoadAnimTrees(void);
  * from its own .mcode (see functions/FUN_3003c0f0_3003c16a.c). Always issues the
  * sound reset pair trap(220, fullVolumes[10], 0) then
  * trap(221, "generic", 0, 0); then,
- * if a shellshock sound is still active (cg_shellshockSoundEndTime != 0), registers the
+ * if a shellshock sound is still active (cg.shellshockSoundEndTime != 0), registers the
  * "shellshock_end_abort" sound via trap(196) and plays it via trap(198, handle, 1023,
- * vec3_origin, 0), clearing cg_shellshockSoundEndTime to 0. Reached from
+ * vec3_origin, 0), clearing cg.shellshockSoundEndTime to 0. Reached from
  * CG_EndShellShock (0x3003c1d0) and from the per-frame shellshock update (0x3003c247).
  * Name from the same-module PPC bank (cgame_mp!CG_EndShellShockSound) by role; the
  * .mcode header's size-matched "Player_GetMethod" guess is rejected.
@@ -2408,8 +2408,8 @@ void CG_EndShellShockSound(void);
 /*
  * CG_EndShellShock (0x3003c1d0) — stop the shellshock screen effect and restore the
  * screen to normal. Calls CG_EndShellShockSound, restores mouse sensitivity
- * (cg_shellshockMouseSensitivityScale = 1.0f) and clears the mouse speed limits
- * via trap(246, 0, 0), then zeroes the screen-blur pair (cg_shellshockScreenBlurX/Y =
+ * (cg.shellshockMouseSensitivityScale = 1.0f) and clears the mouse speed limits
+ * via trap(246, 0, 0), then zeroes the screen-blur pair (cg.shellshockScreenBlurX/Y =
  * 0) and pushes the cleared blur via trap(0x57, 0). Name from the same-module PPC
  * bank (cgame_mp!CG_EndShellShock) matched by the proven shellshock-reset role; the
  * .mcode's size-matched "BG_IsCrouchingAnim" guess is rejected (this function
@@ -2417,7 +2417,7 @@ void CG_EndShellShockSound(void);
  */
 void CG_EndShellShock(void);
 
-/* snapshot_t and the globals cg_snap / cg_effectTime are declared in
+/* snapshot_t and the globals cg.snap / cg_effectTime are declared in
  * globals.h (included above), next to their recovered storage. */
 
 /*
@@ -2427,18 +2427,18 @@ void CG_EndShellShock(void);
  * locally-predicted player state to the freshly installed snapshot and clears the
  * per-life transient client view/weapon/HUD/effect state. Reconstructed (see
  * functions/FUN_30034d40_30034eb2.c): clears the initial-snapshot latch
- * (g_data_..._304831bc), memcpy's the 0x1141-dword embedded playerState (cg_snap+0xc)
- * into cg.predictedPlayerState (0x304831c4), caches cg_currentWeaponInfo =
- * bg_weaponInfos[predicted currentWeapon] and cg_weaponSelectTime = cg.time, zeroes the
+ * (g_data_..._304831bc), memcpy's the 0x1141-dword embedded playerState (cg.snap+0xc)
+ * into cg.predictedPlayerState (0x304831c4), caches cg.currentWeaponInfo =
+ * bg_weaponInfos[predicted currentWeapon] and cg.weaponSelectTime = cg.time, zeroes the
  * transient global scatter (usable-hint, fade-overlay, damage-flash/kick, view-kick
- * vel+angles, ADS scratch, special-tag scratch, the cg_shakeSources[4] table, the
+ * vel+angles, ADS scratch, special-tag scratch, the cg.shakeSources[4] table, the
  * ADS-view-error latch), and re-seeds trap_Cvar_Set for cg_weaponSelect =
- * va("%i", cg_snap->ps.currentWeapon), cl_stance = "0", cl_run = "1". No stack argument,
+ * va("%i", cg.snap->ps.currentWeapon), cl_stance = "0", cl_run = "1". No stack argument,
  * no return value. The size-matched .mcode guess "CG_AddScaleFade" is rejected. */
 void CG_SnapshotTransitionStage2(void);
 
 /*
- * CG_InstallSnapshotResetEffects (0x3003c9d0) — install `snap` as cg_snap, mirror
+ * CG_InstallSnapshotResetEffects (0x3003c9d0) — install `snap` as cg.snap, mirror
  * its serverTime into the client time bases, free every effect-pool slot, issue
  * cgame trap 0xdb (1.0f), and tail-call CG_SnapshotTransitionStage2. Named by
  * proven role; the size-matched .mcode guess "DebugDumpAnims" is rejected. */
@@ -2451,7 +2451,7 @@ void CG_InstallSnapshotResetEffects(snapshot_t *snap);
  * Com_PrintMessage when cg.latestSnapshotNum runs more than 1000 ahead of
  * cg.processedSnapshotNum; then, while processedSnapshotNum < latestSnapshotNum, it
  * INCs processedSnapshotNum and calls trap_GetSnapshot (CG_GET_SNAPSHOT) into the
- * slot not currently held by cg_snap. On a failed read it records a dropped snapshot
+ * slot not currently held by cg.snap. On a failed read it records a dropped snapshot
  * in the lagometer (the inlined NULL path of CG_AddLagometerSnapshotInfo) and keeps
  * looping; on success it logs the snapshot in the lagometer and returns the slot.
  * Named by the embedded warning string "WARNING: CG_ReadNextSnapshot: way out of
@@ -2471,43 +2471,43 @@ snapshot_t *CG_ReadNextSnapshot(void);
 void CG_AddLagometerSnapshotInfo(snapshot_t *snap);
 
 /*
- * CG_SetNextSnap (0x3003cc10) — install `snap` as cg_nextSnap, issue the per-frame
+ * CG_SetNextSnap (0x3003cc10) — install `snap` as cg.nextSnap, issue the per-frame
  * DObj begin-frame trap (CG_DOBJ_INVALIDATE_SKELS), recompute cg.frameInterpolation for
- * the (cg_snap, snap) pair, and transition all snapshot entities into the current
+ * the (cg.snap, snap) pair, and transition all snapshot entities into the current
  * frame. Reconstructed from its own bytes only for the facts CG_ProcessSnapshots
  * depends on: it takes one stack argument (the incoming snapshot_t *), stores it
- * into cg_nextSnap (0x30459164), and returns void (caller-cleaned single dword,
+ * into cg.nextSnap (0x30459164), and returns void (caller-cleaned single dword,
  * ADD ESP,4 at every call site). Provisional caller-observed declaration — arity
  * (1)/return(void) proven at the call sites in CG_ProcessSnapshots; the rest of the
  * body (entity transition / interpolation weight) is to be superseded by its own
  * .mcode reconstruction. The PPC name bank lists a same-module CG_SetNextSnap; the
- * store-cg_nextSnap + DObj-begin-frame + interp behavior matches, adopted by role,
+ * store-cg.nextSnap + DObj-begin-frame + interp behavior matches, adopted by role,
  * not by size. */
 void CG_SetNextSnap(snapshot_t *snap);
 
 /*
  * CG_ResetSnapshotEntityEffects (0x3003ca30) — no-argument, void helper called by
  * CG_ProcessSnapshots after each snapshot transition. It reads the current snapshot
- * entity count/list off cg_snap (cg_snap+0x4510 count, cg_snap+0x4518 list) and
+ * entity count/list off cg.snap (cg.snap+0x4510 count, cg.snap+0x4518 list) and
  * clears cg_entities[index].currentValid (index*0x288 + 0x3048c8c8),
  * i.e. it re-seeds the per-entity state for the newly transitioned
  * snapshot. Provisional caller-observed declaration: no stack argument and void
  * return are proven at the three call sites in CG_ProcessSnapshots (0x3003d39d,
  * 0x3003d3f6, 0x3003d43e; plain CALL, no cleanup). Role name from its proven body
- * (entity reset keyed by cg_snap's entities); exact CoD source name unresolved,
+ * (entity reset keyed by cg.snap's entities); exact CoD source name unresolved,
  * to be superseded by its own .mcode reconstruction. */
 void CG_ResetSnapshotEntityEffects(void);
 
 /*
  * CG_SetFrameInterpolation (0x3001f710) — recompute cg.frameInterpolation, the
- * [0,1) lerp weight between cg_snap and cg_nextSnap. It is the standalone form of
- * the same math CG_SetNextSnap inlines: frac = (cg.time - cg_snap->serverTime) /
- * (cg_nextSnap->serverTime - cg_snap->serverTime), stored to cg_frameInterpolation
+ * [0,1) lerp weight between cg.snap and cg.nextSnap. It is the standalone form of
+ * the same math CG_SetNextSnap inlines: frac = (cg.time - cg.snap->serverTime) /
+ * (cg.nextSnap->serverTime - cg.snap->serverTime), stored to cg.frameInterpolation
  * (0x304831a8) and clamped to 0 when the snapshot span is 0 or the result is
  * negative (the FCOMP against the 0.0f pool constant at 0x3007bcec). No argument,
  * void return (RET, 8-byte local frame). Provisional caller-observed declaration:
  * arity(0)/return(void) proven at the CG_ProcessSnapshots call site (0x3003d3af,
- * plain CALL); role name proven by its sole write of cg_frameInterpolation. */
+ * plain CALL); role name proven by its sole write of cg.frameInterpolation. */
 void CG_SetFrameInterpolation(void);
 void CG_ProcessSnapshots(void);
 
@@ -2698,8 +2698,8 @@ void CG_EmitTrap54Draw(int32_t x, float y, int32_t handle, float alpha);
  * (centered CGAME_CONNECTIONINTERRUPTED text via trap 54, plus the blinking
  * gfx/2d/net.tga icon via CG_DrawPic) when the newest generated usercmd has not been
  * acknowledged by a snapshot in a plausible time window. Gates on
- * trap_GetCurrentCmdNumber (0x53) / trap_GetUserCmd (0x54) vs cg_snap->ps.commandTime
- * and cg_time; blinks the icon on cg_time bit 0x200. No args, void. Reconstructed
+ * trap_GetCurrentCmdNumber (0x53) / trap_GetUserCmd (0x54) vs cg.snap->ps.commandTime
+ * and cg.time; blinks the icon on cg.time bit 0x200. No args, void. Reconstructed
  * from its own .mcode (src/client/cgame/hud/cg_drawdisconnect.c); the mechanical
  * size-guess name `script_method_player_setreverb` is rejected (a cgame HUD draw,
  * not a script reverb setter — proven by its net.tga / CGAME_CONNECTIONINTERRUPTED
@@ -2767,11 +2767,11 @@ void CG_DrawStatBarWithDecay(float *color, const rectDef_t *rect,
 
 /*
  * CG_DrawFlashDamage (0x3001a8e0) — draw the red full-screen "took damage" flash
- * overlay. No-ops unless a snapshot is installed (cg_snap != NULL) and the flash is
- * still active (cg_damageFlashEndTime > cg_time). While active it fills the whole
+ * overlay. No-ops unless a snapshot is installed (cg.snap != NULL) and the flash is
+ * still active (cg.v_dmg_time > cg.time). While active it fills the whole
  * virtual 640x480 screen (rect (-10,-10)..(640,480), a 10px overscan) via CG_FillRect
  * with color (0.2, 0, 0, alpha): a dark red tint. The alpha ramps with the remaining
- * time: alpha = min(fabs((endTime - cg_time) * (1/500) * cg_damageFlashScale), 5.0)
+ * time: alpha = min(fabs((endTime - cg.time) * (1/500) * cg.v_dmg_pitch), 5.0)
  * * 0.2 * 0.7, so it fades to zero over the 500 ms window and is capped. Same-module
  * PPC bank lists cgame_mp!CG_DrawFlashDamage; the .mcode's size-matched "DynaSink"
  * guess is rejected (this is a CoD HUD draw, not the Windows DynaSink networking API,
@@ -2781,16 +2781,16 @@ void CG_DrawFlashDamage(void);
 /*
  * CG_DrawDamageDirectionIndicators (0x3001a980) — draw the fading "damage direction" arrow
  * ring, the directional companion of CG_DrawFlashDamage's red flash. No-ops unless a
- * snapshot is installed (cg_snap != NULL). It first anchors the ring on screen: if the
+ * snapshot is installed (cg.snap != NULL). It first anchors the ring on screen: if the
  * ADS/scope overlay is active (CG_CalcAdsOverlayFrac != 0) it requires the ADS anchor
  * gate cg_hudDamageIconInScope_vmCvar.integer and projects the aim point to screen
  * (CG_ProjectDamageDirToScreen), offsetting by the (320,240) screen center; otherwise
  * it anchors at plain screen center (320,240) in virtual 640x480 space. It then walks
- * cg_damageDirIndicators[8]; for each slot still within its lifetime
+ * cg.damageDirIndicators[8]; for each slot still within its lifetime
  * (0 < cg.time - serverTime < duration) it computes alpha = min(2 - 2*elapsed/duration,
  * 1) so each arrow fades out over the back half of its window, and draws a rotated icon
  * quad (width cg_hudDamageIconWidth_vmCvar.value, from cg_hudDamageIconOffset_vmCvar.value down cg_hudDamageIconHeight_vmCvar.value)
- * via CG_DrawTurretTagQuad, rotated by vectoyaw(cg_refdef.viewaxis[0]) - slot->yaw so it
+ * via CG_DrawTurretTagQuad, rotated by vectoyaw(cg.refdef.viewaxis[0]) - slot->yaw so it
  * points at the attacker relative to the current view. The white draw color
  * (1,1,1,alpha) is installed per-arrow with cgame_syscall(CG_R_SETCOLOR, color). The
  * .mcode size-guess name "CG_EjectWeaponBrass" is REJECTED: no 3D shell/entity is
@@ -2803,7 +2803,7 @@ void CG_DrawDamageDirectionIndicators(void);
  * aim/impact world point (the cached pair at 0x3048b0b8/0x3048b0bc) to 2D screen
  * coordinates, writing screen X to *outX (EDI) and screen Y to *outY (ESI); both are
  * set to 0 when the point is behind the view plane. Uses the view axis rows
- * (cg_refdef.viewaxis[0] and the following two rows) and the view-projection scale pair
+ * (cg.refdef.viewaxis[0] and the following two rows) and the view-projection scale pair
  * (cg_viewProjScaleA/B). Register-ABI: outX in EDI, outY in ESI (both callers LEA two
  * adjacent stack floats). Used by CG_DrawDamageDirectionIndicators to anchor the arrow ring at
  * the projected aim point while aiming down sight. Role name (exact CoD symbol
@@ -2817,7 +2817,7 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY);
  * and no post-call cleanup) and no consumed return, so the caller-observed ABI is
  * `void f(void)`. These are PROVISIONAL caller-observed declarations — the arity is
  * proven at this call site, but the exact original CoD symbol names below are
- * role-derived (from each callee's cg_time fades, 1.0f color-vector setup, and
+ * role-derived (from each callee's cg.time fades, 1.0f color-vector setup, and
  * draw-trap emission seen in its prologue) and are superseded by each callee's own
  * .mcode reconstruction. The address suffix is retained on the still-opaque helpers
  * whose specific role is not yet proven.
@@ -2825,10 +2825,10 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY);
  * CG_Draw2D itself: the cgame per-frame screen builder/drawer. It is
  * called once per rendered frame from the frame entry at 0x3001c440 (which first
  * stores the view origin/angles to 0x30487a90.. and runs the world/scene passes),
- * bails early on two render-suppress flags (g_cgScreenSuppressFlag and
- * cg_lockedViewFace) and on the module-ready gate g_cgScreenReadyState,
+ * bails early on two render-suppress flags (cg.levelShot and
+ * cg.lockedViewFace) and on the module-ready gate cg.screenReadyState,
  * requires cg_draw2D_vmCvar.integer to be set, then dispatches on the local
- * player's movement state cg_snap->ps.pmType (pmType_t): PM_TYPE_INTERMISSION draws
+ * player's movement state cg.snap->ps.pmType (pmType_t): PM_TYPE_INTERMISSION draws
  * the intermission scoreboard, PM_TYPE_SPECTATOR and the alive/playing states draw
  * their own overlays, and dead states share the common tail. The .mcode header's
  * size-matched guess "Fire_Lead" (win size 0x118 == corpus size 0x118) is REJECTED:
@@ -2839,10 +2839,10 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY);
  */
 void CG_Draw2D(void);
 void CG_TileClear(void);             /* 0x3001d160: repaint the four letterbox edges outside the cropped 3D view (src/client/cgame/hud/cg_tileclear.c) */
-void CG_UpdateScreenFade(void);      /* 0x3001ab90: cg_time-driven full-screen fade update */
-void CG_DrawScreenFadeOverlay(void); /* 0x3001a7c0: cg_time-driven fade overlay, always run before return on any non-suppressed frame */
+void CG_UpdateScreenFade(void);      /* 0x3001ab90: cg.time-driven full-screen fade update */
+void CG_DrawScreenFadeOverlay(void); /* 0x3001a7c0: cg.time-driven fade overlay, always run before return on any non-suppressed frame */
 void CG_DrawDamageDirectionIndicators(void);  /* 0x3001a980: draw the fading damage-direction arrow ring (src/client/cgame/hud/cg_drawdamagedirectionindicators.c). Supersedes the provisional caller-observed name CG_DrawScreenBlend: the body proves damage arrows, not a color-vector screen blend. */
-qboolean CG_DrawIntermission(void);  /* 0x3001bd20: forces the scoreboard on for the intermission screen — cgame_syscall(CG_MAP_RESTART_RESET_RENDERER), latches cg_scoreboardShowTime=cg_time, sets cg_scoreboardShowing=qtrue, then TAIL-CALLs CG_DrawScoreboard (its qboolean is this function's return). src/client/cgame/hud/cg_drawintermission.c */
+qboolean CG_DrawIntermission(void);  /* 0x3001bd20: forces the scoreboard on for the intermission screen — cgame_syscall(CG_MAP_RESTART_RESET_RENDERER), latches cg.scoreFadeTime=cg.time, sets cg.showScores=qtrue, then TAIL-CALLs CG_DrawScoreboard (its qboolean is this function's return). src/client/cgame/hud/cg_drawintermission.c */
 void CG_DrawSpectatorHud(void);      /* 0x3001a610: spectator-mode HUD block */
 void CG_DrawTeamInfo(void);          /* 0x30018770: draw the team-chat scroll ring (up to cg_chatHeight_vmCvar.integer lines of teamChatMsgs[], each with a dim hudColorBar background bar and the ^N-colored text, fading out over the cg_chatTime_vmCvar.integer window). src/client/cgame/hud/cg_drawteaminfo.c. Supersedes the size-guess names Reached_BinaryMover and the caller-observed CG_DrawWarmup. */
 void CG_DrawCrosshair(void);         /* 0x30019cf0: crosshair and weapon-reticle renderer */
@@ -2893,7 +2893,7 @@ void CG_DrawViewInfoOverlay(void);   /* 0x3001b2b0: overlay-C, draws info text e
 void CG_DrawWeaponStance(void);      /* 0x30018730: weapon/stance HUD indicator */
 void CG_DrawSpawnOverlay(void);      /* 0x300191b0: just-spawned large overlay frame */
 void CG_ResetScreenFadeA(void);      /* 0x3001bd50: 1.0f color-vector fade reset A */
-void CG_ResetScreenFadeB(void);      /* 0x3001bee0: 1.0f color-vector fade reset B, reads cg_snap */
+void CG_ResetScreenFadeB(void);      /* 0x3001bee0: 1.0f color-vector fade reset B, reads cg.snap */
 
 /*
  * CG_TileClearBox (0x3001d0d0) — draw one axis-aligned 2D stretch-pic segment
@@ -3205,9 +3205,9 @@ _Static_assert(offsetof(parseField_t, type) == 0x08, "parseField_t type");
  * CG_SettleViewOriginZ (0x3003f9a0) — reconstructed in
  * functions/FUN_3003f9a0_3003f9e5.c. A void(void) helper called at the tail of the
  * view-kick evaluator FUN_3003fb60 (0x3003ff59): it subtracts a time-decaying
- * amount from the view-origin Z (cg_refdef.vieworg[2]) over a fixed 100 ms settle
- * window, weight (100 - elapsed)/100 * cg_weaponChangeViewOffset * 0.01f,
- * using the cg.time stamp cg_weaponChangeViewOffsetTime (re-baselined on a
+ * amount from the view-origin Z (cg.refdef.vieworg[2]) over a fixed 100 ms settle
+ * window, weight (100 - elapsed)/100 * cg.stepChange * 0.01f,
+ * using the cg.time stamp cg.stepTime (re-baselined on a
  * negative delta). Does nothing once the 100 ms window has elapsed. The .mcode
  * size-guess name Cmd_PrevVehSlot_f is rejected (no argc/argv, no Cmd_* calls, no
  * vehicle state); behavioral name, exact CoD symbol unproven.
@@ -3216,13 +3216,13 @@ void CG_SettleViewOriginZ(void);
 
 /*
  * CG_UpdateViewKick (0x3003f9f0) — advance the persistent first-person view-kick
- * spring. Iterates the per-frame elapsed time cg_frametime in <=5ms substeps
+ * spring. Iterates the per-frame elapsed time cg.frametime in <=5ms substeps
  * (dt = min(remaining,5) * 0.001s). For each of the three components of the
- * angular offset cg_viewKickAngles and its velocity cg_viewKickVel:
+ * angular offset cg.viewKickAngles and its velocity cg.viewKickVel:
  *   - integrate a centering acceleration into the velocity that pushes the offset
  *     back toward zero. The acceleration magnitude is 2400.0 when no weapon is
- *     selected (cg_predictedPlayerState.currentWeapon == 0), else the current weapon's
- *     adsViewKickCenterSpeed (cg_predictedPlayerState.adsFraction >= 0.5) or
+ *     selected (cg.predictedPlayerState.currentWeapon == 0), else the current weapon's
+ *     adsViewKickCenterSpeed (cg.predictedPlayerState.adsFraction >= 0.5) or
  *     hipViewKickCenterSpeed (< 0.5);
  *   - integrate velocity into the offset, applying a 0.06 damping factor to the
  *     step when it moves the offset toward center;
@@ -3280,7 +3280,7 @@ void InitWeaponInfo(void);
  *
  * Register ABI (proven from the machine code and the sole HUD ammo-draw call site at
  * 0x30030d14): the weapon index arrives in EAX; the playerState base pointer
- * (&cg_predictedPlayerState, 0x304831c4) is pushed as one cdecl stack arg (caller
+ * (&cg.predictedPlayerState, 0x304831c4) is pushed as one cdecl stack arg (caller
  * does `ADD ESP,4`). The .mcode size-guess "BG_GetStackSlotForWeapon" is rejected:
  * that name belongs to the distinct routine at 0x30011590 (see weaponInfo_t.stackable
  * above); this routine at 0x30011800 sums held ammo, it does not resolve a stack slot.
@@ -3318,7 +3318,7 @@ void CG_SelectWeaponIndex(int32_t weapon, int32_t currentWeapon);
 /*
  * CG_IsWeaponHeld (0x30047370) — predicate returning whether weapon `weapon` is
  * currently held by the local player, i.e. the value of that weapon's bit in the
- * cg_predictedPlayerState.weaponBits (0x304836f8) ownership bitset (word = weapon>>5, mask =
+ * cg.predictedPlayerState.weaponBits (0x304836f8) ownership bitset (word = weapon>>5, mask =
  * 1u<<(weapon&31)). The one-line factored form of the inline held-bit test the
  * weapon-select scanners perform. Reconstructed in functions/FUN_30047370_3004738d.c.
  *
@@ -3363,7 +3363,7 @@ void CG_OutOfAmmoChange(void);
 /*
  * CG_SetSelectedWeapon (0x30022660) — commit an auto/initial weapon selection.
  * Reconstructed in functions/FUN_30022660_300226b9.c. Latches the requested
- * weapon index (cg_lastRequestedWeapon) and cg.time snapshots, then, only when
+ * weapon index (cg.lastRequestedWeapon) and cg.time snapshots, then, only when
  * bg_itemlist[weaponIndex].type == IT_WEAPON and no weapon is yet
  * selected (cg_weaponSelect_vmCvar.integer == 0), sets trap_Cvar_Set("cg_weaponSelect",
  * va("%i", bg_itemlist[weaponIndex].weapon)). Distinct from CG_SelectWeaponIndex
@@ -3604,7 +3604,7 @@ void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed,
 
 /*
  * CG_ShellShockCalcVibrate (0x3003c630) — advance the shellshock screen-blur
- * displacement pair cg_shellshockScreenBlurX/Y (0x3048bff0/0x3048bff4) for the current
+ * displacement pair cg.shellshockScreenBlurX/Y (0x3048bff0/0x3048bff4) for the current
  * frame. ABI proven at its sole call site 0x3003c778: EAX=duration, EDX=params,
  * [ESP+0x18]=elapsed. */
 void CG_ShellShockCalcVibrate(int32_t duration,
@@ -3613,7 +3613,7 @@ void CG_ShellShockCalcVibrate(int32_t duration,
 
 /*
  * CG_UpdateShellShock (0x3003c750) — per-frame driver for the whole cgame shellshock
- * post-effect. Computes elapsed = cg_time - startTime; if the effect has not started
+ * post-effect. Computes elapsed = cg.time - startTime; if the effect has not started
  * (startTime == 0) or the clock ran backwards (elapsed < 0) it tail-calls
  * CG_EndShellShock, otherwise it fans out the three sub-updates (camera, screen-blend,
  * screen-blur) and issues cgame_syscall(CG_SET_SHELLSHOCK_SCREEN_BLUR, elapsed < duration) with the
@@ -3661,7 +3661,7 @@ void CG_PlayFxOnTag(centity_t *self, int fxId);
  *
  * Guards (any failing => nothing emitted): self->fxId (+0xa4) and self->surfaceType
  * (+0xdc) must both be non-zero (both are looped-sound alias indices); and during
- * intermission (cg_snap->ps.pmType == PM_TYPE_INTERMISSION) an entity flagged as
+ * intermission (cg.snap->ps.pmType == PM_TYPE_INTERMISSION) an entity flagged as
  * unbound (self->legsSound == 0x3ff) is skipped.
  *
  * For each alias index it forms cfgIndex = CS_SOUNDS + index (0x295), reuses
@@ -3670,7 +3670,7 @@ void CG_PlayFxOnTag(centity_t *self, int fxId);
  * lookup, then registers that name via cgame_syscall(CG_COM_PICK_SOUND_ALIAS, name,
  * &self->origin) -> handle. If BOTH handles are non-zero it lerps the sound phase
  * between loopSoundPhaseOld (+0x6c) and loopSoundPhaseNew (+0x160) by
- * cg_frameInterpolation and starts the pair via trap_MSS_PlayBlendedSoundAliases(handle1, handle2, phase,
+ * cg.frameInterpolation and starts the pair via trap_MSS_PlayBlendedSoundAliases(handle1, handle2, phase,
  * self->objId). Role name (exact CoD symbol unproven); the .mcode's size-matched
  * "CheckMatchTimeout" guess (from the wrong DLL, game_mp_uo) is rejected.
  */
@@ -3691,8 +3691,8 @@ void CG_AddLoopedEntitySound(centity_t *self);
  * The eject effect handle is chosen from cg_weaponInfos[weaponModel]: field +0x170
  * when eventId == 0xa6 (the alt-brass event), otherwise field +0x16c; a zero
  * handle skips. The tag is resolved on the firing object id via CG_RESOLVE_TAG
- * (trap 0xe3) -- for the local player's own first-person view (cg_snap
- * PSF_PLAYER_ENTITY_MASK set and self->objId == cg_snap->ps.psClientNum) the object
+ * (trap 0xe3) -- for the local player's own first-person view (cg.snap
+ * PSF_PLAYER_ENTITY_MASK set and self->objId == cg.snap->ps.psClientNum) the object
  * id becomes weaponModel + 0x400 (the view-weapon DObj), otherwise self->objId --
  * then the effect is played on the resolved tag via CG_PLAY_EFFECT_ON_TAG (trap
  * 0xe9). Role name from the proven "tag_brass" literal and the CG_FireWeapon
@@ -3744,8 +3744,8 @@ void CG_PlayFx(centity_t *self, const vec_t *dir);
  * CG_PlaySpinningViewEffect (0x300164b0) -- play the effect selected by
  * `effectId` at a point 256 units in front of the current view origin, oriented
  * by a continuously-animated spin angle. Reads the global spin angle
- * cg_refdefViewAngles[1] and builds a Z-axis rotation matrix from it via
- * YawVectors; the effect origin is cg_refdef.vieworg + 256*forward. Fires
+ * cg.refdefViewAngles[1] and builds a Z-axis rotation matrix from it via
+ * YawVectors; the effect origin is cg.refdef.vieworg + 256*forward. Fires
  * cg_effectDefs[effectId] through CG_PLAY_EFFECT_ON_TAG (trap 0xe9) with that
  * origin, the 3x3 orientation, and a trailing 0. Role name (exact CoD symbol
  * unproven); the .mcode's size-matched "BG_IndexForString" guess is rejected --
@@ -3880,10 +3880,10 @@ typedef struct effectDef_s {
 
 /*
  * CG_UpdatePeriodicEffect (0x30042110) — throttled periodic effect emitter. If the
- * interval is armed (cg_periodicEffectInterval >= 1) and enough time has elapsed
- * (cg.time > cg_periodicEffectLastTime + cg_periodicEffectInterval), register the
+ * interval is armed (cg.periodicEffectInterval >= 1) and enough time has elapsed
+ * (cg.time > cg.periodicEffectLastTime + cg.periodicEffectInterval), register the
  * stored effect name via CG_FX_REGISTER_EFFECT and play the returned handle at the
- * stored origin via CG_PLAY_EFFECT_ORIGIN, then stamp cg_periodicEffectLastTime =
+ * stored origin via CG_PLAY_EFFECT_ORIGIN, then stamp cg.periodicEffectLastTime =
  * cg.time. Otherwise it is a no-op. Takes/returns nothing (bare RET, no args). The
  * size-matched .mcode name `PM_GetEffectiveStance` is REJECTED: no playerstate,
  * stance, or bg_pmove logic exists here — the body is purely an effect-emit
@@ -4461,7 +4461,7 @@ const char *CG_GetVehicleViewPosOriginTag(int32_t viewMode);
  * sibling of the DObj bone-world-matrix family. Resolves a NAMED tag on `self`
  * (trap 0xb2 with a tagName), calculates that bone's DObj hierarchy (inlined
  * CreateSkelForBone/GetHierarchyBits/CalcAnim/CalcSkel, no controller call), then
- * composes the FIXED global cg_specialTagPlacement (orientation_t at 0x3048b0e4)
+ * composes the FIXED global cg.specialTagPlacement (orientation_t at 0x3048b0e4)
  * into the engine bone matrix (trap 0xa0 table + handle<<6) via
  * CG_ComposeBoneMatrix, writing the world matrix to `out`. Returns qtrue on
  * success, qfalse when the tag is absent (negative bone handle). Differs from the
@@ -4518,7 +4518,7 @@ extern clientInfo_t cg_corpseInfo[PLAYER_CLONE_COUNT];
  *
  * The .mcode size-guess name "CG_InterpolateEntityPosition" is REJECTED: there is no
  * snapshot/nextSnapshot interpolation, no BG_EvaluateTrajectory, and no
- * cg_frameInterpolation — the body only emits bone traps and resets swing state.
+ * cg.frameInterpolation — the body only emits bone traps and resets swing state.
  * Named by its proven debug string "ResetPlayerEntity" plus its reset behaviour. */
 void CG_ResetPlayerEntity(entityState_t *renderEntity);
 
@@ -4527,7 +4527,7 @@ void CG_ResetPlayerEntity(entityState_t *renderEntity);
  * qhandle_t (0 => load failed). RECONSTRUCTED from its own .mcode
  * (FUN_3003d940_3003db5f.c). It is the twin of CG_RegisterShader (0x3003db80): both
  * are byte-identical wrappers that, while a client snapshot is not yet installed
- * (cg_snap==NULL) and no redraw is already in progress (cg_updateScreenActive==0),
+ * (cg.snap==NULL) and no redraw is already in progress (cg_updateScreenActive==0),
  * pump the connect/loading screen once (clear the cl_serverload* cvars, draw the map
  * levelshot full-screen, draw the com_expectedhunkusage progress bar, force a present
  * via trap_UpdateScreen) and then forward (name, category) to the register trap and
@@ -4737,8 +4737,8 @@ _Static_assert(sizeof(playerState_t) == 0x4504, "playerState_t is the full 0x450
  * player sees its own events without waiting for the server snapshot. Diffs the two
  * playerState event rings (eventIndex/events[]/eventParms[], MAX_PS_EVENTS==4),
  * dispatches each newly-appeared event through CG_EntityEvent on the static
- * cg_predictedEventEntity, and records it into cg_predictedEvents[]/
- * cg_predictedEventSequence. See functions/FUN_30034ec0_30034f4b.c. Register ABI:
+ * cg.predictedPlayerEntity, and records it into cg.predictableEvents[]/
+ * cg.eventSequence. See functions/FUN_30034ec0_30034f4b.c. Register ABI:
  * `ps` in EBX, `ops` a single stack arg (caller-cleaned).
  */
 void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops);
@@ -4864,8 +4864,8 @@ void CG_TransitionPlayerState(playerState_t *ps, playerState_t *ops);
  * CG_WeaponSway_ApplyShellShock (0x30044c10) — the cgame-side weapon-sway entry
  * point that computes the current shell-shock sway scale for the predicted
  * player's active weapon and drives the sway core BG_CalculateWeaponPosition_Sway.
- * It reads the active weapon (bg_weaponInfos[cg_predictedPlayerState.currentWeapon]) and
- * the shell-shock time window (cg_shellShockStartTime/EndTime, duration from
+ * It reads the active weapon (bg_weaponInfos[cg.predictedPlayerState.currentWeapon]) and
+ * the shell-shock time window (cg.shellShockStartTime/EndTime, duration from
  * cg_shellShockState->duration), eases a smoothstep envelope over that window and
  * scales from 1.0f toward the weapon's swayShellShockScale (weaponInfo_t+0x2fc);
  * outside/after the window the scale is exactly 1.0f. Name provisional by proven
@@ -5108,9 +5108,9 @@ void CG_DrawTankBody(const rectDef_t *rect, int32_t stateFilter,
 /* CG_CalcVehicleViewValues (0x30040580): derive the local player's view/refdef angles
  * while riding a vehicle/turret by attaching to the vehicle centity's "tag_player" DObj
  * bone, converting that world orientation to Euler angles, smoothing it against the
- * previous frame (cg_vehicleViewPrevAxis), applying the engine's SHORT2ANGLE-scaled angle
- * deltas, subtracting cg_adsViewErrorAngles, and committing pitch/yaw/roll into
- * cg_predictedPlayerState.viewAngles. Angle-producing sibling of CG_CalcVehicleViewPos (0x30040810).
+ * previous frame (cg.vehicleViewPrevAxis), applying the engine's SHORT2ANGLE-scaled angle
+ * deltas, subtracting cg.adsViewErrorAngles, and committing pitch/yaw/roll into
+ * cg.predictedPlayerState.viewAngles. Angle-producing sibling of CG_CalcVehicleViewPos (0x30040810).
  * void(void). src/client/cgame/vehicles/cg_calcvehicleviewvalues.c */
 void CG_CalcVehicleViewValues(void);
 
@@ -5389,8 +5389,8 @@ _Static_assert(sizeof(cgScoreboardDrawCtx_t) == 0x10,
 /*
  * CG_DrawScoreboardTeamHeader (0x30037090) — draw one scoreboard team-section
  * header: the localized "<team name> (N players)" banner line and, for the
- * AXIS/ALLIES sections, a per-team totals row (cg_scoreboardTeamScores in the
- * score column, cg_scoreboardTeamPings in the ping column). Returns the Y at which the
+ * AXIS/ALLIES sections, a per-team totals row (cg.teamScores in the
+ * score column, cg.scoreboardTeamPings in the ping column). Returns the Y at which the
  * section's client rows begin (y + 24.0f). Invoked four times per frame by
  * CG_DrawScoreboardBody (0x30037b50), once per team section.
  *
@@ -5410,7 +5410,7 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
                                   int *lineCounter);
 
 /* cgScore_t (the collected scoreboard row, stride 0x18) is defined in globals.h
- * next to its backing array cg_scoreboardEntries[]. */
+ * next to its backing array cg.scores[]. */
 
 /*
  * CG_DrawScoreboard_GetTeamColor (0x30036f20) — provisional, caller-observed
@@ -5504,9 +5504,9 @@ void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY,
  * CG_DrawScoreboard (0x30037d90) — top-level multiplayer scoreboard draw. Returns
  * qfalse (and draws nothing) when the draw-inhibit gate cl_paused_vmCvar.integer is
  * set or the scoreboard-enable gate timescale_vmCvar.integer is clear. When
- * the scoreboard is showing (cg_scoreboardShowing) it draws at full alpha; when it
- * is hiding it fades via CG_FadeColor(cg_scoreboardShowTime, 100) and returns
- * qfalse once the fade has fully expired (emptying cg_fraggedByName). It also
+ * the scoreboard is showing (cg.showScores) it draws at full alpha; when it
+ * is hiding it fades via CG_FadeColor(cg.scoreFadeTime, 100) and returns
+ * qfalse once the fade has fully expired (emptying cg.killerName). It also
  * re-requests the "score" info from the server at most once every 2000 ms via
  * cgame_syscall(CG_SEND_CLIENT_COMMAND, "score"), then draws the header and body.
  * Takes no arguments; returns qboolean (EAX 0/1).
@@ -5535,9 +5535,9 @@ void CG_GetEffectOriginAxis(int32_t effectIndex, vec3_t outOrigin, axis_t outAxi
 /*
  * CG_ScrollScoreboardDown (0x30037e60) — scroll the scoreboard list down by one
  * step. Reads only globals: if the scoreboard-active companion flag
- * (cg_scoreboardOverflowed, 0x3048a564) is nonzero it computes
- * cg_scoreboardScrollPos + cg_scoreboardScrollStep_vmCvar.integer, clamps that to
- * (cg_scoreboardNumClients - 1), and stores it back. Takes no arguments
+ * (cg.scoreboardOverflowed, 0x3048a564) is nonzero it computes
+ * cg.scoreboardScrollPos + cg_scoreboardScrollStep_vmCvar.integer, clamps that to
+ * (cg.numScores - 1), and stores it back. Takes no arguments
  * and returns void (`RET`, no stack cleanup). Name adopted by proven behavior
  * from the cgame_mp bank (CG_ScrollScoreboardDown); the sibling
  * CG_ScrollScoreboardUp step is inlined directly inside CG_KeyEvent in this
@@ -5569,7 +5569,7 @@ qboolean CG_KeyEvent(int32_t key, qboolean down);
  *   +0x14/+0x18  alignX/alignY   owner-relative adjustment selectors
  *   +0x4c/+0x50  moveFromX/Y     previous interpolation endpoints (int -> float)
  * The interpolation window is shared across both components:
- *   +0x54        moveStartTime   cg_time base of the interpolation
+ *   +0x54        moveStartTime   cg.time base of the interpolation
  *   +0x58        moveTime        interpolation length in ms (signed; <=0 => settled)
  * The former cgCoordValueNode_t partial overlay was redundant and has been removed.
  */
@@ -5595,8 +5595,8 @@ long double CG_HudElemY(const hudElem_t *node,
 /*
  * CG_GetSortedHudElems (0x3002a440) — reconstructed; see
  * src/client/cgame/hud/cg_getsortedhudelems.c. Gathers the active HUD elements
- * (type != 0) from the local playerState's two hud arrays (cg_snap->ps.hudArchival
- * then cg_snap->ps.hudCurrent, each PLAYERSTATE_HUD_ELEM_COUNT entries) into
+ * (type != 0) from the local playerState's two hud arrays (cg.snap->ps.hudArchival
+ * then cg.snap->ps.hudCurrent, each PLAYERSTATE_HUD_ELEM_COUNT entries) into
  * `sortedList` as an array of hudElem_t pointers, qsorts them ascending by
  * hudElem_t.sortKey (+0x6c),
  * and returns the number gathered. ABI: the list pointer arrives in EDX; count
@@ -5610,8 +5610,8 @@ int CG_GetSortedHudElems(hudElem_t **sortedList);
  * milliseconds, clamped to >= 0. Reads the element's timer-mode discriminant at
  * +0x00 (a jump table over hudElemType_t values 4..9, the timer/clock types) and
  * its stored reference time at +0x5c (timerValue), and computes remaining time
- * (timerValue - cg_time, countdown types 4/6/8) or elapsed time (cg_time -
- * timerValue, count-up types 5/7/9) relative to cg_time; a computed negative
+ * (timerValue - cg.time, countdown types 4/6/8) or elapsed time (cg.time -
+ * timerValue, count-up types 5/7/9) relative to cg.time; a computed negative
  * result is clamped to 0. Countdown types add a rounding bias (+999 ms for the
  * whole-second timer, +99 ms for the tenths timer). Register ABI proven from
  * 0x30029780's own bytes and the sibling timer-string call sites: the element
@@ -5731,14 +5731,14 @@ _Static_assert(offsetof(cgLerpAngleBlock_t, viewRoll) == 0x10,
  *   - otherwise, on currentState.pos.trType(+0xc): TR_INTERPOLATE(1), or
  *     TR_LINEAR_STOP(3) with currentState.number(+0x0) < 0x40 (below MAX_CLIENTS),
  *     tail-call the sibling smoothing routine 0x30021bb0 and return.
- *   - otherwise: BG_EvaluateTrajectory(&currentState.pos, cg_time, lerpOrigin)
- *     and BG_EvaluateTrajectory(&currentState.apos, cg_time, lerpAngles);
+ *   - otherwise: BG_EvaluateTrajectory(&currentState.pos, cg.time, lerpOrigin)
+ *     and BG_EvaluateTrajectory(&currentState.apos, cg.time, lerpAngles);
  *     then for eType ET_PLAYER(1) write bgs.clientinfo[otherEntityNum(+0x94)],
  *     for ET_PLAYER_CORPSE(2) write cg_corpseInfo[number(+0x0)-0x40], the
  *     shared cgLerpAngleBlock_t at +0x3e0 (also zeroing lerpAngles[0] and
- *     currentState +0x21c). Finally, unless the entity is cg_predictedEventEntity,
+ *     currentState +0x21c). Finally, unless the entity is cg.predictedPlayerEntity,
  *     mover-lag-adjust lerpOrigin via CG_AdjustPositionForMover using the entity's
- *     mover num (+0x7c), from cg_snap->serverTime to cg_time.
+ *     mover num (+0x7c), from cg.snap->serverTime to cg.time.
  *
  * One caller-cleaned int32 stack arg (the centity pointer); plain RET. The .mcode
  * size-guess "BG_CalculateWeaponAngles" is REJECTED (this is the centity angle-lerp
@@ -5752,9 +5752,9 @@ void CG_CalcEntityLerpPositions(centity_t *entity);
  * CG_InterpolateEntityPosition (0x30021bb0) — RECONSTRUCTED. The sibling
  * angle-lerp path CG_CalcEntityLerpPositions (0x30021d30) tail-calls for entities
  * whose position trajectory is TR_INTERPOLATE, or TR_LINEAR_STOP below MAX_CLIENTS.
- * It evaluates the entity's currentState.pos/apos trajectories at cg_snap->serverTime
- * AND its nextState.pos/apos trajectories at cg_nextSnap->serverTime, then blends the
- * two evaluations by cg_frameInterpolation: a plain lerp for the position
+ * It evaluates the entity's currentState.pos/apos trajectories at cg.snap->serverTime
+ * AND its nextState.pos/apos trajectories at cg.nextSnap->serverTime, then blends the
+ * two evaluations by cg.frameInterpolation: a plain lerp for the position
  * (lerpOrigin, +0x208) and a short-way LerpAngle (0x3004bd00) per component for the
  * angles (lerpAngles, +0x214). When nextState.eType == ET_PLAYER it also
  * publishes the LerpAngle-blended lean scalars into bgs.clientinfo[
@@ -5767,8 +5767,8 @@ void CG_InterpolateEntityPosition(centity_t *entity /* ESI */);
 /*
  * CG_DrawTankPositionStatus (0x30031f70) — the mask-gated rotated-tag member
  * of the 0x30031cb0..0x30032042 HUD-tag draw family. Draws one HUD "tag" (a 2D shader
- * quad) for cg_entities[cg_predictedPlayerState.viewLockedEntityNum], sliding in horizontally and rotated by
- * AngleSubtract(cg_refdefViewAngles[1], entity->lerpAngles[1]) exactly like the
+ * quad) for cg_entities[cg.predictedPlayerState.viewLockedEntityNum], sliding in horizontally and rotated by
+ * AngleSubtract(cg.refdefViewAngles[1], entity->lerpAngles[1]) exactly like the
  * rotated-tag sibling (0x30031d50), but adds a per-entity bitmask gate: the entity's
  * hudTagMask (+0xe4) must have the (1 << bitIndex) bit set, where bitIndex is a
  * caller-supplied argument. ABI: rect in EDI (float[4]), stateFilter in ECX (register
@@ -5846,8 +5846,8 @@ void CG_SetupWeaponLightingOrigin(centity_t *ent, refEntity_t *re);
  * `ADD ESP,8` right after the CALL at 0x3001e469. From CG_General the first stack arg is
  * cent->eType and the second is cg_gameModels[cent->modelIndex]. Internally it queries the DObj handle
  * (CG_DOBJ_GET_HANDLE), wraps the model (CG_DOBJ_WRAP_MODEL), compares/releases the
- * previously registered DObj-info in the per-entity tables cg_dObjInfoKeys /
- * cg_dObjInfoHandles (0x30487af8/0x30488af4, indexed by entityNum), builds the DObj
+ * previously registered DObj-info in the per-entity tables cg.dObjInfoKeys /
+ * cg.dObjInfoHandles (0x30487af8/0x30488af4, indexed by entityNum), builds the DObj
  * model set (CG_CLIENT_DOBJ_CREATE), and for eType ET_TURRET (11) constructs the
  * MG42 weapon anim tree via CG_CreateMG42WeaponAnimTree (0x3001e960) and instantiates
  * it (CG_XANIM_CREATE_TREE, trap 134 == 0x86). Reconstructed at
@@ -5929,7 +5929,7 @@ cgame_compat_unchecked_cgentity(int32_t index)
 }
 #undef CGENTITY_COMPAT_ALWAYS_INLINE
 
-/* cg_specialTagPlacement (orientation_t @ 0x3048b0e4) is declared in globals.h. */
+/* cg.specialTagPlacement (orientation_t @ 0x3048b0e4) is declared in globals.h. */
 
 /*
  * CG_DrawRotatedPic (0x3001cb60) — draw a 2D shader quad (x, y, w, h) rotated by
@@ -6011,7 +6011,7 @@ void CG_CalcEntityLerpOrigin(centity_t *cent);
  * 16-entry jump table. Reconstructed in functions/FUN_30022170_30022228.c; the
  * dispatcher takes `cent` in EAX (register ABI). Declared here so the per-frame
  * driver CG_AddPacketEntities (0x3001f810) can call it on each snapshot entity and
- * on cg_predictedEventEntity. See the .c for the full proof. */
+ * on cg.predictedPlayerEntity. See the .c for the full proof. */
 void CG_AddCEntity(centity_t *cent);
 
 /*
@@ -6047,7 +6047,7 @@ void CG_AddPacketEntities(void);
 
 /*
  * CG_UpdateHudSpinAngle (0x3001d3a0, provisional role name) — advance the
- * time-animated spin angle of the rotating HUD element (cg_hudSpinAngle,
+ * time-animated spin angle of the rotating HUD element (cg.hudSpinAngle,
  * 0x3048b5cc) toward a target angle, via a critically-damped angular spring
  * integrated in <=5 ms substeps.
  *
@@ -6055,14 +6055,14 @@ void CG_AddPacketEntities(void);
  * body takes NO arguments — although its sole caller CG_DrawSpinningPic
  * (0x3002f910) pre-stores three/four floats in the outgoing stack frame, this
  * function never reads any [ESP + arg] slot (verified exhaustively; all stack
- * accesses are its own locals). It reads globals only: cg_refdefViewAngles[1]
- * (0x30487acc) and cg_hudSpinBaseTime (0x3048b5c8) to form the target angle,
- * cg_time (0x304831b0), cg_hudSpinPrevTime (0x30134ce0) and cg_hudSpinVel
- * (0x3048b5d0) as running state, and writes cg_hudSpinAngle. The return value in
+ * accesses are its own locals). It reads globals only: cg.refdefViewAngles[1]
+ * (0x30487acc) and cg.hudSpinBaseTime (0x3048b5c8) to form the target angle,
+ * cg.time (0x304831b0), cg_hudSpinPrevTime (0x30134ce0) and cg.hudSpinVel
+ * (0x3048b5d0) as running state, and writes cg.hudSpinAngle. The return value in
  * EAX is undefined garbage and is ignored by the caller; declared void. Bare RET
  * (no callee stack cleanup). The .mcode size-guess "PM_BeginWeaponChange" is
  * REJECTED: this touches no pmove/weapon-change state and produces a HUD rotation
- * angle from cg_time. The earlier 4-float caller-observed signature is corrected
+ * angle from cg.time. The earlier 4-float caller-observed signature is corrected
  * here to () to match the machine code.
  */
 void CG_UpdateHudSpinAngle(void);
@@ -6074,7 +6074,7 @@ void CG_UpdateHudSpinAngle(void);
  * cgame HUD-command dispatcher (0x300320e0, sole call site 0x3003249f). Scales
  * the rect into virtual-screen space with cg_hudCompassSize_vmCvar.value (0x3048c4a8) and
  * fixed anchor constants, advances/reads the spin angle via CG_UpdateHudSpinAngle
- * / cg_hudSpinAngle, and draws it via trap_R_SetColor(color) / CG_DrawRotatedPic
+ * / cg.hudSpinAngle, and draws it via trap_R_SetColor(color) / CG_DrawRotatedPic
  * / trap_R_SetColor(NULL). ABI (proven from the call site): EAX = pointer to the
  * rect float[4]; two caller-cleaned cdecl stack args hShader then color. The
  * .mcode size-guess "PlayerCmd_isOnGround" is REJECTED: this issues 2D-draw cgame
@@ -6195,7 +6195,7 @@ typedef struct flameChunk_s {
                                      * where EAX=ownerInfoIndex). CG_AddFlameSpriteToScene
                                      * (0x300268e0) uses it as the OWNER CLIENT NUMBER: it is
                                      * passed as arg0 to CG_FlameDamage (0x300265c0)
-                                     * and compared against cg_snap->ps.psClientNum (+0xe0) to decide
+                                     * and compared against cg.snap->ps.psClientNum (+0xe0) to decide
                                      * whether this flame belongs to the local player (the
                                      * first-person view-relative billboard-basis path). So
                                      * +0x34/+0x38 are the flame's owner-entity/limb index.
@@ -6295,7 +6295,7 @@ typedef struct flameChunk_s {
     vec3_t    worldPos;           /* +0xd8/dc/e0: chunk world position (a vec3). Merged from f2.
                                      * CG_AddFlameSpriteToScene (0x300268e0) reads it as
                                      * the sprite CENTER world position: it subtracts
-                                     * cg_refdef.vieworg and VectorNormalize()s the difference to
+                                     * cg.refdef.vieworg and VectorNormalize()s the difference to
                                      * build the billboard facing, uses it as the quad center, and
                                      * on exit stores the triple into cg_flameLastSpritePos
                                      * (0x300ab738/73c/740).
@@ -6440,7 +6440,7 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
  * CG_ADSAnim_AdvanceZoom / CG_PlayADSAnim taking a cg_adsAnimState_t*. The machine
  * code proves those addresses operate on a flameChunk_t, not an ADS-anim struct:
  * 0x30023b70 reads kind (+0x2c), ownerInfoIndex (+0x34, compared against
- * cg_snap->ps.psClientNum), driftSpeed (+0x94), soundAmpRate (+0xb8), startSpeedBits
+ * cg.snap->ps.psClientNum), driftSpeed (+0x94), soundAmpRate (+0xb8), startSpeedBits
  * (+0x5c) and the double timestamps spawnTime/endTime (+0x48/+0x50); 0x30025c60
  * advances the chunk's radius (+0xe4) toward startSpeedBits (+0x5c) using that rate
  * and stamps spawnTimeCopy (+0x68); 0x30023c30 advances driftSpeed (+0x94),
@@ -6453,7 +6453,7 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
  * CG_FlameGetSizeRate (0x30023b70) — compute a flame chunk's per-frame size/expansion
  * advance rate. `this` (the flame chunk) arrives in ESI (register-argument helper);
  * float result returned on ST(0). Body reads kind/ownerInfoIndex/driftSpeed/soundAmpRate
- * and the chunk's double life span (endTime - spawnTime) and mixes cg_snap->ps.psClientNum. */
+ * and the chunk's double life span (endTime - spawnTime) and mixes cg.snap->ps.psClientNum. */
 /* long double return: 0x30023b70 ends FADDP; ADD ESP; RET with no store, so it
  * returns raw st(0). CG_AdvanceFlameChunkSize FMULPs it and CG_FireFlameChunks
  * FMULs it by 14.5f, both before any rounding (Class 7). The five callers that
@@ -6584,7 +6584,7 @@ void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
 typedef struct cgFlameInfo_s {
     int32_t  clientFrame;        /* +0x00: cg.clientFrame stamp of the last emitter
                                   * update. Current/recent checks compare it against
-                                  * cg_clientFrame-1; CG_EmitPlayerFlameChunks writes
+                                  * cg.clientFrame-1; CG_EmitPlayerFlameChunks writes
                                   * the current frame here on exit (0x30025550). */
     vec3_t    prevDir;            /* +0x04/+0x08/+0x0c: the emitter's previous-frame aim
                                      * direction (a vec3). CG_EmitPlayerFlameChunks
@@ -6633,7 +6633,7 @@ typedef struct cgFlameInfo_s {
                                      * CG_UpdateFlamethrowerSounds also touches +0x54. Provisional
                                      * name; exact source unresolved. */
     int32_t  emitAccumTime;         /* +0x58: accumulated emit time (ms). CG_EmitPlayerFlameChunks
-                                     * (0x30024050) adds cg_frametime to it each non-terminal
+                                     * (0x30024050) adds cg.frametime to it each non-terminal
                                      * emit (0x30024562) and resets it to 0 on the terminal
                                      * path (0x30025222). Provisional name; exact source
                                      * unresolved. */
@@ -6671,7 +6671,7 @@ typedef struct cgFlameInfo_s {
                                      * on it (compared against cg_flameTime and cg_flameTime-6000).
                                      * Was mechanical g_data_* dword 0x300ab7f0. Provisional. */
     uint32_t damageActive;         /* +0xa4: nonzero while the client is burning */
-    int32_t  lastPainTime;         /* +0xa8: cg_time of last pain notification */
+    int32_t  lastPainTime;         /* +0xa8: cg.time of last pain notification */
     int32_t  painCounter;          /* +0xac: caller-supplied pain event id */
     double   lastFlameTime;         /* +0xb0: last emit's flame-clock time as a double.
                                      * CG_EmitPlayerFlameChunks stores (double)cg_flameTime
@@ -6727,7 +6727,7 @@ _Static_assert(offsetof(cgFlameInfo_t, painCounter) == 0xac, "cgFlameInfo painCo
  * behavior; renamed to CG_UpdateFlamethrowerSounds because the loop also drives ambient
  * catch-fire (player-burning) sounds, not only the flamethrower weapon.
  *
- * cg_clientFrame (0x30459140) is the per-frame stamp consumed here as
+ * cg.clientFrame (0x30459140) is the per-frame stamp consumed here as
  * `clientFrame - 1`; declared in globals.h (its canonical home).
  *
  * CG_PlayFlameChunkSound (0x30025990, provisional) — emit/position one chunk's
@@ -6780,7 +6780,7 @@ float CG_ScoreboardHeight(int32_t *lineCount);
 /*
  * CG_BuildSolidList (0x30035030) — reconstructed in
  * functions/FUN_30035030_300350c2.c. Rebuild the per-frame collision lists from
- * cg_nextSnap. ET_ITEM entities enter cg_triggerEntities[]; other entities with a
+ * cg.nextSnap. ET_ITEM entities enter cg_triggerEntities[]; other entities with a
  * nonzero nextState.solid enter cg_solidEntities[]. Non-solid inline brush models
  * are excluded. The name is confirmed by the same-module Mac symbol bank. */
 void CG_BuildSolidList(void);
@@ -6831,9 +6831,9 @@ void CG_Trace(int32_t contentMask, const vec3_t end, const vec3_t maxs,
 /*
  * CG_ScanForCrosshairEntity (0x3001a4d0) — reconstructed in
  * functions/FUN_3001a4d0_3001a5ab.c. Trace a "shot" ray from the camera origin
- * (cg_refdef.vieworg) 8192 units along the current aim direction and, if it hits a
+ * (cg.refdef.vieworg) 8192 units along the current aim direction and, if it hits a
  * hittable entity below MAX_CLIENTS that isn't the local player, latch it as the
- * crosshair target (cg_crosshairEntNum / cg_crosshairEntTime = cg_time). Vehicles
+ * crosshair target (cg.crosshairClientNum / cg.crosshairClientTime = cg.time). Vehicles
  * redirect to their occupant (currentState.vehicleEntityNum). Consumed by the
  * crosshair-name HUD drawer at 0x3001a604. Takes no args, returns nothing.
  * The .mcode size-guess "CG_DrawScoreboard" is REJECTED: the real CG_DrawScoreboard
@@ -6872,13 +6872,13 @@ void CG_TraceCapsule(trace_t *out, const vec3_t start, const vec3_t mins,
  * (its callers are the flame-fire paths at 0x30025da0 and 0x30027d10 / the
  * provisional CG_FireFlameChunks). It first runs the ordinary world trace/
  * projection CG_Trace (0x30035310) into the caller's `out` buffer, then
- * — unless the traced entity IS the local player (entityNum == cg_snap->ps.psClientNum)
+ * — unless the traced entity IS the local player (entityNum == cg.snap->ps.psClientNum)
  * — refines the result against the local player's own body: it issues the setup
- * trap CG_CM_TEMP_CAPSULE_MODEL (0x2a, CONTENTS_BODY, cg_snap+0x568, cg_snap+0x574) and feeds
+ * trap CG_CM_TEMP_CAPSULE_MODEL (0x2a, CONTENTS_BODY, cg.snap+0x568, cg.snap+0x574) and feeds
  * its handle into the body trace CG_CM_TRANSFORMED_CAPSULE_TRACE (0x29) writing a local
  * trace_t. If that body trace was all-solid (result.allsolid != 0) OR came back nearer
  * than the world trace (body.fraction < out->fraction), it stamps
- * body.entityNum = (uint16_t)cg_snap->ps.psClientNum and copies the 48-byte body result
+ * body.entityNum = (uint16_t)cg.snap->ps.psClientNum and copies the 48-byte body result
  * over *out. Otherwise the world result is left in place.
  *
  * Custom register ABI (proven from the call sites at 0x300260fa / 0x3002828c):
@@ -6888,7 +6888,7 @@ void CG_TraceCapsule(trace_t *out, const vec3_t start, const vec3_t mins,
  *   [ESP+4]  out       (trace_t *, final destination)
  *   [ESP+8]  start     (const vec3_t)
  *   [ESP+0xc] end      (const vec3_t)
- *   [ESP+0x10] entityNum (int)       -> compared to cg_snap->ps.psClientNum; also
+ *   [ESP+0x10] entityNum (int)       -> compared to cg.snap->ps.psClientNum; also
  *                                       CG_Trace passEntityNum
  * The function ends with a plain RET, so the four stack dwords are caller-cleaned
  * (cdecl for the stack portion). EBX/EBP/ESI/EDI are callee-saved and restored.
@@ -6982,8 +6982,8 @@ void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs,
  * scaledAmplitude, timeFalloff} while the source is still live, else returns
  * qfalse (expired, or elapsed time outside [0, duration)). Register-arg helper:
  * the source pointer arrives in ESI (client thiscall-style ABI). The distance
- * falloff uses VectorDistance(cg_refdef.vieworg, source->origin). The .mcode
- * size-guess "PM_BeginWeaponBreakingdown" is REJECTED — this reads cg_time and
+ * falloff uses VectorDistance(cg.refdef.vieworg, source->origin). The .mcode
+ * size-guess "PM_BeginWeaponBreakingdown" is REJECTED — this reads cg.time and
  * the view origin and computes shake falloff, which is cgame camera-shake logic,
  * not a pmove weapon routine.
  */
@@ -6994,7 +6994,7 @@ qboolean CG_EvaluateCameraShakeSource(cg_shakeSource_t *source);
  * CG_AddCameraShake (0x3001b420) — register a new camera-shake ("earthquake")
  * source at a world position. Assigned name script_method_scriptbuiltin_viewkick
  * from the .mcode is REJECTED: this is not a view-kick (no playerState viewangle
- * math); it seeds a cg_shakeSource_t into the 4-slot cg_shakeSources table.
+ * math); it seeds a cg_shakeSource_t into the 4-slot cg.shakeSources table.
  *
  * Client register/stack ABI (proven at all three call sites, each cleans 0xc of
  * stack => 3 stack args + ECX): the world origin vec3 arrives in ECX; the three
@@ -7002,7 +7002,7 @@ qboolean CG_EvaluateCameraShakeSource(cg_shakeSource_t *source);
  * `duration` to float when storing it into the shake source. Early-out when
  * `amplitude <= 0.0f` (FCOMP against 0.0f at .rdata 0x3007bcec).
  *
- * The new source is placed into the first free slot (startMsec > cg_time, i.e.
+ * The new source is placed into the first free slot (startMsec > cg.time, i.e.
  * never-used/future, or elapsed >= duration i.e. expired); if all four are live,
  * it replaces the slot with the smallest scaledAmplitude (+0x1c) — but only when
  * that minimum is below the evaluated local scratch threshold. The original
@@ -7017,13 +7017,13 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
 
 /*
  * CG_CalcViewShake (0x3001b550) — apply the aggregate camera shake to the view for
- * the current frame. Walks cg_shakeSources[4] via CG_EvaluateCameraShakeSource, takes
- * the strongest surviving source's scaledAmplitude (also merging cg_shakeExternAmplitude
- * @0x3048b5c0), clamps it to 1.0, then (a) jitters cg_refdef.vieworg by three rand()-based
+ * the current frame. Walks cg.shakeSources[4] via CG_EvaluateCameraShakeSource, takes
+ * the strongest surviving source's scaledAmplitude (also merging cg.shakeExternAmplitude
+ * @0x3048b5c0), clamps it to 1.0, then (a) jitters cg.refdef.vieworg by three rand()-based
  * offsets scaled by amplitude*0.8, and (b) advances the effect spin-angle triple
- * (cg_refdefViewAngles[0]/cg_refdefViewAngles[1]/cg_refdefViewAngles[2]) with three
- * sinusoidal sway terms driven by cg_time and the random phase cg_shakeSpinPhase
- * (@0x3048b5bc). On frames with no active shake it only re-rolls cg_shakeSpinPhase.
+ * (cg.refdefViewAngles[0]/cg.refdefViewAngles[1]/cg.refdefViewAngles[2]) with three
+ * sinusoidal sway terms driven by cg.time and the random phase cg.shakeSpinPhase
+ * (@0x3048b5bc). On frames with no active shake it only re-rolls cg.shakeSpinPhase.
  *
  * The .mcode size-guess name "Item_Slider_Paint" is REJECTED (real Item_Slider_Paint
  * is 0x30056c80); role-derived from the camera-shake call graph. cdecl, no source args
@@ -7314,7 +7314,7 @@ markPoly_t *CG_AllocMark(void);
  * world surfaces at `origin` along the surface `dir`, and either draw it as a
  * temporary poly this frame or store it as a persistent mark. Behavior proven from
  * the i386 machine code:
- *   1. Gate on cg_marks_vmCvar.integer (return if 0) and cg_suppressMarksGate
+ *   1. Gate on cg_marks_vmCvar.integer (return if 0) and cg.suppressMarksGate
  *      (return if nonzero). Clamp a negative `markLifeTime` to 20000 ms.
  *   2. Normalize `dir`, build a perpendicular axis via PerpendicularVector and
  *      RotatePointAroundVector(perp, dir, axis, orientation), and form a 4-corner
@@ -7324,7 +7324,7 @@ markPoly_t *CG_AllocMark(void);
  *   4. Pack (red,green,blue,alpha)*255 -> Q_rint -> one RGBA dword per vertex.
  *   5. For each fragment (numPoints clamped to 10): set every vert's color; then
  *      if `temporary`, trap_R_AddPolyToScene (CG_R_ADDPOLYTOSCENE) immediately;
- *      else CG_AllocMark and fill the node (markTime=cg_time, markShader, alphaFade,
+ *      else CG_AllocMark and fill the node (markTime=cg.time, markShader, alphaFade,
  *      colors, numVerts, verts[], duration=markLifeTime) for CG_AddMarks to draw.
  * Register ABI: `dir` arrives in ECX; all other parameters are cdecl stack args
  * (the caller unwinds; the huge frame is chkstk-probed). The .mcode size-guess
@@ -7433,7 +7433,7 @@ int32_t CG_EntityType(int32_t entityNum);
  * CG_PredictPlayerState (0x30036070) - reconstructed; see
  * functions/FUN_30036070_300361c7.c. Refreshes the tracked camera/view entity slot
  * (cg_entities[cg_adsViewErrorEntityNum]) angle block from the requested view origin
- * and its evaluated angle trajectory, then, while the player is scoped (cg_snap
+ * and its evaluated angle trajectory, then, while the player is scoped (cg.snap
  * serverFlags bit 0x80000) and the ADS overlay is active, advances the two ADS
  * view-error (idle aim-wander) angle accumulators by a random-magnitude,
  * random-phase step. The mechanical size-guess name "ScriptEnt_MoveAxis" (a
@@ -7480,7 +7480,7 @@ qboolean CG_AddPlayerViewWeapon(centity_t *cent);
 void CG_AddPlayerWaterShadow(centity_t *cent);
 /* CG_Player's per-model-effect scratch: +0x00 doubles as the CG_PlayerShadow out
  * float (shadowPlane) and +0x04 as an entityNum the caller compares to
- * cg_snap->ps.psClientNum. CG_PlayerShadow writes only +0x00. */
+ * cg.snap->ps.psClientNum. CG_PlayerShadow writes only +0x00. */
 /* (A former cgPlayerModelEffectScratch_t two-field struct here was a mis-model:
  * the +0x04 slot next to CG_Player's shadowPlane local is that function's own
  * spilled animStateIndex, written at 0x30034417 — not a struct field.) */

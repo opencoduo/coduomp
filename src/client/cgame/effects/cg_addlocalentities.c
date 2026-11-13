@@ -36,11 +36,11 @@
  *   3002ad07  CMP ESI,0x30537da0          empty-list test against the sentinel addr
  *   3002ad0d  JZ  0x3002ada0              if empty -> return
  * loop (3002ad14):
- *   3002ad14  MOV EAX,[0x304831b0]        EAX = cg_time
- *   3002ad19  CMP EAX,[ESI+0x10]          cmp cg_time, le->endTime  (signed, JL below)
+ *   3002ad14  MOV EAX,[0x304831b0]        EAX = cg.time
+ *   3002ad19  CMP EAX,[ESI+0x10]          cmp cg.time, le->endTime  (signed, JL below)
  *   3002ad1c  MOV EDI,[ESI]               EDI = le->prev  (captured next-to-visit)
- *   3002ad1e  JL  0x3002ad5c             if cg_time <  le->endTime -> still alive (dispatch)
- *   -- expired branch (cg_time >= le->endTime): inlined CG_FreeLocalEntity(le) --
+ *   3002ad1e  JL  0x3002ad5c             if cg.time <  le->endTime -> still alive (dispatch)
+ *   -- expired branch (cg.time >= le->endTime): inlined CG_FreeLocalEntity(le) --
  *   3002ad20  TEST EDI,EDI                le->prev
  *   3002ad22  JNZ 0x3002ad31              if le->prev != 0 skip error
  *   3002ad24  PUSH 0x30077908 ; CALL ...  Com_ErrorMessage("CG_FreeLocalEntity: not active")
@@ -76,7 +76,7 @@ void CG_AddLocalEntities(void)
     do {
         /* 0x3002ad14 reads the signed target clock before 0x3002ad1c captures
          * the next node to visit. */
-        int32_t now = cg_time;
+        int32_t now = cg.time;
         next = le->prev;
 
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */

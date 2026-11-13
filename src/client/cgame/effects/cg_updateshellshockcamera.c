@@ -8,12 +8,12 @@
 // shellshock screen-blur effect. Runs during the refdef/view-setup pass (sole
 // caller 0x300425de, immediately after the viewaxis is built at 0x3004c200) and
 // rotates the current view axis (cg.refdef.viewaxis, stored as the three
-// consecutive vec3 rows cg_refdef.viewaxis[0] / cg_refdef.viewaxis[1] /
-// cg_refdef.viewaxis[2] at 0x30487a9c..0x30487bc) by a small orthonormal basis
-// derived from the two screen-blur amounts cg_shellshockScreenBlurX/Y.
+// consecutive vec3 rows cg.refdef.viewaxis[0] / cg.refdef.viewaxis[1] /
+// cg.refdef.viewaxis[2] at 0x30487a9c..0x30487bc) by a small orthonormal basis
+// derived from the two screen-blur amounts cg.shellshockScreenBlurX/Y.
 //
 // NAME: the exact CoD source symbol is unproven. The role is proven from the
-// machine code (reads cg_shellshockScreenBlurX/Y, builds a blur-tilt basis,
+// machine code (reads cg.shellshockScreenBlurX/Y, builds a blur-tilt basis,
 // MatrixMultiplies it into cg.refdef.viewaxis). The same-module PPC bank lists a
 // CG_UpdateShellShockCamera in the shellshock family. Its cluster position and
 // matching camera-axis behavior identify this Windows body with that symbol.
@@ -39,7 +39,7 @@ void CG_UpdateShellShockCamera(void)
      * .rdata float pool is 1.0f@bce0 / 2.0f@bce4 / 0.5f@bce8 / 0.0f@bcec).
      * If both blurX and blurY are exactly 0.0f, return without touching the
      * view axis. */
-    if (cg_shellshockScreenBlurX == 0.0f && cg_shellshockScreenBlurY == 0.0f)
+    if (cg.shellshockScreenBlurX == 0.0f && cg.shellshockScreenBlurY == 0.0f)
         return;
 
     /* Local orthonormal basis (row-major float[3][3]) built from the blur
@@ -47,7 +47,7 @@ void CG_UpdateShellShockCamera(void)
      * cross-product-derived orthogonal rows. Laid out on the stack at ESP+0x04. */
     axis_t blurAxis;
     /* The refdef view axis, gathered as a contiguous 3x3 from the three
-     * consecutive vec3 globals cg_refdef.viewaxis[0]/Axis1/Axis2. Laid out at
+     * consecutive vec3 globals cg.refdef.viewaxis[0]/Axis1/Axis2. Laid out at
      * ESP+0x28. */
     axis_t viewAxis;
 
@@ -56,8 +56,8 @@ void CG_UpdateShellShockCamera(void)
      * 1.0f slots come from ECX=0x3f800000 (1.0f) and XOR EAX (0.0f as an integer
      * bit pattern for +0.0f). Then normalize row 0 in place. */
     blurAxis[0][0] = 1.0f;
-    blurAxis[0][1] = cg_shellshockScreenBlurX;
-    blurAxis[0][2] = cg_shellshockScreenBlurY;
+    blurAxis[0][1] = cg.shellshockScreenBlurX;
+    blurAxis[0][2] = cg.shellshockScreenBlurY;
 
     vec3_t up;
     up[0] = 0.0f;   /* ESP+0x1c */
@@ -89,23 +89,23 @@ void CG_UpdateShellShockCamera(void)
      *   row2[1] = r[0]*a[2] - r[2]*a[0]
      *   row2[2] = r[1]*a[0] - r[0]*a[1]
      * i.e. cross(a, r). */
-    viewAxis[0][0] = cg_refdef.viewaxis[0][0];
-    viewAxis[0][1] = cg_refdef.viewaxis[0][1];
-    viewAxis[0][2] = cg_refdef.viewaxis[0][2];
-    viewAxis[1][0] = cg_refdef.viewaxis[1][0];
-    viewAxis[1][1] = cg_refdef.viewaxis[1][1];
-    viewAxis[1][2] = cg_refdef.viewaxis[1][2];
-    viewAxis[2][0] = cg_refdef.viewaxis[2][0];
-    viewAxis[2][1] = cg_refdef.viewaxis[2][1];
-    viewAxis[2][2] = cg_refdef.viewaxis[2][2];
+    viewAxis[0][0] = cg.refdef.viewaxis[0][0];
+    viewAxis[0][1] = cg.refdef.viewaxis[0][1];
+    viewAxis[0][2] = cg.refdef.viewaxis[0][2];
+    viewAxis[1][0] = cg.refdef.viewaxis[1][0];
+    viewAxis[1][1] = cg.refdef.viewaxis[1][1];
+    viewAxis[1][2] = cg.refdef.viewaxis[1][2];
+    viewAxis[2][0] = cg.refdef.viewaxis[2][0];
+    viewAxis[2][1] = cg.refdef.viewaxis[2][1];
+    viewAxis[2][2] = cg.refdef.viewaxis[2][2];
 
     blurAxis[2][0] = blurAxis[1][2] * blurAxis[0][1] - blurAxis[1][1] * blurAxis[0][2];
     blurAxis[2][1] = blurAxis[1][0] * blurAxis[0][2] - blurAxis[1][2] * blurAxis[0][0];
     blurAxis[2][2] = blurAxis[1][1] * blurAxis[0][0] - blurAxis[1][0] * blurAxis[0][1];
 
     /* 0x3003b7a3..0x3003b7ca: out = blurAxis * viewAxis, written back over the
-     * view axis in place (out=&cg_refdef.viewaxis[0], which is viewaxis[0] and is
+     * view axis in place (out=&cg.refdef.viewaxis[0], which is viewaxis[0] and is
      * contiguous with Axis1/Axis2). in1(lhs)=blurAxis in ECX, in2(rhs)=viewAxis
      * in EAX, out=EDX. */
-    MatrixMultiply(blurAxis, viewAxis, cg_refdef.viewaxis);
+    MatrixMultiply(blurAxis, viewAxis, cg.refdef.viewaxis);
 }

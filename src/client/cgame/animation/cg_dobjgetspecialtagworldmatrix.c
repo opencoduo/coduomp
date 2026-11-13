@@ -11,7 +11,7 @@
 /*
  * CG_DObjGetSpecialTagWorldMatrix (provisional-by-role) — resolve a named DObj
  * bone/tag on `self`, advance that bone's DObj trace-part state, then compose the
- * fixed placement `cg_specialTagPlacement` into the bone's engine matrix to produce
+ * fixed placement `cg.specialTagPlacement` into the bone's engine matrix to produce
  * a world-space tag matrix in `out`. Returns qtrue on success, qfalse when the
  * entity has no such tag.
  *
@@ -23,7 +23,7 @@
  * trap 0xa0 (base + handle<<6), and (for the composing variants) compose a local
  * placement matrix into that bone matrix via CG_ComposeBoneMatrix. This variant
  * differs in two proven ways:
- *   - its local placement is the FIXED global cg_specialTagPlacement (an
+ *   - its local placement is the FIXED global cg.specialTagPlacement (an
  *     orientation_t at 0x3048b0e4), not a per-entity angles-derived matrix;
  *   - between resolving the bone and reading the matrix table it inlines the four
  *     DObj bone-calculation traps (CreateSkelForBone 0xab, GetHierarchyBits 0xad,
@@ -55,9 +55,9 @@
  *   3001ff0d PUSH &part/EDI/0x9a           trap(0x9a, self, &part) prep
  *   3001ff1e PUSH &part/EDI/0xae           trap(0xae, self, &part) flush
  *   3001ff2f PUSH 0/EDI/0xa0 / CALL        ECX = trap(0xa0, self, 0) matrix table
- *   3001ff3a..ffb1 build local matrix from cg_specialTagPlacement (12 dwords):
- *                  local.axis[0..2] <- cg_specialTagPlacement.axis (0x3048b0f0..)
- *                  local.origin    <- cg_specialTagPlacement.origin (0x3048b0e4..)
+ *   3001ff3a..ffb1 build local matrix from cg.specialTagPlacement (12 dwords):
+ *                  local.axis[0..2] <- cg.specialTagPlacement.axis (0x3048b0f0..)
+ *                  local.origin    <- cg.specialTagPlacement.origin (0x3048b0e4..)
  *   3001ffa6 SHL ESI,6 ; 3001ffb8 ADD ECX,ESI  ECX = table + (boneHandle<<6)
  *   3001ffad MOV EDX,[ESP+0x54] (=[base+4])     EDX = out (incoming stack arg)
  *   3001ffba LEA EAX,[ESP+0x14]                 EAX = &local
@@ -112,15 +112,15 @@ qboolean CG_DObjGetSpecialTagWorldMatrix(struct DObj_s *self,
         (uintptr_t)(void *)boneMatrixTable + (uintptr_t)boneOffset);
 
     /* 3001ff3a-0x3001ffb1: build the local placement matrix from the fixed global
-     * cg_specialTagPlacement (an orientation_t). The 3x3 axis becomes the first
+     * cg.specialTagPlacement (an orientation_t). The 3x3 axis becomes the first
      * three matrix rows and the origin becomes the fourth (origin-after-axis in
      * source, axis-before-origin in the matrix rows). Plain dword copies carry the
      * float bit patterns through unchanged. */
     matrix43_t local;
-    memcpy(&local.axis[0], &cg_specialTagPlacement.axis[0], sizeof(local.axis[0]));
-    memcpy(&local.axis[1], &cg_specialTagPlacement.axis[1], sizeof(local.axis[1]));
-    memcpy(&local.axis[2], &cg_specialTagPlacement.axis[2], sizeof(local.axis[2]));
-    memcpy(&local.origin, &cg_specialTagPlacement.origin, sizeof(local.origin));
+    memcpy(&local.axis[0], &cg.specialTagPlacement.axis[0], sizeof(local.axis[0]));
+    memcpy(&local.axis[1], &cg.specialTagPlacement.axis[1], sizeof(local.axis[1]));
+    memcpy(&local.axis[2], &cg.specialTagPlacement.axis[2], sizeof(local.axis[2]));
+    memcpy(&local.origin, &cg.specialTagPlacement.origin, sizeof(local.origin));
 
     /* 3001ffbe: compose the fixed local placement into the bone matrix -> `out`. */
     CG_ComposeBoneMatrix(boneMatrix, &local, out);

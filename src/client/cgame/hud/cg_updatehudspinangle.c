@@ -9,13 +9,13 @@
 
 /*
  * CG_UpdateHudSpinAngle (0x3001d3a0) — advance the angle of the time-animated
- * spinning HUD element (cg_hudSpinAngle, 0x3048b5cc) toward a target angle using a
+ * spinning HUD element (cg.hudSpinAngle, 0x3048b5cc) toward a target angle using a
  * critically-damped angular spring, integrated in fixed <= 5 ms substeps.
  *
  * NAME ADJUDICATION: the .mcode header's pre-hint "PM_BeginWeaponChange" (a pure
  * size match, win 0x326 vs matched 0x325) is REJECTED. This function touches no
- * pmove/playerState/weapon state; it reads cg_time and HUD spin globals and writes
- * cg_hudSpinAngle. Role name CG_UpdateHudSpinAngle (already in client_recovered.h).
+ * pmove/playerState/weapon state; it reads cg.time and HUD spin globals and writes
+ * cg.hudSpinAngle. Role name CG_UpdateHudSpinAngle (already in client_recovered.h).
  *
  * ABI (proven from this body, superseding the earlier caller-observed guess): NO
  * arguments. The sole caller CG_DrawSpinningPic (0x3002f910) pre-stores four scaled
@@ -28,19 +28,19 @@
  * Frame: SUB ESP,0x10 reserves four float locals; the function then PUSHes ESI/EBP/
  * EDI as saved registers around the AngleSubtract call. Mapping the reserved slots
  * to entry-relative offsets E-0x4, E-0x8, E-0xc, E-0x10:
- *   E-0x4  = `target`     : SHORT2ANGLE(ANGLE2SHORT(cg_refdefViewAngles[1] - baseTime))
+ *   E-0x4  = `target`     : SHORT2ANGLE(ANGLE2SHORT(cg.refdefViewAngles[1] - baseTime))
  *   E-0x8  = `delta`      : signed shortest angle from current angle to `target`
  *   E-0xc  = `stepSec`    : substep length in seconds (step_ms / 1000)
  *   E-0x10 = `foldedDelta`: `delta` re-folded to (-180, 180] after each integration
  *
  * State globals (all exclusively owned by this function):
- *   cg_hudSpinAngle   (0x3048b5cc, float deg)  — output angle
- *   cg_hudSpinVel     (0x3048b5d0, float deg/s) — angular velocity being integrated
- *   cg_hudSpinPrevTime(0x30134ce0, int32 ms)    — cg_time of the previous advance
+ *   cg.hudSpinAngle   (0x3048b5cc, float deg)  — output angle
+ *   cg.hudSpinVel     (0x3048b5d0, float deg/s) — angular velocity being integrated
+ *   cg_hudSpinPrevTime(0x30134ce0, int32 ms)    — cg.time of the previous advance
  * Inputs:
- *   cg_refdefViewAngles[1]  (0x30487acc, float deg) — animated source angle
- *   cg_hudSpinBaseTime  (0x3048b5c8, float)     — angle offset subtracted from it
- *   cg_time             (0x304831b0, ms)        — current client time
+ *   cg.refdefViewAngles[1]  (0x30487acc, float deg) — animated source angle
+ *   cg.hudSpinBaseTime  (0x3048b5c8, float)     — angle offset subtracted from it
+ *   cg.time             (0x304831b0, ms)        — current client time
  */
 
 /* .rdata float constants used by this function (dumped at the exact addresses). */
@@ -60,12 +60,12 @@
 
 void CG_UpdateHudSpinAngle(void)
 {
-    /* 0x3001d3a3..0x3001d3e3: target = BAMS-fold of (cg_refdefViewAngles[1] - baseTime). */
+    /* 0x3001d3a3..0x3001d3e3: target = BAMS-fold of (cg.refdefViewAngles[1] - baseTime). */
     long double targetRaw =
-        ((long double)cg_refdefViewAngles[1] - (long double)cg_hudSpinBaseTime) *
+        ((long double)cg.refdefViewAngles[1] - (long double)cg.hudSpinBaseTime) *
         (long double)ANGLE2SHORT;
     int32_t targetInteger = coduo_fp_to_i32_extended(targetRaw);
-    int32_t now = cg_time; /* 0x3001d3bb MOV ECX,[cg_time] */
+    int32_t now = cg.time; /* 0x3001d3bb MOV ECX,[cg.time] */
     uint32_t targetPacked = (uint32_t)targetInteger & 0xffffu;
     long double targetPackedCarrier = (long double)(int32_t)targetPacked;
     int32_t prev = cg_hudSpinPrevTime;       /* 0x3001d3ce MOV EAX,[prevTime] */
@@ -79,8 +79,8 @@ void CG_UpdateHudSpinAngle(void)
     if (clockAppearsBackwards) {
         /* 0x3001d6a7 reset path: prevTime := now, angle := target, vel := 0. */
         cg_hudSpinPrevTime = now;
-        cg_hudSpinAngle = target;
-        cg_hudSpinVel = 0.0f;
+        cg.hudSpinAngle = target;
+        cg.hudSpinVel = 0.0f;
         return;
     }
 
@@ -90,13 +90,13 @@ void CG_UpdateHudSpinAngle(void)
     float elapsedFloat = (float)elapsed;
     if (elapsedFloat > HUDSPIN_MAX_DELTA_MS) {
         cg_hudSpinPrevTime = now;
-        cg_hudSpinAngle = target;
-        cg_hudSpinVel = 0.0f;
+        cg.hudSpinAngle = target;
+        cg.hudSpinVel = 0.0f;
         return;
     }
 
     /* 0x3001d412..0x3001d425: both call arguments are copied before the time store. */
-    float currentAngle = cg_hudSpinAngle;
+    float currentAngle = cg.hudSpinAngle;
     float deltaTarget = target;
     cg_hudSpinPrevTime = now;
     float delta = AngleSubtract(currentAngle, deltaTarget);
@@ -126,17 +126,17 @@ void CG_UpdateHudSpinAngle(void)
         /* 0x3001d46e..0x3001d494: settle test. If the element is essentially at rest
          * (|delta| < 0.25 AND |vel| < 1.0), snap the angle to the target and stop. */
         if (fabsl((long double)delta) < (long double)SETTLE_DELTA &&
-            fabsl((long double)cg_hudSpinVel) < (long double)SETTLE_VEL) {
+            fabsl((long double)cg.hudSpinVel) < (long double)SETTLE_VEL) {
             /* 0x3001d694: vel := 0; angle := target (EBP held the entry `target`). */
-            cg_hudSpinVel = 0.0f;
-            cg_hudSpinAngle = target;
+            cg.hudSpinVel = 0.0f;
+            cg.hudSpinAngle = target;
             return;
         }
 
         /* 0x3001d49a..0x3001d4ef: advance the angle by vel*stepSec + delta, folded to
          * (-180, 180]; this becomes the new working delta. */
         long double foldedRaw =
-            (((long double)cg_hudSpinVel * (long double)stepSec) +
+            (((long double)cg.hudSpinVel * (long double)stepSec) +
              (long double)delta) * (long double)ANGLE2SHORT;
         uint32_t foldedPacked =
             (uint32_t)coduo_fp_to_i32_extended(foldedRaw) & 0xffffu;
@@ -152,62 +152,62 @@ void CG_UpdateHudSpinAngle(void)
          * symmetric spring damping vel *= (1 - 2*stepSec). */
         if (foldedDelta > 0.0f) {
             /* 0x3001d50a..0x3001d51a: still ahead of target -> decelerate. */
-            cg_hudSpinVel = (float)(
-                (long double)cg_hudSpinVel -
+            cg.hudSpinVel = (float)(
+                (long double)cg.hudSpinVel -
                 (long double)stepSec * (long double)MS_PER_SEC_INV);
         } else if (foldedDelta < 0.0f) {
             /* 0x3001d51c/0x3001d52d..0x3001d537: behind target -> accelerate. */
-            cg_hudSpinVel = (float)(
-                (long double)cg_hudSpinVel +
+            cg.hudSpinVel = (float)(
+                (long double)cg.hudSpinVel +
                 (long double)stepSec * (long double)MS_PER_SEC_INV);
         }
         /* else foldedDelta == 0: 0x3001d52b JP skips the +/- adjustment. */
 
         /* 0x3001d543..0x3001d555: vel -= 2 * (vel * stepSec)  ==  vel*(1 - 2*stepSec). */
-        cg_hudSpinVel = (float)(
-            (long double)cg_hudSpinVel -
+        cg.hudSpinVel = (float)(
+            (long double)cg.hudSpinVel -
             (long double)SPRING_DAMP *
-                ((long double)cg_hudSpinVel * (long double)stepSec));
+                ((long double)cg.hudSpinVel * (long double)stepSec));
 
         /* 0x3001d55b..0x3001d613: overshoot/zero-crossing handling, keyed on the signs
          * of vel and delta (both compared against 0). */
-        if (cg_hudSpinVel > 0.0f) {
+        if (cg.hudSpinVel > 0.0f) {
             /* 0x3001d57a..0x3001d595: if vel and delta share the (+) sign, apply extra
              * damping vel *= (1 - 3.5*stepSec). */
             if (foldedDelta > 0.0f) {
-                cg_hudSpinVel = (float)(
-                    (long double)cg_hudSpinVel -
+                cg.hudSpinVel = (float)(
+                    (long double)cg.hudSpinVel -
                     (long double)OVERSHOOT_DAMP *
-                        ((long double)cg_hudSpinVel * (long double)stepSec));
+                        ((long double)cg.hudSpinVel * (long double)stepSec));
             }
             /* 0x3001d59b..0x3001d5c4: nudge vel down by stepSec; clamp to 0 on cross. */
-            cg_hudSpinVel = (float)(
-                (long double)cg_hudSpinVel - (long double)stepSec);
-            if (cg_hudSpinVel < 0.0f) {
-                cg_hudSpinVel = 0.0f;
+            cg.hudSpinVel = (float)(
+                (long double)cg.hudSpinVel - (long double)stepSec);
+            if (cg.hudSpinVel < 0.0f) {
+                cg.hudSpinVel = 0.0f;
             }
         } else {
             /* 0x3001d5c9..0x3001d5e4: if vel and delta share the (-) sign, extra damping. */
             if (foldedDelta < 0.0f) {
-                cg_hudSpinVel = (float)(
-                    (long double)cg_hudSpinVel -
+                cg.hudSpinVel = (float)(
+                    (long double)cg.hudSpinVel -
                     (long double)OVERSHOOT_DAMP *
-                        ((long double)cg_hudSpinVel * (long double)stepSec));
+                        ((long double)cg.hudSpinVel * (long double)stepSec));
             }
             /* 0x3001d5ea..0x3001d613: nudge vel up by stepSec; clamp to 0 on cross. */
-            cg_hudSpinVel = (float)(
-                (long double)cg_hudSpinVel + (long double)stepSec);
-            if (cg_hudSpinVel > 0.0f) {
-                cg_hudSpinVel = 0.0f;
+            cg.hudSpinVel = (float)(
+                (long double)cg.hudSpinVel + (long double)stepSec);
+            if (cg.hudSpinVel > 0.0f) {
+                cg.hudSpinVel = 0.0f;
             }
         }
         /* else vel == 0: 0x3001d5c9 path with delta >= 0 falls straight to the clamps. */
 
         /* 0x3001d615..0x3001d64f: clamp vel to [-30000, 30000]. */
-        if (cg_hudSpinVel > HUDSPIN_VEL_MAX) {
-            cg_hudSpinVel = HUDSPIN_VEL_MAX;
-        } else if (cg_hudSpinVel < HUDSPIN_VEL_MIN) {
-            cg_hudSpinVel = HUDSPIN_VEL_MIN;
+        if (cg.hudSpinVel > HUDSPIN_VEL_MAX) {
+            cg.hudSpinVel = HUDSPIN_VEL_MAX;
+        } else if (cg.hudSpinVel < HUDSPIN_VEL_MIN) {
+            cg.hudSpinVel = HUDSPIN_VEL_MIN;
         }
         /* 0x3001d651/0x3001d653: loop while ms remain. */
     }
@@ -220,7 +220,7 @@ finish:
         uint32_t finalPacked =
             (uint32_t)coduo_fp_to_i32_extended(finalRaw) & 0xffffu;
         float finalPackedFloat = (float)(int32_t)finalPacked;
-        cg_hudSpinAngle =
+        cg.hudSpinAngle =
             (float)((long double)finalPackedFloat * (long double)SHORT2ANGLE);
     }
 }

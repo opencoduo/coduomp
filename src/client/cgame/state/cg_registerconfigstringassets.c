@@ -27,7 +27,7 @@
 //     atoi's it, and when positive draws the styled loading bar at (200,468,240,10)
 //     with fraction = trap(CG_HUNK_USED)/expected clamped to 1.0; (e) forces a
 //     present with cgame_syscall(CG_UPDATE_SCREEN). The pump only runs when
-//     cg_snap == NULL AND the reentry latch cg_updateScreenActive == 0, exactly the
+//     cg.snap == NULL AND the reentry latch cg_updateScreenActive == 0, exactly the
 //     CG_DrawActive loading-screen gate. The first pump calls the wrapper
 //     CG_DrawFilledBarStyled (0x3001c860); the second inlines that wrapper's body
 //     (same {0.5,0.5,0.5,0.3}/{1,1,1,0.3} colors, flags 0x18, rect 200,468,240,10)
@@ -114,9 +114,9 @@ cgame_compat_register_assets_loading_pump(void)
     int32_t     expectedHunkUsage;
     float       loadFraction;
 
-    /* cg_snap != NULL -> a snapshot is installed, skip the loading pump.
+    /* cg.snap != NULL -> a snapshot is installed, skip the loading pump.
      * (0x30038911/0x3003891c MOV/TEST/JNZ 0x30038b38.) */
-    if (cg_snap != NULL) {
+    if (cg.snap != NULL) {
         return;
     }
     /* Reentry latch: bail if a synchronous redraw is already in progress.

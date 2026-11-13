@@ -13,7 +13,7 @@
 // recovered playerState_t already models with MAX_PS_EVENTS == 4), diffs the new
 // vs. old state, calls the entity-event dispatcher (0x30022810, CG_EntityEvent)
 // for each newly-appeared event, and records it into the predicted-event ring
-// (cg_predictedEvents[16], cg_predictedEventSequence). The same-module PPC name
+// (cg.predictableEvents[16], cg.eventSequence). The same-module PPC name
 // bank lists CG_CheckPlayerstateEvents and CG_EntityEvent, and the machine code
 // proves the mapping.
 //
@@ -67,16 +67,16 @@ void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops)
         // currentState.eventParm slot (+0xa4, aliased in centity_t as fxId)
         // BEFORE dispatch; 0x30034f0d..0x30034f1c call CG_EntityEvent(self=ECX, event=EAX,
         // predicted=1 on the stack).
-        cg_predictedEventEntity.currentState.eventParm = ps->eventParms[ring];
+        cg.predictedPlayerEntity.currentState.eventParm = ps->eventParms[ring];
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        CG_EntityEvent(&cg_predictedEventEntity, event, 1);
+        CG_EntityEvent(&cg.predictedPlayerEntity, event, 1);
 
-        // 0x30034f23/0x30034f26 cg_predictedEvents[i & 0xf] = event;
-        cg_predictedEvents[(int32_t)((uint32_t)i & (MAX_PREDICTED_EVENTS - 1u))] = event;
+        // 0x30034f23/0x30034f26 cg.predictableEvents[i & 0xf] = event;
+        cg.predictableEvents[(int32_t)((uint32_t)i & (MAX_PREDICTED_EVENTS - 1u))] = event;
 
-        // 0x30034f2d..0x30034f36 cg_predictedEventSequence++;
-        cg_predictedEventSequence = coduo_int32_from_bits(
-            (uint32_t)cg_predictedEventSequence + 1u);
+        // 0x30034f2d..0x30034f36 cg.eventSequence++;
+        cg.eventSequence = coduo_int32_from_bits(
+            (uint32_t)cg.eventSequence + 1u);
 
 next_event:
         /* INC ESI and INC EAX are target dword operations; retain their
