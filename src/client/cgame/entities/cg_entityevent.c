@@ -257,7 +257,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
      * local client, set the weapon-movement float state. */
     if (event >= EV_FLESH_LO && event < EV_FLESH_HI) {
         CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
-                            cg_shellFlashSurfaceSounds[event - EV_FLESH_LO]);
+                            cg_landSurfaceSounds[event - EV_FLESH_LO]);
         if (clientNum == (int)cg_clientNum) {
             cg_impactViewKickTime = cg_time;
             cg_impactViewKick = -(long double)eventParm; /* FILD raw; FCHS; FSTP (0x30022a0a..0x30022a1c): no pre-store round */
@@ -270,7 +270,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
      * clamp its rounded result before stamping the kick state. */
     if (event >= EV_BODY_LO && event < EV_BODY_HI) {
         CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
-                            cg_shellFlashSurfaceSounds[event - EV_BODY_LO]);
+                            cg_landSurfaceSounds[event - EV_BODY_LO]);
         CG_PlayEntitySoundAliasByName(entNum, cg_soundLandDamage);
         if (clientNum == (int)cg_clientNum) {
             /* envelope = (hi - lo) * eventParm * 0.01 + lo; FCOM against 12.0.
