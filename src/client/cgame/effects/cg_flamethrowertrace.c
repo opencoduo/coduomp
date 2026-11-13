@@ -43,17 +43,17 @@ _Static_assert(sizeof(trace_t) == 0x30,
  *   30025cf5  CALL CG_Trace(handle=ESI, origin=EBP, flags=EBX,
  *                  out=EDX, arg1=ECX, arg2=EDI, arg3=EAX)   -> C-arg order after
  *                  the reversed pushes is (out, arg1, arg2, arg3).
- *   30025cfa  EAX = cg_snap  (MOV EAX,[0x30459160])
+ *   30025cfa  EAX = cg.snap  (MOV EAX,[0x30459160])
  *   30025cff  ECX = [entry+0x10] = entityNum        (MOV ECX,[ESP+0x60])
- *   30025d03  EDX = cg_snap->ps.psClientNum              (MOV EDX,[EAX+0xe0])
+ *   30025d03  EDX = cg.snap->ps.psClientNum              (MOV EDX,[EAX+0xe0])
  *   30025d0c  CMP ECX,EDX ; 30025d0e JZ epilogue     -> if entityNum == clientNum,
  *                  keep the world result and return (skip the whole body refine).
  *
  *   Body-setup trap CG_CM_TEMP_CAPSULE_MODEL (0x2a):
- *     30025d10  ECX = &cg_snap->ps.playerMaxs (cg_snap+0x574)
+ *     30025d10  ECX = &cg.snap->ps.playerMaxs (cg.snap+0x574)
  *     30025d16  PUSH 0x2000000 (CONTENTS_BODY)
  *     30025d1b  PUSH ECX (&psFlameTraceB)
- *     30025d1c  EAX = cg_snap+0x568 = &cg_snap->ps.playerMins
+ *     30025d1c  EAX = cg.snap+0x568 = &cg.snap->ps.playerMins
  *     30025d21  PUSH EAX (&psFlameTraceA)
  *     30025d22  PUSH 0x2a
  *     30025d24  CALL [cgame_syscall]  ->
@@ -64,7 +64,7 @@ _Static_assert(sizeof(trace_t) == 0x30,
  *                   ADD ESP,0x38 that follows the CG_CM_TRANSFORMED_CAPSULE_TRACE call)
  *
  *   Body trace CG_CM_TRANSFORMED_CAPSULE_TRACE (0x29) into a local trace_t at [ESP+0x10]:
- *     30025d2a  EDX = cg_snap ; 30025d35 EDX = cg_snap+0x20 = &cg_snap->ps.psOrigin
+ *     30025d2a  EDX = cg.snap ; 30025d35 EDX = cg.snap+0x20 = &cg.snap->ps.psOrigin
  *     30025d30  PUSH 0x30071f58 = &vec3_origin {0,0,0}
  *     30025d38  PUSH EDX (&localSoundObj)
  *     30025d39  PUSH ESI (handle)
@@ -96,8 +96,8 @@ _Static_assert(sizeof(trace_t) == 0x30,
  *
  *   Copy-out (30025d6c): stamp entityNum with the local client number, then copy the
  *   whole 48-byte body result over *out:
- *     30025d6c  EAX = cg_snap
- *     30025d71  CX  = (uint16_t)cg_snap->ps.psClientNum   (MOV CX, word [EAX+0xe0])
+ *     30025d6c  EAX = cg.snap
+ *     30025d71  CX  = (uint16_t)cg.snap->ps.psClientNum   (MOV CX, word [EAX+0xe0])
  *     30025d78  EDI = [entry+0x04] = out
  *     30025d7c  result.entityNum = CX (MOV word [ESP+0x38] -> &result+0x28)
  *     30025d81  ECX = 12 ; 30025d86 ESI = &result ; 30025d8a REP MOVSD (DF=0)
@@ -119,20 +119,20 @@ void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs,
 
     /* Refine against the local player's own body, unless the traced entity IS the
      * local player. */
-    if (entityNum == cg_snap->ps.psClientNum) {
+    if (entityNum == cg.snap->ps.psClientNum) {
         return;
     }
 
     handle42 = coduo_int32_from_bits((uint32_t)cgame_syscall(
         CG_CM_TEMP_CAPSULE_MODEL,
-        (intptr_t)cg_snap->ps.playerMins,
-        (intptr_t)cg_snap->ps.playerMaxs,
+        (intptr_t)cg.snap->ps.playerMins,
+        (intptr_t)cg.snap->ps.playerMaxs,
         (int32_t)CONTENTS_BODY));
 
     cgame_syscall(CG_CM_TRANSFORMED_CAPSULE_TRACE, (intptr_t)&result,
                   (intptr_t)start, (intptr_t)end, (intptr_t)mins,
                   (intptr_t)maxs, handle42, contentMask,
-                  (intptr_t)&cg_snap->ps.psOrigin,
+                  (intptr_t)&cg.snap->ps.psOrigin,
                   (intptr_t)&vec3_origin);
 
     /* Keep the body result when it actually hit, or when it came back nearer than
@@ -141,6 +141,6 @@ void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs,
         return;
     }
 
-    result.entityNum = (uint16_t)cg_snap->ps.psClientNum;
+    result.entityNum = (uint16_t)cg.snap->ps.psClientNum;
     memcpy(out, &result, sizeof(result)); /* REP MOVSD, 12 dwords = 48 bytes */
 }

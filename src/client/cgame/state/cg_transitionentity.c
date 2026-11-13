@@ -26,9 +26,9 @@
 //   MOV [EBP+0x228]=0; [EBP+0x224]=0; [EBP+0x220]=0  -> smoothedWeaponAngles = {0,0,0}
 //   MOV [EBP+0x1e8]=1                            -> dobj sentinel set to 1 ("present")
 //   MOV [EBP+0x1f8]=0                            -> laserEffectStarted = 0
-//   EAX=cg_time; ECX=&lerpOrigin(+0x208); EBX=&nextState.pos(+0x100)
+//   EAX=cg.time; ECX=&lerpOrigin(+0x208); EBX=&nextState.pos(+0x100)
 //     CALL BG_EvaluateTrajectory                 -> lerpOrigin  = eval(nextState.pos, cg.time)
-//   EAX=cg_time; ESI=&lerpAngles(+0x214); EBX=&nextState.apos(+0x124)
+//   EAX=cg.time; ESI=&lerpAngles(+0x214); EBX=&nextState.apos(+0x124)
 //     CALL BG_EvaluateTrajectory                 -> lerpAngles  = eval(nextState.apos, cg.time)
 //   EAX = nextState.eType (+0xf8); CMP EAX,4; JA default; JMP [EAX*4 + table@0x3003c980]
 //
@@ -77,9 +77,9 @@ void CG_TransitionEntity(centity_t *cent /* [ESP+0xc] */)
 
     /* Evaluate this entity's motion trajectories at cg.time to produce the current
      * interpolated render origin and angles. */
-    BG_EvaluateTrajectory(&cent->nextState.pos, cg_time,
+    BG_EvaluateTrajectory(&cent->nextState.pos, cg.time,
                           cent->lerpOrigin);
-    BG_EvaluateTrajectory(&cent->nextState.apos, cg_time,
+    BG_EvaluateTrajectory(&cent->nextState.apos, cg.time,
                           cent->lerpAngles);
 
     switch (cent->nextState.eType) {

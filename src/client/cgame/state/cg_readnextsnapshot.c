@@ -13,7 +13,7 @@
 // name "KeywordHash_Key" is REJECTED: this reads snapshots, not a hash key.
 //
 // The two data buffers 0x30459168 / 0x3046e188 (mechanically owner=keywordhash_key)
-// are the cg_activeSnapshots[2] double buffer; 0x30447ab4 (owner=g_runframe) is
+// are the cg.activeSnapshots[2] double buffer; 0x30447ab4 (owner=g_runframe) is
 // cg.processedSnapshotNum; 0x30459158 is cg.latestSnapshotNum; the ring at
 // 0x305380a4/0x305382a4/0x305384a4 (owner=vector4scale) is the lagometer snapshot
 // ring cg_lagometer. All resolved by machine-code producer/consumer evidence and
@@ -38,7 +38,7 @@ snapshot_t *CG_ReadNextSnapshot(void)
 {
     /* 0x3003d220 / 0x3003d225: snapshot the two counters into locals. */
     int32_t processed = cg_processedSnapshotNum;      /* [0x30447ab4] */
-    int32_t latest = cg_latestSnapshotNum;            /* [0x30459158] */
+    int32_t latest = cg.latestSnapshotNum;            /* [0x30459158] */
 
     /* 0x3003d22b..0x3003d24c: warn if the engine has run far ahead of us.
      * CMP latestSnapshotNum, processedSnapshotNum+0x3e8 ; JLE skips the warning,
@@ -49,7 +49,7 @@ snapshot_t *CG_ReadNextSnapshot(void)
         Com_PrintMessage("WARNING: CG_ReadNextSnapshot: way out of range, %i > %i\n",
                          latest, processed);
         /* 0x3003d241/0x3003d247: reload both counters after the call. */
-        latest = cg_latestSnapshotNum;
+        latest = cg.latestSnapshotNum;
         processed = cg_processedSnapshotNum;
     }
 
@@ -57,11 +57,11 @@ snapshot_t *CG_ReadNextSnapshot(void)
      * there is no next snapshot — return NULL. Signed CMP EAX,ECX ; JGE. */
     while (processed < latest) {
         /* 0x3003d260..0x3003d276: pick the free double-buffer slot — the one NOT
-         * currently installed as cg_snap.
-         *   CMP [cg_snap], &cg_activeSnapshots0 ; JZ keeps ESI = &cg_activeSnapshots1. */
-        snapshot_t *dest = (cg_snap == &cg_activeSnapshots0)
-                                 ? &cg_activeSnapshots1
-                                 : &cg_activeSnapshots0;
+         * currently installed as cg.snap.
+         *   CMP [cg.snap], &cg.activeSnapshots[0] ; JZ keeps ESI = &cg.activeSnapshots[1]. */
+        snapshot_t *dest = (cg.snap == &cg.activeSnapshots[0])
+                                 ? &cg.activeSnapshots[1]
+                                 : &cg.activeSnapshots[0];
 
         /* 0x3003d276/0x3003d27b: ++processedSnapshotNum, written back to the global. */
         processed = coduo_int32_from_bits((uint32_t)processed + 1u);
@@ -181,7 +181,7 @@ snapshot_t *CG_ReadNextSnapshot(void)
          * Then reload processed/latest and continue the loop while processed < latest
          * (JL 0x3003d260). The index mask is LAG_SAMPLES-1 (128-entry ring). */
         int32_t snapshotCount = cg_lagometer.snapshotCount; /* 0x3003d28d */
-        latest = cg_latestSnapshotNum;                    /* 0x3003d292 reload */
+        latest = cg.latestSnapshotNum;                    /* 0x3003d292 reload */
         cg_lagometer.snapshotSamples[
             (uint32_t)snapshotCount & (uint32_t)(LAG_SAMPLES - 1)] = -1;
         int32_t nextSnapshotCount = coduo_int32_from_bits(

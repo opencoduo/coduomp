@@ -12,7 +12,7 @@
 // no callee stack cleanup, caller-passed args are register-only.
 //
 // Naming: the .mcode size-guess "PM_BeginWeaponBreakingdown" is REJECTED. This
-// reads cg_time and the view origin (cg_refdef.vieworg) and computes a distance-
+// reads cg.time and the view origin (cg.refdef.vieworg) and computes a distance-
 // and time-attenuated shake magnitude; it is cgame camera-shake logic, not a
 // pmove weapon routine. The name is role-derived from the shake trio call graph
 // (see cg_shakeSource_t in client_recovered.h); exact original symbol unproved.
@@ -32,11 +32,11 @@ _Static_assert(offsetof(cg_shakeSource_t, timeFalloff) == 0x20, "shake timeFallo
 
 qboolean CG_EvaluateCameraShakeSource(cg_shakeSource_t *source)
 {
-    // 0x3001b393-0x3001b39d: elapsed = cg_time - source->startMsec (signed int32).
-    // MOV EAX,[cg_time]; SUB EAX,[ESI]; MOV [ESP],EAX; JS -> return 0.
+    // 0x3001b393-0x3001b39d: elapsed = cg.time - source->startMsec (signed int32).
+    // MOV EAX,[cg.time]; SUB EAX,[ESI]; MOV [ESP],EAX; JS -> return 0.
     // A negative elapsed (shake in the future) yields qfalse.
     int32_t elapsedMsec = coduo_int32_from_bits(
-        (uint32_t)cg_time - (uint32_t)source->startMsec);
+        (uint32_t)cg.time - (uint32_t)source->startMsec);
     if (elapsedMsec < 0) {
         return qfalse; // 0x3001b40e: XOR EAX,EAX; RET
     }
@@ -56,10 +56,10 @@ qboolean CG_EvaluateCameraShakeSource(cg_shakeSource_t *source)
         return qfalse; // 0x3001b40e
     }
 
-    // 0x3001b3b0-0x3001b3b8: VectorDistance(cg_refdef.vieworg, source->origin).
-    // LEA ECX,[ESI+0x10] (source->origin, the b argument); MOV EAX,cg_refdef.vieworg
+    // 0x3001b3b0-0x3001b3b8: VectorDistance(cg.refdef.vieworg, source->origin).
+    // LEA ECX,[ESI+0x10] (source->origin, the b argument); MOV EAX,cg.refdef.vieworg
     // (the a argument); CALL 0x300495b0. Result on x87 stack.
-    float dist = VectorDistance(cg_refdef.vieworg, source->origin);
+    float dist = VectorDistance(cg.refdef.vieworg, source->origin);
 
     // 0x3001b3bd-0x3001b3c6: distFalloff = 1.0f - (dist / source->radius).
     // FDIV [ESI+0xc]; FSUBR [0x3007bce0] (constant 1.0f, mem - st0); FSTP [ESP].

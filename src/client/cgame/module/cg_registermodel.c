@@ -7,7 +7,7 @@
 // (0 => the model could not be loaded). This is a thin trap wrapper with an
 // inline "pump the loading screen while precaching" body:
 //
-//   * If a client snapshot is already installed (cg_snap != NULL), OR a
+//   * If a client snapshot is already installed (cg.snap != NULL), OR a
 //     synchronous redraw is already in progress (cg_updateScreenActive != 0),
 //     it skips straight to the registration trap. During normal play the
 //     precache work is done, so this is the fast path.
@@ -71,7 +71,7 @@ qhandle_t CG_RegisterModel(const char *name, int category)
 {
     /* ---- Loading-screen pump: only while connecting (no snapshot) and not
      *      already redrawing. Otherwise jump straight to the registration. ---- */
-    if (cg_snap == NULL /* 0x3003d951 */ && cg_updateScreenActive == 0 /* 0x3003d95e */) {
+    if (cg.snap == NULL /* 0x3003d951 */ && cg_updateScreenActive == 0 /* 0x3003d95e */) {
         char hunkUsageStr[64];               /* [ESP+0x14], CvarVariableStringBuffer dst */
         const char *serverInfo;
         const char *mapName;

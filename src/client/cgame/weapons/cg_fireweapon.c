@@ -81,7 +81,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
     /* Gas weapons only stamp their fire time and skip every ordinary muzzle/
      * sound/brass effect. */
     if (weapon->weaponType == WEAPTYPE_GAS) {
-        cent->gasFireTime = cg_time;
+        cent->gasFireTime = cg.time;
         return;
     }
 
@@ -91,10 +91,10 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
     }
 
     /* Local first-person fire applies random weapon view kick/recoil. */
-    if ((cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
-        (int32_t)model->numberBits == cg_snap->ps.psClientNum) {
-        BG_WeaponFireRecoil(&cg_predictedPlayerState, cg_weaponRecoilAngles,
-                            cg_viewKickVel);
+    if ((cg.snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
+        (int32_t)model->numberBits == cg.snap->ps.psClientNum) {
+        BG_WeaponFireRecoil(&cg.predictedPlayerState, cg.weaponRecoilAngles,
+                            cg.viewKickVel);
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: recoil feeds the engine's next usercmd angles.
@@ -113,7 +113,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
     if (model->eType == ET_TURRET) {
         muzzleTag = cg_muzzleTagNames[muzzleTagIndex];
         localViewEffect =
-            (cg_snap->ps.viewLockedEntityNum == (int32_t)model->numberBits)
+            (cg.snap->ps.viewLockedEntityNum == (int32_t)model->numberBits)
             ? qtrue : qfalse;
     } else {
         centity_t *effectEntity = NULL;
@@ -123,7 +123,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
             (((model->poseType & CG_TURRET_MUZZLE_POSE_MASK) != CG_TURRET_MUZZLE_POSE) ||
              ((model->poseType & CG_TURRET_SEAT_MASK) != CG_TURRET_SEAT_GUNNER))) {
             localViewEffect =
-                (cg_snap->ps.viewLockedEntityNum == (int32_t)model->numberBits)
+                (cg.snap->ps.viewLockedEntityNum == (int32_t)model->numberBits)
                 ? qtrue : qfalse;
             effectEntity = &cg_entities[model->vehicleEntityNum];
             if (effectEntity->currentValid == 0) {
@@ -132,9 +132,9 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
             }
         } else if (cent->currentState.eType == ET_VEHICLE) {
             effectEntity = (centity_t *)model;
-            if (cg_snap->ps.viewLockedEntityNum == (int32_t)model->numberBits) {
+            if (cg.snap->ps.viewLockedEntityNum == (int32_t)model->numberBits) {
                 localViewEffect =
-                    ((cg_entities[cg_snap->ps.psClientNum].currentState.stateFilter & 7) ==
+                    ((cg_entities[cg.snap->ps.psClientNum].currentState.stateFilter & 7) ==
                      CG_LOCAL_VIEW_WEAPON_MODE) ? qtrue : qfalse;
             }
         } else {
@@ -185,8 +185,8 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
         }
 
         if (sound != 0) {
-            if ((cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
-                (int32_t)model->numberBits == cg_snap->ps.psClientNum) {
+            if ((cg.snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
+                (int32_t)model->numberBits == cg.snap->ps.psClientNum) {
                 if (weaponVisual->viewDObjSelf != 0) {
                     haveTagOrigin = CG_DObjGetSpecialTagWorldMatrix(
                         weaponVisual->viewDObjSelf,
@@ -206,7 +206,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
                 soundOrigin[1] = tagMatrix.origin[1];
                 soundOrigin[2] = tagMatrix.origin[2];
             } else {
-                BG_EvaluateTrajectory(&model->pos, cg_time,
+                BG_EvaluateTrajectory(&model->pos, cg.time,
                                       soundOrigin);
             }
 

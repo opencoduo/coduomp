@@ -12,13 +12,13 @@
 // CG_HeadIcon pass (icon, 5), etc. `param` is the material sort/type flag.
 //
 // Before that register, when NO snapshot is installed yet and no screen redraw is
-// already running (cg_snap == NULL && cg_updateScreenActive == 0), it runs one full
+// already running (cg.snap == NULL && cg_updateScreenActive == 0), it runs one full
 // connect/LOADING-screen frame so the loading bar advances while assets stream in.
 // That loading block is byte-identical to the loading half of CG_DrawActive
 // (0x3001c120) and to its sibling register-wrappers:
 //   * CG_RegisterModel (0x3003d940) — identical body, final trap 0x2d instead of 0x30.
 //   * the 0x3002ba50 connect cluster — inlines the same block.
-// When a snapshot IS present (cg_snap != NULL), or a redraw is already active, it
+// When a snapshot IS present (cg.snap != NULL), or a redraw is already active, it
 // jumps straight to the material register (0x3003dd80) and skips all screen work.
 //
 // Loading block (mirrors CG_DrawActive's, proven by the same cvars/strings/traps):
@@ -63,7 +63,7 @@ qhandle_t CG_RegisterMaterial(const char *name, int param)
 {
     /* Run the loading-screen pump only when no snapshot is installed yet and no
      * redraw is already in progress; otherwise skip straight to the register. */
-    if (cg_snap == NULL && cg_updateScreenActive == 0) {   /* 0x3003db8c..0x3003dba0 */
+    if (cg.snap == NULL && cg_updateScreenActive == 0) {   /* 0x3003db8c..0x3003dba0 */
         char hunkUsageStr[64];                             /* [ESP+0x08] CvarVariableStringBuffer dst */
         const char *mapName;
         qhandle_t levelShotShader;

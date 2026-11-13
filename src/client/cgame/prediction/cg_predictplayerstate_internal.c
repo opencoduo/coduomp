@@ -26,8 +26,8 @@ enum {
 
 void CG_PredictPlayerState_Internal(void)
 {
-    if (cg_demoPlayback != 0 ||
-        (cg_snap->ps.playerStateFlags & PSF_FOLLOWING) != 0) {
+    if (cg.demoPlayback != 0 ||
+        (cg.snap->ps.playerStateFlags & PSF_FOLLOWING) != 0) {
         CG_InterpolatePlayerState(qfalse);
         return;
     }
@@ -39,7 +39,7 @@ void CG_PredictPlayerState_Internal(void)
     usercmd_t *cmd = &cg_pmove.command;
     usercmd_t *oldCmd = &cg_pmove.oldCommand;
 
-    cg_pmove.ps = (playerState_t *)&cg_predictedPlayerState;
+    cg_pmove.ps = (playerState_t *)&cg.predictedPlayerState;
     cg_pmove.trace = CG_TraceCapsule;
     cg_pmove.trace2 = CG_TraceCapsule;
     cg_pmove.trace3 = CG_TraceCapsule;
@@ -48,10 +48,10 @@ void CG_PredictPlayerState_Internal(void)
     cg_pmove.adsInputBlocked = coduo_int32_from_bits(
         (uint32_t)cgame_syscall(CG_IS_IN_MATCH_TIMEOUT));
 
-    cg_pmove.traceMask = cg_predictedPlayerState.pmType < PM_TYPE_DEAD
+    cg_pmove.traceMask = cg.predictedPlayerState.pmType < PM_TYPE_DEAD
                              ? MASK_PLAYERSOLID
                              : MASK_DEADSOLID;
-    if (cg_snap->ps.pmType == PM_TYPE_SPECTATOR) {
+    if (cg.snap->ps.pmType == PM_TYPE_SPECTATOR) {
         cg_pmove.traceMask &= ~PMOVE_TRACE_MASK_SPECTATOR_CLEAR;
     }
 
@@ -69,13 +69,13 @@ void CG_PredictPlayerState_Internal(void)
 
     /* 0x30035927..0x3003593c copies the old state after materializing the
      * latest-command trap arguments but before calling the trap. */
-    playerState_t oldPlayerState = cg_predictedPlayerState;
+    playerState_t oldPlayerState = cg.predictedPlayerState;
     usercmd_t latestCmd;
     (void)cgame_syscall(CG_GET_USER_CMD, currentCmdNumber, &latestCmd);
 
-    memcpy(&cg_predictedPlayerState, &cg_nextSnap->ps,
-           sizeof(cg_predictedPlayerState));
-    cg_latestSnapshotTime = cg_nextSnap->serverTime;
+    memcpy(&cg.predictedPlayerState, &cg.nextSnap->ps,
+           sizeof(cg.predictedPlayerState));
+    cg.physicsTime = cg.nextSnap->serverTime;
 
     /* NOT_FROM_ORIGINAL_SOURCE: rebuild event provenance while retaining FX history for replayable commands. */
     coduomp_predicted_events_begin_prediction(currentCmdNumber);
@@ -87,9 +87,9 @@ void CG_PredictPlayerState_Internal(void)
     cg_pmove.viewClampMaxDeltas[1] = 0.0f;
     cg_pmove.viewClampMaxDeltas[0] = 0.0f;
 
-    if ((cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) != 0) {
+    if ((cg.predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) != 0) {
         int32_t followedEntityNum =
-            cg_predictedPlayerState.viewLockedEntityNum;
+            cg.predictedPlayerState.viewLockedEntityNum;
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if ((uint32_t)followedEntityNum >= (uint32_t)MAX_GENTITIES) {
             Com_Error(ERR_DROP,
@@ -103,8 +103,8 @@ void CG_PredictPlayerState_Internal(void)
             cg_pmove.viewClampTargetAngles[0] = followed->lerpAngles[0];
             cg_pmove.viewClampTargetAngles[1] = followed->lerpAngles[1];
             cg_pmove.viewClampTargetAngles[2] = followed->lerpAngles[2];
-            if (cg_predictedPlayerState.vehicleType == 1 &&
-                cg_predictedPlayerState.vehiclePosition == 3) {
+            if (cg.predictedPlayerState.vehicleType == 1 &&
+                cg.predictedPlayerState.vehiclePosition == 3) {
                 cg_pmove.viewClampMaxDeltas[1] = 70.0f;
                 cg_pmove.viewClampMaxDeltas[0] = 60.0f;
             }
@@ -113,9 +113,9 @@ void CG_PredictPlayerState_Internal(void)
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     weaponInfo_t *selectedWeapon =
-        bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+        bg_weaponInfos[cg.predictedPlayerState.currentWeapon];
     int32_t requestedPmoveMsec = pmove_msec.integer;
-    cg_currentWeaponInfo = selectedWeapon;
+    cg.currentWeaponInfo = selectedWeapon;
 
     if (requestedPmoveMsec < PMOVE_MSEC_MIN) {
         cgame_syscall(CG_CVAR_SET_VALUE, (intptr_t)&pmove_msec,
@@ -141,11 +141,11 @@ void CG_PredictPlayerState_Internal(void)
         /* 0x30035ab0: reads the pmove_fixed value CACHED into cg_pmove (+0xf8)
          * at 0x30035a7e, not the cvar itself. */
         if (cg_pmove.pmove_msec_min != 0) {
-            PM_UpdateViewAngles(&cg_predictedPlayerState, cmd,
+            PM_UpdateViewAngles(&cg.predictedPlayerState, cmd,
                                 CG_TraceCapsule);
         }
 
-        if (cmd->commandTime <= cg_predictedPlayerState.commandTime ||
+        if (cmd->commandTime <= cg.predictedPlayerState.commandTime ||
             cmd->commandTime > latestCmd.commandTime) {
             goto next_command;
         }
@@ -155,26 +155,26 @@ void CG_PredictPlayerState_Internal(void)
             goto next_command;
         }
 
-        if (cg_predictedPlayerState.commandTime == oldPlayerState.commandTime) {
+        if (cg.predictedPlayerState.commandTime == oldPlayerState.commandTime) {
             vec3_t adjustedOrigin;
             vec3_t moverAngleDelta;
-            CG_AdjustPositionForMover(cg_predictedPlayerState.psOrigin,
-                                      cg_predictedPlayerState.groundEntityNum,
-                                      cg_latestSnapshotTime, cg_physicsTime,
+            CG_AdjustPositionForMover(cg.predictedPlayerState.psOrigin,
+                                      cg.predictedPlayerState.groundEntityNum,
+                                      cg.physicsTime, cg.oldTime,
                                       adjustedOrigin, moverAngleDelta);
 
             /* 0x30035b41-0x30035b6d: apply the mover's yaw delta to the
              * predicted view: FLD moverAngleDelta[1] ([ESP+0x70] while the
              * three call args are still pushed = the angle-delta block's
              * second float); FMUL [0x3007bd60]; ftol (0x3006be3c); AND 0xffff;
-             * ADD into [0x30483214] = cg_predictedPlayerState.deltaAngles[1]. */
+             * ADD into [0x30483214] = cg.predictedPlayerState.deltaAngles[1]. */
             int32_t yawDeltaShort =
                 coduo_fp_to_i32_extended(
                     (long double)moverAngleDelta[1] *
                     (long double)ANGLE2SHORT_SCALE) &
                 0xffff;
-            cg_predictedPlayerState.deltaAngles[1] = coduo_int32_from_bits(
-                (uint32_t)cg_predictedPlayerState.deltaAngles[1] +
+            cg.predictedPlayerState.deltaAngles[1] = coduo_int32_from_bits(
+                (uint32_t)cg.predictedPlayerState.deltaAngles[1] +
                 (uint32_t)yawDeltaShort);
 
             /* 0x30035b6f..0x30035bb5: the original developer diagnostic compares
@@ -217,7 +217,7 @@ void CG_PredictPlayerState_Internal(void)
                 if (cg_errordecay_vmCvar.integer != 0) {
                     const int32_t elapsed =
                         coduo_int32_from_bits(
-                            (uint32_t)cg_time - (uint32_t)cg_predictedErrorTime);
+                            (uint32_t)cg.time - (uint32_t)cg.predictedErrorTime);
                     /* elapsed enters via bare FILD (0x30035c52) -- no (float) cast;
                      * cg.time deltas exceed 2^24 and an explicit cast would round
                      * (Class 4). */
@@ -233,45 +233,45 @@ void CG_PredictPlayerState_Internal(void)
                         Com_PrintMessage("Double prediction decay: %f\n",
                                          (double)decay);
                     }
-                    cg_predictedError[0] = (float)(
-                        (long double)cg_predictedError[0] *
+                    cg.predictedError[0] = (float)(
+                        (long double)cg.predictedError[0] *
                         (long double)decay);
-                    cg_predictedError[1] = (float)(
-                        (long double)cg_predictedError[1] *
+                    cg.predictedError[1] = (float)(
+                        (long double)cg.predictedError[1] *
                         (long double)decay);
                     /* The Z product at 0x30035cce remains in ST0 across the
                      * common X/Y tail and is not rounded before miss[2] is
                      * added. */
                     long double scaledZRaw =
-                        (long double)cg_predictedError[2] *
+                        (long double)cg.predictedError[2] *
                         (long double)decay;
 
                     float correctedX = (float)(
-                        (long double)cg_predictedError[0] +
+                        (long double)cg.predictedError[0] +
                         (long double)miss[0]);
-                    int32_t errorTime = cg_physicsTime;
-                    cg_predictedErrorTime = errorTime;
-                    cg_predictedError[0] = correctedX;
-                    cg_predictedError[1] = (float)(
-                        (long double)cg_predictedError[1] +
+                    int32_t errorTime = cg.oldTime;
+                    cg.predictedErrorTime = errorTime;
+                    cg.predictedError[0] = correctedX;
+                    cg.predictedError[1] = (float)(
+                        (long double)cg.predictedError[1] +
                         (long double)miss[1]);
-                    cg_predictedError[2] = (float)(
+                    cg.predictedError[2] = (float)(
                         scaledZRaw + (long double)miss[2]);
                 } else {
                     long double scaledZRaw = 0.0f;
-                    cg_predictedError[1] = 0.0f;
-                    cg_predictedError[0] = 0.0f;
+                    cg.predictedError[1] = 0.0f;
+                    cg.predictedError[0] = 0.0f;
 
                     float correctedX = (float)(
-                        (long double)cg_predictedError[0] +
+                        (long double)cg.predictedError[0] +
                         (long double)miss[0]);
-                    int32_t errorTime = cg_physicsTime;
-                    cg_predictedErrorTime = errorTime;
-                    cg_predictedError[0] = correctedX;
-                    cg_predictedError[1] = (float)(
-                        (long double)cg_predictedError[1] +
+                    int32_t errorTime = cg.oldTime;
+                    cg.predictedErrorTime = errorTime;
+                    cg.predictedError[0] = correctedX;
+                    cg.predictedError[1] = (float)(
+                        (long double)cg.predictedError[1] +
                         (long double)miss[1]);
-                    cg_predictedError[2] = (float)(
+                    cg.predictedError[2] = (float)(
                         scaledZRaw + (long double)miss[2]);
                 }
             }
@@ -299,10 +299,10 @@ void CG_PredictPlayerState_Internal(void)
             cmd->upmove = 0;
             int32_t commandAdvance = coduo_int32_from_bits(
                 (uint32_t)cmd->commandTime -
-                (uint32_t)cg_predictedPlayerState.commandTime);
+                (uint32_t)cg.predictedPlayerState.commandTime);
             if (commandAdvance > 1) {
                 cmd->commandTime = coduo_int32_from_bits(
-                    (uint32_t)cg_predictedPlayerState.commandTime + 1u);
+                    (uint32_t)cg.predictedPlayerState.commandTime + 1u);
             }
         }
 
@@ -312,25 +312,25 @@ void CG_PredictPlayerState_Internal(void)
          * on the stack slot. The machine never writes cg_pmove.mins (+0xd8) or
          * cg_pmove.maxs (+0xe4); Pmove sees whatever it last set there. */
         vec3_t traceMins, traceMaxs;
-        traceMins[0] = cg_predictedPlayerState.playerMins[0];
-        traceMins[1] = cg_predictedPlayerState.playerMins[1];
-        traceMins[2] = cg_predictedPlayerState.playerMins[2];
-        traceMaxs[0] = cg_predictedPlayerState.playerMaxs[0];
-        traceMaxs[1] = cg_predictedPlayerState.playerMaxs[1];
-        traceMaxs[2] = cg_predictedPlayerState.playerMaxs[2];
-        if ((cg_predictedPlayerState.playerStateFlags & PMF_PRONE) != 0) {
+        traceMins[0] = cg.predictedPlayerState.playerMins[0];
+        traceMins[1] = cg.predictedPlayerState.playerMins[1];
+        traceMins[2] = cg.predictedPlayerState.playerMins[2];
+        traceMaxs[0] = cg.predictedPlayerState.playerMaxs[0];
+        traceMaxs[1] = cg.predictedPlayerState.playerMaxs[1];
+        traceMaxs[2] = cg.predictedPlayerState.playerMaxs[2];
+        if ((cg.predictedPlayerState.playerStateFlags & PMF_PRONE) != 0) {
             traceMaxs[2] = 30.0f;   /* 0x30035e03: 0x41f00000 */
-        } else if ((cg_predictedPlayerState.playerStateFlags &
+        } else if ((cg.predictedPlayerState.playerStateFlags &
                     PS_FLAG_DUCKED) != 0) {
             traceMaxs[2] = 50.0f;   /* 0x30035e12: 0x42480000 */
         }
 
         trace_t overlap;
         CG_TraceCapsule(&overlap,
-                           cg_predictedPlayerState.psOrigin,
+                           cg.predictedPlayerState.psOrigin,
                            traceMins, traceMaxs,
-                           cg_predictedPlayerState.psOrigin,
-                           cg_predictedPlayerState.psClientNum,
+                           cg.predictedPlayerState.psOrigin,
+                           cg.predictedPlayerState.psClientNum,
                            cg_pmove.traceMask);
 
         if (overlap.allsolid != 0 || overlap.startsolid != 0) {
@@ -339,18 +339,18 @@ void CG_PredictPlayerState_Internal(void)
             if (hitEntity->currentValid != 0 &&
                 hitEntity->currentState.eType == PMOVE_VEHICLE_TYPE) {
                 vec3_t away = {
-                    cg_predictedPlayerState.psOrigin[0] -
+                    cg.predictedPlayerState.psOrigin[0] -
                         hitEntity->lerpOrigin[0],
-                    cg_predictedPlayerState.psOrigin[1] -
+                    cg.predictedPlayerState.psOrigin[1] -
                         hitEntity->lerpOrigin[1],
-                    cg_predictedPlayerState.psOrigin[2] -
+                    cg.predictedPlayerState.psOrigin[2] -
                         hitEntity->lerpOrigin[2]
                 };
                 (void)VectorNormalize(away);
 
                 vec3_t velocityDirection;
                 const float velocitySpeed =
-                    VectorNormalize2(cg_predictedPlayerState.velocity,
+                    VectorNormalize2(cg.predictedPlayerState.velocity,
                                      velocityDirection);
                 /* horizontalDot is kept in st0 and compared UNROUNDED against
                  * 0.80000001f (FCOMP at 0x30035eef); a float local would round it. */
@@ -363,13 +363,13 @@ void CG_PredictPlayerState_Internal(void)
                     hitEntity->predictionCollisionActive = qtrue;
                     predictionCollisionEntity = hitEntity;
 
-                    if ((cg_predictedPlayerState.playerStateFlags &
+                    if ((cg.predictedPlayerState.playerStateFlags &
                          PMF_PRONE) == 0 && velocitySpeed < 1.0f) {
-                        cg_predictedPlayerState.velocity[0] = away[0] * 200.0f;
-                        cg_predictedPlayerState.velocity[1] = away[1] * 200.0f;
-                        cg_predictedPlayerState.velocity[2] = 0.0f;
-                        cg_predictedPlayerState.pmTime = 200;
-                        cg_predictedPlayerState.playerStateFlags |=
+                        cg.predictedPlayerState.velocity[0] = away[0] * 200.0f;
+                        cg.predictedPlayerState.velocity[1] = away[1] * 200.0f;
+                        cg.predictedPlayerState.velocity[2] = 0.0f;
+                        cg.predictedPlayerState.pmTime = 200;
+                        cg.predictedPlayerState.playerStateFlags |=
                             PS_FLAG_PREDICTION_PUSH;
                     }
                 }
@@ -377,7 +377,7 @@ void CG_PredictPlayerState_Internal(void)
         }
 
         /* NOT_FROM_ORIGINAL_SOURCE: record command identity across normal prediction replay. */
-        int32_t firstEventSequence = cg_predictedPlayerState.eventIndex;
+        int32_t firstEventSequence = cg.predictedPlayerState.eventIndex;
         int32_t eventCommandTime = cmd->commandTime;
         Pmove(&cg_pmove);
         coduomp_predicted_events_record_command(cmdNumber, eventCommandTime, firstEventSequence);
@@ -393,12 +393,12 @@ next_command:
 
     /* Same import-validated currentWeapon cache refresh as the pre-loop store.
      * The binary reads the diagnostic cvar before publishing this pointer. */
-    selectedWeapon = bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+    selectedWeapon = bg_weaponInfos[cg.predictedPlayerState.currentWeapon];
     int32_t verbosePrediction = cg_showmiss_vmCvar.integer;
-    cg_currentWeaponInfo = selectedWeapon;
+    cg.currentWeaponInfo = selectedWeapon;
     if (verbosePrediction > 1) {
         Com_PrintMessage("[%i : %i] ", cmd->commandTime,
-                         cg_time);
+                         cg.time);
     }
     if (predictionRan == qfalse) {
         if (cg_showmiss_vmCvar.integer != 0) {
@@ -408,12 +408,12 @@ next_command:
     }
 
     vec3_t moverAngleDelta;
-    /* 0x30035ff6: the FINAL mover adjustment interpolates to cg_time
+    /* 0x30035ff6: the FINAL mover adjustment interpolates to cg.time
      * (MOV EDX,[0x304831b0]) — the render timestamp — unlike the in-loop call
-     * at 0x30035b1c, which passes cg_physicsTime ([0x304831b4]). */
-    CG_AdjustPositionForMover(cg_predictedPlayerState.psOrigin,
-                              cg_predictedPlayerState.groundEntityNum,
-                              cg_latestSnapshotTime, cg_time,
-                              cg_predictedPlayerState.psOrigin, moverAngleDelta);
-    CG_TransitionPlayerState(&cg_predictedPlayerState, &oldPlayerState);
+     * at 0x30035b1c, which passes cg.oldTime ([0x304831b4]). */
+    CG_AdjustPositionForMover(cg.predictedPlayerState.psOrigin,
+                              cg.predictedPlayerState.groundEntityNum,
+                              cg.physicsTime, cg.time,
+                              cg.predictedPlayerState.psOrigin, moverAngleDelta);
+    CG_TransitionPlayerState(&cg.predictedPlayerState, &oldPlayerState);
 }

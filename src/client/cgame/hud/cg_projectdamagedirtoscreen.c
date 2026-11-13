@@ -19,21 +19,21 @@
 //
 // What it computes:
 //   1. Build a forward unit vector from the cached {pitch,yaw} angle pair
-//      (cg_effectProjAnglePitch @0x3048b0b8, cg_effectProjAngleYaw @0x3048b0bc),
+//      (cg.effectProjAnglePitch @0x3048b0b8, cg.effectProjAngleYaw @0x3048b0bc),
 //      each * DEG2RAD, via two FSINCOS blocks (this is AngleVectors' forward with
 //      roll unused):
 //        fwd = { cos(pitch)*cos(yaw), cos(pitch)*sin(yaw), -sin(pitch) }.
 //   2. Perspective-project fwd through the current view basis:
-//        depth = dot(fwd, cg_refdef.viewaxis[0])      (view Z / forward)
-//        sx    = dot(fwd, cg_refdef.viewaxis[1])         (view X)
-//        sy    = dot(fwd, cg_refdef.viewaxis[2])         (view Y)
+//        depth = dot(fwd, cg.refdef.viewaxis[0])      (view Z / forward)
+//        sx    = dot(fwd, cg.refdef.viewaxis[1])         (view X)
+//        sy    = dot(fwd, cg.refdef.viewaxis[2])         (view Y)
 //      then map to a 640x480 virtual screen:
 //        *outX = sx / (tan(fovX/2) * depth) * -320
 //        *outY = sy / (tan(fovY/2) * depth) * -240
 //      where fovX/2 = cg_viewProjScaleA * (DEG2RAD/2), fovY/2 = cg_viewProjScaleB *
 //      (DEG2RAD/2). 320 = 640/2, 240 = 480/2 (both negated for screen orientation).
 //   3. Gate: if depth <= 0 (point behind the view plane) OR either projection scale
-//      (cg_refdef.fov_x / fov_y) <= 0, both outputs are set to 0.
+//      (cg.refdef.fov_x / fov_y) <= 0, both outputs are set to 0.
 //      The three FCOMP 0.0 / FNSTSW / TEST AH,0x41 / JNP guards fall through (keep
 //      projecting) when the value is strictly positive OR unordered; NaNs therefore
 //      follow the projection path, matching the target status-word tests.
@@ -64,8 +64,8 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY)
 {
     /* 0x30019373 loads yaw first and 0x30019379 loads pitch before either
      * conversion or FSINCOS block starts. */
-    float yawDegrees = cg_effectProjAngleYaw;
-    float pitchDegrees = cg_effectProjAnglePitch;
+    float yawDegrees = cg.effectProjAngleYaw;
+    float pitchDegrees = cg.effectProjAnglePitch;
     float yawRad = (float)((long double)yawDegrees *
                            (long double)CG_DEG2RAD);
 
@@ -85,21 +85,21 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY)
     fwd[1] = (float)((long double)cosPitch * (long double)sinYaw);
     fwd[2] = -sinPitch;           /* 0x30019403: FCHS(sinPitch) -> t2c */
 
-    /* 0x3001940d..0x3001942f: depth = dot(fwd, cg_refdef.viewaxis[0]).
+    /* 0x3001940d..0x3001942f: depth = dot(fwd, cg.refdef.viewaxis[0]).
      * x87 association: the compiler sums the z and y terms FIRST (FADDP at
      * 0x30019421) and adds the x term to that (FADDP at 0x3001942d), then rounds
      * once (FSTP at 0x3001942f). FADD is not associative, so the (z+y)+x
      * grouping is reproduced literally rather than written left-to-right. */
     float depth = (float)(
-        ((long double)cg_refdef.viewaxis[0][2] * (long double)fwd[2] +
-         (long double)cg_refdef.viewaxis[0][1] * (long double)fwd[1]) +
-        (long double)cg_refdef.viewaxis[0][0] * (long double)fwd[0]);
+        ((long double)cg.refdef.viewaxis[0][2] * (long double)fwd[2] +
+         (long double)cg.refdef.viewaxis[0][1] * (long double)fwd[1]) +
+        (long double)cg.refdef.viewaxis[0][0] * (long double)fwd[0]);
 
     /* 0x30019433..0x30019470: gate — behind the view plane, or a non-positive
      * projection scale, zeroes both outputs. */
     if (!(depth <= 0.0f) &&
-        !(cg_refdef.fov_x <= 0.0f) &&
-        !(cg_refdef.fov_y <= 0.0f)) {
+        !(cg.refdef.fov_x <= 0.0f) &&
+        !(cg.refdef.fov_y <= 0.0f)) {
         /* 0x30019476..0x300194bd: screen X. Same (z+y)+x FADDP grouping as depth
          * (FADDP at 0x3001948a then 0x30019496). */
         /* sx is NOT stored: the dot-sum stays in an x87 register across the tan
@@ -108,11 +108,11 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY)
          * contrast IS genuinely rounded -- FSTP DWORD at 0x300194a9 followed by
          * a reload of the same slot at 0x300194ad -- so it stays `float`. */
         long double sx =
-            ((long double)cg_refdef.viewaxis[1][2] * (long double)fwd[2] +
-             (long double)cg_refdef.viewaxis[1][1] * (long double)fwd[1]) +
-            (long double)cg_refdef.viewaxis[1][0] * (long double)fwd[0];
+            ((long double)cg.refdef.viewaxis[1][2] * (long double)fwd[2] +
+             (long double)cg.refdef.viewaxis[1][1] * (long double)fwd[1]) +
+            (long double)cg.refdef.viewaxis[1][0] * (long double)fwd[0];
         long double tanXRaw = coduo_x87_tanl(
-            (long double)cg_refdef.fov_x * (long double)CG_DEG2RAD_HALF);
+            (long double)cg.refdef.fov_x * (long double)CG_DEG2RAD_HALF);
         float tanX = (float)tanXRaw;
         long double denominatorX =
             (long double)tanX * (long double)depth;
@@ -124,11 +124,11 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY)
         /* sy: register-held like sx (consumed by the FDIVP at 0x300194fe);
          * tanY genuinely rounded (FSTP 0x300194f2 + reload 0x300194f6). */
         long double sy =
-            ((long double)cg_refdef.viewaxis[2][2] * (long double)fwd[2] +
-             (long double)cg_refdef.viewaxis[2][1] * (long double)fwd[1]) +
-            (long double)cg_refdef.viewaxis[2][0] * (long double)fwd[0];
+            ((long double)cg.refdef.viewaxis[2][2] * (long double)fwd[2] +
+             (long double)cg.refdef.viewaxis[2][1] * (long double)fwd[1]) +
+            (long double)cg.refdef.viewaxis[2][0] * (long double)fwd[0];
         long double tanYRaw = coduo_x87_tanl(
-            (long double)cg_refdef.fov_y * (long double)CG_DEG2RAD_HALF);
+            (long double)cg.refdef.fov_y * (long double)CG_DEG2RAD_HALF);
         float tanY = (float)tanYRaw;
         long double denominatorY =
             (long double)tanY * (long double)depth;

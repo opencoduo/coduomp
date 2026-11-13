@@ -44,8 +44,8 @@ void NoOp(int32_t unused)
 // Source RVA: 0x3003c1b0
 void ClearShellshockBlur(void)
 {
-    cg_shellshockScreenBlurX = 0.0f;
-    cg_shellshockScreenBlurY = 0.0f;
+    cg.shellshockScreenBlurX = 0.0f;
+    cg.shellshockScreenBlurY = 0.0f;
 }
 
 // Source RVA: 0x3005b100

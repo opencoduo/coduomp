@@ -6,7 +6,7 @@
 //
 // CG_SelectFirstWeaponNotInSlot: scan the local player's held weapons by weapon
 // index (over
-// bg_weaponInfos[1..bg_numWeapons], gated by the cg_predictedPlayerState.weaponBits ownership
+// bg_weaponInfos[1..bg_numWeapons], gated by the cg.predictedPlayerState.weaponBits ownership
 // bitset) in one direction and select the first held weapon that is NOT already
 // assigned to a numbered inventory slot, committing the choice via
 // CG_SelectWeaponIndex. This is the by-index sibling of the by-slot sweep
@@ -39,16 +39,16 @@
 // Returns qtrue in EAX if a weapon was selected, qfalse if none qualified.
 //
 // Globals consumed:
-//   cg_predictedPlayerState.weaponBits[]                (0x304836f8) — 128-bit "weapon N held" mask
-//   cg_predictedPlayerState.clips[clipIndex] (0x304834f8) — in-clip ammo
-//   cg_predictedPlayerState.ammo[ammoIndex]  (0x304832f8) — reserve ammo
+//   cg.predictedPlayerState.weaponBits[]                (0x304836f8) — 128-bit "weapon N held" mask
+//   cg.predictedPlayerState.clips[clipIndex] (0x304834f8) — in-clip ammo
+//   cg.predictedPlayerState.ammo[ammoIndex]  (0x304832f8) — reserve ammo
 //   bg_weaponInfos[weapon]              (0x30134cd8) — weaponInfo_t*, for clip/ammo index
 //   bg_numWeapons                   (0x30134cd4) — registered weapon-info count
 //   cg_weaponSelect_vmCvar.integer                   (0x3044034c) — currently-selected weapon index
-//   &cg_predictedPlayerState           (0x304831c4) — playerState_t passed to the BG helpers
+//   &cg.predictedPlayerState           (0x304831c4) — playerState_t passed to the BG helpers
 //
 // Selection predicate (per candidate weapon `w`): the weapon must be held
-// (cg_predictedPlayerState.weaponBits bit set), BG_IsPlayerWeaponInSlot(ps, w, checkAlt=1) must
+// (cg.predictedPlayerState.weaponBits bit set), BG_IsPlayerWeaponInSlot(ps, w, checkAlt=1) must
 // return 0 (the weapon is not currently placed in a tracked inventory slot), and
 // BG_GetStackSlotForWeapon(ps, w, slot=0) must return 0 (it does not stack into a
 // slot either). Such a "loose" held weapon is the selection target. When
@@ -70,17 +70,17 @@ qboolean CG_SelectFirstWeaponNotInSlot(int32_t forward, int32_t requireAmmo)
         step = -1;
     }
 
-    // ESI/EDI in the machine code hold &cg_predictedPlayerState (0x304831c4),
+    // ESI/EDI in the machine code hold &cg.predictedPlayerState (0x304831c4),
     // reloaded each time it is passed to a BG helper; expressed here as the
     // playerState_t base pointer.
-    playerState_t *ps = &cg_predictedPlayerState;
+    playerState_t *ps = &cg.predictedPlayerState;
 
     for (;;) {
         // 0x300478c0..0x300478d8: is weapon `w` held? word = w >> 5 (SAR, signed),
-        // bit = 1u << (w & 0x1f). TEST cg_predictedPlayerState.weaponBits[word], bit / JZ -> advance.
+        // bit = 1u << (w & 0x1f). TEST cg.predictedPlayerState.weaponBits[word], bit / JZ -> advance.
         uint32_t bit = 1u << ((uint32_t)weapon & 0x1f);
         int32_t word = coduo_int32_sar((uint32_t)weapon, 5);
-        if ((cg_predictedPlayerState.weaponBits[word] & bit) != 0) {
+        if ((cg.predictedPlayerState.weaponBits[word] & bit) != 0) {
             // 0x300478da..0x300478ec: BG_IsPlayerWeaponInSlot(ps, weapon, checkAlt=1).
             // Nonzero means the weapon already occupies a tracked inventory slot;
             // such a weapon is skipped (JNZ -> advance).
@@ -100,8 +100,8 @@ qboolean CG_SelectFirstWeaponNotInSlot(int32_t forward, int32_t requireAmmo)
                         // The ADD sets ZF; total == 0 means the weapon has no ammo.
                         weaponInfo_t *wi = bg_weaponInfos[weapon];
                         int32_t total = coduo_int32_from_bits(
-                            (uint32_t)cg_predictedPlayerState.clips[wi->clipIndex] +
-                            (uint32_t)cg_predictedPlayerState.ammo[wi->ammoIndex]);
+                            (uint32_t)cg.predictedPlayerState.clips[wi->clipIndex] +
+                            (uint32_t)cg.predictedPlayerState.ammo[wi->ammoIndex]);
                         qualifies = (total != 0) ? qtrue : qfalse;
                     }
 

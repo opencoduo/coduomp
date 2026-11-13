@@ -43,7 +43,7 @@
 // neighbor — 0x3007bce0 is a known adjacent-constant trap):
 //   0x3007bce0 = 1.0f, 0x3007bce4 = 2.0f, 0x3007bce8 = 0.5f, 0x3007bcec = 0.0f
 //   0x3007be88 = 1000.0f (bytes 00 00 7a 44)
-// cg_frametime (0x304831ac, int32 ms delta) is FILD'd and combined with 1000.0f to
+// cg.frametime (0x304831ac, int32 ms delta) is FILD'd and combined with 1000.0f to
 // form the per-frame blend-rate denominator.
 
 #include <math.h>
@@ -106,7 +106,7 @@ enum { CG_ANIMDEBUG_FREEZE_TURRET = 5 };
  * clamp (six near-identical x87 clusters, e.g.
  * 0x30033f28, 0x30033fa2, 0x3003402d, 0x300340a8, 0x30034120, 0x300341a5,
  * 0x3003422f). Given a signed delta `x`, compute
- *     rate  = fabsf(x) * (1000.0f / cg_frametime);   // FABS; FILD frametime; FDIVR 1000; FMULP
+ *     rate  = fabsf(x) * (1000.0f / cg.frametime);   // FABS; FILD frametime; FDIVR 1000; FMULP
  *     step  = (rate > 0.0f) ? (1.0f / rate) : 0.0f;  // FCOM 0; TEST 0x41 (ZF|CF => <=0)
  * i.e. the reciprocal of the frame-scaled magnitude, or 0 when the magnitude is 0.
  * The two float inputs stay separate so their subtraction remains an unrounded
@@ -116,7 +116,7 @@ cgame_compat_turret_blend_step(float sample, float reference)
 {
     long double delta = (long double)sample - (long double)reference;
     long double magnitude = fabsl(delta);
-    long double rate = magnitude * (1000.0L / (long double)cg_frametime);
+    long double rate = magnitude * (1000.0L / (long double)cg.frametime);
     if (rate > 0.0L) {
         return (float)(1.0L / rate);
     }

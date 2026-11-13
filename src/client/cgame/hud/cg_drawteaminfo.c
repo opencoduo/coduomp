@@ -68,7 +68,7 @@ void CG_DrawTeamInfo(void)
     // 0x300187a1..0x300187c0: scroll the oldest still-visible line out once it has
     // aged past the visible window. teamChatMsgTimes is indexed by (cursor mod
     // chatHeight); cg_chatTime_vmCvar.integer is the integer visible-window (ms).
-    if ((int32_t)((uint32_t)cg_time -
+    if ((int32_t)((uint32_t)cg.time -
                   (uint32_t)teamChatMsgTimes[lastPos % chatHeight]) >
         cg_chatTime_vmCvar.integer) {
         lastPos = coduo_int32_from_bits(
@@ -83,7 +83,7 @@ void CG_DrawTeamInfo(void)
         int32_t ringIndex = i % chatHeight;   /* 0x300187d0..0x300187d3 */
 
         // 0x300187d5..0x30018827: per-line fade.
-        //   age  = cg_time - teamChatMsgTimes[ringIndex]      (ms this line has shown)
+        //   age  = cg.time - teamChatMsgTimes[ringIndex]      (ms this line has shown)
         //   left = cg_chatTime_vmCvar.value - age                  (fade budget remaining)
         // While left is still large (> 200 ms) the line is fully opaque (alpha = 1).
         // Once left drops below the 200 ms knee, alpha ramps as left * 0.005f
@@ -96,11 +96,11 @@ void CG_DrawTeamInfo(void)
         // 0x3001881c runs on the UNROUNDED product while the float copy in
         // [ESP+0xc] is what the later 0.6f multiply reloads (FLD 0x300188d4).
         int32_t age = (int32_t)(
-            (uint32_t)cg_time - (uint32_t)teamChatMsgTimes[ringIndex]);
+            (uint32_t)cg.time - (uint32_t)teamChatMsgTimes[ringIndex]);
         /* 0x300187e5 FILD age; 0x300187e9 FSUBR cg_chatTime -- age is loaded straight
          * into the FSUBR with no FSTP DWORD, so the implicit int->float conversion
          * stays exact; no (float) cast (it would round age under -std=c11, and age is
-         * a live cg_time delta that can exceed 2^24). */
+         * a live cg.time delta that can exceed 2^24). */
         long double left =
             (long double)cg_chatTime_vmCvar.value -
             (long double)age;  /* 0x300187e5..0x300187e9 */

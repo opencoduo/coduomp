@@ -12,7 +12,7 @@
  * refEntity's shaderRGBA bytes, and submits the entity to the render scene.
  *
  * Machine-code facts proven for every statement below:
- *   3002abc1  ECX = cg_time                              [int32 global 0x304831b0]
+ *   3002abc1  ECX = cg.time                              [int32 global 0x304831b0]
  *   3002abc7  EAX = le->endTime            (int32 @ +0x10)
  *   3002abca  EAX = EAX - ECX              (endTime - cg.time), 32-bit wrap
  *   3002abcf  FILD [ESP]                   -> (float) of that signed int32
@@ -45,10 +45,10 @@ void CG_AddFadeRGB(localEntity_t *le)
      * difference and 0x3002abcf FILDs it straight into the FMUL chain with no
      * FSTP DWORD, so the integer enters exact. Under -std=c11
      * (-fexcess-precision=standard) an explicit (float) would compile to a real
-     * fildl/fstps/flds and round it, diverging once |endTime - cg_time| exceeds
+     * fildl/fstps/flds and round it, diverging once |endTime - cg.time| exceeds
      * 2^24 ms (~4.66 h of uptime, which a long-running server reaches daily). */
     int32_t remaining = coduo_int32_from_bits(
-        (uint32_t)le->endTime - (uint32_t)cg_time);
+        (uint32_t)le->endTime - (uint32_t)cg.time);
     long double scaled =
         (long double)remaining * (long double)le->lifeRate *
         (long double)colorByteScale;

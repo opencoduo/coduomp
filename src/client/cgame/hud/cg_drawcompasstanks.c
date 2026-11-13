@@ -38,7 +38,7 @@ enum { TANK_COMPASS_BLIP_LIFETIME_MS = 800 };
 
 void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
 {
-    clientInfo_t *localState = &bgs.clientinfo[cg_nextSnap->ps.psClientNum];
+    clientInfo_t *localState = &bgs.clientinfo[cg.nextSnap->ps.psClientNum];
     team_t localTeam;
 
     if (localState->infoValid == 0) {
@@ -49,14 +49,14 @@ void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
         return;
     }
 
-    for (int32_t i = 0; i < cg_nextSnap->numEntities; i++) {
-        int32_t entityNum = cg_nextSnap->entities[i].number;
+    for (int32_t i = 0; i < cg.nextSnap->numEntities; i++) {
+        int32_t entityNum = cg.nextSnap->entities[i].number;
         centity_t *cent = &cg_entities[entityNum];
         int32_t occupant = cent->currentState.vehicleEntityNum;
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if (cent->nextState.eType != ET_VEHICLE || occupant == 1023 ||
-            occupant == cg_nextSnap->ps.psClientNum || cent->currentValid == 0 ||
+            occupant == cg.nextSnap->ps.psClientNum || cent->currentValid == 0 ||
             occupant < 0 || occupant >= CG_COMPASS_BLIP_COUNT ||
             bgs.clientinfo[occupant].team != localTeam ||
             cent->currentState.compassBlipIndex < 0 ||
@@ -64,8 +64,8 @@ void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
             continue;
         }
 
-        cgCompassBlip_t *blip = &cg_compassTanks[cent->currentState.compassBlipIndex];
-        blip->updateTime = cg_time;
+        cgCompassBlip_t *blip = &cg.compassTanks[cent->currentState.compassBlipIndex];
+        blip->updateTime = cg.time;
         blip->origin[0] = cent->lerpOrigin[0];
         blip->origin[1] = cent->lerpOrigin[1];
         blip->kindOrExpireTime = cent->currentState.stateFilter;
@@ -74,22 +74,22 @@ void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
                             : cent->lerpAngles[1];
     }
 
-    if (cg_nextSnap->ps.compassTankInfo != 0) {
-        uint32_t packed = cg_nextSnap->ps.compassTankInfo;
+    if (cg.nextSnap->ps.compassTankInfo != 0) {
+        uint32_t packed = cg.nextSnap->ps.compassTankInfo;
         int32_t index = (int32_t)(packed & 63u);
-        cgCompassBlip_t *blip = &cg_compassTanks[index];
+        cgCompassBlip_t *blip = &cg.compassTanks[index];
         vec2_t report = {
             (float)((int32_t)((packed >> 6) & 0x1ffu) * 4 - 1020),
             (float)((int32_t)((packed >> 15) & 0x1ffu) * 4 - 1020)
         };
 
-        blip->updateTime = cg_time;
+        blip->updateTime = cg.time;
         if ((report[0] != TANK_COMPASS_PACKED_COORD_MAX &&
              report[0] != TANK_COMPASS_PACKED_COORD_MIN) &&
             (report[1] != TANK_COMPASS_PACKED_COORD_MAX &&
              report[1] != TANK_COMPASS_PACKED_COORD_MIN)) {
-            blip->origin[0] = cg_nextSnap->ps.psOrigin[0] + report[0];
-            blip->origin[1] = cg_nextSnap->ps.psOrigin[1] + report[1];
+            blip->origin[0] = cg.nextSnap->ps.psOrigin[0] + report[0];
+            blip->origin[1] = cg.nextSnap->ps.psOrigin[1] + report[1];
         } else {
             VectorNormalize2D(report);
             blip->origin[0] = report[0];
@@ -116,17 +116,17 @@ void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
     vec4_t drawColor = { color[0], color[1], color[2], color[3] };
 
     for (int32_t i = 0; i < CG_COMPASS_BLIP_COUNT; i++) {
-        cgCompassBlip_t *blip = &cg_compassTanks[i];
+        cgCompassBlip_t *blip = &cg.compassTanks[i];
         float distance;
         float sizeDistance;
         uint32_t packedBearing;
         float bearingDeg;
 
-        if (blip->updateTime > cg_time) {
+        if (blip->updateTime > cg.time) {
             blip->updateTime = 0;
         }
         if (blip->updateTime < coduo_int32_from_bits(
-                (uint32_t)cg_time - TANK_COMPASS_BLIP_LIFETIME_MS)) {
+                (uint32_t)cg.time - TANK_COMPASS_BLIP_LIFETIME_MS)) {
             continue;
         }
 
@@ -136,7 +136,7 @@ void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
             (double)fabsf(blip->origin[1]) <= TANK_COMPASS_AT_ORIGIN_MAX) {
             packedBearing = (uint32_t)coduo_fp_to_i32_extended(
                 ((long double)vectoyaw(blip->origin) -
-                 (long double)cg_compassRefYaw) *
+                 (long double)cg.compassRefYaw) *
                 (long double)TANK_COMPASS_ANGLE2SHORT) & 0xffffu;
             bearingDeg = (float)(int32_t)packedBearing * TANK_COMPASS_SHORT2ANGLE;
             distance = cg_hudCompassMaxRange_vmCvar.value;
@@ -150,13 +150,13 @@ void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
                 (long double)cg_hudObjectiveMinAlpha_vmCvar.value);
         } else {
             vec3_t delta = {
-                blip->origin[0] - cg_refdef.vieworg[0],
-                blip->origin[1] - cg_refdef.vieworg[1],
+                blip->origin[0] - cg.refdef.vieworg[0],
+                blip->origin[1] - cg.refdef.vieworg[1],
                 0.0f
             };
             packedBearing = (uint32_t)coduo_fp_to_i32_extended(
                 ((long double)vectoyaw(delta) -
-                 (long double)cg_compassRefYaw) *
+                 (long double)cg.compassRefYaw) *
                 (long double)TANK_COMPASS_ANGLE2SHORT) & 0xffffu;
             bearingDeg = (float)(int32_t)packedBearing * TANK_COMPASS_SHORT2ANGLE;
             distance = (float)coduomp_crt_sqrtl(
@@ -229,7 +229,7 @@ void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
              (long double)quadSize * (long double)0.5f) -
             (long double)cosBearing * (long double)ringRadius);
         uint32_t packedRotation = (uint32_t)coduo_fp_to_i32_extended(
-            ((long double)cg_refdefViewAngles[1] -
+            ((long double)cg.refdefViewAngles[1] -
              (long double)blip->origin[2]) *
             (long double)TANK_COMPASS_ANGLE2SHORT) & 0xffffu;
         float rotation = (float)(int32_t)packedRotation * TANK_COMPASS_SHORT2ANGLE;

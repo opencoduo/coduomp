@@ -114,7 +114,7 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
     /* lightingOrigin = entity origin, lifted 32 units in Z (0x300216ff..0x30021742).
      * Instead of CG_General's CG_SetupWeaponLightingOrigin call, the vehicle path fills
      * the lighting origin inline: X/Y from lerpOrigin, Z = lerpOrigin[2] + 32. */
-    uint32_t currentTime = (uint32_t)cg_time;
+    uint32_t currentTime = (uint32_t)cg.time;
     long double lightingZ =
         (long double)cent->lerpOrigin[2] +
         (long double)CG_VEHICLE_LIGHTING_ORIGIN_ZLIFT;
@@ -148,14 +148,14 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
         return;
 
     /* The occupant is the local player themselves -> suppress (their own icon). */
-    int32_t localClientNum = cg_snap->ps.psClientNum;
+    int32_t localClientNum = cg.snap->ps.psClientNum;
     if (vehicleClient == localClientNum)
         return;
 
     /* When the local player is spectating in first person and following an entity, and
      * the followed entity IS this vehicle centity, suppress the icon (you are it). */
-    if ((cg_snap->ps.entityStateFlags & EF_IN_VEHICLE) != 0 &&
-        cg_snap->ps.viewLockedEntityNum == cent->currentState.number)
+    if ((cg.snap->ps.entityStateFlags & EF_IN_VEHICLE) != 0 &&
+        cg.snap->ps.viewLockedEntityNum == cent->currentState.number)
         return;
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */

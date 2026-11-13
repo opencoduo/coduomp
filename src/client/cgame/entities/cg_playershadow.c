@@ -59,7 +59,7 @@
  *   30032cc2  if (g_isvehicleusable != 1) return 1          (CMP EAX,1; JNZ epilogue)
  *   30032cd4  if (cent->currentState.eFlags & 1)      return 0           (TEST [ESI+8],BL; JNZ)
  *   30032cdd  alpha0 = 1.0 - traceResult.fraction           (FSUBR 1.0)
- *   30032cf5  dist = VectorDistance(cg_snap->ps.psOrigin,
+ *   30032cf5  dist = VectorDistance(cg.snap->ps.psOrigin,
  *                                   cent->lerpOrigin)         (EAX=a, ECX=b)
  *   30032cfe  if (dist <= 250.0) return 1                    (FCOMP 250; TEST AH,41; JNZ)
  *   30032d0b  if (dist < 512.0) scale = (dist-250)*(1/262)   (ramp up 0..1)
@@ -126,7 +126,7 @@ qboolean CG_PlayerShadow(float *shadowPlane, centity_t *cent)
 
     alpha0 = 1.0f - traceResult.fraction;
 
-    dist = VectorDistance(cg_snap->ps.psOrigin, cent->lerpOrigin);
+    dist = VectorDistance(cg.snap->ps.psOrigin, cent->lerpOrigin);
 
     /* Distance fade to the local player camera: invisible past 1024, full-strength
      * ramp between the near/mid radii, ramp back down to the cull radius. */

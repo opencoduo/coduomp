@@ -23,7 +23,7 @@
  *   1. The LOCAL PREDICTED PLAYER: when the current snapshot's playerState is the
  *      first-person view (playerStateFlags has one of the two 0xc0000 view bits
  *      set) and entityNum == the local client number, the muzzle is built from
- *      cg_snap->ps.origin + a per-stance viewheight, optionally nudged forward for
+ *      cg.snap->ps.origin + a per-stance viewheight, optionally nudged forward for
  *      an LMG fired while aiming down sights, then spread/spun by the
  *      view-anchored effect helper.
  *   2. The entity's animated DObj TAG: for a remote/other entity that owns a DObj
@@ -45,27 +45,27 @@
  * attribute (the syntax-only build does not require one).
  *
  * Per-instruction proof of the behavior-affecting statements:
- *   30048b6c MOV EAX,[cg_snap]
+ *   30048b6c MOV EAX,[cg.snap]
  *   30048b74 TEST [EAX+0x18],0xc0000 ; JZ 0x30048c68   ps.playerStateFlags view bits
  *   30048b81 CMP EDI,[EAX+0xe0] ; JNZ 0x30048c68        entityNum == ps.clientNum ?
  *   30048b8d MOV EAX,[EAX+0x20] ; MOV [EBP],EAX         muzzle[0] = ps.origin[0]
- *   30048b99 MOV EDX,[cg_snap+0x24] ; MOV [EBP+4],EDX   muzzle[1] = ps.origin[1]
- *   30048ba4 FLD [cg_snap+0x28] ; FST [EBP+8]           muzzle[2] = ps.origin[2]
- *   30048bb0 FADD [cg_snap+0x104] ; FSTP [EBP+8]        muzzle[2] += ps.viewHeightCurrent
+ *   30048b99 MOV EDX,[cg.snap+0x24] ; MOV [EBP+4],EDX   muzzle[1] = ps.origin[1]
+ *   30048ba4 FLD [cg.snap+0x28] ; FST [EBP+8]           muzzle[2] = ps.origin[2]
+ *   30048bb0 FADD [cg.snap+0x104] ; FSTP [EBP+8]        muzzle[2] += ps.viewHeightCurrent
  *   30048bb6 MOV ECX,[bg_weaponInfos]
- *   30048bc4 MOV EDX,[cg_snap+0xe4]                      currentWeapon index
+ *   30048bc4 MOV EDX,[cg.snap+0xe4]                      currentWeapon index
  *   30048bca MOV EDX,[ECX+EDX*4]                         w = bg_weaponInfos[currentWeapon]
  *   30048bcd CMP [EDX+0x80],3 ; JNZ 0x30048c3c           w->weaponClass == LMG ?
- *   30048bd6 TEST [cg_snap+0x18],0x20 ; JZ 0x30048c3c    ps.playerStateFlags & PMF_ADS ?
- *   30048bdc MOV EAX,[cg_snap+0x5b0]                      ps.proneDirection (yaw, float bits)
+ *   30048bd6 TEST [cg.snap+0x18],0x20 ; JZ 0x30048c3c    ps.playerStateFlags & PMF_ADS ?
+ *   30048bdc MOV EAX,[cg.snap+0x5b0]                      ps.proneDirection (yaw, float bits)
  *   30048bee angles = {0.0f, proneDirection, 0.0f}
  *   30048c02 CALL AngleVectors(angles, forward=&fwd, right=NULL, up=NULL)
  *   30048c07 FLD fwd[0] ; FMUL 19.0f ; FADD [EBP]   ; FSTP [EBP]   muzzle[0]+=19*fwd[0]
  *   30048c17 FLD fwd[1] ; FMUL 19.0f ; FADD [EBP+4] ; FSTP [EBP+4] muzzle[1]+=19*fwd[1]
  *   30048c27 FLD fwd[2] ; FMUL 19.0f ; FADD [EBP+8] ; FSTP [EBP+8] muzzle[2]+=19*fwd[2]
- *   30048c37 MOV EAX,[cg_snap]
+ *   30048c37 MOV EAX,[cg.snap]
  *   30048c3c MOV ECX,[EAX+0x50]                          ps.leanFraction (float bits)
- *   30048c3f MOV EDX,[cg_refdefViewAngles[1]]
+ *   30048c3f MOV EDX,[cg.refdefViewAngles[1]]
  *   30048c45 PUSH 20.0f ; PUSH 16.0f ; PUSH leanFraction ; PUSH spinAngle
  *   30048c51 MOV EDX,EBP (out=muzzle) ; CALL AddLeanToPosition
  *   30048c5e MOV EAX,1 ; RET                             return qtrue
@@ -130,7 +130,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum,
                             vec3_t muzzle)
 {
     /* 30048b6c: the current snapshot / local playerState. */
-    snapshot_t *snap = cg_snap;
+    snapshot_t *snap = cg.snap;
 
     /* 30048b74/0x30048b81: local first-person predicted-player muzzle path — the
      * view is first-person (one of the 0xc0000 flags) and this is the local
@@ -170,7 +170,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum,
         /* 30048c3c-0x30048c58: apply the view-anchored spin offset. leanFraction
          * and the spin angle are ps/cg floats read as dwords. */
         AddLeanToPosition(muzzle,
-                              cg_refdefViewAngles[1],
+                              cg.refdefViewAngles[1],
                               snap->ps.leanFraction,
                               CG_MUZZLE_SPIN_SCALE_A,
                               CG_MUZZLE_SPIN_SCALE_B);

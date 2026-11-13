@@ -13,10 +13,10 @@
 // role (exact original source name unproven).
 //
 // Machine-code facts pinned:
-//   - dt substep: min(cg_frametime, 5) * 0.001f, cg_frametime an int (FILD).
+//   - dt substep: min(cg.frametime, 5) * 0.001f, cg.frametime an int (FILD).
 //     Outer loop peels 5 ms at a time (SUB ESI,5 ; JG) until <= 0.
 //   - inner loop over the 3 vec components (ECX from 0x3048b064 to <0x3048b070,
-//     step 4), touching cg_viewKickAngles[i] at [ECX] and cg_viewKickVel[i] at
+//     step 4), touching cg.viewKickAngles[i] at [ECX] and cg.viewKickVel[i] at
 //     [ECX-0xc].
 //   - constants from .rdata: 0.001f@0x3007bd94, 0.0f@0x3007bcec, 1.0f@0x3007bce0,
 //     0.5f@0x3007bce8, 2400.0f@0x3007bdac, -1.0f@0x3007bdb0, 0.06f@0x3007bda8,
@@ -31,8 +31,8 @@
 
 void CG_UpdateViewKick(void)
 {
-    /* ESI = cg_frametime (elapsed ms this client frame); return if <= 0. */
-    int32_t remaining = cg_frametime;
+    /* ESI = cg.frametime (elapsed ms this client frame); return if <= 0. */
+    int32_t remaining = cg.frametime;
     if (remaining <= 0) {
         return;
     }
@@ -44,11 +44,11 @@ void CG_UpdateViewKick(void)
         const long double dt =
             (long double)stepMs * (long double)0.001f;
 
-        /* Inner loop: ECX walks cg_viewKickAngles[0..2]; [ECX-0xc] is the
-         * matching cg_viewKickVel[i] (the two vec3s are adjacent in memory). */
+        /* Inner loop: ECX walks cg.viewKickAngles[0..2]; [ECX-0xc] is the
+         * matching cg.viewKickVel[i] (the two vec3s are adjacent in memory). */
         for (int i = 0; i < 3; ++i) {
-            float vel = cg_viewKickVel[i];
-            float ang = cg_viewKickAngles[i];
+            float vel = cg.viewKickVel[i];
+            float ang = cg.viewKickAngles[i];
 
             /* A==0 && B==0  -> nothing to do this component (JNP 0x3003fb32).
              * The velocity-integration block (0x3003fa50) runs only when the
@@ -68,17 +68,17 @@ void CG_UpdateViewKick(void)
                  *   - adsFraction >= 0.5f           -> weapon->adsViewKickCenterSpeed
                  *   - adsFraction <  0.5f           -> weapon->hipViewKickCenterSpeed */
                 float accel;
-                if (cg_predictedPlayerState.currentWeapon == 0) {
+                if (cg.predictedPlayerState.currentWeapon == 0) {
                     accel = signFactor * 2400.0f;
                 } else {
                     /* MOV EAX,[0x30487980] is issued unconditionally before the
                      * ADS-fraction branch; the field selected is the only diff. */
-                    const weaponInfo_t *w = cg_currentWeaponInfo;
+                    const weaponInfo_t *w = cg.currentWeaponInfo;
                     /* 0x3003fa7b fcomp 0.5f / 0x3003fa83 test ah,0x41 / 0x3003fa8b jne
                      * -> the ADS field (+0x404) is reached (fall-through) only when
                      * adsFraction > 0.5 STRICTLY; at ==0.5 (C3 set) the jne is taken to
                      * the hip field (+0x44c). A prior pass used >= 0.5f. */
-                    if (cg_predictedPlayerState.adsFraction > 0.5f) {
+                    if (cg.predictedPlayerState.adsFraction > 0.5f) {
                         accel = signFactor * w->adsViewKickCenterSpeed;
                     } else {
                         accel = signFactor * w->hipViewKickCenterSpeed;
@@ -88,7 +88,7 @@ void CG_UpdateViewKick(void)
                 /* FMUL st,st(1) (dt) ; FADD vel ; FSTP vel. */
                 vel = (float)((long double)accel * dt +
                               (long double)vel);
-                cg_viewKickVel[i] = vel;
+                cg.viewKickVel[i] = vel;
             }
 
             /* Position integrate (0x3003faab).
@@ -108,17 +108,17 @@ void CG_UpdateViewKick(void)
              * (C0) and unordered/NaN (C0|C2|C3). */
             if (isnan(crossingProduct) ||
                 crossingProduct < (long double)0.0f) {
-                cg_viewKickAngles[i] = 0.0f;
-                cg_viewKickVel[i] = 0.0f;
+                cg.viewKickAngles[i] = 0.0f;
+                cg.viewKickVel[i] = 0.0f;
                 continue;
             }
 
             /* Store newAng. If it is exactly 0, zero the velocity too and move on
              * (FUCOMPP 0.0 ; JNP 0x3003fb2f). */
             const float storedNewAng = (float)newAng;
-            cg_viewKickAngles[i] = storedNewAng;
+            cg.viewKickAngles[i] = storedNewAng;
             if (storedNewAng == 0.0f) {
-                cg_viewKickVel[i] = 0.0f;
+                cg.viewKickVel[i] = 0.0f;
                 continue;
             }
 
@@ -135,11 +135,11 @@ void CG_UpdateViewKick(void)
             /* |newAng| > 10.0: clamp. FLD newAng ; FCOMP 0.0 ; TEST AH,0x41 ; JNZ
              * -> negative branch stores -10.0, else +10.0. */
             if (storedNewAng > 0.0f) {
-                cg_viewKickAngles[i] = 10.0f;
+                cg.viewKickAngles[i] = 10.0f;
             } else {
-                cg_viewKickAngles[i] = -10.0f;
+                cg.viewKickAngles[i] = -10.0f;
             }
-            cg_viewKickVel[i] = 0.0f;
+            cg.viewKickVel[i] = 0.0f;
         }
 
         remaining -= 5;

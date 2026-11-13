@@ -9,19 +9,19 @@
 // Called once per frame from the scene reader CG_ShellShockScene (0x30042160, the
 // leg at 0x300424e0) with the register ABI proven at the sole call site 0x30042541:
 //   EAX = startTime  (cg.time captured when the shellshock began; either
-//                     cg_shellShockStartTime for the manual "cg_shellshock" console
+//                     cg.shellShockStartTime for the manual "cg_shellshock" console
 //                     command, or the active snapshot's shellshock start field)
 //   EBX = params     (the active shellshock_t*: cg_consoleShellShock 0x30448624 for
 //                     the console command, or &cg_shellShocks[index] for a
 //                     config-string shellshock)
-//   EDI = duration   (the shellshock duration in ms: cg_shellShockDuration, or the
+//   EDI = duration   (the shellshock duration in ms: cg.shellShockDuration, or the
 //                     active snapshot's shellshock duration field)
 // No stack arguments; the callee is __usercall over EAX/EBX/EDI. Expressed here as a
 // normal 3-argument C function; the register binding is the ABI note above.
 //
 // Behavior, proven instruction by instruction:
 //
-//   elapsed = cg_time - startTime;          // ESI = [0x304831b0] - EAX (signed ms)
+//   elapsed = cg.time - startTime;          // ESI = [0x304831b0] - EAX (signed ms)
 //   if (startTime == 0 || elapsed < 0)      // TEST EAX,EAX / JZ ; TEST ESI,ESI / JL
 //       return CG_EndShellShock();          // tail JMP 0x3003c1d0 — not yet started
 //                                           //   (startTime==0) or clock ran backwards
@@ -63,7 +63,7 @@
 
 void CG_UpdateShellShock(int32_t startTime, shellshock_t *params, int32_t duration)
 {
-    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg_time -
+    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg.time -
                                        (uint32_t)startTime);
 
     /* Not started yet (no start time), or the client clock ran backwards past the

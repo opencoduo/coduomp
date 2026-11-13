@@ -24,16 +24,16 @@ void CG_FxTest(void)
                   (int32_t)sizeof(g_textScratchBuffer));
     /* 0x3003f462..0x3003f47d: strncpy of 63 bytes (PUSH 0x3f) into the 64-byte
      * name, then a NUL at name[63]. */
-    Q_strncpyz(cg_periodicEffectName, g_textScratchBuffer, sizeof(cg_periodicEffectName));
-    cg_periodicEffectName[63] = '\0';
+    Q_strncpyz(cg.periodicEffectName, g_textScratchBuffer, sizeof(cg.periodicEffectName));
+    cg.periodicEffectName[63] = '\0';
 
     effect = (qhandle_t)cgame_syscall(
-        CG_FX_REGISTER_EFFECT, (intptr_t)cg_periodicEffectName);
-    Com_Printf("Spawning Fx %s with ID: %d\n", cg_periodicEffectName, effect);
+        CG_FX_REGISTER_EFFECT, (intptr_t)cg.periodicEffectName);
+    Com_Printf("Spawning Fx %s with ID: %d\n", cg.periodicEffectName, effect);
     cgame_syscall(CG_PLAY_EFFECT_ORIGIN,
                   (int32_t)effect,
-                  (intptr_t)cg_periodicEffectOrigin);
-    cg_periodicEffectLastTime = cg_time;
+                  (intptr_t)cg.periodicEffectOrigin);
+    cg.periodicEffectLastTime = cg.time;
 
     if (cgame_syscall(CG_ARGC) == 3) {
         cgame_syscall(CG_ARGV, 2,
@@ -41,9 +41,9 @@ void CG_FxTest(void)
                       (int32_t)sizeof(g_textScratchBuffer));
         /* 0x3003f4e1..0x3003f4f4: atof's live x87 result is multiplied by the
          * binary64 1000.0 operand and passed directly to MSVC _ftol2. */
-        cg_periodicEffectInterval = coduo_fp_to_i32_extended(
+        cg.periodicEffectInterval = coduo_fp_to_i32_extended(
             (long double)coduo_compat_atof(g_textScratchBuffer) * 1000.0L);
     } else {
-        cg_periodicEffectInterval = 0;
+        cg.periodicEffectInterval = 0;
     }
 }

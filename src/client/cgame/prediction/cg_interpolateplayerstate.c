@@ -13,7 +13,7 @@
  *
  * The .mcode size-guess "G_UpdateClientInfo" is REJECTED: that is a game_mp.dll
  * (server) symbol matched only by byte size (win 0x1c6 vs 0x1c8). This function is
- * cgame code — it reads cg_snap/cg_nextSnap (0x30459160/0x30459164), the cgame
+ * cgame code — it reads cg.snap/cg.nextSnap (0x30459160/0x30459164), the cgame
  * predicted-player globals, and the cgame usercmd traps — and its behaviour is the
  * stock Quake3/CoD CG_InterpolatePlayerState.
  *
@@ -21,11 +21,11 @@
  *
  *   1. Copies the incoming snapshot's playerState wholesale into
  *      cg.predictedPlayerState (MOVSD.REP of 0x1141 == 4417 dwords == 0x4504 bytes,
- *      the embedded playerState at cg_nextSnap + 0x0c). This is the classic
+ *      the embedded playerState at cg.nextSnap + 0x0c). This is the classic
  *      `cg.predictedPlayerState = cg.nextSnap->ps;` copy.
  *
  *   2. Caches the current predicted weapon's weaponInfo_t record:
- *      cg_currentWeaponInfo = bg_weaponInfos[cg.predictedPlayerState.currentWeapon]
+ *      cg.currentWeaponInfo = bg_weaponInfos[cg.predictedPlayerState.currentWeapon]
  *      (bg_weaponInfos base 0x30134cd8, index 0x3048329c, cache 0x30487980).
  *
  *   3. When `grabAngles` is set, fetches the most recent buffered usercmd via
@@ -36,10 +36,10 @@
  *      view angles track the very latest input instead of the (older) snapshot's.
  *
  *   4. When the next snapshot is strictly ahead of the current one in server time,
- *      lerps the smoothly-interpolated view state between cg_snap and cg_nextSnap
+ *      lerps the smoothly-interpolated view state between cg.snap and cg.nextSnap
  *      by the fraction
- *          t = (cg.time - cg_snap->serverTime)
- *              / (cg_nextSnap->serverTime - cg_snap->serverTime)
+ *          t = (cg.time - cg.snap->serverTime)
+ *              / (cg.nextSnap->serverTime - cg.snap->serverTime)
  *      writing bobCycle (wrap + truncating Q_rint), origin, velocity, viewangles
  *      (per-component short-way LerpAngle, only when NOT grabbing angles from the
  *      command), viewHeightCurrent, adsFraction, leanFraction, and the +0x628 ps scalar
@@ -60,16 +60,16 @@
 
 void CG_InterpolatePlayerState(qboolean grabAngles)
 {
-    snapshot_t *snap = cg_snap;      /* EBX */
-    snapshot_t *next = cg_nextSnap;  /* EBP */
+    snapshot_t *snap = cg.snap;      /* EBX */
+    snapshot_t *next = cg.nextSnap;  /* EBP */
 
-    playerState_t *out = &cg_predictedPlayerState;
+    playerState_t *out = &cg.predictedPlayerState;
 
     /* 1. cg.predictedPlayerState = cg.nextSnap->ps; (0x1141 dwords from next+0x0c). */
     memcpy(out, &next->ps, sizeof(*out));
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    cg_currentWeaponInfo = bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+    cg.currentWeaponInfo = bg_weaponInfos[cg.predictedPlayerState.currentWeapon];
 
     /* 3. Optionally fold the latest usercmd's angles into the predicted state. */
     if (grabAngles) {
@@ -89,7 +89,7 @@ void CG_InterpolatePlayerState(qboolean grabAngles)
     /* The machine forms both operands as 32-bit integer differences and FILDs them
      * (signed): numerator (cg.time - snap.serverTime), denominator (next - snap). */
     int32_t sinceSnap = coduo_int32_from_bits(
-        (uint32_t)cg_time - (uint32_t)snap->serverTime);
+        (uint32_t)cg.time - (uint32_t)snap->serverTime);
     int32_t snapSpan = coduo_int32_from_bits(
         (uint32_t)next->serverTime - (uint32_t)snap->serverTime);
     float t = (float)((long double)sinceSnap / (long double)snapSpan);
@@ -110,18 +110,18 @@ void CG_InterpolatePlayerState(qboolean grabAngles)
     }
 
     /* Interpolate ps.aimSpreadScale into its predicted-player-state field. */
-    cg_predictedPlayerState.aimSpreadScale =
+    cg.predictedPlayerState.aimSpreadScale =
         (float)(((long double)next->ps.aimSpreadScale -
                  (long double)snap->ps.aimSpreadScale) * (long double)t +
                 (long double)snap->ps.aimSpreadScale);
 
     /* origin[3], velocity[3], and (only when not grabbing angles) viewangles[3]
      * are interpolated together in one 3-iteration loop.
-     *   origin   -> cg_predictedPlayerState.psOrigin (0x304831d8 == predictedPlayerState.origin)
+     *   origin   -> cg.predictedPlayerState.psOrigin (0x304831d8 == predictedPlayerState.origin)
      *   viewangle-> interpolated-view-angle globals (0x304832ac/b0/b4, LerpAngle)
      *   velocity -> predictedPlayerState.velocity (0x304831e4) */
     for (int32_t i = 0; i < 3; i++) {
-        cg_predictedPlayerState.psOrigin[i] =
+        cg.predictedPlayerState.psOrigin[i] =
             (float)(((long double)next->ps.psOrigin[i] -
                      (long double)snap->ps.psOrigin[i]) * (long double)t +
                     (long double)snap->ps.psOrigin[i]);
@@ -129,7 +129,7 @@ void CG_InterpolatePlayerState(qboolean grabAngles)
         /* 0x300355d4..0x300355ff: the view-angle call is interleaved between
          * this component's origin and velocity stores. */
         if (!grabAngles) {
-            cg_predictedPlayerState.viewAngles[i] =
+            cg.predictedPlayerState.viewAngles[i] =
                 LerpAngle(snap->ps.viewAngles[i], next->ps.viewAngles[i], t);
         }
 
@@ -139,20 +139,20 @@ void CG_InterpolatePlayerState(qboolean grabAngles)
                     (long double)snap->ps.velocity[i]);
     }
 
-    /* viewHeightCurrent -> cg_predictedPlayerState.viewHeightCurrent (0x304832bc). */
-    cg_predictedPlayerState.viewHeightCurrent =
+    /* viewHeightCurrent -> cg.predictedPlayerState.viewHeightCurrent (0x304832bc). */
+    cg.predictedPlayerState.viewHeightCurrent =
         (float)(((long double)next->ps.viewHeightCurrent -
                  (long double)snap->ps.viewHeightCurrent) * (long double)t +
                 (long double)snap->ps.viewHeightCurrent);
 
     /* leanFraction -> shared interpolated global at 0x30483208. */
-    cg_predictedPlayerState.leanFraction =
+    cg.predictedPlayerState.leanFraction =
         (float)(((long double)next->ps.leanFraction -
                  (long double)snap->ps.leanFraction) * (long double)t +
                 (long double)snap->ps.leanFraction);
 
-    /* adsFraction -> cg_predictedPlayerState.adsFraction (0x304832a4). */
-    cg_predictedPlayerState.adsFraction =
+    /* adsFraction -> cg.predictedPlayerState.adsFraction (0x304832a4). */
+    cg.predictedPlayerState.adsFraction =
         (float)(((long double)next->ps.adsFraction -
                  (long double)snap->ps.adsFraction) * (long double)t +
                 (long double)snap->ps.adsFraction);

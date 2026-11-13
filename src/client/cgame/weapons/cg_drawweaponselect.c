@@ -3,7 +3,7 @@
 //
 // CG_DrawWeaponSelect — draw the weapon-selection HUD strip: one icon per
 // occupied inventory slot (slots 7..1, right-to-left from x=632), each slot
-// expanding (cg_weaponSelectSlotScale) while current and collapsing otherwise.
+// expanding (cg.weaponSelectSlotScale) while current and collapsing otherwise.
 // The current slot additionally shows its alt-fire chain: the chain members
 // other than the selected weapon are drawn dim below the strip via raw
 // stretch-pic traps, and the selected weapon is drawn white, sliding between
@@ -53,18 +53,18 @@ void CG_DrawWeaponSelect(void)
     /* 0x30046bb6..0x30046bd1: milliseconds since the previous carousel frame;
      * latch the new draw time and clamp a backwards clock to zero (JNS). */
     frameMsec = coduo_int32_from_bits(
-        (uint32_t)cg_time - (uint32_t)cg_weaponSelectLastTime);
-    cg_weaponSelectLastTime = cg_time;
+        (uint32_t)cg.time - (uint32_t)cg.weaponSelectLastTime);
+    cg.weaponSelectLastTime = cg.time;
     if (frameMsec < 0)
         frameMsec = 0;
 
     /* 0x30046bd8: CMP [0x304831c8],6; JGE ret — no carousel while dead. */
-    if (cg_predictedPlayerState.pmType >= PM_TYPE_DEAD)
+    if (cg.predictedPlayerState.pmType >= PM_TYPE_DEAD)
         return;
 
-    /* 0x30046be5..0x30046bfa: CG_FadeColor(EDX=cg_weaponSelectTime, ECX=1800);
+    /* 0x30046be5..0x30046bfa: CG_FadeColor(EDX=cg.weaponSelectTime, ECX=1800);
      * NULL means the select HUD has fully faded out. */
-    fade = CG_FadeColor(cg_weaponSelectTime, CG_WEAPON_SELECT_FADE_MSEC);
+    fade = CG_FadeColor(cg.weaponSelectTime, CG_WEAPON_SELECT_FADE_MSEC);
     if (fade == NULL)
         return;
 
@@ -84,17 +84,17 @@ void CG_DrawWeaponSelect(void)
      * reloads at 0x30046cf7/0x30047329/0x30047031 are register refills after
      * calls; nothing in the loop writes it). */
     selectedWeapon = cg_weaponSelect_vmCvar.integer;
-    currentSlot = BG_IsPlayerWeaponInSlot(&cg_predictedPlayerState, selectedWeapon, 1);
+    currentSlot = BG_IsPlayerWeaponInSlot(&cg.predictedPlayerState, selectedWeapon, 1);
 
     /* 0x30046c47..0x30046c64 + 0x30047345..0x3004735d: EBX=7 down to 1, EBP
-     * walking &cg_weaponSelectSlotScale[7] down while > &[0]. */
+     * walking &cg.weaponSelectSlotScale[7] down while > &[0]. */
     for (int32_t slot = WEAPSLOT_COUNT - 1; slot >= 1; --slot) {
-        float *scale = &cg_weaponSelectSlotScale[slot];
+        float *scale = &cg.weaponSelectSlotScale[slot];
         /* 0x30046c70..0x30046c7e: MOVSX of ps->weaponSlots[slot] (byte). */
-        int32_t weapon = (int8_t)cg_predictedPlayerState.weaponSlots[slot];
+        int32_t weapon = (int8_t)cg.predictedPlayerState.weaponSlots[slot];
 
         /* 0x30046c76/0x30046c81..0x30046c99: empty byte, or held bit clear in
-         * cg_predictedPlayerState.weaponBits (word weapon>>5, bit weapon&0x1f;
+         * cg.predictedPlayerState.weaponBits (word weapon>>5, bit weapon&0x1f;
          * the inline form of CG_IsWeaponHeld, same sign-extended index math).
          * 0x30047334..0x30047345: back up one unexpanded icon width plus the
          * 2px gutter and collapse the slot's expansion; nothing drawn. */

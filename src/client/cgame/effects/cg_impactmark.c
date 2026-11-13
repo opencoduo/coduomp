@@ -54,7 +54,7 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
     if (cg_marks_vmCvar.integer == 0) {
         return;
     }
-    if (cg_suppressMarksGate != 0) {
+    if (cg.suppressMarksGate != 0) {
         return;
     }
 
@@ -169,7 +169,7 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
             /* 3002e81d-3002e88f: persist as a mark for CG_AddMarks. */
             markPoly_t *mark = CG_AllocMark();
 
-            mark->markTime   = cg_time;         /* +0x08 */
+            mark->markTime   = cg.time;         /* +0x08 */
             mark->duration   = markLifeTime;    /* +0x170 */
             mark->markShader = frag->shaderHandle;/* +0x0c */
             mark->numVerts   = numPoints;       /* +0x28 */

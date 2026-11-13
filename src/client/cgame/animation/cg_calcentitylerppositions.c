@@ -10,7 +10,7 @@
 // (matched only on byte size 0x150). REJECTED: this is not the shared BG
 // weapon-position math family (BG_CalculateWeaponPosition / _AddIdleSway /
 // _AddViewKick, 0x30014.. / 0x30015..); this function reads a centity's
-// currentState trajectories, evaluates them at cg_time via BG_EvaluateTrajectory,
+// currentState trajectories, evaluates them at cg.time via BG_EvaluateTrajectory,
 // writes the entity's centity-level lerpOrigin block, and mover-lag-adjusts it.
 // The address already had TWO divergent provisional names in the shared header —
 // CG_CalcEntityLerpPositions (from the HUD-tag draw callers) and
@@ -40,10 +40,10 @@
 //   - 0x30021d9a: switch on currentState.pos.trType(+0xc): TR_INTERPOLATE(1), OR
 //     TR_LINEAR_STOP(3) with currentState.number(+0x0) < 0x40 (below MAX_CLIENTS),
 //     tail-call the sibling smoothing routine 0x30021bb0 and return.
-//   - 0x30021dbd: otherwise evaluate the two trajectories at cg_time
+//   - 0x30021dbd: otherwise evaluate the two trajectories at cg.time
 //     (BG_EvaluateTrajectory, register ABI EAX=atTime, ECX=out, EBX=tr):
-//        lerpOrigin     = eval(&currentState.pos , cg_time)
-//        lerpAngles = eval(&currentState.apos, cg_time)
+//        lerpOrigin     = eval(&currentState.pos , cg.time)
+//        lerpAngles = eval(&currentState.apos, cg.time)
 //   - 0x30021de5: on currentState.eType(+0x4): ET_PLAYER(1) selects
 //     bgs.clientinfo[otherEntityNum(+0x94)]; ET_PLAYER_CORPSE(2) selects
 //     cg_corpseInfo[number(+0x0) - 0x40]; any other eType skips the block
@@ -54,9 +54,9 @@
 //     lerpAngles[0] and lerpAngles[2] (NOT [1]). The five block dwords
 //     are plain int/float MOV copies; modeled as float copies (the source fields are
 //     angles/trajectory outputs).
-//   - 0x30021e55: unless the entity IS cg_predictedEventEntity (0x304876c8), apply
+//   - 0x30021e55: unless the entity IS cg.predictedPlayerEntity (0x304876c8), apply
 //     CG_AdjustPositionForMover to lerpOrigin: in=out=&lerpOrigin,
-//     moverNum=moverEntityNum(+0x7c), fromTime=cg_snap->serverTime(+0x8), toTime=cg_time,
+//     moverNum=moverEntityNum(+0x7c), fromTime=cg.snap->serverTime(+0x8), toTime=cg.time,
 //     angleDelta=NULL (ECX==0). cdecl; caller `add esp,0xc`.
 
 #include <stddef.h>
@@ -97,12 +97,12 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
         return;
     }
 
-    /* 0x30021dbd..0x30021de0: evaluate the pos/apos trajectories at cg_time.
-     * BG_EvaluateTrajectory register ABI: EAX=atTime(cg_time), ECX=out, EBX=tr. */
+    /* 0x30021dbd..0x30021de0: evaluate the pos/apos trajectories at cg.time.
+     * BG_EvaluateTrajectory register ABI: EAX=atTime(cg.time), ECX=out, EBX=tr. */
     BG_EvaluateTrajectory(&state->currentState.pos,
-                          cg_time, entity->lerpOrigin);
+                          cg.time, entity->lerpOrigin);
     BG_EvaluateTrajectory(&state->currentState.apos,
-                          cg_time, entity->lerpAngles);
+                          cg.time, entity->lerpAngles);
 
     /* 0x30021de5: select the per-entity 0x4d0-stride state record whose shared
      * angle block (+0x3e0) receives the derived view angles. */
@@ -150,12 +150,12 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
         memcpy(&block->leanFraction, &leanFraction, sizeof(block->leanFraction));
     }
 
-    /* 0x30021e55: the singleton cg_predictedEventEntity skips the mover-lag pass. */
-    if (entity != &cg_predictedEventEntity) {
+    /* 0x30021e55: the singleton cg.predictedPlayerEntity skips the mover-lag pass. */
+    if (entity != &cg.predictedPlayerEntity) {
         /* 0x30021e5d..0x30021e73: mover-lag-correct lerpOrigin in place.
-         * fromTime = cg_snap->serverTime, toTime = cg_time, angleDelta = NULL. */
+         * fromTime = cg.snap->serverTime, toTime = cg.time, angleDelta = NULL. */
         CG_AdjustPositionForMover(entity->lerpOrigin, state->currentState.groundEntityNum,
-                                  cg_snap->serverTime, cg_time,
+                                  cg.snap->serverTime, cg.time,
                                   entity->lerpOrigin, NULL);
     }
 }

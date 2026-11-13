@@ -41,7 +41,7 @@
 //     (0x94, esi, 22, adsFraction)
 //     (0x94, esi, 23, 1.0f - adsFraction)
 //   adsFraction is cg.predictedPlayerState.adsFraction, read as a float from
-//   0x304832a4 (cg_predictedPlayerState.adsFraction). The complement 1.0f-adsFraction
+//   0x304832a4 (cg.predictedPlayerState.adsFraction). The complement 1.0f-adsFraction
 //   is FLD [0x3007bce0]=1.0f / FSUB [0x304832a4]. The two node times therefore
 //   sum to 1.0 across the ADS zoom transition.
 //
@@ -51,7 +51,7 @@
 
 #include <stdint.h>
 
-#include "client/cgame/globals.h"          /* cgame_syscall, cg_predictedPlayerState.adsFraction */
+#include "client/cgame/globals.h"          /* cgame_syscall, cg.predictedPlayerState.adsFraction */
 #include "client/cgame/client_recovered.h" /* CG_XANIM_SET_GOAL_WEIGHT, CG_XANIM_SET_TIME */
 
 /* Blend time pushed on every trap-0x8f call (ECX = 0x3f000000). */
@@ -80,13 +80,13 @@ void CG_PlayADSAnim(int32_t activeAnimIndex, intptr_t animTree)
      * The reads happen in this order: adsFraction is loaded (MOV EAX,[..]) and
      * the first call issued, then FLD 1.0f / FSUB [..] forms the complement for
      * the second. Both reads are of the same live global; order preserved. --- */
-    float adsFraction = cg_predictedPlayerState.adsFraction;
+    float adsFraction = cg.predictedPlayerState.adsFraction;
     cgame_syscall(CG_XANIM_SET_TIME, animTree, WEAPON_XANIM_ADS_UP,
                   CG_FloatBits(adsFraction));
 
     /* 1.0f from FLD float ptr [0x3007bce0] (bit pattern 0x3f800000). */
     float complement = (float)(1.0L -
-                               (long double)cg_predictedPlayerState.adsFraction);
+                               (long double)cg.predictedPlayerState.adsFraction);
     cgame_syscall(CG_XANIM_SET_TIME, animTree, WEAPON_XANIM_ADS_DOWN,
                   CG_FloatBits(complement));
 }

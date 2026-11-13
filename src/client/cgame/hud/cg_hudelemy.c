@@ -9,7 +9,7 @@
 // Assigned mechanical name `Q_SwayRand` is REJECTED. It was matched to this
 // function only by byte size (win 0x6d == matched 0x6d), which the naming rules
 // forbid; there is no RNG here (no seed state, no LCG/multiply-add, no masking).
-// This function reads the client game clock cg_time, time-interpolates an integer
+// This function reads the client game clock cg.time, time-interpolates an integer
 // endpoint pair, and returns a float in ST0 with a type-selected owner-relative
 // post-adjustment. It is a UI/HUD coordinate value-node evaluator.
 //
@@ -57,11 +57,11 @@ long double CG_HudElemY(const hudElem_t *node,
 
     if (duration > 0) {
         /*
-         * 0x30029b0f..0x30029b1a: elapsed = cg_time - node->moveStartTime (signed
+         * 0x30029b0f..0x30029b1a: elapsed = cg.time - node->moveStartTime (signed
          * SUB, [0x304831b0] - [EAX+0x54]). If elapsed >= duration the window has
          * fully elapsed (signed JGE at 0x30029b1a): use the settled value.
          */
-        elapsed = coduo_int32_from_bits((uint32_t)cg_time -
+        elapsed = coduo_int32_from_bits((uint32_t)cg.time -
                                    (uint32_t)node->moveStartTime);
         if (elapsed < duration) {
             interpolating = qtrue;

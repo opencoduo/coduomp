@@ -37,18 +37,18 @@
 // CONSTANTS (verified via objdump -s -j .rdata / .data):
 //   0x3007bce0 = 1.0f   0x3007bce8 = 0.5f   0x3007bcec = 0.0f   0x3007bcf8 = 1.0 (dbl)
 //   0x3007be88 = 1000.0f (angular-rate scale; NOT 0.85f — see below)  0x3007c2c0 = 1.0/60 (dbl)
-//   0x3007c2c8 = 1.0f/60   0x304831ac = cg_frametime (int ms, FILD)
-//   0x304831a8 = cg_frameInterpolation (float)   0x304832a4 = cg_predictedPlayerState.adsFraction
-//   0x304831c0 = the cg_thirdPerson view/render gate
-//   0x30459160 = cg_snap (cg_snap->ps.psClientNum at +0xe0)
+//   0x3007c2c8 = 1.0f/60   0x304831ac = cg.frametime (int ms, FILD)
+//   0x304831a8 = cg.frameInterpolation (float)   0x304832a4 = cg.predictedPlayerState.adsFraction
+//   0x304831c0 = the cg.renderingThirdPerson view/render gate
+//   0x30459160 = cg.snap (cg.snap->ps.psClientNum at +0xe0)
 //   0x305e1f08 = bgs.animationTable.animTreeHandle   0x3048c6e0 = cg_entities base
 //
 // ANGULAR-RATE CORRECTION: an earlier partial spec claimed the per-bone blend rate was
-// |diff| * (0.85f / cg_frametime) with 0.85f at .rdata 0x3007be88. That is WRONG on both
+// |diff| * (0.85f / cg.frametime) with 0.85f at .rdata 0x3007be88. That is WRONG on both
 // counts. objdump -s -j .rdata 0x3007be80..0x3007be90 gives 0x3007be84 = 0.8500000238f
 // and 0x3007be88 = 1000.0f. Every one of the nine blend sites is `FDIVR [0x3007be88]`
 // (divide-reverse by 1000.0f), and 0.85f (0x3007be84) is never referenced in this
-// function. The proven rate is |diff| * (1000.0f / cg_frametime); see the
+// function. The proven rate is |diff| * (1000.0f / cg.frametime); see the
 // compatibility spelling below.
 //
 // FULLY RECONSTRUCTED. The four per-mode turret-bone-angle blend blocks (Block A
@@ -98,13 +98,13 @@
  * blend fraction shared by all four
  * blocks (idiom at 0x3003322a..0x3003324f and eight sibling sites):
  *
- *   rate   = |sample - reference| * (1000.0f / cg_frametime);   // FABS; FILD ft;
+ *   rate   = |sample - reference| * (1000.0f / cg.frametime);   // FABS; FILD ft;
  *                                                               // FDIVR 1000.0f; FMULP
  *   result = (rate > 0.0f) ? (1.0f / rate) : 0.0f;              // FCOM 0.0; TEST AH,0x41
  *
  * The divisor is .rdata 0x3007be88 = 1000.0f (verified by objdump; 0.85f at 0x3007be84
  * is never referenced here). The reciprocal branch is FLD 1.0f; FDIV st0,st1 (1.0/rate);
- * the zero branch is a stored 0.0f. cg_frametime is FILD'd from .data 0x304831ac.
+ * the zero branch is a stored 0.0f. cg.frametime is FILD'd from .data 0x304831ac.
  */
 static CG_VEHICLE_COMPAT_ALWAYS_INLINE float
 cgame_compat_turret_blend_step(float sample, float reference)
@@ -113,13 +113,13 @@ cgame_compat_turret_blend_step(float sample, float reference)
      * FILD ft; FDIVR 1000.0f; FMULP (0x30033223..0x30033238) never store to a float
      * slot. Only the reciprocal result is FSTP'd once (0x3003324f). long double keeps
      * them unrounded; float locals would round three intermediates the DLL does not.
-     * cg_frametime enters via a bare FILD (0x3003322c) with no FSTP DWORD before the
+     * cg.frametime enters via a bare FILD (0x3003322c) with no FSTP DWORD before the
      * FDIVR, so no (float) cast (Class 4). */
     long double diff =
         (long double)sample - (long double)reference;      /* FSUB reference */
     long double mag  = fabsl(diff);             /* FABS */
     long double rate =
-        mag * (1000.0L / (long double)cg_frametime);       /* FILD ft; FDIVR 1000.0f; FMULP */
+        mag * (1000.0L / (long double)cg.frametime);       /* FILD ft; FDIVR 1000.0f; FMULP */
     return rate > 0.0L ? (float)(1.0L / rate) : 0.0f;     /* FCOM 0.0; TEST AH,0x41; JNZ */
 }
 
@@ -307,13 +307,13 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
 
     if (mode == 1 && (seatRole == 1 || seatRole == 3)) {
         /* ============= Block A (0x30033083) — driver/main gunner ============= */
-        /* LerpAngle(vehicle->currentState.iconBaseYaw, lerpYawTarget, cg_frameInterpolation)
+        /* LerpAngle(vehicle->currentState.iconBaseYaw, lerpYawTarget, cg.frameInterpolation)
          * (0x30033083..0x3003309c, FSTP [ESP+0x20] -> F+0x8) is LIVE: it is the
          * exact value the sub-frame-fraction logic in CG_TurretBoneFrame FLDs
          * (0x3003316a / 0x3003317b both resolve to F+0x8). */
         float lerpYaw = LerpAngle(vehicle->currentState.iconBaseYaw,
                                   vehicle->corpseModelInfo.leanf,
-                                  cg_frameInterpolation);
+                                  cg.frameInterpolation);
 
         if (cgame_compat_turret_state_positioned(anim)) {
             XAnimTree *animTree = anim->animTree;
@@ -515,9 +515,9 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
 
     /* ==================== common tail (0x3003392b) ====================
      * Decide whether to actually position the rider: for some vehicle modes the LOCAL
-     * player's own model must be skipped (rider->currentState.clientNum == cg_snap->ps.psClientNum and the
+     * player's own model must be skipped (rider->currentState.clientNum == cg.snap->ps.psClientNum and the
      * view gate 0x304831c0 clear), and the mode-1 driver seat additionally skips while
-     * not aiming down sights (cg_predictedPlayerState.adsFraction == 0).
+     * not aiming down sights (cg.predictedPlayerState.adsFraction == 0).
      *
      * The compare operand is [ESP+0x24], which — with ESP at the tail baseline (the three
      * prologue pushes still live, esp == F-0xc, proven by the POP ESI/EBP/EDI epilogue) —
@@ -528,8 +528,8 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
      * tail compares the rider's own client number, and no uninitialized read occurs. */
     mode = vehicle->currentState.stateFilter;                         /* retail reload at 0x3003392b */
     if (mode == 1) {                                     /* 0x30033971 */
-        if (riderClientNum == cg_snap->ps.psClientNum
-            && cg_thirdPerson == 0) {
+        if (riderClientNum == cg.snap->ps.psClientNum
+            && cg.renderingThirdPerson == 0) {
             int32_t r = rider->currentState.stateFilter & CG_VEHICLE_SEAT_ROLE_MASK;
             if (r == 2 || r == 3) {
                 return qfalse;                           /* 0x30033998 / 0x3003399d */
@@ -537,7 +537,7 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
             /* 0x3003399f FUCOMPP vs 0.0; TEST AH,0x44; JNP 0x30033965 — the JNP
              * (exactly-one-bit) leg is the ORDERED-EQUAL case: return qfalse when
              * adsFraction == 0.0; proceed to position when != 0.0 (or NaN). */
-            if (cg_predictedPlayerState.adsFraction == 0.0f) {
+            if (cg.predictedPlayerState.adsFraction == 0.0f) {
                 return qfalse;                           /* 0x300339b2 -> 0x30033965 */
             }
         }
@@ -547,8 +547,8 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
             return qfalse;                               /* 0x30033943 -> 0x30033965 */
         }
         if (r == 2) {                                    /* 0x30033948 */
-            if (riderClientNum == cg_snap->ps.psClientNum
-                && cg_thirdPerson == 0) {
+            if (riderClientNum == cg.snap->ps.psClientNum
+                && cg.renderingThirdPerson == 0) {
                 return qfalse;                           /* 0x30033963 -> 0x30033965 */
             }
         }

@@ -22,7 +22,7 @@ enum {
 
 void CG_AddViewWeapon(void)
 {
-    playerState_t *ps = &cg_predictedPlayerState;
+    playerState_t *ps = &cg.predictedPlayerState;
 
     if (ps->pmType == PM_TYPE_SPECTATOR || ps->pmType == PM_TYPE_INTERMISSION) {
         return;
@@ -31,8 +31,8 @@ void CG_AddViewWeapon(void)
         CG_ResetWeaponAnimTrees(ps);
         return;
     }
-    if (cg_thirdPerson != 0 ||
-        cg_viewWeaponSuppressed != 0) {
+    if (cg.renderingThirdPerson != 0 ||
+        cg.viewWeaponSuppressed != 0) {
         return;
     }
 
@@ -55,9 +55,9 @@ void CG_AddViewWeapon(void)
     }
 
     if (ps->currentWeapon <= 0) {
-        cg_effectProjAnglePitch = cg_refdefViewAngles[0];
-        cg_effectProjAngleYaw = cg_refdefViewAngles[1];
-        memset(cg_adsViewOffset, 0, sizeof(cg_adsViewOffset));
+        cg.effectProjAnglePitch = cg.refdefViewAngles[0];
+        cg.effectProjAngleYaw = cg.refdefViewAngles[1];
+        memset(cg.adsViewOffset, 0, sizeof(cg.adsViewOffset));
         return;
     }
 
@@ -76,41 +76,41 @@ void CG_AddViewWeapon(void)
     pm_weapon_angle_state_t state;
     memset(&state, 0, sizeof(state));
 
-    AnglesToAxisNegRight(viewAxis, cg_refdefViewAngles);
+    AnglesToAxisNegRight(viewAxis, cg.refdefViewAngles);
 
     state.ps = ps;
-    state.speed = cg_weaponMoveSpeed;
-    /* cg_frametime enters via a bare FILD fed straight into FMUL 0.001f (0x300466c2
+    state.speed = cg.xyspeed;
+    /* cg.frametime enters via a bare FILD fed straight into FMUL 0.001f (0x300466c2
      * FILD; 0x300466d3 FMUL; 0x300466ed FSTP) with no FSTP DWORD between, so drop the
      * (float) cast (Class 4). */
     state.frameTime = (float)(
-        (long double)cg_frametime *
+        (long double)cg.frametime *
         (long double)CG_MILLISECONDS_TO_SECONDS);
-    state.moveOffset[0] = cg_weaponPositionPrevAngles[0];
-    state.moveOffset[1] = cg_weaponPositionPrevAngles[1];
-    state.moveOffset[2] = cg_weaponPositionPrevAngles[2];
-    state.idleScale = cg_weaponPositionMoveScale;
+    state.moveOffset[0] = cg.weaponPosition.weaponPositionPrevAngles[0];
+    state.moveOffset[1] = cg.weaponPosition.weaponPositionPrevAngles[1];
+    state.moveOffset[2] = cg.weaponPosition.weaponPositionPrevAngles[2];
+    state.idleScale = cg.weaponPosition.weaponPositionMoveScale;
     state.time = coduo_int32_from_bits(
-        (uint32_t)cg_time - (uint32_t)ps->deltaTime);
-    state.viewKickStartTime = cg_damageDirLatestServerTime != 0
-        ? coduo_int32_from_bits((uint32_t)cg_damageDirLatestServerTime -
+        (uint32_t)cg.time - (uint32_t)ps->deltaTime);
+    state.viewKickStartTime = cg.damageDirLatestServerTime != 0
+        ? coduo_int32_from_bits((uint32_t)cg.damageDirLatestServerTime -
                           (uint32_t)ps->deltaTime)
         : 0;
-    state.viewKickPitch = cg_damageFlashScale;
-    state.viewKickYaw = cg_damageFlashX;
-    state.recoilPitch = cg_weaponPositionBaseAngles[0];
-    state.recoilYaw = cg_weaponPositionBaseAngles[1];
-    state.recoilRoll = cg_weaponPositionBaseAngles[2];
-    state.recoilPitchVelocity = cg_weaponRecoilAngles[0];
-    state.recoilYawVelocity = cg_weaponRecoilAngles[1];
+    state.viewKickPitch = cg.v_dmg_pitch;
+    state.viewKickYaw = cg.v_dmg_roll;
+    state.recoilPitch = cg.weaponPositionBaseAngles[0];
+    state.recoilYaw = cg.weaponPositionBaseAngles[1];
+    state.recoilRoll = cg.weaponPositionBaseAngles[2];
+    state.recoilPitchVelocity = cg.weaponRecoilAngles[0];
+    state.recoilYawVelocity = cg.weaponRecoilAngles[1];
     /* The cgame caller copies the third recoil float through the otherwise
      * unused +0x40 word.  Preserve that original dword without converting it
      * through the game module's integer spelling for the same slot. */
-    memcpy(&state.weaponRecoilState, &cg_weaponRecoilAngles[2],
+    memcpy(&state.weaponRecoilState, &cg.weaponRecoilAngles[2],
            sizeof(state.weaponRecoilState));
-    state.baseAngles[0] = cg_weaponSwayAngles[0];
-    state.baseAngles[1] = cg_weaponSwayAngles[1];
-    state.baseAngles[2] = cg_weaponSwayAngles[2];
+    state.baseAngles[0] = cg.weaponSwayAngles[0];
+    state.baseAngles[1] = cg.weaponSwayAngles[1];
+    state.baseAngles[2] = cg.weaponSwayAngles[2];
 
     BG_CalculateWeaponAngles(&state, angleOffset);
     AnglesToAxisNegRight(offsetAxis, angleOffset);
@@ -120,11 +120,11 @@ void CG_AddViewWeapon(void)
     if (weapon->adsEnabled != 0 && ps->adsFraction != 0.0f) {
         vec3_t projectedAngles;
         AxisToAngles(weaponAxis, projectedAngles);
-        cg_effectProjAnglePitch = AngleNormalize360(projectedAngles[0]);
-        cg_effectProjAngleYaw = AngleNormalize360(projectedAngles[1]);
+        cg.effectProjAnglePitch = AngleNormalize360(projectedAngles[0]);
+        cg.effectProjAngleYaw = AngleNormalize360(projectedAngles[1]);
     } else {
-        cg_effectProjAnglePitch = cg_refdefViewAngles[0];
-        cg_effectProjAngleYaw = cg_refdefViewAngles[1];
+        cg.effectProjAnglePitch = cg.refdefViewAngles[0];
+        cg.effectProjAngleYaw = cg.refdefViewAngles[1];
     }
 
     /* 0x30046843..0x300468a1 copies the state mutated in the local calc block
@@ -132,16 +132,16 @@ void CG_AddViewWeapon(void)
      * of the pre-call inputs: AddIdleSway advances idleScale,
      * BasePosition_angles advances moveOffset, and AddWeaponIdle advances the
      * value/rate spring pairs. */
-    cg_weaponPositionMoveScale = state.idleScale;
-    memcpy(cg_weaponPositionPrevAngles, state.moveOffset,
-           sizeof(cg_weaponPositionPrevAngles));
-    cg_weaponPositionBaseAngles[0] = state.recoilPitch;
-    cg_weaponPositionBaseAngles[1] = state.recoilYaw;
-    cg_weaponPositionBaseAngles[2] = state.recoilRoll;
-    cg_weaponRecoilAngles[0] = state.recoilPitchVelocity;
-    cg_weaponRecoilAngles[1] = state.recoilYawVelocity;
-    memcpy(&cg_weaponRecoilAngles[2], &state.weaponRecoilState,
-           sizeof(cg_weaponRecoilAngles[2]));
+    cg.weaponPosition.weaponPositionMoveScale = state.idleScale;
+    memcpy(cg.weaponPosition.weaponPositionPrevAngles, state.moveOffset,
+           sizeof(cg.weaponPosition.weaponPositionPrevAngles));
+    cg.weaponPositionBaseAngles[0] = state.recoilPitch;
+    cg.weaponPositionBaseAngles[1] = state.recoilYaw;
+    cg.weaponPositionBaseAngles[2] = state.recoilRoll;
+    cg.weaponRecoilAngles[0] = state.recoilPitchVelocity;
+    cg.weaponRecoilAngles[1] = state.recoilYawVelocity;
+    memcpy(&cg.weaponRecoilAngles[2], &state.weaponRecoilState,
+           sizeof(cg.weaponRecoilAngles[2]));
 
     CG_WeaponRunXModelAnims((playerState_t *)ps, wi);
 
@@ -169,25 +169,25 @@ void CG_AddViewWeapon(void)
     {
         long double base0 =
             (long double)cg_gunX_vmCvar.value *
-                (long double)cg_refdef.viewaxis[0][0] +
+                (long double)cg.refdef.viewaxis[0][0] +
             (long double)positionOffset[0];
         long double base1 =
             (long double)cg_gunX_vmCvar.value *
-                (long double)cg_refdef.viewaxis[0][1] +
+                (long double)cg.refdef.viewaxis[0][1] +
             (long double)positionOffset[1];
         float base2 = (float)(
             (long double)cg_gunX_vmCvar.value *
-                (long double)cg_refdef.viewaxis[0][2] +
+                (long double)cg.refdef.viewaxis[0][2] +
             (long double)positionOffset[2]);
         float xy0 = (float)(
             base0 + (long double)cg_gunY_vmCvar.value *
-                        (long double)cg_refdef.viewaxis[1][0]);
+                        (long double)cg.refdef.viewaxis[1][0]);
         float xy1 = (float)(
             base1 + (long double)cg_gunY_vmCvar.value *
-                        (long double)cg_refdef.viewaxis[1][1]);
+                        (long double)cg.refdef.viewaxis[1][1]);
         long double yzWide =
             (long double)base2 + (long double)cg_gunY_vmCvar.value *
-                        (long double)cg_refdef.viewaxis[1][2];
+                        (long double)cg.refdef.viewaxis[1][2];
 
         /* Components 0/1 are FSTP'd after the gun-Y term. Component 2 first
          * spills the gun-X/base sum to base2, then reloads it; that reloaded
@@ -195,16 +195,16 @@ void CG_AddViewWeapon(void)
          * final origin store. */
         hand.origin[0] = (float)(
             (long double)xy0 + (long double)cg_gunZ_vmCvar.value *
-                                   (long double)cg_refdef.viewaxis[2][0]);
+                                   (long double)cg.refdef.viewaxis[2][0]);
         hand.origin[1] = (float)(
             (long double)xy1 + (long double)cg_gunZ_vmCvar.value *
-                                   (long double)cg_refdef.viewaxis[2][1]);
+                                   (long double)cg.refdef.viewaxis[2][1]);
         hand.origin[2] = (float)(
             yzWide + (long double)cg_gunZ_vmCvar.value *
-                         (long double)cg_refdef.viewaxis[2][2]);
+                         (long double)cg.refdef.viewaxis[2][2]);
     }
 
     CG_AddPlayerWeapon(&hand, ps,
-                       &cg_predictedEventEntity,
+                       &cg.predictedPlayerEntity,
                        drawViewWeapon, viewOriginOffset);
 }

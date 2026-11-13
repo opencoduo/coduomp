@@ -9,7 +9,7 @@ enum { CG_VOICE_MENU_TIMEOUT_MS = 2500 };
 //
 // Naming: the .mcode bank's PM_Weapon_FinishWeaponBreakdown is a size-only false
 // match and is rejected. The machine code is a timed menu-housekeeping routine:
-// once s_voiceMenuStartTime is armed, 2500 ms later it closes the "voiceMenu"
+// once cg.voiceMenuStartTime is armed, 2500 ms later it closes the "voiceMenu"
 // menu and resets the "cl_conXOffset" cvar to "0". A defensible name is
 // CG_VoiceMenuTimeout; the exact original symbol is unproven, so the C symbol is
 // kept address-shaped with the working name recorded here.
@@ -23,7 +23,7 @@ void CG_VoiceMenuTimeout(void)
      * 0x3001ab00..0x3001ab07: load the armed start time; zero means the timer
      * is inactive, so return with no work.
      */
-    uint32_t startTime = s_voiceMenuStartTime;
+    uint32_t startTime = cg.voiceMenuStartTime;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (startTime == 0) {
         return;
@@ -35,7 +35,7 @@ void CG_VoiceMenuTimeout(void)
      * signed elapsed value is strictly greater than 2500 ms.
      */
     int32_t elapsed = coduo_int32_from_bits(
-        (uint32_t)cg_time - startTime);
+        (uint32_t)cg.time - startTime);
     if (elapsed <= CG_VOICE_MENU_TIMEOUT_MS) {
         return;
     }
@@ -59,5 +59,5 @@ void CG_VoiceMenuTimeout(void)
     /*
      * 0x3001ab44: clear the stored start time so the timer does not fire again.
      */
-    s_voiceMenuStartTime = 0;
+    cg.voiceMenuStartTime = 0;
 }

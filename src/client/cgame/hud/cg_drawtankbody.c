@@ -8,12 +8,12 @@
 // CG_DrawTankBody — the rotated-tag sibling of
 // CG_DrawJeepBody (0x30031cb0). Draws one HUD "tag" (a 2D shader quad)
 // for the entity the effect/HUD-tag pass is currently processing
-// (cg_entities[cg_predictedPlayerState.viewLockedEntityNum]), sliding in horizontally like the slide-tag
+// (cg_entities[cg.predictedPlayerState.viewLockedEntityNum]), sliding in horizontally like the slide-tag
 // sibling, but rotated by an angle derived from the entity's aim yaw relative to
 // the animated effect spin angle. Where CG_DrawJeepBody hardcodes
 // stateFilter == 1 and angle 0, this member takes a caller-supplied filter (ECX)
 // and computes a rotation:
-//     angle = AngleSubtract(cg_refdefViewAngles[1], entity->lerpAngles[1]).
+//     angle = AngleSubtract(cg.refdefViewAngles[1], entity->lerpAngles[1]).
 //
 // Name adjudication: the .mcode header's size-matched
 // "script_method_player_playlocalannouncersound" guess is REJECTED — there is no
@@ -43,14 +43,14 @@
 //   entity->currentState.eType == 12                         CMP [EDI+0x4],0xc ; JNZ (0x30031d81)
 //   filter == 0  ||  entity->currentState.stateFilter == filter
 //                    TEST ECX,ECX; JZ 0x30031d97; CMP [EDI+0x88],ECX; JNZ end
-// entity = &cg_entities[cg_predictedPlayerState.viewLockedEntityNum] via IMUL 0x288 + base 0x3048c6e0
+// entity = &cg_entities[cg.predictedPlayerState.viewLockedEntityNum] via IMUL 0x288 + base 0x3048c6e0
 // (cg_entities modeled through the existing centity_t view of that base array).
 //
 // AngleSubtract call (0x30031d9d..0x30031db0):
 //   EAX = entity->lerpAngles[1] (raw dword at entity+0x218, the yaw component
-//         of the +0x214 vec3), ECX = cg_refdefViewAngles[1] (float loaded as a dword by
+//         of the +0x214 vec3), ECX = cg.refdefViewAngles[1] (float loaded as a dword by
 //         the MOV reg,[float]; PUSH reg copy idiom). PUSH EAX; PUSH ECX =>
-//         cgame arg order AngleSubtract(a=cg_refdefViewAngles[1], b=lerpAngles[1]).
+//         cgame arg order AngleSubtract(a=cg.refdefViewAngles[1], b=lerpAngles[1]).
 //   FSTP [ESP+0x10] spills the ST(0) result to scratch E-8.
 //
 // slidX float chain (0x30031db4..0x30031dcf), identical to the slide-tag sibling:
@@ -77,13 +77,13 @@ void CG_DrawTankBody(const rectDef_t *rect, int32_t stateFilter,
                                 int32_t hShader, const float *color)
 {
     /* 0x30031d50..0x30031d68: gate on the local predicted player's entityStateFlags. */
-    uint32_t flags = cg_predictedPlayerState.entityStateFlags;
+    uint32_t flags = cg.predictedPlayerState.entityStateFlags;
     if ((flags & EF_IN_VEHICLE) == 0)
         return;
     if ((flags & EF_VEHICLE_ALLOW_WEAPON) != 0)
         return;
 
-    int32_t entityNum = cg_predictedPlayerState.viewLockedEntityNum;
+    int32_t entityNum = cg.predictedPlayerState.viewLockedEntityNum;
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
@@ -106,7 +106,7 @@ void CG_DrawTankBody(const rectDef_t *rect, int32_t stateFilter,
     /* 0x30031d9d..0x30031db0: rotation angle = shortest signed difference between the
      * animated effect spin angle and the entity's aim yaw (lerpAngles[1], the
      * +0x218 middle component of the +0x214 vec3). */
-    float angle = AngleSubtract(cg_refdefViewAngles[1], entity->lerpAngles[1]);
+    float angle = AngleSubtract(cg.refdefViewAngles[1], entity->lerpAngles[1]);
 
     /* 0x30031db4..0x30031dd3: set the 2D draw color, then compute the slid X.
      * The slid X (0x3007bce0 = 1.0f, 0x3007c1e0 = 112.0f) is evaluated before the

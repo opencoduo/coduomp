@@ -10,7 +10,7 @@
 // `void AxisClear(vec3_t axis[3])` (a 3x3 matrix zero-then-identity fill, no x87
 // arithmetic, no time read) and was matched to this function only by byte size
 // (win 0x6d == matched 0x6d), which the naming rules forbid. This function reads
-// the client game clock cg_time, time-interpolates an integer endpoint pair, and
+// the client game clock cg.time, time-interpolates an integer endpoint pair, and
 // returns a float in ST0 with a type-selected post-adjustment. It is a UI/HUD
 // value-node coordinate evaluator, not a matrix helper.
 //
@@ -72,11 +72,11 @@ long double CG_HudElemX(const hudElem_t *node,
 
     if (duration > 0) {
         /*
-         * 0x30029a9f..0x30029aaa: elapsed = cg_time - node->moveStartTime (signed
+         * 0x30029a9f..0x30029aaa: elapsed = cg.time - node->moveStartTime (signed
          * SUB, [0x304831b0] - [EAX+0x54]). If elapsed >= duration the window has
          * fully elapsed (signed JGE at 0x30029aaa): use the settled value.
          */
-        elapsed = coduo_int32_from_bits((uint32_t)cg_time -
+        elapsed = coduo_int32_from_bits((uint32_t)cg.time -
                                    (uint32_t)node->moveStartTime);
         if (elapsed < duration) {
             interpolating = qtrue;

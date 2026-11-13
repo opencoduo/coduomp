@@ -28,7 +28,7 @@
 //     just-set torsoYawAngle.
 //
 // The .mcode size-guess "CG_InterpolateEntityPosition" is REJECTED — no snapshot
-// interpolation, no BG_EvaluateTrajectory, no cg_frameInterpolation. Named from the
+// interpolation, no BG_EvaluateTrajectory, no cg.frameInterpolation. Named from the
 // proven debug string "ResetPlayerEntity" plus the reset behaviour.
 //
 // Frame/ABI notes: XOR EBX,EBX at entry makes EBX the constant 0 used for every

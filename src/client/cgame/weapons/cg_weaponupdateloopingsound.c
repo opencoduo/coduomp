@@ -6,17 +6,17 @@
 // holds (cg_weaponInfos[cent->currentState.weapon]), it plays a positional "fire" sound at
 // the weapon's tag_flash bone. The remaining-lifetime timer (cent->flashSoundLifetime,
 // +0x204) selects which sound and counts the emission down:
-//   * while the timer is > 0 it decrements by cg_frametime and plays the looping
+//   * while the timer is > 0 it decrements by cg.frametime and plays the looping
 //     fire sound (cgWeaponInfo.loopFireSound, +0x128);
 //   * on the frame the timer reaches <= 0 it plays the one-shot tail sound
 //     (cgWeaponInfo.stopFireSound, +0x12c) instead.
 // The 3D sound position is the tag_flash world point: for the LOCAL predicted player
-// (cent->currentState.number == cg_snap->ps.psClientNum) it uses the view-weapon DObj special-tag
+// (cent->currentState.number == cg.snap->ps.psClientNum) it uses the view-weapon DObj special-tag
 // matrix (CG_DObjGetSpecialTagWorldMatrix on cgWeaponInfo.viewDObjSelf); for any
 // other entity it queries the entity's DObj handle (trap CG_DOBJ_GET_HANDLE) and
 // builds the entity-bone world matrix (CG_DObjGetWorldTagMatrix). If neither
 // tag resolves, the sound position falls back to the entity's trajectory position
-// (BG_EvaluateTrajectory of currentState.pos at cg_time).
+// (BG_EvaluateTrajectory of currentState.pos at cg.time).
 //
 // The .mcode pre-hint name "PlayerCmd_SetWeaponSlotClipAmmo" is REJECTED: it is a
 // broad server-side corpus/size guess (win size 0x12f vs matched 0x130) with no
@@ -35,8 +35,8 @@
 //   - 0x300490ba IMUL cent->currentState.weapon,0x1c4; ADD 0x30413580 -> wi (cgWeaponInfos[]).
 //   - 0x300490cc gate on wi->loopFireSound (+0x128) != 0 (JZ end).
 //   - 0x300490db gate on cent->flashSoundLifetime (+0x204) > 0 (JLE end, signed).
-//   - 0x300490e9 SUB cg_frametime (raw ms), store back to +0x204.
-//   - 0x300490f5/0x300490fe CMP cent->currentState.number(+0x00) vs cg_snap->ps.psClientNum(+0xe0).
+//   - 0x300490e9 SUB cg.frametime (raw ms), store back to +0x204.
+//   - 0x300490f5/0x300490fe CMP cent->currentState.number(+0x00) vs cg.snap->ps.psClientNum(+0xe0).
 //   - local branch: MOV EDI,[wi] (wi->viewDObjSelf); if 0 -> fallback; else
 //     CG_DObjGetSpecialTagWorldMatrix(EDI, "tag_flash", &tagMatrix); if 0 -> fallback;
 //     else soundPos = tagMatrix translation row (float 12/13/14 at [ESP+0x50/54/58]).
@@ -44,7 +44,7 @@
 //     fallback; else CG_DObjGetWorldTagMatrix(handle, "tag_flash", cent,
 //     &tagMatrix); if 0 -> fallback; else soundPos = tagMatrix translation row.
 //   - fallback (0x30049182): BG_EvaluateTrajectory(&cent->currentState.pos,
-//     cg_time, soundPos).
+//     cg.time, soundPos).
 //   - 0x30049193 reload cent->flashSoundLifetime; if > 0 play loopFireSound (+0x128),
 //     else if wi->stopFireSound (+0x12c) != 0 play stopFireSound. Both via
 //     CG_PlaySoundAliasByName(channelObj=&soundPos, soundName, entityNum=cent->currentState.number).
@@ -76,7 +76,7 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent)
 
     /* 0x300490e9: count the emission down by this frame's elapsed time (raw ms). */
     cent->flashSoundLifetime = coduo_int32_from_bits(
-        (uint32_t)cent->flashSoundLifetime - (uint32_t)cg_frametime);
+        (uint32_t)cent->flashSoundLifetime - (uint32_t)cg.frametime);
 
     /* soundPos: the 3D emission point handed to CG_PlaySoundAliasByName as the channel
      * object (its origin). Written at [ESP+0x14..0x1c] in the machine code. */
@@ -87,7 +87,7 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent)
     qboolean haveTagPoint = qfalse;
 
     /* 0x300490f5/0x300490fe: local predicted player vs remote entity. */
-    if (cent->currentState.number == cg_snap->ps.psClientNum) {
+    if (cent->currentState.number == cg.snap->ps.psClientNum) {
         /* 0x30049106: the local view-weapon DObj self handle. */
         struct DObj_s *self = wi->viewDObjSelf;
         if (self != NULL) {
@@ -123,10 +123,10 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent)
 
     if (!haveTagPoint) {
         /* 0x30049182-0x3004918e: no tag point — use the entity's trajectory position
-         * at cg_time. result in ECX (&soundPos), tr in EBX (&currentState.pos),
-         * atTime in EAX (cg_time). */
+         * at cg.time. result in ECX (&soundPos), tr in EBX (&currentState.pos),
+         * atTime in EAX (cg.time). */
         BG_EvaluateTrajectory(&cent->currentState.pos,
-                              cg_time, soundPos);
+                              cg.time, soundPos);
     }
 
     /* 0x30049193: reload the (already-decremented) remaining lifetime and choose

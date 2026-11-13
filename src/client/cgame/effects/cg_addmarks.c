@@ -28,7 +28,7 @@
 //   3002e8f9  EBP = mp->nextMark (+0x4)  (saved BEFORE any unlink so the walk
 //             survives recycling this node)
 //   3002e900  expiry = markTime + duration   (32-bit ADD)
-//   3002e902  cg.time = cg_time (0x304831b0)
+//   3002e902  cg.time = cg.time (0x304831b0)
 //   3002e908  CMP cg.time, expiry ; JLE fade  => expired iff (cg.time > expiry),
 //             i.e. signed `if (cg.time > markTime + duration)`.
 // Expired branch (0x3002e90c):
@@ -95,7 +95,7 @@ void CG_AddMarks(void)
         expiry = coduo_int32_from_bits((uint32_t)markTime + (uint32_t)duration);
 
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        if (cg_time > expiry) {
+        if (cg.time > expiry) {
             /* Mark has fully elapsed: unlink it and return it to the free list. */
             if (mp->prevMark == NULL) {
                 Com_ErrorMessage("CG_FreeLocalEntity: not active");
@@ -109,7 +109,7 @@ void CG_AddMarks(void)
             continue;
         }
 
-        timeLeft = coduo_int32_from_bits((uint32_t)expiry - (uint32_t)cg_time);
+        timeLeft = coduo_int32_from_bits((uint32_t)expiry - (uint32_t)cg.time);
         /* 3002e94a FILD duration ; 3002e94e FMUL 0.15f: duration is a raw extended
          * int (no (float) narrowing) and the product is kept on the x87 stack (st1)
          * across the compare and divide below -- it is never stored to a float slot.

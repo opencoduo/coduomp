@@ -8,11 +8,11 @@
 // source objects, with mode-gated predicted item touching.
 //
 // High-level behavior proven from the machine code:
-//   - Read cg_predictedPlayerState.pmType (0x304831c8). If it is >= 6, or if it is not one of {0,1,4},
+//   - Read cg.predictedPlayerState.pmType (0x304831c8). If it is >= 6, or if it is not one of {0,1,4},
 //     do nothing this frame (the loop is only entered for modes 0, 1, and 4).
-//   - EBP = (cg_predictedPlayerState.pmType == 4) is precomputed as the item-touch gate.
+//   - EBP = (cg.predictedPlayerState.pmType == 4) is precomputed as the item-touch gate.
 //   - For each entity in cg_triggerEntities[0..cg_numTriggerEntities):
-//       * If entity->currentState.eType == 3 AND cg_predictedPlayerState.pmType != 4, run the predicted item
+//       * If entity->currentState.eType == 3 AND cg.predictedPlayerState.pmType != 4, run the predicted item
 //         touch CG_TouchItem(entity) and move to the next entity.
 //       * Otherwise, if entity->currentState.solid == SOLID_BMODEL, resolve its inline model;
 //         on a non-zero handle, issue CG_CM_BOX_TRACE into a local trace-result
@@ -51,7 +51,7 @@ _Static_assert(offsetof(centity_t, currentState.solid) == 0xa0,
 void CG_TouchTriggerPrediction(void)
 {
     // 30035710..3003571b: modes at or beyond PM_TYPE_DEAD do not process triggers.
-    int32_t mode = cg_predictedPlayerState.pmType;
+    int32_t mode = cg.predictedPlayerState.pmType;
     if (mode >= PM_TYPE_DEAD) {
         return;
     }
@@ -93,14 +93,14 @@ void CG_TouchTriggerPrediction(void)
         // 3003578a..300357ae: trace the predicted player bounds against the model.
         // 48-byte trace-result buffer (SUB ESP,0x30 reserves it). Push order
         // (program order) is -1, inlineModel, &cg_pmove.maxs, &cg_pmove.mins,
-        // cg_predictedPlayerState.psOrigin (the shared view-origin vec3 at 0x304831d8,
+        // cg.predictedPlayerState.psOrigin (the shared view-origin vec3 at 0x304831d8,
         // pushed twice), &out, id; so on the callee side the argument order after the
         // trap id is (out, view, view, argA, argB, handle, -1).
         trace_t out;
         cgame_syscall(CG_CM_BOX_TRACE,
                       (intptr_t)&out,
-                      (intptr_t)cg_predictedPlayerState.psOrigin,
-                      (intptr_t)cg_predictedPlayerState.psOrigin,
+                      (intptr_t)cg.predictedPlayerState.psOrigin,
+                      (intptr_t)cg.predictedPlayerState.psOrigin,
                       (intptr_t)cg_pmove.mins,
                       (intptr_t)cg_pmove.maxs,
                       inlineModel,

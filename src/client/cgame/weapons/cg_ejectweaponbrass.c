@@ -34,8 +34,8 @@
  *
  * Object id for the tag resolve (0x30047c45.. and its 0xa6-less twin 0x30047cab..):
  *   objId = self->number, UNLESS this is the local player's own first-person view --
- *   cg_snap->ps.playerStateFlags has PSF_PLAYER_ENTITY_MASK set AND
- *   self->number == cg_snap->ps.psClientNum -- in which case objId = weaponModel + 0x400
+ *   cg.snap->ps.playerStateFlags has PSF_PLAYER_ENTITY_MASK set AND
+ *   self->number == cg.snap->ps.psClientNum -- in which case objId = weaponModel + 0x400
  *   (the view-weapon DObj handle, so the brass ejects from the first-person model).
  *
  * Play:
@@ -107,7 +107,7 @@ void CG_EjectWeaponBrass(entityState_t *self, int eventId)
 
     /* Resolve the eject tag on the firing object; for the local player's own
      * first-person view, eject from the view-weapon DObj (weaponModel + 0x400). */
-    snapshot = cg_snap; /* 0x30047c45/0x30047cab: one snapshot-pointer load */
+    snapshot = cg.snap; /* 0x30047c45/0x30047cab: one snapshot-pointer load */
     if ((snapshot->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0
         && self->number == snapshot->ps.psClientNum) {
         objId = coduo_int32_from_bits(

@@ -7,10 +7,10 @@
 
 void CG_Tcmd_f(void) /* 0x30017210 */
 {
-    int32_t target = cg_crosshairEntNum;
+    int32_t target = cg.crosshairClientNum;
     int32_t expiry =
-        coduo_int32_from_bits((uint32_t)cg_crosshairEntTime + 1000u);
-    if (cg_time > expiry) target = -1;
+        coduo_int32_from_bits((uint32_t)cg.crosshairClientTime + 1000u);
+    if (cg.time > expiry) target = -1;
     else if (target == 0) return;
 
     char orderText[4];
@@ -22,20 +22,20 @@ void CG_Tcmd_f(void) /* 0x30017210 */
 void CG_ScoresDown_f(void) /* 0x30017330 */
 {
     int32_t refreshDeadline = coduo_int32_from_bits(
-        (uint32_t)cgs_scoreboardTime + 2000u);
-    if (refreshDeadline < cg_time) {
-        cgs_scoreboardTime = cg_time;
+        (uint32_t)cg.scoresRequestTime + 2000u);
+    if (refreshDeadline < cg.time) {
+        cg.scoresRequestTime = cg.time;
         cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"score");
-        if (!cg_scoreboardShowing) {
-            cg_scoreboardNumClients = 0;
-            cg_scoreboardScrollPos = 0;
+        if (!cg.showScores) {
+            cg.numScores = 0;
+            cg.scoreboardScrollPos = 0;
         } else {
             /* 0x30017363 jumps directly to RET when the post-command value is
              * any nonzero dword; it does not normalize that value to qtrue. */
             return;
         }
     }
-    cg_scoreboardShowing = qtrue;
+    cg.showScores = qtrue;
 }
 
 void CG_LoadHud_f(void) /* 0x30017380 */
@@ -59,21 +59,21 @@ void CG_ShellShock_Save_f(void) /* 0x300175f0 */
 
 void CG_TellTarget_f(void) /* 0x30017660 */
 {
-    int32_t currentTime = cg_time;
+    int32_t currentTime = cg.time;
     int32_t expiry = coduo_int32_from_bits(
-        (uint32_t)cg_crosshairEntTime + 1000u);
-    if (currentTime > expiry || cg_crosshairEntNum == -1) return;
+        (uint32_t)cg.crosshairClientTime + 1000u);
+    if (currentTime > expiry || cg.crosshairClientNum == -1) return;
     char args[128];
     char command[128];
     cgame_syscall(CG_ARGS, (intptr_t)args, sizeof(args));
-    Com_sprintf(command, sizeof(command), "tell %i \"\x15%s\"", cg_crosshairEntNum, args);
+    Com_sprintf(command, sizeof(command), "tell %i \"\x15%s\"", cg.crosshairClientNum, args);
     cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)command);
 }
 
 void CG_TeamVoiceChat_f(void) /* 0x30017820 */
 {
     if (trap_Argc() != 2) return;
-    snapshot_t *snap = cg_snap;
+    snapshot_t *snap = cg.snap;
     if (snap != NULL && snap->ps.pmType != PM_TYPE_INTERMISSION &&
         (snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {
         Com_PrintMessage("%s\n", CG_SafeTranslateString_Internal("cgame", "CGAME_NOSPECTATORVOICECHAT"));

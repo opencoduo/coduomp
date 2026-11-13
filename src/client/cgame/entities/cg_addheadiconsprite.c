@@ -51,11 +51,11 @@ void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
      * very entity in first person AND the mid-transition follow-view flag is clear;
      * otherwise 0. This keeps the head icon out of the first-person view. */
     int32_t renderfx = 0;
-    if ((cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&  /* TEST [cg_snap+0x18],0xc0000 */
-        entity->currentState.number == cg_snap->ps.psClientNum &&                    /* CMP [ESI],[cg_snap+0xe0] */
-        cg_thirdPerson == 0) {                                      /* TEST [0x304831c0] */
+    if ((cg.snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&  /* TEST [cg.snap+0x18],0xc0000 */
+        entity->currentState.number == cg.snap->ps.psClientNum &&                    /* CMP [ESI],[cg.snap+0xe0] */
+        cg.renderingThirdPerson == 0) {                                      /* TEST [0x304831c0] */
         /* 0x304831c0: a per-frame follow/intermission view gate written by the
-         * function at 0x30042510 as (cg_nextSnap->ps.pmType >= 6 || flag@0x3044f2ac).
+         * function at 0x30042510 as (cg.nextSnap->ps.pmType >= 6 || flag@0x3044f2ac).
          * Its mechanical owner label ("pm_viewheighttablelerp") is wrong; the exact
          * source name is not resolved from current evidence, so the mechanical symbol
          * is kept (no alias). Tested here as a boolean guard only. */
@@ -113,7 +113,7 @@ void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
 
     /* ---- Distance-based radius (0x300329bc..0x30032a34) ---------------------------
      * When attenuateByDistance is set, scale the sprite by its distance from the
-     * current view/camera origin (cg_refdef.vieworg, the .data vec3 at
+     * current view/camera origin (cg.refdef.vieworg, the .data vec3 at
      * 0x30487a90..0x30487a98) and lift origin.z; otherwise use a fixed radius and
      * leave z alone. */
     /* The whole attenuation chain — subtractions, squares, FSQRT, the 0.6 clamp
@@ -127,11 +127,11 @@ void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
     if (attenuateByDistance != 0) {
         float originY = CG_FloatFromBits((uint32_t)originYBits);
         long double dx =
-            (long double)originX - (long double)cg_refdef.vieworg[0];
+            (long double)originX - (long double)cg.refdef.vieworg[0];
         long double dy =
-            (long double)originY - (long double)cg_refdef.vieworg[1];
+            (long double)originY - (long double)cg.refdef.vieworg[1];
         long double dz =
-            originZ - (long double)cg_refdef.vieworg[2];
+            originZ - (long double)cg.refdef.vieworg[2];
         long double dist = sqrtl(dz * dz + dy * dy + dx * dx); /* FSQRT (dz^2 + dy^2 + dx^2), summed in that order */
 
         /* scaled = dist*(1/256) + 0.2, floored to 0.6. The FCOM/FNSTSW/TEST AH,5/JP

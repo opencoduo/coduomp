@@ -9,14 +9,14 @@
 // the name is kept as the best defensible symbol with the note below. What the
 // machine code actually does, proven instruction by instruction:
 //
-//   1. AngleVectors(&cg_refdefViewAngles[0], fa, ra, ua) — builds an orthonormal
+//   1. AngleVectors(&cg.refdefViewAngles[0], fa, ra, ua) — builds an orthonormal
 //      basis from the {pitch,yaw,roll} spin-angle triple stored at 0x30487ac8
-//      (cg_refdefViewAngles[0] is spinAngles[0]; acc/ad0 are the yaw/roll
+//      (cg.refdefViewAngles[0] is spinAngles[0]; acc/ad0 are the yaw/roll
 //      partners). Only the `forward` output (fa) is consumed; the `right`/`up`
 //      outputs share the same stack scratch and are overwritten before use.
 //   2. Slides the view origin along the current view-forward direction by `dist`:
-//        P = cg_refdef.vieworg + dist * cg_refdef.viewaxis[0]
-//      and stores P back into cg_refdef.vieworg. `dist` is the sole stack arg
+//        P = cg.refdef.vieworg + dist * cg.refdef.viewaxis[0]
+//      and stores P back into cg.refdef.vieworg. `dist` is the sole stack arg
 //      (the one caller, 0x300468e2, pushes 0xc1980000 = -19.0f, i.e. a 19-unit
 //      pull-back along forward — a third-person-style camera offset).
 //   3. Recomputes the spin pitch as the pitch (Q3 `vectoangles`) of the forward
@@ -24,7 +24,7 @@
 //        len   = sqrt(fa.x*fa.x + fa.y*fa.y)   (horizontal length)
 //        if (len < 1.0f) len = 1.0f            (FCOM 1.0; FNSTSW; TEST AH,5; JP)
 //        pitch = atan2(fa.z, len) * -57.2957763671875f   (radians -> -degrees)
-//      and stores pitch back into cg_refdefViewAngles[0] (0x30487ac8).
+//      and stores pitch back into cg.refdefViewAngles[0] (0x30487ac8).
 //
 // ABI: single float stack arg `dist` at [entry ESP+4]; the disassembler prints it
 // as [ESP+0x34] before the three POPs and [ESP+0x28] after them — both resolve to
@@ -59,20 +59,20 @@ void CG_PerturbCamera(float dist)
      * are non-NULL in the machine code, so AngleVectors writes all three, but only
      * `fa` is read back below.
      */
-    AngleVectors(cg_refdefViewAngles, fa, ra, ua);
+    AngleVectors(cg.refdefViewAngles, fa, ra, ua);
 
     /*
-     * P = cg_refdef.vieworg + dist * cg_refdef.viewaxis[0], written back into
-     * cg_refdef.vieworg. (0x300464ac..0x30046515: each component is
+     * P = cg.refdef.vieworg + dist * cg.refdef.viewaxis[0], written back into
+     * cg.refdef.vieworg. (0x300464ac..0x30046515: each component is
      * forward[i]*dist + vieworg[i]; P is stashed on the x87 stack and, after the
      * fa recovery below, stored to 0x30487a90/94/98.)
      */
     long double p0 =
-        (long double)cg_refdef.viewaxis[0][0] * dist + cg_refdef.vieworg[0];
+        (long double)cg.refdef.viewaxis[0][0] * dist + cg.refdef.vieworg[0];
     long double p1 =
-        (long double)cg_refdef.viewaxis[0][1] * dist + cg_refdef.vieworg[1];
+        (long double)cg.refdef.viewaxis[0][1] * dist + cg.refdef.vieworg[1];
     long double p2 =
-        (long double)cg_refdef.viewaxis[0][2] * dist + cg_refdef.vieworg[2];
+        (long double)cg.refdef.viewaxis[0][2] * dist + cg.refdef.vieworg[2];
     float storedP2 = (float)p2;
 
     /* The compiler recovers the forward components from sums sharing the live
@@ -83,9 +83,9 @@ void CG_PerturbCamera(float dist)
     float faPlusP2 = (float)((long double)fa[2] + p2);
     float recoveredZ = (float)((long double)faPlusP2 - storedP2);
 
-    cg_refdef.vieworg[0] = (float)p0;
-    cg_refdef.vieworg[1] = (float)p1;
-    cg_refdef.vieworg[2] = storedP2;
+    cg.refdef.vieworg[0] = (float)p0;
+    cg.refdef.vieworg[1] = (float)p1;
+    cg.refdef.vieworg[2] = storedP2;
 
     /*
      * The machine code recovers the pure forward-axis components by forming
@@ -101,6 +101,6 @@ void CG_PerturbCamera(float dist)
     }
 
     /* pitch = atan2(fa.z, len) * -(180/pi); constant -57.2957763671875f @0x3007be80 */
-    cg_refdefViewAngles[0] = (float)(
+    cg.refdefViewAngles[0] = (float)(
         coduo_x87_atan2l(recoveredZ, len) * -57.2957763671875f);
 }

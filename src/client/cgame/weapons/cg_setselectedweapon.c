@@ -35,11 +35,11 @@ void CG_SetSelectedWeapon(int32_t weaponIndex)
 {
     /* 0x30022660 MOV ECX,[0x304831b0]: read the current game time (cg.time) once
      * into ECX; it is stamped into three snapshot slots below. */
-    int32_t now = cg_time;
+    int32_t now = cg.time;
 
     /* 0x30022666 MOV [0x3048ae38],EAX: latch the requested weapon index
      * unconditionally (this happens before any gate). */
-    cg_lastRequestedWeapon = weaponIndex;
+    cg.lastRequestedWeapon = weaponIndex;
 
     /* 0x3002266b LEA EAX,[EAX+EAX*2] / 0x3002266e SHL EAX,0x4: EAX = index*48,
      * the byte offset of bg_itemlist[weaponIndex] (sizeof(gitem_t)==0x30).
@@ -53,10 +53,10 @@ void CG_SetSelectedWeapon(int32_t weaponIndex)
     itemType_t itemType = item->type;
 
     /* 0x30022678 MOV [0x3048ae3c],ECX / 0x3002267e MOV [0x3048ae40],ECX: two
-     * cg.time snapshots written unconditionally, alongside cg_weaponSelectTime
+     * cg.time snapshots written unconditionally, alongside cg.weaponSelectTime
      * below. Write-only timers in this DLL (see globals.h). */
-    cg_weaponSelectTimeA = now;
-    cg_weaponSelectTimeB = now;
+    cg.weaponSelectTimeA = now;
+    cg.weaponSelectTimeB = now;
 
     /* 0x30022684 JNZ 0x300226b8: bail unless this row is a real weapon row. */
     if (itemType != IT_WEAPON) {
@@ -75,9 +75,9 @@ void CG_SetSelectedWeapon(int32_t weaponIndex)
         return;
     }
 
-    /* 0x3002269c MOV [0x3048ae44],ECX: stamp cg_weaponSelectTime = cg.time only on
+    /* 0x3002269c MOV [0x3048ae44],ECX: stamp cg.weaponSelectTime = cg.time only on
      * the committing path (drives the on-screen weapon-name overlay fade). */
-    cg_weaponSelectTime = now;
+    cg.weaponSelectTime = now;
 
     /* 0x30022696..0x300226b5: trap_Cvar_Set("cg_weaponSelect", va("%i", weapon)).
      * va (0x3004e8a0) formats the weapon index; the two pushed calls share one

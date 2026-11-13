@@ -12,18 +12,18 @@
 //
 // The mechanical `.mcode` header name `Scr_AddUndefined` is a pure size-guess
 // (win size 0x1e vs corpus 0x1f) and is contradicted by the body: this function
-// reads cg_crosshairEntTime / cg_time / cg_crosshairEntNum and has no script
+// reads cg.crosshairClientTime / cg.time / cg.crosshairClientNum and has no script
 // engine involvement. Name rejected; resolved by behavior + call graph instead.
 //
 // Instruction trace:
-//   3002b290 MOV EAX,[0x3048adf0]   EAX = cg_crosshairEntTime
-//   3002b295 MOV ECX,[0x304831b0]   ECX = cg_time
-//   3002b29b ADD EAX,0x3e8          EAX = cg_crosshairEntTime + 1000 (32-bit wrap)
-//   3002b2a0 CMP ECX,EAX            signed compare cg_time vs (time+1000)
-//   3002b2a2 JLE 0x3002b2a8         if cg_time <= time+1000 -> return the entnum
+//   3002b290 MOV EAX,[0x3048adf0]   EAX = cg.crosshairClientTime
+//   3002b295 MOV ECX,[0x304831b0]   ECX = cg.time
+//   3002b29b ADD EAX,0x3e8          EAX = cg.crosshairClientTime + 1000 (32-bit wrap)
+//   3002b2a0 CMP ECX,EAX            signed compare cg.time vs (time+1000)
+//   3002b2a2 JLE 0x3002b2a8         if cg.time <= time+1000 -> return the entnum
 //   3002b2a4 OR  EAX,0xffffffff     else EAX = -1
 //   3002b2a7 RET
-//   3002b2a8 MOV EAX,[0x3048adec]   EAX = cg_crosshairEntNum
+//   3002b2a8 MOV EAX,[0x3048adec]   EAX = cg.crosshairClientNum
 //   3002b2ad RET
 //
 // The CMP/JLE pair is a SIGNED comparison, while the preceding ADD is a plain
@@ -38,10 +38,10 @@ int32_t CG_CrosshairPlayer(void)
 {
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     int32_t expiry = coduo_int32_from_bits(
-        (uint32_t)cg_crosshairEntTime + (uint32_t)CROSSHAIR_TIMEOUT);
+        (uint32_t)cg.crosshairClientTime + (uint32_t)CROSSHAIR_TIMEOUT);
 
-    if (cg_time > expiry) {
+    if (cg.time > expiry) {
         return -1;
     }
-    return cg_crosshairEntNum;
+    return cg.crosshairClientNum;
 }

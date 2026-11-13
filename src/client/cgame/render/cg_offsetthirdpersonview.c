@@ -48,14 +48,14 @@ void CG_OffsetThirdPersonView(void)
 
     /* Start at eye height.  Preserve the incoming pitch for the focus point;
      * death view changes only the focus yaw before the chase offset is built. */
-    cg_refdef.vieworg[2] += cg_predictedPlayerState.viewHeightCurrent;
-    focusAngles[0] = cg_refdefViewAngles[0];
-    focusAngles[1] = cg_refdefViewAngles[1];
+    cg.refdef.vieworg[2] += cg.predictedPlayerState.viewHeightCurrent;
+    focusAngles[0] = cg.refdefViewAngles[0];
+    focusAngles[1] = cg.refdefViewAngles[1];
     focusAngles[2] = 0.0f;
-    if (cg_predictedPlayerState.pmType >= PM_TYPE_DEAD) {
+    if (cg.predictedPlayerState.pmType >= PM_TYPE_DEAD) {
         focusAngles[1] =
-            (float)cg_predictedPlayerState.stats[STAT_DEAD_YAW];
-        cg_refdefViewAngles[1] = focusAngles[1];
+            (float)cg.predictedPlayerState.stats[STAT_DEAD_YAW];
+        cg.refdefViewAngles[1] = focusAngles[1];
     }
     if (focusAngles[0] > CG_THIRD_PERSON_MAX_FOCUS_PITCH) {
         focusAngles[0] = CG_THIRD_PERSON_MAX_FOCUS_PITCH;
@@ -79,17 +79,17 @@ void CG_OffsetThirdPersonView(void)
         focusForward[1] = cosPitch * sinYaw;
         focusForward[2] = -sinPitch;
     }
-    focusPoint[0] = cg_refdef.vieworg[0] + focusForward[0] * CG_THIRD_PERSON_FOCUS_DISTANCE;
-    focusPoint[1] = cg_refdef.vieworg[1] + focusForward[1] * CG_THIRD_PERSON_FOCUS_DISTANCE;
-    focusPoint[2] = cg_refdef.vieworg[2] + focusForward[2] * CG_THIRD_PERSON_FOCUS_DISTANCE;
+    focusPoint[0] = cg.refdef.vieworg[0] + focusForward[0] * CG_THIRD_PERSON_FOCUS_DISTANCE;
+    focusPoint[1] = cg.refdef.vieworg[1] + focusForward[1] * CG_THIRD_PERSON_FOCUS_DISTANCE;
+    focusPoint[2] = cg.refdef.vieworg[2] + focusForward[2] * CG_THIRD_PERSON_FOCUS_DISTANCE;
 
-    camera[0] = cg_refdef.vieworg[0];
-    camera[1] = cg_refdef.vieworg[1];
-    camera[2] = cg_refdef.vieworg[2] + CG_THIRD_PERSON_CAMERA_RAISE;
+    camera[0] = cg.refdef.vieworg[0];
+    camera[1] = cg.refdef.vieworg[1];
+    camera[2] = cg.refdef.vieworg[2] + CG_THIRD_PERSON_CAMERA_RAISE;
 
-    cg_refdefViewAngles[0] *= 0.5f;
-    cg_refdefViewAngles[1] -= cg_thirdPersonAngle_vmCvar.value;
-    AngleVectors(cg_refdefViewAngles, forward, right, up);
+    cg.refdefViewAngles[0] *= 0.5f;
+    cg.refdefViewAngles[1] -= cg_thirdPersonAngle_vmCvar.value;
+    AngleVectors(cg.refdefViewAngles, forward, right, up);
 
     camera[0] -= cg_thirdPersonRange_vmCvar.value * forward[0];
     camera[1] -= cg_thirdPersonRange_vmCvar.value * forward[1];
@@ -97,9 +97,9 @@ void CG_OffsetThirdPersonView(void)
 
     CG_Trace(CG_THIRD_PERSON_TRACE_MODEL, camera,
                        traceMaxs, &trace,
-                       cg_refdef.vieworg,
+                       cg.refdef.vieworg,
                        traceMins,
-                       cg_predictedPlayerState.psClientNum);
+                       cg.predictedPlayerState.psClientNum);
 
     if (trace.fraction != 1.0f) {
         camera[0] = trace.endpos[0];
@@ -109,9 +109,9 @@ void CG_OffsetThirdPersonView(void)
 
         CG_Trace(CG_THIRD_PERSON_TRACE_MODEL, camera,
                            traceMaxs, &trace,
-                           cg_refdef.vieworg,
+                           cg.refdef.vieworg,
                            traceMins,
-                           cg_predictedPlayerState.psClientNum);
+                           cg.predictedPlayerState.psClientNum);
         camera[0] = trace.endpos[0];
         camera[1] = trace.endpos[1];
         camera[2] = trace.endpos[2];
@@ -126,16 +126,16 @@ void CG_OffsetThirdPersonView(void)
                                traceMaxs, &trace,
                                lifted,
                                traceMins,
-                               cg_predictedPlayerState.psClientNum);
+                               cg.predictedPlayerState.psClientNum);
             camera[0] = trace.endpos[0];
             camera[1] = trace.endpos[1];
             camera[2] = trace.endpos[2];
         }
     }
 
-    cg_refdef.vieworg[0] = camera[0];
-    cg_refdef.vieworg[1] = camera[1];
-    cg_refdef.vieworg[2] = camera[2];
+    cg.refdef.vieworg[0] = camera[0];
+    cg.refdef.vieworg[1] = camera[1];
+    cg.refdef.vieworg[2] = camera[2];
 
     focusPoint[0] -= camera[0];
     focusPoint[1] -= camera[1];
@@ -154,7 +154,7 @@ void CG_OffsetThirdPersonView(void)
          * original explicitly rounds its result to float before scaling. */
         float pitchRadians = (float)coduomp_crt_atan2l(
             (long double)focusPoint[2], (long double)horizontalDistance);
-        cg_refdefViewAngles[0] =
+        cg.refdefViewAngles[0] =
             pitchRadians * CG_NEGATIVE_RADIANS_TO_DEGREES;
     }
 }

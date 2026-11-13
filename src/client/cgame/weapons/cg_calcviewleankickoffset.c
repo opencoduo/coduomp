@@ -12,7 +12,7 @@
 //      per-frame Y/Z view-kick nudge, and
 //   3. a time-based recoil bump on Z (rise over the first 150 ms after the last
 //      impact event, then decay over the following 300 ms).
-// Finally CG_CalcAdsViewOffset projects the finished point to cg_adsViewOffset.
+// Finally CG_CalcAdsViewOffset projects the finished point to cg.adsViewOffset.
 //
 // NAME ADJUDICATION: the .mcode pre-hint "Info_SetValueForKey_Big" is a pure
 // size match (win 0x24e ~= corpus 0x24d) and is REJECTED per the naming rules.
@@ -46,12 +46,12 @@
 //   0x30483208  leanFraction  (float bits; interpolated playerState lean fraction,
 //                              written by CG_InterpolatePlayerState 0x3003564c as
 //                              u32_from_f — read here as a float)
-//   0x304832a4  cg_predictedPlayerState.adsFraction  (ADS zoom fraction in [0,1])
+//   0x304832a4  cg.predictedPlayerState.adsFraction  (ADS zoom fraction in [0,1])
 //   0x30487af0/af4  the fixed per-frame Y/Z view-kick nudge (floats; reset to 0
 //                   each frame by 0x30034d40, accumulated elsewhere)
 //   0x304879e0  the last impact-event kick magnitude (float; set by CG_EntityEvent)
 //   0x304879e4  the cg.time stamp paired with that kick magnitude
-//   0x304831b0  cg_time
+//   0x304831b0  cg.time
 //
 //   30045230 FLD 0.0                                  ; (seed, popped by first FUCOMPP)
 //   3004523e MOV [EDI+8]=[EDI+4]=[EDI]=0              ; zero the output vec3
@@ -69,7 +69,7 @@
 //   300453d0 CALL 0x30045070  CG_ApplyWeaponMovementAngles(out)      ; out += weapon-movement angles
 //   300453d5 out[1] -= af0 ; out[2] += af4            ; fixed per-frame view-kick nudge
 //   300453de PUSH EDI ; CALL 0x300450e0               ; CG_SpinEffectPointToWorld(out)
-//   300453f3 EAX = cg_time - kickTime                 ; ms since last impact event
+//   300453f3 EAX = cg.time - kickTime                 ; ms since last impact event
 //   30045401 CMP EAX,0x96 ; JGE                        ; 150 ms rise window
 //   3004540c out[2] += (float)elapsed * kick * 0.25 / 150.0 ; then CG_CalcAdsViewOffset(out); RET
 //   3004543c CMP EAX,0x1c2 ; JGE 0x30045472            ; 450 ms total window
@@ -100,8 +100,8 @@ void CG_CalcViewLeanKickOffset(vec3_t out /* EAX -> EDI: in/out view offset vec3
     out[1] = 0.0f;
     out[2] = 0.0f;
 
-    const float leanFraction = cg_predictedPlayerState.leanFraction;
-    const float ads = cg_predictedPlayerState.adsFraction;
+    const float leanFraction = cg.predictedPlayerState.leanFraction;
+    const float ads = cg.predictedPlayerState.adsFraction;
 
     /* 0x30045246 / 0x30045259: the lean-sway block runs only when there is a
      * non-zero lean AND the player is not fully aimed down sight. (Verified x87
@@ -156,8 +156,8 @@ void CG_CalcViewLeanKickOffset(vec3_t out /* EAX -> EDI: in/out view offset vec3
 
     /* 0x300453d5..0x300453eb: fixed per-frame view-kick nudge (Y down, Z up). The
      * two globals hold float bits and are reset to 0 each frame by 0x30034d40. */
-    out[1] -= cg_weaponSwayOffset[1];
-    out[2] += cg_weaponSwayOffset[2];
+    out[1] -= cg.weaponSwayOffset[1];
+    out[2] += cg.weaponSwayOffset[2];
 
     /* 0x300453ee: rotate the accumulated point through the view-effect spin frame
      * into world space, anchored at the current view origin. */
@@ -165,8 +165,8 @@ void CG_CalcViewLeanKickOffset(vec3_t out /* EAX -> EDI: in/out view offset vec3
 
     /* 0x300453f3: elapsed ms since the last impact-event kick was recorded. */
     const int32_t elapsed = coduo_int32_from_bits(
-        (uint32_t)cg_time - (uint32_t)cg_impactViewKickTime);
-    const float kick = cg_impactViewKick;
+        (uint32_t)cg.time - (uint32_t)cg.landTime);
+    const float kick = cg.landChange;
 
     if (elapsed < 150) {
         /* 0x3004540c: recoil rise — linear ramp up over the first 150 ms. */

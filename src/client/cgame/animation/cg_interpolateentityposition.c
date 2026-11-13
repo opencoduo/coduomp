@@ -5,19 +5,19 @@
 // ("smoothed") branch of CG_CalcEntityLerpPositions (0x30021d30). For an entity
 // whose position trajectory is TR_INTERPOLATE (or TR_LINEAR_STOP below MAX_CLIENTS),
 // the sibling tail-calls this routine instead of evaluating the trajectory once at
-// cg_time. This routine evaluates the entity's trajectories on BOTH the current and
-// the incoming snapshot and blends the two by cg_frameInterpolation, giving a smooth
+// cg.time. This routine evaluates the entity's trajectories on BOTH the current and
+// the incoming snapshot and blends the two by cg.frameInterpolation, giving a smooth
 // render position/angles between the two received network states.
 //
 // What it interpolates (proven from the body):
 //   1. Position (lerpOrigin, +0x208, a vec3):
-//        posA = BG_EvaluateTrajectory(currentState.pos, cg_snap->serverTime)
-//        posB = BG_EvaluateTrajectory(nextState.pos,    cg_nextSnap->serverTime)
-//        lerpOrigin = posA + cg_frameInterpolation * (posB - posA)   (plain lerp)
+//        posA = BG_EvaluateTrajectory(currentState.pos, cg.snap->serverTime)
+//        posB = BG_EvaluateTrajectory(nextState.pos,    cg.nextSnap->serverTime)
+//        lerpOrigin = posA + cg.frameInterpolation * (posB - posA)   (plain lerp)
 //   2. Angles (lerpAngles, +0x214, a vec3):
-//        angA = BG_EvaluateTrajectory(currentState.apos, cg_snap->serverTime)
-//        angB = BG_EvaluateTrajectory(nextState.apos,    cg_nextSnap->serverTime)
-//        lerpAngles[i] = LerpAngle(angA[i], angB[i], cg_frameInterpolation)
+//        angA = BG_EvaluateTrajectory(currentState.apos, cg.snap->serverTime)
+//        angB = BG_EvaluateTrajectory(nextState.apos,    cg.nextSnap->serverTime)
+//        lerpAngles[i] = LerpAngle(angA[i], angB[i], cg.frameInterpolation)
 //      (short-way angle interpolation, callee 0x3004bd00 = LerpAngle).
 //
 // Then, ONLY when nextState.eType (+0xf8) == ET_PLAYER(1), it publishes the derived
@@ -39,9 +39,9 @@
 //                int32 atTime /*EAX*/, vec3 result /*ECX*/) — register ABI.
 //   0x3004bd00 = LerpAngle(float from, float to, float fraction) — cdecl, float return.
 //
-// Fields read from cg_snap / cg_nextSnap: only serverTime (+0x08) of each — the
-// evaluation times for the current and next snapshots. (0x30021bc3 MOV EAX,[cg_snap+8];
-// 0x30021bd8 MOV EAX,[cg_nextSnap+8]; same pair again for the apos evaluation.)
+// Fields read from cg.snap / cg.nextSnap: only serverTime (+0x08) of each — the
+// evaluation times for the current and next snapshots. (0x30021bc3 MOV EAX,[cg.snap+8];
+// 0x30021bd8 MOV EAX,[cg.nextSnap+8]; same pair again for the apos evaluation.)
 //
 // .rdata constants: NONE referenced directly by this function. All float constants
 // (180/360, TWOPI, etc.) live inside the two callees, not in this body — verified by
@@ -70,15 +70,15 @@ void CG_InterpolateEntityPosition(centity_t *entity /* ESI */)
 {
     /* Same physical centity, currentState/nextState trajectory view. */
     centity_t *state = (centity_t *)entity;
-    float frac = cg_frameInterpolation;
+    float frac = cg.frameInterpolation;
 
     /* 0x30021bc7..0x30021c2d: blend the position. Evaluate currentState.pos at the
      * current snapshot's serverTime and nextState.pos at the next snapshot's
      * serverTime into two scratch vec3s, then plain-lerp component-wise. */
     vec3_t posA;
     vec3_t posB;
-    BG_EvaluateTrajectory(&state->currentState.pos, cg_snap->serverTime, posA);          /* 0x30021bce */
-    BG_EvaluateTrajectory(&state->nextState.pos, cg_nextSnap->serverTime, posB);  /* 0x30021be5 */
+    BG_EvaluateTrajectory(&state->currentState.pos, cg.snap->serverTime, posA);          /* 0x30021bce */
+    BG_EvaluateTrajectory(&state->nextState.pos, cg.nextSnap->serverTime, posB);  /* 0x30021be5 */
     entity->lerpOrigin[0] = (float)(
         ((long double)posB[0] - (long double)posA[0]) *
             (long double)frac +
@@ -97,8 +97,8 @@ void CG_InterpolateEntityPosition(centity_t *entity /* ESI */)
      * the same scratch buffers. */
     vec3_t angA;
     vec3_t angB;
-    BG_EvaluateTrajectory(&state->currentState.apos, cg_snap->serverTime, angA);         /* 0x30021c3c */
-    BG_EvaluateTrajectory(&state->nextState.apos, cg_nextSnap->serverTime, angB); /* 0x30021c53 */
+    BG_EvaluateTrajectory(&state->currentState.apos, cg.snap->serverTime, angA);         /* 0x30021c3c */
+    BG_EvaluateTrajectory(&state->nextState.apos, cg.nextSnap->serverTime, angB); /* 0x30021c53 */
     entity->lerpAngles[0] = LerpAngle(angA[0], angB[0], frac);        /* 0x30021c67 -> +0x214 */
     entity->lerpAngles[1] = LerpAngle(angA[1], angB[1], frac);        /* 0x30021c7d -> +0x218 */
     entity->lerpAngles[2] = LerpAngle(angA[2], angB[2], frac);        /* 0x30021c93 -> +0x21c */

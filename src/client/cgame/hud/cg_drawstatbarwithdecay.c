@@ -29,7 +29,7 @@
 // game_mp_uo is a server gentity_t player routine (client_commands.c). This is a
 // cgame 2D HUD draw, not StopFollowing. The exact original name is unresolved; the
 // role (health bar with a time-decaying trailing indicator) is proven, so a role
-// name is used. At 0x3002f9d4 EBX still holds cg_snap when [EBX+0x128] loads the
+// name is used. At 0x3002f9d4 EBX still holds cg.snap when [EBX+0x128] loads the
 // numerator, making it snapshot+0x128 == playerState+0x11c (health). Only after
 // that load does 0x3002f9e0 advance EBX by 0x0c to the embedded playerState; the
 // denominator load [EBX+0x124] is therefore
@@ -59,9 +59,9 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
                              const rectDef_t *rect /* EDI */,
                              int32_t hShader)
 {
-    /* 0x3002f9d4 loads cg_snap into EBX. The health load at 0x3002f9da occurs
+    /* 0x3002f9d4 loads cg.snap into EBX. The health load at 0x3002f9da occurs
      * before 0x3002f9e0 adds 0x0c and turns EBX into the playerState base. */
-    const snapshot_t *snapshot = cg_snap;
+    const snapshot_t *snapshot = cg.snap;
     const playerState_t *ps = &snapshot->ps;
 
     /* .rdata float pool @0x3007bce0 (bytes dumped from the DLL):
@@ -201,7 +201,7 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
             // decrement by cg.frametime (ms) and floor at 0.
             int32_t held = coduo_int32_from_bits(
                 (uint32_t)cg_statBarHoldTimer -
-                (uint32_t)cg_frametime); /* SUB [0x304831ac] */
+                (uint32_t)cg.frametime); /* SUB [0x304831ac] */
             cg_statBarHoldTimer = held;
             if (held < 0) {                                /* JNS: keep when >= 0 */
                 cg_statBarHoldTimer = 0;                   /* 0x3002fb90 */
@@ -213,11 +213,11 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
             // FST-keep (0x3002fbae FST, not FSTP): the store to cg_statBarDisplayFrac
             // rounds a copy to float, but the FCOMP at 0x3002fbb4 tests the
             // UNROUNDED 80-bit chain, so the compare runs on `display` as long double.
-            /* 0x3002fb9c FILD cg_frametime; FMUL decayRatePerMs -- cg_frametime is
+            /* 0x3002fb9c FILD cg.frametime; FMUL decayRatePerMs -- cg.frametime is
              * FILD'd straight into the multiply (no FSTP DWORD), so no (float) cast. */
             long double display =
                 (long double)cg_statBarDisplayFrac -
-                (long double)coduo_int32_from_bits((uint32_t)cg_frametime) *
+                (long double)coduo_int32_from_bits((uint32_t)cg.frametime) *
                     (long double)decayRatePerMs; /* FILD;FMUL;FSUBR */
             cg_statBarDisplayFrac = (float)display;        /* 0x3002fbae FST (no pop) */
             if (display <= frac) {                         /* FCOMP [ESP+8]; !(display>frac) */

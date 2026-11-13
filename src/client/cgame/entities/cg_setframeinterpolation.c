@@ -2,33 +2,33 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3001f710_3001f75f.mcode
 //
 // CG_SetFrameInterpolation — compute cg.frameInterpolation, the [0,1) fraction
-// used to interpolate entity/view state between the current snapshot (cg_snap)
-// and the incoming snapshot (cg_nextSnap) for the current client time.
+// used to interpolate entity/view state between the current snapshot (cg.snap)
+// and the incoming snapshot (cg.nextSnap) for the current client time.
 //
-//   frameInterpolation = (float)(cg.time - cg_snap->serverTime)
-//                        / (cg_nextSnap->serverTime - cg_snap->serverTime);
+//   frameInterpolation = (float)(cg.time - cg.snap->serverTime)
+//                        / (cg.nextSnap->serverTime - cg.snap->serverTime);
 //
 // with two clamps proven by the machine code:
 //   - if the snapshot span (nextSnap - snap serverTime) is 0, result = 0;
 //   - if the computed fraction is negative, result = 0.
 //
 // The mechanical name guess `Com_ParseFloat` (from a size-only 0x4f corpus match)
-// is REJECTED: this reads cg_snap / cg_nextSnap serverTimes and cg.time and writes
-// the float cg_frameInterpolation datum; it does not parse a float from text.
+// is REJECTED: this reads cg.snap / cg.nextSnap serverTimes and cg.time and writes
+// the float cg.frameInterpolation datum; it does not parse a float from text.
 // The Mac CG_SetFrameInterpolation computes and stores this same snapshot fraction,
 // resolving the source name.
 //
 // Machine-code facts:
-//   - EAX = cg_snap->serverTime (MOV EAX,[0x30459160]; MOV EAX,[EAX+0x8]).
-//   - ECX = cg_nextSnap->serverTime (MOV ECX,[0x30459164]; MOV EDX,[ECX+0x8]).
+//   - EAX = cg.snap->serverTime (MOV EAX,[0x30459160]; MOV EAX,[EAX+0x8]).
+//   - ECX = cg.nextSnap->serverTime (MOV ECX,[0x30459164]; MOV EDX,[ECX+0x8]).
 //   - EDX = nextSnap->serverTime - snap->serverTime, spilled to [ESP+4] (divisor).
 //     JZ (SUB sets ZF) short-circuits straight to the zeroing path when span == 0.
-//   - ECX = cg.time (cg_time, [0x304831b0]) - snap->serverTime, spilled to [ESP]
+//   - ECX = cg.time (cg.time, [0x304831b0]) - snap->serverTime, spilled to [ESP]
 //     (dividend).
 //   - FILD [ESP] (signed 32-bit integer load) / FIDIV [ESP+4] (divide by signed
 //     32-bit integer): both operands are treated as signed ints, so use int32_t
 //     subtraction and an int->float divide.
-//   - FST [0x304831a8]: store the single-precision fraction to cg_frameInterpolation
+//   - FST [0x304831a8]: store the single-precision fraction to cg.frameInterpolation
 //     WITHOUT popping (value stays on the x87 stack for the compare).
 //   - FCOMP [0x3007bcec] then FNSTSW AX; TEST AH,0x5; JP. 0x3007bcec is the shared
 //     .rdata 0.0f (bytes 00 00 00 00; the adjacent 0x3007bce8 is 0.5f — not used).
@@ -50,27 +50,27 @@ void CG_SetFrameInterpolation(void)
      * only at the FILD/FIDIV boundary, matching Win32 x86 even when the
      * mathematical subtraction is outside the int32_t range. */
     uint32_t snapSpanBits =
-        (uint32_t)cg_nextSnap->serverTime - (uint32_t)cg_snap->serverTime;
+        (uint32_t)cg.nextSnap->serverTime - (uint32_t)cg.snap->serverTime;
     int32_t snapSpan;
     memcpy(&snapSpan, &snapSpanBits, sizeof(snapSpan));
 
     if (snapSpan == 0) {
         /* SUB set ZF -> JZ to the zeroing store (MOV [0x304831a8],0). */
-        cg_frameInterpolation = 0.0f;
+        cg.frameInterpolation = 0.0f;
         return;
     }
 
     uint32_t elapsedBits =
-        (uint32_t)cg_time - (uint32_t)cg_snap->serverTime;
+        (uint32_t)cg.time - (uint32_t)cg.snap->serverTime;
     int32_t elapsed;
     memcpy(&elapsed, &elapsedBits, sizeof(elapsed));
 
     /* FILD elapsed / FIDIV snapSpan, then FST (non-popping) into the datum. */
     double fraction = (double)elapsed / (double)snapSpan;
-    cg_frameInterpolation = (float)fraction;
+    cg.frameInterpolation = (float)fraction;
 
     /* FCOMP against 0.0f + TEST AH,0x5 + JP: clamp a negative fraction to 0. */
     if (fraction < 0.0f) {
-        cg_frameInterpolation = 0.0f;
+        cg.frameInterpolation = 0.0f;
     }
 }

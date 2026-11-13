@@ -2,7 +2,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30040810_30041541.mcode
 //
 // CG_CalcVehicleViewPos — compute the local player's vehicle-view camera origin
-// (cg_refdef.vieworg) and view angles by resolving the vehicle's DObj bone tags and
+// (cg.refdef.vieworg) and view angles by resolving the vehicle's DObj bone tags and
 // world-tracing the camera. The ghidra size-guess name "PM_SlideMove" is REJECTED
 // (this has no velocity/gravity slide-clip loop; it is a camera-placement routine
 // driven by cgame trap 0xa5 / DObj bone matrices / CG_Trace).
@@ -14,7 +14,7 @@
 // at 0x3007bcec) are kept because they are what the machine executes.
 //
 // The view-angle output at 0x30487ac8..0x30487ad0 is the contiguous
-// cg_refdefViewAngles vec3. The pointer passed to AnglesToAxisNegRight at 0x30040f1c
+// cg.refdefViewAngles vec3. The pointer passed to AnglesToAxisNegRight at 0x30040f1c
 // proves the three components are one source-level object.
 //
 // The formerly unresolved 0x30040eef..0x300411c6 arm is now proven with the
@@ -55,11 +55,11 @@ void CG_CalcVehicleViewPos(void)
 
     /* Entry gate: draw the vehicle view only when the local player's entity-state
      * flags carry EF_IN_VEHICLE (0x100000). */
-    if ((cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) == 0) {
+    if ((cg.predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) == 0) {
         return;
     }
 
-    int32_t entnum = cg_predictedPlayerState.viewLockedEntityNum;
+    int32_t entnum = cg.predictedPlayerState.viewLockedEntityNum;
     if (entnum == ENTITYNUM_NONE) {
         return;
     }
@@ -96,26 +96,26 @@ void CG_CalcVehicleViewPos(void)
      * so the chasecam copy runs only when adsFraction is exactly 0.0.       *
      * -------------------------------------------------------------------- */
     if (viewMode == VEHICLE_VIEW_MODE_CHASE_ADS &&
-        cg_predictedPlayerState.adsFraction == 0.0f) {
+        cg.predictedPlayerState.adsFraction == 0.0f) {
         if (CG_DObjGetWorldTagMatrix(dobj, "tag_chasecam",
                                             cent, &secondaryMat)) {
-            cg_refdef.vieworg[0] = secondaryMat.origin[0];
-            cg_refdef.vieworg[1] = secondaryMat.origin[1];
-            cg_refdef.vieworg[2] = secondaryMat.origin[2];
+            cg.refdef.vieworg[0] = secondaryMat.origin[0];
+            cg.refdef.vieworg[1] = secondaryMat.origin[1];
+            cg.refdef.vieworg[2] = secondaryMat.origin[2];
         }
         goto trace_tail;
     }
 
     /* --------------------------------------------------------------- *
-     * Dispatch (2): cg_predictedPlayerState.vehiclePosition == 2 (gunner)   *
+     * Dispatch (2): cg.predictedPlayerState.vehiclePosition == 2 (gunner)   *
      * blend arm 0x30040941..0x30040d2c — transcribed faithfully.      *
      * --------------------------------------------------------------- */
-    if (cg_predictedPlayerState.vehiclePosition == VEHICLE_VIEW_MODE_GUNNER) {
+    if (cg.predictedPlayerState.vehiclePosition == VEHICLE_VIEW_MODE_GUNNER) {
         /* Copy the whole predicted player state (0x1141 dwords from
-         * cg_predictedPlayerState) into a local scratch that the sway core mutates; the
+         * cg.predictedPlayerState) into a local scratch that the sway core mutates; the
          * "thompson_MP" weapon index overwrites one slot (copy+0xe4). */
         playerState_t psCopy;
-        memcpy(&psCopy, &cg_predictedPlayerState, sizeof psCopy);
+        memcpy(&psCopy, &cg.predictedPlayerState, sizeof psCopy);
 
         int32_t weaponIndex = BG_GetWeaponIndexForName("thompson_MP");
         /* MOV [ESP+0x1f4],ECX at 0x30040983 with three args pushed (ESP=frame-0xc)
@@ -124,15 +124,15 @@ void CG_CalcVehicleViewPos(void)
 
         /* BG_CalculateWeaponPosition_Sway: ESI=&psCopy, EDI=out_angles,
          * EAX=out_position; the remaining three logical parameters are pushed as
-         * (previous_view_angles, 2.0f, cg_frametime). */
+         * (previous_view_angles, 2.0f, cg.frametime). */
         BG_CalculateWeaponPosition_Sway(&psCopy,
                                         cg_vehicleViewSwayPreviousViewAngles,
                                         cg_vehicleViewSwayOffset,
                                         cg_vehicleViewSwayViewAngles, 2.0f,
-                                        cg_frametime);
+                                        cg.frametime);
 
-        /* oscInt = cg_time % 100 folded to <=50; oscFactor = oscInt * 0.02f (0x3007c2b8). */
-        int32_t oscInt = cg_time % 100;
+        /* oscInt = cg.time % 100 folded to <=50; oscFactor = oscInt * 0.02f (0x3007c2b8). */
+        int32_t oscInt = cg.time % 100;
         if (oscInt > 50) {
             oscInt = 100 - oscInt;
         }
@@ -142,15 +142,15 @@ void CG_CalcVehicleViewPos(void)
          * binary32 rounding is the FSTP into the oscFactor stack slot. */
 
         const char *originTag =
-            CG_GetVehicleViewPosOriginTag(cg_predictedPlayerState.vehiclePosition);
+            CG_GetVehicleViewPosOriginTag(cg.predictedPlayerState.vehiclePosition);
         if (!CG_DObjGetWorldTagMatrix(dobj, originTag, cent, &primaryMat)) {
             return;
         }
 
-        /* cg_refdef.vieworg = primaryMat.trans. */
-        cg_refdef.vieworg[0] = primaryMat.origin[0];
-        cg_refdef.vieworg[1] = primaryMat.origin[1];
-        cg_refdef.vieworg[2] = primaryMat.origin[2];
+        /* cg.refdef.vieworg = primaryMat.trans. */
+        cg.refdef.vieworg[0] = primaryMat.origin[0];
+        cg.refdef.vieworg[1] = primaryMat.origin[1];
+        cg.refdef.vieworg[2] = primaryMat.origin[2];
 
         /* offs[] = rotated view offset. Two producing branches, then a common blend. */
         long double offsX;
@@ -185,10 +185,10 @@ void CG_CalcVehicleViewPos(void)
                             (long double)primaryMat.origin[2]);
         }
 
-        /* Optional lean/recoil: when cg_snap->ps.entityStateFlags bit 0x200 is set
+        /* Optional lean/recoil: when cg.snap->ps.entityStateFlags bit 0x200 is set
          * AND cent->currentState.hudTagMask == 0, add fwd[i]*(oscFactor*-0.5) to each offs[i].
          * 0x3007bf50 = -0.5. */
-        if ((cg_snap->ps.entityStateFlags & CG_VEHICLE_VIEW_SWAY_FLAG) != 0 &&
+        if ((cg.snap->ps.entityStateFlags & CG_VEHICLE_VIEW_SWAY_FLAG) != 0 &&
             cent->currentState.hudTagMask == 0) {
             long double half = (long double)oscFactor * -0.5L;
             offsX += (long double)primaryMat.axis[0][0] * half;
@@ -198,7 +198,7 @@ void CG_CalcVehicleViewPos(void)
         }
 
         /* Rotate offs by the smoothed weapon-sway rotation scalars and add to
-         * cg_refdef.vieworg. matCopy holds the primary fwd/right/up rows (fed to
+         * cg.refdef.vieworg. matCopy holds the primary fwd/right/up rows (fed to
          * AxisToAngles). spa scalars: 0x300dc9dc/e0, and -0x300dc9e4 (FCHS). */
         float matCopy[3][3];
         for (int r = 0; r < 3; ++r) {
@@ -233,28 +233,28 @@ void CG_CalcVehicleViewPos(void)
         long double dispZ = (long double)primaryMat.axis[2][2] *
                             (long double)nspa2 + sz;
 
-        cg_refdef.vieworg[0] = (float)((long double)dispX +
-                                      (long double)cg_refdef.vieworg[0]);
-        cg_refdef.vieworg[1] = (float)((long double)dispY +
-                                      (long double)cg_refdef.vieworg[1]);
-        cg_refdef.vieworg[2] = (float)(dispZ +
-                                      (long double)cg_refdef.vieworg[2]);
+        cg.refdef.vieworg[0] = (float)((long double)dispX +
+                                      (long double)cg.refdef.vieworg[0]);
+        cg.refdef.vieworg[1] = (float)((long double)dispY +
+                                      (long double)cg.refdef.vieworg[1]);
+        cg.refdef.vieworg[2] = (float)(dispZ +
+                                      (long double)cg.refdef.vieworg[2]);
 
         /* View angles from the primary basis. */
         vec3_t viewAngles;
         AxisToAngles((const vec_t (*)[3])matCopy, viewAngles);
 
-        /* cg_refdefViewAngles[0] = viewAngles.pitch;
-         * cg_refdefViewAngles[2] = viewAngles.roll. */
-        cg_refdefViewAngles[0] = viewAngles[0];
-        cg_refdefViewAngles[2] = viewAngles[2];
+        /* cg.refdefViewAngles[0] = viewAngles.pitch;
+         * cg.refdefViewAngles[2] = viewAngles.roll. */
+        cg.refdefViewAngles[0] = viewAngles[0];
+        cg.refdefViewAngles[2] = viewAngles[2];
         /* MOV [ESP+0x34],0 at 0x30040c64 (ESP=frame-4 after the PUSH) zeroes
          * frame+0x30 == viewAngles[2] itself, right after the roll copy above. */
         viewAngles[2] = 0.0f;
 
-        /* angleDelta = AngleNormalize180(cg_predictedPlayerState.viewAngles.pitch - viewAngles.pitch).
-         * 0x304832ac is FLD'd as a float (cg_predictedPlayerState.viewAngles[0]). */
-        float angleDelta = cg_predictedPlayerState.viewAngles[0] - viewAngles[0];
+        /* angleDelta = AngleNormalize180(cg.predictedPlayerState.viewAngles.pitch - viewAngles.pitch).
+         * 0x304832ac is FLD'd as a float (cg.predictedPlayerState.viewAngles[0]). */
+        float angleDelta = cg.predictedPlayerState.viewAngles[0] - viewAngles[0];
         angleDelta = AngleNormalize180(angleDelta);
 
         /* When |angleDelta| > 0.4 (0x3007c2a8 double), fold the shared BAMS
@@ -267,13 +267,13 @@ void CG_CalcVehicleViewPos(void)
             if (fabsDelta > (double)0.4f) { /* 0x3007c2a8 == 0x3fd99999a0000000 == (double)0.4f, NOT double 0.4 */
                 const float bams = 0.0054931640625f; /* 0x3007bd5c = 0x3bb40000 (360/65536) */
                 viewAngles[0] = (float)((long double)viewAngles[0] -
-                    (long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[0]) *
+                    (long double)coduo_int32_from_bits(cg.predictedPlayerState.deltaAngles[0]) *
                     (long double)bams); /* bare FILD @0x30040c83 -> FMUL bams */
                 viewAngles[1] = (float)((long double)viewAngles[1] -
-                    (long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[1]) *
+                    (long double)coduo_int32_from_bits(cg.predictedPlayerState.deltaAngles[1]) *
                     (long double)bams); /* bare FILD @0x30040ca1 */
                 viewAngles[2] = (float)(-
-                    ((long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[2]) *
+                    ((long double)coduo_int32_from_bits(cg.predictedPlayerState.deltaAngles[2]) *
                      (long double)bams)); /* bare FILD @0x30040cb5; FCHS @0x30040cc1 */
                 cgame_syscall(CG_VEH_VIEW_ANGLE_DELTA,
                               (intptr_t)viewAngles);
@@ -281,20 +281,20 @@ void CG_CalcVehicleViewPos(void)
         }
 
         /* Second lean-driven view-angle blend, gated on the same snap bit / hudTagMask. */
-        if ((cg_snap->ps.entityStateFlags & CG_VEHICLE_VIEW_SWAY_FLAG) != 0 &&
+        if ((cg.snap->ps.entityStateFlags & CG_VEHICLE_VIEW_SWAY_FLAG) != 0 &&
             cent->currentState.hudTagMask == 0) {
             /* 0x30040ce8: FLD [ESP+0x34] (ESP=frame) == frame+0x34 == the oscFactor
-             * slot (FSTP'd at 0x300409c4 with ESP=frame-4); cg_refdefViewAngles[0] -=
+             * slot (FSTP'd at 0x300409c4 with ESP=frame-4); cg.refdefViewAngles[0] -=
              * oscFactor*0.5 (0x3007bce8 == 0.5). */
-            cg_refdefViewAngles[0] = cg_refdefViewAngles[0] - oscFactor * 0.5f;
-            /* cg_refdefViewAngles[1] += Q_SwayRand(2.334f,3.198f,cg_time)
+            cg.refdefViewAngles[0] = cg.refdefViewAngles[0] - oscFactor * 0.5f;
+            /* cg.refdefViewAngles[1] += Q_SwayRand(2.334f,3.198f,cg.time)
              * * 0.25f (0x3007be58 = 0x3e800000; 0.140625f is the PRECEDING dword
              * 0x3007be54). Arg order arg1=2.334 (0x40156417), arg2=3.198 (0x404ca9d3),
-             * arg3=cg_time. */
+             * arg3=cg.time. */
             float osc = Q_SwayRand(2.3342339992523193f,
                                    3.1978652477264404f,
-                                   (float)cg_time);
-            cg_refdefViewAngles[1] = osc * 0.25f + cg_refdefViewAngles[1];
+                                   (float)cg.time);
+            cg.refdefViewAngles[1] = osc * 0.25f + cg.refdefViewAngles[1];
         }
 
         goto trace_tail;
@@ -313,11 +313,11 @@ void CG_CalcVehicleViewPos(void)
          *   (0x30040d8b FUCOMPP/TEST AH,0x44: JP 0x30040da7 -> EAX=0 on ads!=0/NaN,
          *    fallthrough MOV EAX,1 on ads==0.) */
         qboolean gotoSeatSelector = qfalse;
-        if (cg_predictedPlayerState.vehicleType == VEHICLE_TYPE_4_WHEEL &&
-            cg_predictedPlayerState.vehiclePosition == VEHICLE_VIEW_MODE_PASSENGER) {
+        if (cg.predictedPlayerState.vehicleType == VEHICLE_TYPE_4_WHEEL &&
+            cg.predictedPlayerState.vehiclePosition == VEHICLE_VIEW_MODE_PASSENGER) {
             gotoSeatSelector = qtrue;
         } else {
-            int32_t adsFlag = (cg_predictedPlayerState.adsFraction == 0.0f) ? 1 : 0;
+            int32_t adsFlag = (cg.predictedPlayerState.adsFraction == 0.0f) ? 1 : 0;
             int32_t seatFlag = (viewMode != VEHICLE_VIEW_MODE_SEAT) ? 1 : 0;
             if (adsFlag != seatFlag) {
                 gotoSeatSelector = qtrue;
@@ -326,11 +326,11 @@ void CG_CalcVehicleViewPos(void)
 
         if (!gotoSeatSelector) {
             /* Seatless (turret/chasecam) arm 0x30040db9..0x300411c6. */
-            cg_refdefViewAngles[2] = 0.0f; /* MOV [0x30487ad0],0 */
+            cg.refdefViewAngles[2] = 0.0f; /* MOV [0x30487ad0],0 */
             /* 0x30040dbe: MOV EAX,ECX — the selector is ps.vehiclePosition
              * (still live in ECX from 0x30040932), not viewMode. */
             const char *originTag =
-                CG_GetVehicleViewPosOriginTag(cg_predictedPlayerState.vehiclePosition);
+                CG_GetVehicleViewPosOriginTag(cg.predictedPlayerState.vehiclePosition);
             if (!CG_DObjGetWorldTagMatrix(dobj, originTag, cent, &primaryMat)) {
                 return;
             }
@@ -383,14 +383,14 @@ void CG_CalcVehicleViewPos(void)
 
             /* 0x30040f0b/11/25 installs the primary tag translation before the
              * orientation conversion and displacement rebuild. */
-            cg_refdef.vieworg[0] = primaryMat.origin[0];
-            cg_refdef.vieworg[1] = primaryMat.origin[1];
-            cg_refdef.vieworg[2] = primaryMat.origin[2];
+            cg.refdef.vieworg[0] = primaryMat.origin[0];
+            cg.refdef.vieworg[1] = primaryMat.origin[1];
+            cg.refdef.vieworg[2] = primaryMat.origin[2];
 
             /* 0x30040f75: EAX=&viewAxis, EDX=&cg.refdefViewAngles. The callee's
              * machine code proves axis[0]=forward, axis[1]=-right, axis[2]=up. */
             axis_t viewAxis;
-            AnglesToAxisNegRight(viewAxis, cg_refdefViewAngles);
+            AnglesToAxisNegRight(viewAxis, cg.refdefViewAngles);
 
             /* 0x30040f7a..0x30041004: rebuild the displacement in the current
              * view basis. */
@@ -420,18 +420,18 @@ void CG_CalcVehicleViewPos(void)
 
             long double candidate[3];
             candidate[0] = (long double)displacement[0] +
-                           (long double)cg_refdef.vieworg[0];
+                           (long double)cg.refdef.vieworg[0];
             candidate[1] = (long double)displacement[1] +
-                           (long double)cg_refdef.vieworg[1];
+                           (long double)cg.refdef.vieworg[1];
             candidate[2] = (long double)displacement[2] +
-                           (long double)cg_refdef.vieworg[2];
+                           (long double)cg.refdef.vieworg[2];
 
             /* 0x30041046..0x30041088: the mode-1 ADS camera is lowered along
              * viewAxis[2] by 135.0f (0x43070000 at 0x3007c2a0). Gate is the
              * FUCOMPP/TEST AH,0x44/JNP-skip-on-equal idiom: lowered whenever
              * adsFraction != 0.0 (NaN included), not only when positive. */
             if (stFilter == VEHICLE_VIEW_MODE_SEAT &&
-                cg_predictedPlayerState.adsFraction != 0.0f) {
+                cg.predictedPlayerState.adsFraction != 0.0f) {
                 candidate[0] -= (long double)viewAxis[2][0] * 135.0L;
                 candidate[1] -= (long double)viewAxis[2][1] * 135.0L;
                 candidate[2] -= (long double)viewAxis[2][2] * 135.0L;
@@ -440,7 +440,7 @@ void CG_CalcVehicleViewPos(void)
             cg_vehicleViewSwayOrigin[0] = (float)candidate[0];
             cg_vehicleViewSwayOrigin[1] = (float)candidate[1];
             cg_vehicleViewSwayOrigin[2] = (float)candidate[2];
-            cg_vehicleViewSwayPrevTime = cg_time;
+            cg_vehicleViewSwayPrevTime = cg.time;
 
             /* 0x300410b1..0x3004119e: clamp the candidate displacement length
              * against the source tag-delta length. VectorNormalize is called only
@@ -486,9 +486,9 @@ void CG_CalcVehicleViewPos(void)
                 (long double)clampedLength * (long double)displacement[2]);
 
 copy_sway_origin:
-            cg_refdef.vieworg[0] = cg_vehicleViewSwayOrigin[0];
-            cg_refdef.vieworg[1] = cg_vehicleViewSwayOrigin[1];
-            cg_refdef.vieworg[2] = cg_vehicleViewSwayOrigin[2];
+            cg.refdef.vieworg[0] = cg_vehicleViewSwayOrigin[0];
+            cg.refdef.vieworg[1] = cg_vehicleViewSwayOrigin[1];
+            cg.refdef.vieworg[2] = cg_vehicleViewSwayOrigin[2];
             goto trace_tail;
         }
 
@@ -500,7 +500,7 @@ copy_sway_origin:
              * 12.0 (0x3007bdc4 = 0x41400000; 432.0f is the PRECEDING dword
              * 0x3007bdc0) / 32.0 (0x3007bdd0) blend. 0x3007bcec=0.0. */
             const char *riderTag =
-                CG_GetRiderTagName(cg_predictedPlayerState.vehiclePosition);
+                CG_GetRiderTagName(cg.predictedPlayerState.vehiclePosition);
             if (!CG_DObjGetWorldTagMatrix(dobj, riderTag, cent, &secondaryMat)) {
                 /* 0x300411f0 JZ 0x300412bf: a failed rider-tag lookup FALLS INTO
                  * the tag_aimdownbarrel/tag_barrel arm, it does not trace. */
@@ -514,15 +514,15 @@ copy_sway_origin:
                  *   bx = right.x*0 + ax; by = right.y*0 + ay
                  *   .z = right.z*0 + z0 ; then + up*32 into each. */
                 float az = secondaryMat.origin[2] - secondaryMat.axis[0][2] * 12.0f;
-                cg_refdef.vieworg[2] = az; /* FSTP 0x30487a98 (z first) */
+                cg.refdef.vieworg[2] = az; /* FSTP 0x30487a98 (z first) */
                 float ax = secondaryMat.origin[0] - secondaryMat.axis[0][0] * 12.0f;
                 float ay = secondaryMat.origin[1] - secondaryMat.axis[0][1] * 12.0f;
                 float bx = secondaryMat.axis[1][0] * 0.0f + ax;
                 float by = secondaryMat.axis[1][1] * 0.0f + ay;
-                float bz = secondaryMat.axis[1][2] * 0.0f + cg_refdef.vieworg[2];
-                cg_refdef.vieworg[0] = secondaryMat.axis[2][0] * 32.0f + bx; /* up.x*32 + bx */
-                cg_refdef.vieworg[1] = secondaryMat.axis[2][1] * 32.0f + by;
-                cg_refdef.vieworg[2] = secondaryMat.axis[2][2] * 32.0f + bz;
+                float bz = secondaryMat.axis[1][2] * 0.0f + cg.refdef.vieworg[2];
+                cg.refdef.vieworg[0] = secondaryMat.axis[2][0] * 32.0f + bx; /* up.x*32 + bx */
+                cg.refdef.vieworg[1] = secondaryMat.axis[2][1] * 32.0f + by;
+                cg.refdef.vieworg[2] = secondaryMat.axis[2][2] * 32.0f + bz;
             }
             goto trace_tail;
         }
@@ -531,9 +531,9 @@ aimdownbarrel_arm:
         /* viewMode != 1 (0x300412bf): tag_aimdownbarrel copy, else tag_barrel blend. */
         if (CG_DObjGetWorldTagMatrix(dobj, "tag_aimdownbarrel",
                                             cent, &secondaryMat)) {
-            cg_refdef.vieworg[0] = secondaryMat.origin[0];
-            cg_refdef.vieworg[1] = secondaryMat.origin[1];
-            cg_refdef.vieworg[2] = secondaryMat.origin[2];
+            cg.refdef.vieworg[0] = secondaryMat.origin[0];
+            cg.refdef.vieworg[1] = secondaryMat.origin[1];
+            cg.refdef.vieworg[2] = secondaryMat.origin[2];
             goto trace_tail;
         }
 
@@ -551,23 +551,23 @@ aimdownbarrel_arm:
             float cx = secondaryMat.axis[0][0] * 30.0f + secondaryMat.origin[0];
             float cy = secondaryMat.axis[0][1] * 30.0f + secondaryMat.origin[1];
             float cz = secondaryMat.axis[0][2] * 30.0f + secondaryMat.origin[2];
-            cg_refdef.vieworg[2] = cz; /* FSTP 0x30487a98 */
+            cg.refdef.vieworg[2] = cz; /* FSTP 0x30487a98 */
 
             float dx = cx - secondaryMat.axis[1][0] * 3.0f; /* FSUBR ST,ST(2): c - right*3 */
             float dy = cy - secondaryMat.axis[1][1] * 3.0f;
-            cg_refdef.vieworg[0] = dx; /* FSTP 0x30487a90 */
-            float dz = cg_refdef.vieworg[2] - secondaryMat.axis[1][2] * 3.0f; /* FSUBR 0x30487a98 */
+            cg.refdef.vieworg[0] = dx; /* FSTP 0x30487a90 */
+            float dz = cg.refdef.vieworg[2] - secondaryMat.axis[1][2] * 3.0f; /* FSUBR 0x30487a98 */
 
-            cg_refdef.vieworg[0] = secondaryMat.axis[2][0] * 10.0f + cg_refdef.vieworg[0]; /* up.x*10 + dx */
-            cg_refdef.vieworg[1] = secondaryMat.axis[2][1] * 10.0f + dy;                  /* up.y*10 + dy */
-            cg_refdef.vieworg[2] = secondaryMat.axis[2][2] * 10.0f + dz;                  /* up.z*10 + dz */
+            cg.refdef.vieworg[0] = secondaryMat.axis[2][0] * 10.0f + cg.refdef.vieworg[0]; /* up.x*10 + dx */
+            cg.refdef.vieworg[1] = secondaryMat.axis[2][1] * 10.0f + dy;                  /* up.y*10 + dy */
+            cg.refdef.vieworg[2] = secondaryMat.axis[2][2] * 10.0f + dz;                  /* up.z*10 + dz */
         }
         goto trace_tail;
     }
 
 trace_tail:
     /* Resolve tag_body (0x300771f8) into secondaryMat; if absent, fall back to the
-     * vehicle entity's lerpOrigin (cg_entities[cg_predictedPlayerState.viewLockedEntityNum].lerpOrigin at
+     * vehicle entity's lerpOrigin (cg_entities[cg.predictedPlayerState.viewLockedEntityNum].lerpOrigin at
      * base+0x208). The anchor's z is raised by 20.0 (0x3007be04) and traced. */
     {
         vec3_t anchor;
@@ -578,7 +578,7 @@ trace_tail:
             anchor[2] = secondaryMat.origin[2];
         } else {
             int32_t fallbackEntityNum =
-                cg_predictedPlayerState.viewLockedEntityNum;
+                cg.predictedPlayerState.viewLockedEntityNum;
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
             if ((uint32_t)fallbackEntityNum >=
                 (uint32_t)MAX_GENTITIES) {
@@ -599,11 +599,11 @@ trace_tail:
         traceAnchor[1] = anchor[1];
         traceAnchor[2] = anchor[2] + 20.0f; /* 0x3007be04 */
 
-        /* First projection: handle 0x211, origin = cg_refdef.vieworg, EBX = &traceMaxs.
+        /* First projection: handle 0x211, origin = cg.refdef.vieworg, EBX = &traceMaxs.
          * The four stack arguments at 0x3004140e..0x3004142b are, in source order,
          * out=&traceResult, arg1=&traceAnchor, arg2=&traceMins, arg3=entnum. */
         trace_t traceResult;
-        CG_Trace(CG_VEHICLE_VIEW_TRACE_MODEL, cg_refdef.vieworg,
+        CG_Trace(CG_VEHICLE_VIEW_TRACE_MODEL, cg.refdef.vieworg,
                            traceMaxs, &traceResult,
                            traceAnchor,
                            traceMins, entnum);
@@ -612,7 +612,7 @@ trace_tail:
          * [ESP+0x98] is traceResult.contents (+0x20), not normal (+0x10). */
         if (traceResult.startsolid != 0) {
             if (((uint32_t)traceResult.contents & CG_VEHICLE_VIEW_TRACE_BODY_FLAG) != 0) {
-                CG_Trace(CG_VEHICLE_VIEW_RETRACE_MODEL, cg_refdef.vieworg,
+                CG_Trace(CG_VEHICLE_VIEW_RETRACE_MODEL, cg.refdef.vieworg,
                                    traceMaxs, &traceResult,
                                    traceAnchor,
                                    traceMins, entnum);
@@ -620,26 +620,26 @@ trace_tail:
         }
 
         /* If the trace did NOT reach the far end (fraction != 1.0, 0x3007bcf8 double),
-         * clip cg_refdef.vieworg to the endpoint and re-trace. */
+         * clip cg.refdef.vieworg to the endpoint and re-trace. */
         if (traceResult.fraction != 1.0) {
-            cg_refdef.vieworg[0] = traceResult.endpos[0];
-            cg_refdef.vieworg[1] = traceResult.endpos[1];
+            cg.refdef.vieworg[0] = traceResult.endpos[0];
+            cg.refdef.vieworg[1] = traceResult.endpos[1];
             /* (1.0 - fraction)*32 + endpos.z is one 80-bit chain in the DLL
              * (FLD 0x3007bce0=1.0; FSUB; FMUL 0x3007bdd0=32.0; FADD; FSTP
              * @0x300414a0..e8) — no float temp for the subtract. */
-            cg_refdef.vieworg[2] = (float)(
+            cg.refdef.vieworg[2] = (float)(
                 (1.0L - (long double)traceResult.fraction) * 32.0L +
                 (long double)traceResult.endpos[2]);
 
-            CG_Trace(CG_VEHICLE_VIEW_RETRACE_MODEL, cg_refdef.vieworg,
+            CG_Trace(CG_VEHICLE_VIEW_RETRACE_MODEL, cg.refdef.vieworg,
                                traceMaxs, &traceResult,
                                traceAnchor,
                                traceMins, entnum);
 
             /* 0x30041505..0x30041529 copies traceResult.endpos (+0x04..+0x0c). */
-            cg_refdef.vieworg[0] = traceResult.endpos[0];
-            cg_refdef.vieworg[1] = traceResult.endpos[1];
-            cg_refdef.vieworg[2] = traceResult.endpos[2];
+            cg.refdef.vieworg[0] = traceResult.endpos[0];
+            cg.refdef.vieworg[1] = traceResult.endpos[1];
+            cg.refdef.vieworg[2] = traceResult.endpos[2];
         }
     }
 }

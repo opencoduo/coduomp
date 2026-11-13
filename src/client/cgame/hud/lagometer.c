@@ -46,7 +46,7 @@ void CG_DrawLagometer(void)
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): recorded snapshots do not
      * represent a live network connection. Suppress both the meaningless ping
      * graph and its usercmd-based connection-interrupted warning in demos. */
-    if (cg_demoPlayback != qfalse)
+    if (cg.demoPlayback != qfalse)
         return;
 
     if (cg_lagometer_vmCvar.integer != qfalse && cgs_localServer == 0) {

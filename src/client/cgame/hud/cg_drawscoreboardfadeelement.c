@@ -17,7 +17,7 @@
  *
  * Unlike its siblings (which always pass the raw cg_hudAlpha_vmCvar.value word), this
  * emitter fades: when the scoreboard is showing it multiplies cg_hudAlpha_vmCvar.value
- * by the alpha component of CG_FadeColor(cg_scoreboardShowTime, 100), so the
+ * by the alpha component of CG_FadeColor(cg.scoreFadeTime, 100), so the
  * element ramps out over the scoreboard's 100 ms fade window; when the scoreboard
  * is not showing it passes cg_hudAlpha_vmCvar.value unscaled; and when CG_FadeColor
  * reports the fade has fully expired (NULL) it emits nothing.
@@ -32,8 +32,8 @@
  *
  * Behaviour, proven instruction-by-instruction:
  *   - [ESP+8] = 320.0f, [ESP+4] = 150.0f (the two coordinate constants)
- *   - if cg_scoreboardShowing != 0:                          (MOV/TEST/JZ)
- *         color = CG_FadeColor(cg_scoreboardShowTime, 100)   (EDX/ECX regparm)
+ *   - if cg.showScores != 0:                          (MOV/TEST/JZ)
+ *         color = CG_FadeColor(cg.scoreFadeTime, 100)   (EDX/ECX regparm)
  *         if color == NULL: return                           (TEST EAX / JZ)
  *         alpha = cg_hudAlpha_vmCvar.value * color[3]                (FLD/FMUL/FSTP)
  *     else:
@@ -51,22 +51,22 @@ void CG_DrawScoreboardFadeElement(void)
     float alpha;
     int32_t x;
     int32_t y;
-    qboolean scoreboardShowing = cg_scoreboardShowing != 0;
+    qboolean scoreboardShowing = cg.showScores != 0;
     float y_coord = 320.0f;
     float x_coord = 150.0f;
 
     /*
-     * 0x3001afd3 MOV EAX,[cg_scoreboardShowing] / 0x3001afd8 TEST / 0x3001afea JZ:
+     * 0x3001afd3 MOV EAX,[cg.showScores] / 0x3001afd8 TEST / 0x3001afea JZ:
      * when the scoreboard is up, fade the element's alpha; otherwise draw it at the
      * fixed cg_hudAlpha_vmCvar.value level.
      */
     if (scoreboardShowing) {
         /*
-         * 0x3001afec/aff2 CG_FadeColor(cg_scoreboardShowTime, 100): startMsec in
+         * 0x3001afec/aff2 CG_FadeColor(cg.scoreFadeTime, 100): startMsec in
          * EDX, totalMsec in ECX (regparm). NULL means the scoreboard fade has
          * fully expired, in which case nothing is drawn.
          */
-        int32_t scoreboardShowTime = cg_scoreboardShowTime;
+        int32_t scoreboardShowTime = cg.scoreFadeTime;
         const vec_t *color = CG_FadeColor(
             scoreboardShowTime, CG_FADE_TIME);
         if (color == NULL) {

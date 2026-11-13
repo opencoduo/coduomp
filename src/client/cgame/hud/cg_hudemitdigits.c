@@ -17,9 +17,9 @@
  * left-to-right, one stretch-pic per character.
  *
  * VALUE SOURCE (0x30031310..0x30031351):
- *   clientNum = cg_snap->ps.psClientNum;                                  // MOV [cg_snap+0xe0]
- *   if (clientNum == cg_clientNum) {                                 // CMP ..,[0x30459144]
- *       value = cg_snap->ps.stats[STAT_HEALTH];          // live local value (+0x128)
+ *   clientNum = cg.snap->ps.psClientNum;                                  // MOV [cg.snap+0xe0]
+ *   if (clientNum == cg.clientNum) {                                 // CMP ..,[0x30459144]
+ *       value = cg.snap->ps.stats[STAT_HEALTH];          // live local value (+0x128)
  *   } else {
  *       state = &bgs.clientinfo[clientNum];                      // IMUL 0x4d0; ADD 0x305e1f34
  *       if (state->infoValid == 0) return;                     // TEST/JZ -> exit
@@ -57,9 +57,9 @@ _Static_assert(sizeof(clientInfo_t) == 0x4d0, "bgs.clientinfo element stride");
 _Static_assert(offsetof(clientInfo_t, infoValid) == 0x00, "infoValid +0x00");
 _Static_assert(offsetof(clientInfo_t, health) == 0x3c, "health +0x3c");
 #if UINTPTR_MAX == 0xFFFFFFFFu
-_Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg_snap->ps.psClientNum +0xe0");
+_Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg.snap->ps.psClientNum +0xe0");
 _Static_assert(CODUO_ARRAY_OFFSET(snapshot_t, ps.stats, STAT_HEALTH) == 0x128,
-               "cg_snap->ps.stats[STAT_HEALTH] +0x128");
+               "cg.snap->ps.stats[STAT_HEALTH] +0x128");
 _Static_assert(offsetof(rectDef_t, x) == 0x0, "rectDef_t.x +0x0");
 _Static_assert(offsetof(rectDef_t, y) == 0x4, "rectDef_t.y +0x4");
 _Static_assert(offsetof(rectDef_t, w) == 0x8, "rectDef_t.w +0x8");
@@ -101,10 +101,10 @@ void CG_HudEmitDigits(qhandle_t hIcon /*ECX*/,
 {
     /* --- Pick the integer to display (0x30031310..0x30031351). --- */
     int32_t value;
-    int32_t clientNum = cg_snap->ps.psClientNum;
-    if (clientNum == cg_clientNum) {
+    int32_t clientNum = cg.snap->ps.psClientNum;
+    if (clientNum == cg.clientNum) {
         /* Element bound to the local player: use the live snapshot value. */
-        value = cg_snap->ps.stats[STAT_HEALTH];
+        value = cg.snap->ps.stats[STAT_HEALTH];
     } else {
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {

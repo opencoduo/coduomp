@@ -48,7 +48,7 @@
  *   0x30031e7f  TEST EBX,EBX ; JZ            -> DObj handle (trap 0xa5) must be nonzero
  *   0x30031ea2  TEST EAX,EAX ; JZ           -> tag world-matrix lookup must succeed
  *
- * entity = &cg_entities[cg_predictedPlayerState.viewLockedEntityNum] via IMUL 0x288 + base 0x3048c6e0
+ * entity = &cg_entities[cg.predictedPlayerState.viewLockedEntityNum] via IMUL 0x288 + base 0x3048c6e0
  * (cg_entities modeled through the existing centity_t view of that base array).
  *
  * ---- slidX float chain (0x30031ecc..0x30031ee5), the shared HUD slide idiom ----
@@ -82,13 +82,13 @@ void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
                                const float *color)
 {
     /* 0x30031e20..0x30031e38: gate on the local predicted player's entityStateFlags. */
-    uint32_t flags = cg_predictedPlayerState.entityStateFlags;
+    uint32_t flags = cg.predictedPlayerState.entityStateFlags;
     if ((flags & EF_IN_VEHICLE) == 0)
         return;
     if ((flags & EF_VEHICLE_ALLOW_WEAPON) != 0)
         return;
 
-    int32_t entityNum = cg_predictedPlayerState.viewLockedEntityNum;
+    int32_t entityNum = cg.predictedPlayerState.viewLockedEntityNum;
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
@@ -132,12 +132,12 @@ void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
     vec3_t tagAngles;
     Axis4ToAngles(&tagWorldMatrix, tagAngles);
 
-    /* 0x30031eb7..0x30031ec8: rotation term = AngleSubtract(cg_refdefViewAngles[1], the
+    /* 0x30031eb7..0x30031ec8: rotation term = AngleSubtract(cg.refdefViewAngles[1], the
      * tag yaw). MOV ECX,[ESP+0x18] loads tagAngles[1] (scratchA is based at
      * [ESP+0x14]=tagAngles[0], so [ESP+0x18] is +4), MOV EDX,[0x30487acc] loads
-     * cg_refdefViewAngles[1]; PUSH ECX; PUSH EDX gives the cgame argument order
-     * (a=cg_refdefViewAngles[1], b=tagAngles[1]). */
-    float angleResult = AngleSubtract(cg_refdefViewAngles[1], tagAngles[1]);
+     * cg.refdefViewAngles[1]; PUSH ECX; PUSH EDX gives the cgame argument order
+     * (a=cg.refdefViewAngles[1], b=tagAngles[1]). */
+    float angleResult = AngleSubtract(cg.refdefViewAngles[1], tagAngles[1]);
 
     /* 0x30031ecc..0x30031ee5: slid X, the shared HUD slide idiom, computed from
      * cg_hudCompassSize_vmCvar.value (0x3048c4a8), 1.0f (0x3007bce0), 112.0f (0x3007c1e0). */

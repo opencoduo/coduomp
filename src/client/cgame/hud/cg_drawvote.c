@@ -36,7 +36,7 @@ enum {
 
 void CG_DrawVote(void)
 {
-    int32_t initialNow = cg_time;
+    int32_t initialNow = cg.time;
     int32_t initialComplaintEnd = cg_complaintEndTime;
     float color[4] = {1.0f, 1.0f, 0.0f, 1.0f};
     char yesKey[256];
@@ -66,7 +66,7 @@ void CG_DrawVote(void)
     }
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (cg_complaintEndTime > cg_time) {
+    if (cg_complaintEndTime > cg.time) {
         const char *statusToken = NULL;
         const char *text;
 
@@ -166,7 +166,7 @@ void CG_DrawVote(void)
     }
 
     if (cg_voteModified != qfalse) {
-        snapshot_t *soundSnap = cg_snap;
+        snapshot_t *soundSnap = cg.snap;
         const void *soundOrigin = &soundSnap->ps.psOrigin;
         cg_voteModified = qfalse;
         int32_t soundClientNum = soundSnap->ps.psClientNum;
@@ -196,8 +196,8 @@ void CG_DrawVote(void)
         }
 
         /* The entity-state flag is tested at 0x3001ba6f, before either path's
-         * translation/format/draw calls. Do not reload cg_snap after them. */
-        keysHidden = (cg_snap->ps.entityStateFlags &
+         * translation/format/draw calls. Do not reload cg.snap after them. */
+        keysHidden = (cg.snap->ps.entityStateFlags &
                       PS_EFLAG_VOTE_KEYS_HIDDEN) != 0;
         voteLabel = CG_SafeTranslateString_Internal("cgame", "CGAME_VOTE");
         text = va("%s(%i):%s", voteLabel, seconds, cg_voteString);

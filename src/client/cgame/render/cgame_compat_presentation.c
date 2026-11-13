@@ -703,15 +703,15 @@ long double cgame_compat_spread_fov_x(void)
     long double tangent;
 
     if (cgameCompatAspectMode.integer != CODUOMP_ASPECT_MODE_WIDESCREEN ||
-        cg_refdef.width <= 0 || cg_refdef.height <= 0) {
-        return cg_refdef.fov_x;
+        cg.refdef.width <= 0 || cg.refdef.height <= 0) {
+        return cg.refdef.fov_x;
     }
 
-    aspect = (long double)cg_refdef.width / (long double)cg_refdef.height;
+    aspect = (long double)cg.refdef.width / (long double)cg.refdef.height;
     if (aspect <= classicAspect)
-        return cg_refdef.fov_x;
+        return cg.refdef.fov_x;
 
-    halfAngle = (long double)cg_refdef.fov_x * (long double)DEG_TO_HALF_RAD;
+    halfAngle = (long double)cg.refdef.fov_x * (long double)DEG_TO_HALF_RAD;
     tangent = coduo_x87_tanl(halfAngle);
     return coduo_x87_atan2l(
                tangent * classicAspect / aspect, 1.0L) *

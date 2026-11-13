@@ -35,7 +35,7 @@ void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
      * double); CALL floor; CALL _ftol2 — the floor result goes RAW into _ftol2
      * with no float store, so no (float) cast here. */
     cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(
-        floor((double)cg_time * 2.0));
+        floor((double)cg.time * 2.0));
 
     if (alpha < 0.0f || chunk->kind == FLAME_KIND_NO_SPRITE_AFTER_CLOCK) {
         return;
@@ -72,9 +72,9 @@ void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
      * 0x30026a4f, so it reads the pre-push slot written at 0x300269e7
      * (center[0] = worldPos[0]) — an ordinary center - vieworg vector. */
     vec3_t facing = {
-        center[0] - cg_refdef.vieworg[0],
-        center[1] - cg_refdef.vieworg[1],
-        center[2] - cg_refdef.vieworg[2]
+        center[0] - cg.refdef.vieworg[0],
+        center[1] - cg.refdef.vieworg[1],
+        center[2] - cg.refdef.vieworg[2]
     };
     const float facingDistance = VectorNormalize(facing);
     /* 0x30026a7f..0x30026a9e: both arms of the select (FLD halfExtent; FCHS /
@@ -85,7 +85,7 @@ void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
                                 ? -halfExtent
                                 : -(long double)facingDistance - 20.0f;
 
-    if (chunk->ownerClientNum == cg_snap->ps.psClientNum) {
+    if (chunk->ownerClientNum == cg.snap->ps.psClientNum) {
         center[0] += facing[0] * placement;
         center[1] += facing[1] * placement;
         center[2] += facing[2] * placement;
@@ -163,19 +163,19 @@ void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
     /* Project the center onto the camera-forward line and reject back/zero-depth
      * billboards. A bounded counter throttles sprites intersecting the camera. */
     vec3_t forwardEnd = {
-        (float)((long double)cg_refdef.vieworg[0] +
-                (long double)cg_refdef.viewaxis[0][0] * 1024.0L),
-        (float)((long double)cg_refdef.vieworg[1] +
-                (long double)cg_refdef.viewaxis[0][1] * 1024.0L),
-        (float)((long double)cg_refdef.vieworg[2] +
-                (long double)cg_refdef.viewaxis[0][2] * 1024.0L)
+        (float)((long double)cg.refdef.vieworg[0] +
+                (long double)cg.refdef.viewaxis[0][0] * 1024.0L),
+        (float)((long double)cg.refdef.vieworg[1] +
+                (long double)cg.refdef.viewaxis[0][1] * 1024.0L),
+        (float)((long double)cg.refdef.vieworg[2] +
+                (long double)cg.refdef.viewaxis[0][2] * 1024.0L)
     };
     vec3_t projected;
-    ProjectPointOnLine(projected, cg_refdef.vieworg, center, forwardEnd);
+    ProjectPointOnLine(projected, cg.refdef.vieworg, center, forwardEnd);
     vec3_t projectedDirection = {
-        projected[0] - cg_refdef.vieworg[0],
-        projected[1] - cg_refdef.vieworg[1],
-        projected[2] - cg_refdef.vieworg[2]
+        projected[0] - cg.refdef.vieworg[0],
+        projected[1] - cg.refdef.vieworg[1],
+        projected[2] - cg.refdef.vieworg[2]
     };
     const float projectedDistance = VectorNormalize(projectedDirection);
     if (projectedDistance == 0.0f) {
@@ -185,11 +185,11 @@ void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
      * FCOMP'd against 0.0f RAW — no store anywhere in the chain — so it is
      * long double, in the binary's summation order. */
     const long double forwardDot =
-        (long double)cg_refdef.viewaxis[0][2] *
+        (long double)cg.refdef.viewaxis[0][2] *
             (long double)projectedDirection[2] +
-        (long double)cg_refdef.viewaxis[0][1] *
+        (long double)cg.refdef.viewaxis[0][1] *
             (long double)projectedDirection[1] +
-        (long double)cg_refdef.viewaxis[0][0] *
+        (long double)cg.refdef.viewaxis[0][0] *
             (long double)projectedDirection[0];
     if (forwardDot < 0.0f) {
         return;
@@ -205,7 +205,7 @@ void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
 
     if (cg_flameSpriteViewRelative != 0) {
         vec3_t angles;
-        vectoangles(cg_refdef.viewaxis[0], angles);
+        vectoangles(cg.refdef.viewaxis[0], angles);
         angles[2] = (float)selectedRadiusInt;
         AngleVectors(angles, NULL, cg_flameSpriteRight, cg_flameSpriteUp);
     } else {

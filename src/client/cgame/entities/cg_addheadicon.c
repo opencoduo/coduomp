@@ -62,9 +62,9 @@ void CG_AddHeadIcon(centity_t *cent)
     }
     int32_t centHudTeam = centState->team; /* [element + 0x2c] (0x305e1f60) */
 
-    /* bgs.clientinfo[cg_snap->ps.psClientNum]: same guard for the LOCAL player's state. */
+    /* bgs.clientinfo[cg.snap->ps.psClientNum]: same guard for the LOCAL player's state. */
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    const int32_t localClientNum = cg_snap->ps.psClientNum;
+    const int32_t localClientNum = cg.snap->ps.psClientNum;
     if ((uint32_t)localClientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
                   "\x15" "CG_AddHeadIcon: invalid local client number %i",
@@ -99,15 +99,15 @@ void CG_AddHeadIcon(centity_t *cent)
     }
 
     /* (2) The local client's own entity, rendered as the kill-cam subject: draw the
-     * "you in kill cam" icon and return. cent->currentState.number == cg_clientNum is the
+     * "you in kill cam" icon and return. cent->currentState.number == cg.clientNum is the
      * local draw-client; the icon is suppressed if the snapshot's own client already
      * IS that client (i.e. we are not actually watching ourselves die). */
-    if (cent->currentState.number == cg_clientNum) {
-        if (cg_snap->ps.psClientNum != cg_clientNum) {
+    if (cent->currentState.number == cg.clientNum) {
+        if (cg.snap->ps.psClientNum != cg.clientNum) {
             CG_AddHeadIconSprite(cent, cgs_youInKillCamIcon, coduo_fp_to_i32_extended(size), 1);
             return;
         }
-        /* 0x30032b72 je 0x30032b94: when psClientNum == cg_clientNum (we are not
+        /* 0x30032b72 je 0x30032b94: when psClientNum == cg.clientNum (we are not
          * actually watching ourselves die) the killcam icon+return block
          * (0x30032b74..0x30032b93) is skipped and control falls through to the normal
          * status-icon path below. A prior pass returned UNCONDITIONALLY here, so the
@@ -127,7 +127,7 @@ void CG_AddHeadIcon(centity_t *cent)
     if (centHudTeam == localHudTeam || localHudTeam == TEAM_SPECTATOR) {
         /* Active per-client voice chat: draw the entity's currently-registered
          * voiceChatIcon while its deadline has not yet passed (voiceChatTime > cg.time). */
-        if (cent->voiceChatTime > cg_time) {
+        if (cent->voiceChatTime > cg.time) {
             CG_AddHeadIconSprite(cent, cent->voiceChatIcon, coduo_fp_to_i32_extended(size), 0);
             return;
         }

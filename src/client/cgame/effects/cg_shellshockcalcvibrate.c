@@ -6,7 +6,7 @@
 // shellshock dispatcher CG_UpdateShellShock (0x3003c750) fans out to, alongside the
 // camera update (0x3003c230) and the mouse-input update
 // CG_UpdateShellShockMouse (0x3003c530). It writes the screen-blur amount pair
-// cg_shellshockScreenBlurX/Y (0x3048bff0/0x3048bff4) — the same vec2 CG_EndShellShock
+// cg.shellshockScreenBlurX/Y (0x3048bff0/0x3048bff4) — the same vec2 CG_EndShellShock
 // (0x3003c1d0) clears to 0 and the screen-blur draw pass (0x3003b670) reads.
 //
 // Naming: the .mcode header's "GScr_SetCursorHint" guess is REJECTED — it is an
@@ -43,9 +43,9 @@
 //     (x,y) float pair (8 bytes), so this addresses row[index]; the two output blocks
 //     read a 4-pair window row[index..index+3] (offsets +0..+0x1c).
 //   * X block (c6c9..c700): cubic-interpolate the .x components of the 4-pair window
-//     against w, multiply by intensity, store to cg_shellshockScreenBlurX.
+//     against w, multiply by intensity, store to cg.shellshockScreenBlurX.
 //   * Y block (c702..c73c): same cubic on the .y components, store to
-//     cg_shellshockScreenBlurY. The x87 stack is fully unwound (FSTP ST1/ST0 pops)
+//     cg.shellshockScreenBlurY. The x87 stack is fully unwound (FSTP ST1/ST0 pops)
 //     between and after the blocks.
 //
 // The cubic is evaluated in the exact operand order the x87 stream uses. For window
@@ -69,8 +69,8 @@ void CG_ShellShockCalcVibrate(int32_t duration,
 
     if (remaining <= 0) {
         /* Not active this frame: no blur displacement. */
-        cg_shellshockScreenBlurX = 0.0f;
-        cg_shellshockScreenBlurY = 0.0f;
+        cg.shellshockScreenBlurX = 0.0f;
+        cg.shellshockScreenBlurY = 0.0f;
         return;
     }
 
@@ -118,7 +118,7 @@ void CG_ShellShockCalcVibrate(int32_t duration,
         const long double C = B + A * w;
         const long double D = C * w + (c - a);
 
-        cg_shellshockScreenBlurX = (D * w + b) * intensity;
+        cg.shellshockScreenBlurX = (D * w + b) * intensity;
     }
     {
         const long double a = row[0][1];
@@ -130,6 +130,6 @@ void CG_ShellShockCalcVibrate(int32_t duration,
         const long double C = B + A * w;
         const long double D = C * w + (c - a);
 
-        cg_shellshockScreenBlurY = (D * w + b) * intensity;
+        cg.shellshockScreenBlurY = (D * w + b) * intensity;
     }
 }

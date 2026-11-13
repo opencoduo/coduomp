@@ -24,10 +24,10 @@
 //
 // GLOBALS consumed (resolved during this reconstruction, renamed at their
 // definitions in globals.h/globals.c):
-//   cg_refdef.x      = [0x30487a78]  render rect x      (EAX)
-//   cg_refdef.y      = [0x30487a7c]  render rect y      (ESI)
-//   cg_refdef.width  = [0x30487a80]  render rect width  (ECX)
-//   cg_refdef.height = [0x30487a84]  render rect height (EDI)
+//   cg.refdef.x      = [0x30487a78]  render rect x      (EAX)
+//   cg.refdef.y      = [0x30487a7c]  render rect y      (ESI)
+//   cg.refdef.width  = [0x30487a80]  render rect width  (ECX)
+//   cg.refdef.height = [0x30487a84]  render rect height (EDI)
 //   cgs_glconfig.vidWidth  = [0x30447a88]  backbuffer width  (EBX)
 //   cgs_glconfig.vidHeight = [0x30447a8c]  backbuffer height (EBP)
 //   cgs_media_backTileShader = [0x3044b6f0] tiling shader handle (reloaded into
@@ -59,12 +59,12 @@ void CG_TileClear(void)
 {
     /* 0x3001d160..0x3001d186 load x, width, vidWidth, vidHeight, y, height in
      * exactly this order before testing the captured x. */
-    int32_t rx = coduo_int32_from_bits((uint32_t)cg_refdef.x);
-    int32_t rw = coduo_int32_from_bits((uint32_t)cg_refdef.width);
+    int32_t rx = coduo_int32_from_bits((uint32_t)cg.refdef.x);
+    int32_t rw = coduo_int32_from_bits((uint32_t)cg.refdef.width);
     int32_t vidWidth  = cgs_glconfig.vidWidth;
     int32_t vidHeight = cgs_glconfig.vidHeight;
-    int32_t ry = coduo_int32_from_bits((uint32_t)cg_refdef.y);
-    int32_t rh = coduo_int32_from_bits((uint32_t)cg_refdef.height);
+    int32_t ry = coduo_int32_from_bits((uint32_t)cg.refdef.y);
+    int32_t rh = coduo_int32_from_bits((uint32_t)cg.refdef.height);
 
     // Full-screen 3D view: nothing outside it to clear.
     if (rx == 0 && ry == 0 && rw == vidWidth && rh == vidHeight) {

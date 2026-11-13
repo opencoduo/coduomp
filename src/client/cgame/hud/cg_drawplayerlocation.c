@@ -10,13 +10,13 @@
 /* Layout guards proving the machine-code offsets/stride this function relies on
  * (verified at 4-byte i386 pointer width). The 0x4d0 element stride matches the
  * `IMUL EAX,EAX,0x4d0` at 0x3003128b; the field offsets match the [EAX]/[EAX+0x38]
- * and [cg_snap+0xe0] accesses. */
+ * and [cg.snap+0xe0] accesses. */
 #if UINTPTR_MAX == 0xFFFFFFFFu
 _Static_assert(sizeof(clientInfo_t) == 0x4d0, "bgs.clientinfo element stride");
 #endif
 _Static_assert(offsetof(clientInfo_t, infoValid) == 0x00, "infoValid +0x00");
 _Static_assert(offsetof(clientInfo_t, location) == 0x38, "location +0x38");
-_Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg_snap->ps.psClientNum +0xe0");
+_Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg.snap->ps.psClientNum +0xe0");
 _Static_assert(offsetof(rectDef_t, x) == 0x00, "obj->x +0x00");
 _Static_assert(offsetof(rectDef_t, y) == 0x04, "obj->y +0x04");
 _Static_assert(offsetof(rectDef_t, h) == 0x0c, "obj->h +0x0c");
@@ -30,7 +30,7 @@ _Static_assert(offsetof(rectDef_t, h) == 0x0c, "obj->h +0x0c");
  * built from the register-passed object and four caller stack words.
  *
  * Behavior (all offsets proven against the .mcode):
- *   ps = &bgs.clientinfo[cg_snap->ps.psClientNum]   // stride 0x4d0, base 0x305e1f34
+ *   ps = &bgs.clientinfo[cg.snap->ps.psClientNum]   // stride 0x4d0, base 0x305e1f34
  *   if (ps->infoValid == 0) return;          // no valid local state -> emit nothing
  *   name = CG_GetTranslatedLocationString(ps->location); // callee 0x300310b0
  *   cgame_syscall(CG_R_TEXT_PAINT,
@@ -60,8 +60,8 @@ _Static_assert(offsetof(rectDef_t, h) == 0x0c, "obj->h +0x0c");
  *
  * Instruction map (frame base S = ESP right after SUB ESP,0x10; return addr at S+0x10;
  * incoming stack args A0..A3 at S+0x14/S+0x18/S+0x1c/S+0x20):
- *   30031280 MOV  EAX,[0x30459160]       EAX = cg_snap
- *   30031285 MOV  EAX,[EAX+0xe0]         EAX = cg_snap->ps.psClientNum
+ *   30031280 MOV  EAX,[0x30459160]       EAX = cg.snap
+ *   30031285 MOV  EAX,[EAX+0xe0]         EAX = cg.snap->ps.psClientNum
  *   3003128b IMUL EAX,EAX,0x4d0          EAX = clientNum * sizeof(playerState_t)
  *   30031291 ADD  EAX,0x305e1f34         EAX = &bgs.clientinfo[clientNum]
  *   30031296 MOV  ECX,[EAX]              ECX = ps->infoValid
@@ -88,7 +88,7 @@ void CG_DrawPlayerLocation(rectDef_t *obj, intptr_t arg0, intptr_t arg1,
                            intptr_t arg2, intptr_t arg3)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    const int32_t clientNum = cg_snap->ps.psClientNum;
+    const int32_t clientNum = cg.snap->ps.psClientNum;
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
                   "\x15" "CG_DrawPlayerLocation: invalid client number %i",

@@ -7,7 +7,7 @@
 // (a game_mp_uo SERVER GSC script method, matched only by byte size 0x1b1/0x1b2)
 // is REJECTED. This is client cgame code: it has NO GSC/script-VM interaction and
 // touches no cvar. It reads the cg.centerPrint* HUD state block written by
-// CG_PriorityCenterPrint (0x30019050) — cg_centerPrintTime/String/Y/CharWidth/Lines — fades
+// CG_PriorityCenterPrint (0x30019050) — cg.centerPrintTime/String/Y/CharWidth/Lines — fades
 // it via CG_FadeColor, and paints each wrapped line with the 2D text traps. The
 // same-module PPC bank lists cgame_mp.dll!CG_DrawCenterString, and the body is the
 // stock Quake3/CoD center-string drawer (fade gate + per-line centering + draw).
@@ -48,52 +48,52 @@ void CG_DrawCenterString(void) {
     int32_t charHeight; /* trap-53 result, FILD'd without a binary32 spill */
     float yBaseline;    /* running vertical position for the current line */
     float lineStep;     /* per-line vertical advance = 1.2 * charHeight */
-    float scale;        /* text scale = cg_centerPrintCharWidth * (1/32) */
+    float scale;        /* text scale = cg.centerPrintCharWidth * (1/32) */
 
     /* 0x300191bd: nothing queued -> nothing to draw. (Also the shared exit path
      * below runs the /GS check and returns.) */
-    if (cg_centerPrintTime == 0) {
+    if (cg.centerPrintTime == 0) {
         return;
     }
 
     /* 0x300191d4: fade duration in ms = truncate(cg_centertime_vmCvar.value * 1000).
-     * 0x300191ea: CG_FadeColor(startMsec = cg_centerPrintTime, totalMsec = fadeMs)
+     * 0x300191ea: CG_FadeColor(startMsec = cg.centerPrintTime, totalMsec = fadeMs)
      * returns the static fade color, or NULL once the message has fully expired. */
     fadeMs = coduo_fp_to_i32_extended(
         (long double)cg_centertime_vmCvar.value * (long double)1000.0f);
-    color = CG_FadeColor(cg_centerPrintTime, fadeMs);
+    color = CG_FadeColor(cg.centerPrintTime, fadeMs);
     if (color == NULL) {
         /* 0x300191f7: expired -> clear the queue and stop. */
-        cg_centerPrintTime = 0;
-        cg_centerPrintPriority = 0;
+        cg.centerPrintTime = 0;
+        cg.centerPrintPriority = 0;
         return;
     }
 
     /* 0x30019217: apply the fade color to following 2D draws. */
     cgame_syscall(CG_R_SETCOLOR, (intptr_t)color);
 
-    /* 0x30019220: text scale = cg_centerPrintCharWidth * 0.03125
+    /* 0x30019220: text scale = cg.centerPrintCharWidth * 0.03125
      * (1/32, 0x3007bf3c). The integer enters the FMUL directly via FILD. */
-    scale = (float)((long double)cg_centerPrintCharWidth *
+    scale = (float)((long double)cg.centerPrintCharWidth *
                     (long double)0.03125f);
 
-    s = cg_centerPrintString; /* 0x30019226 ESI = &cg_centerPrintString[0] */
+    s = cg.centerPrint; /* 0x30019226 ESI = &cg.centerPrint[0] */
 
     /* 0x30019239: line/char height for this scale. trap(53, 0, scale) -> int. */
     charHeight = coduo_int32_from_bits((uint32_t)cgame_syscall(
         CG_R_TEXT_HEIGHT, 0, CG_FloatBits(scale)));
 
     /* 0x30019256..0x3001928b: vertical start, centered on the total block height.
-     *   yBaseline = cg_centerPrintY - 0.5*cg_centerPrintLines*charHeight - charHeight
+     *   yBaseline = cg.centerPrintY - 0.5*cg.centerPrintLines*charHeight - charHeight
      *   lineStep  = 1.2 * charHeight
-     * (FILD cg_centerPrintY; FILD charHeight; FMUL 0.5; FIMUL cg_centerPrintLines;
+     * (FILD cg.centerPrintY; FILD charHeight; FMUL 0.5; FIMUL cg.centerPrintLines;
      *  FSUBP; FSUB charHeight; -> yBaseline. FMUL 1.2 (0x3007bf38) -> lineStep.) */
     yBaseline = (float)(
-        (long double)cg_centerPrintY -
+        (long double)cg.centerPrintY -
         ((long double)charHeight * (long double)0.5f) *
-            (long double)cg_centerPrintLines -
-        (long double)charHeight); /* FILD cg_centerPrintY (0x30019256) / FIMUL
-                               * cg_centerPrintLines (0x30019276): both integers
+            (long double)cg.centerPrintLines -
+        (long double)charHeight); /* FILD cg.centerPrintY (0x30019256) / FIMUL
+                               * cg.centerPrintLines (0x30019276): both integers
                                * enter the chain exact, no float round/cast. */
     lineStep = (float)((long double)charHeight * (long double)1.2f);
 

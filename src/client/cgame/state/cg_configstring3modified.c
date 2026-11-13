@@ -22,9 +22,9 @@
  *   1. name  = Info_ValueForKey(cs, "n")
  *      handle = trap(0xc4, name, &vec3_origin)   // register named asset -> handle
  *   2. t   = Q_atoi(Info_ValueForKey(cs, "t"))    // a millisecond timestamp
- *      delta = t - cg_time
- *      // clamp: negative delta OR uninitialized cg_time (== 0) yields 0
- *      if (delta < 0 || cg_time == 0) delta = 0;
+ *      delta = t - cg.time
+ *      // clamp: negative delta OR uninitialized cg.time (== 0) yields 0
+ *      if (delta < 0 || cg.time == 0) delta = 0;
  *      trap(0xda, handle, delta)
  *
  * Name adjudication: the .mcode header's size-matched "Q_DrawStrlen" guess is
@@ -51,11 +51,11 @@
  *   3002c9f3 MOV  EDI,EAX                            handle = trap result
  *   3002c9f5 CALL 0x3004e960                         EAX = Info_ValueForKey(cs,"t")
  *   3002c9fa PUSH EAX ; 3002c9fb CALL 0x3005b6ce     EAX = Q_atoi(valueForT)
- *   3002ca00 MOV  ECX,[0x304831b0]                   ECX = cg_time
+ *   3002ca00 MOV  ECX,[0x304831b0]                   ECX = cg.time
  *   3002ca06 ADD  ESP,0x10                           clean trap-0xc4(12) + atoi(4)
- *   3002ca09 SUB  EAX,ECX                            EAX = t - cg_time
+ *   3002ca09 SUB  EAX,ECX                            EAX = t - cg.time
  *   3002ca0b JS   3002ca11                           if (EAX < 0) -> zero
- *   3002ca0d TEST ECX,ECX ; 3002ca0f JNZ 3002ca13    if (cg_time != 0) keep EAX
+ *   3002ca0d TEST ECX,ECX ; 3002ca0f JNZ 3002ca13    if (cg.time != 0) keep EAX
  *   3002ca11 XOR  EAX,EAX                            delta = 0
  *   3002ca13 PUSH EAX ; 3002ca14 PUSH EDI ; PUSH 0xda
  *   3002ca1a CALL [0x30085e9c]                       trap(0xda, handle, delta)
@@ -70,11 +70,11 @@ void CG_ConfigString3Modified(void)
     snd_alias_t *alias = trap_Com_PickSoundAlias(Info_ValueForKey(cs, "n"),
                                                   vec3_origin);
 
-    /* Key "t": a millisecond timestamp. The nonnegative delta from cg_time is
+    /* Key "t": a millisecond timestamp. The nonnegative delta from cg.time is
      * submitted alongside the handle; a negative delta or an uninitialized
-     * cg_time (== 0) collapses to 0. */
+     * cg.time (== 0) collapses to 0. */
     int32_t t = coduo_crt_atoi(Info_ValueForKey(cs, "t"));
-    int32_t currentTime = cg_time;
+    int32_t currentTime = cg.time;
     int32_t delta = coduo_int32_from_bits((uint32_t)t - (uint32_t)currentTime);
     if (delta < 0 || currentTime == 0)
         delta = 0;

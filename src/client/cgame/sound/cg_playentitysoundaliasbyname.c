@@ -11,8 +11,8 @@
 //
 // i.e. the channel object, the sound name, and the client number as the entityNum.
 // This is the per-client analogue of CG_PlayClientSoundAliasByName (0x3002ca30), which
-// does the same forward for the LOCAL player using &cg_snap->ps.psOrigin and
-// cg_snap->ps.psClientNum. Same tail-forward shape is used by the sibling wrappers at
+// does the same forward for the LOCAL player using &cg.snap->ps.psOrigin and
+// cg.snap->ps.psClientNum. Same tail-forward shape is used by the sibling wrappers at
 // 0x300226b0/0x300226e8 (tail JMP) and 0x300228b0.../0x30022900... which all form
 // &cg_entities[n].currentStatePos.trBase the identical way and call CG_PlaySoundAliasByName.
 //

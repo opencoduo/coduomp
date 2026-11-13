@@ -14,10 +14,10 @@
 // local-sound call — no quaternion or eigen math whatsoever.
 //
 // Machine-code notes (every statement is traced to the .mcode):
-//   - cg_snap == *(snapshot_t **)0x30459160 (current client snapshot).
+//   - cg.snap == *(snapshot_t **)0x30459160 (current client snapshot).
 //   - The embedded playerState begins at snapshot+0x0c, so snapshot+0x140 is
-//     ps.ammo[] (cg_snap->ps.ammo) and snapshot+0x540 is ps.weaponBits[4]
-//     (cg_snap->ps.weaponBits) — corroborated by server playerState_s
+//     ps.ammo[] (cg.snap->ps.ammo) and snapshot+0x540 is ps.weaponBits[4]
+//     (cg.snap->ps.weaponBits) — corroborated by server playerState_s
 //     (ammo[128] @ ps+0x134, weaponBits[4] @ ps+0x534).
 //   - bg_numWeapons == *(int *)0x30134cd4, bg_weaponInfos == *(weaponInfo_t ***)0x30134cd8.
 //   - The per-weapon ammo index is bg_weaponInfos[i]->ammoIndex (weaponInfo_t +0x1e8).
@@ -37,7 +37,7 @@
 
 void CG_CheckAmmo(void)
 {
-    snapshot_t *snap = cg_snap;
+    snapshot_t *snap = cg.snap;
 
     /* Load the 128-bit owned-weapon mask. Only weaponBits[0] is scanned by the
      * loop below; weaponBits[1] participates in the early-out guard, and
@@ -51,7 +51,7 @@ void CG_CheckAmmo(void)
     (void)weaponBits3;
 
     /* If the player owns no weapons in the first 64 bits of the mask, do nothing
-     * (this early return does not touch cg_outOfAmmoState). */
+     * (this early return does not touch cg.lowAmmoWarning). */
     if (weaponBits0 == 0 && weaponBits1 == 0) {
         return;
     }
@@ -68,7 +68,7 @@ void CG_CheckAmmo(void)
             memcpy(&signedTotal, &totalBits, sizeof(signedTotal));
             if (signedTotal >= 5000) {
                 /* Enough ammo across owned weapons: clear the warning state. */
-                cg_outOfAmmoState = 0;
+                cg.lowAmmoWarning = 0;
                 return;
             }
         }
@@ -76,9 +76,9 @@ void CG_CheckAmmo(void)
 
     /* Below threshold. Fire the warning sound only on the transition from the
      * "not warned" state (0). The original CG_PlaySoundAliasByName call receives
-     * &cg_snap->ps.psOrigin as the channel object, the registered sound identifier,
+     * &cg.snap->ps.psOrigin as the channel object, the registered sound identifier,
      * and the viewed client number. */
-    if (cg_outOfAmmoState == 0) {
+    if (cg.lowAmmoWarning == 0) {
         /* NOT_FROM_ORIGINAL_SOURCE: stabilize the nonspatial HUD warning while
          * retaining the viewed player's spatial source and ammo-state logic. */
         cgame_compat_play_local_sound_alias(snap->ps.psClientNum, &snap->ps.psOrigin,
@@ -86,5 +86,5 @@ void CG_CheckAmmo(void)
     }
 
     /* Record the warned state: 2 when completely out of ammo, 1 otherwise. */
-    cg_outOfAmmoState = (totalBits == 0u) ? 2 : 1;
+    cg.lowAmmoWarning = (totalBits == 0u) ? 2 : 1;
 }

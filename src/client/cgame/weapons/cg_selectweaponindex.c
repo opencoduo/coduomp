@@ -30,14 +30,14 @@
 // corroborated against the recovered server weaponInfo_s (+0x36c altWeapon).
 void CG_SelectWeaponIndex(int32_t weapon, int32_t currentWeapon)
 {
-    /* 0x30047392 MOV EDX,[0x304831b0] (cg_time) / 0x30047398 MOV
+    /* 0x30047392 MOV EDX,[0x304831b0] (cg.time) / 0x30047398 MOV
      * [0x3048ae44],EDX: snapshot the current game time as the weapon-(re)select
-     * timestamp cg_weaponSelectTime, which the selected-weapon-name HUD overlay
+     * timestamp cg.weaponSelectTime, which the selected-weapon-name HUD overlay
      * (0x3002ec10 and siblings) reads as CG_FadeColor's startMsec to fade the
      * name out ~1800 ms after a switch. (Resolved during that overlay's
      * reconstruction; the mechanical owner=vectordistance2d label was a
      * first-touch artifact.) */
-    cg_weaponSelectTime = cg_time;
+    cg.weaponSelectTime = cg.time;
 
     /* 0x30047390 CMP ECX,EAX / 0x3004739e JZ 0x300473f5: re-selecting the weapon
      * that is already current is a no-op. */

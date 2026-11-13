@@ -13,7 +13,7 @@
 // recovered playerState_t already models with MAX_PS_EVENTS == 4), diffs the new
 // vs. old state, calls the entity-event dispatcher (0x30022810, CG_EntityEvent)
 // for each newly-appeared event, and records it into the predicted-event ring
-// (cg_predictedEvents[16], cg_predictedEventSequence). The same-module PPC name
+// (cg.predictableEvents[16], cg.eventSequence). The same-module PPC name
 // bank lists CG_CheckPlayerstateEvents and CG_EntityEvent, and the machine code
 // proves the mapping.
 //
@@ -76,7 +76,7 @@ void coduomp_predicted_events_begin_prediction(int32_t currentCommandNumber)
 /* NOT_FROM_ORIGINAL_SOURCE: collect a command's appended events after Pmove without changing shared event producers. */
 void coduomp_predicted_events_record_command(int32_t commandNumber, int32_t commandTime, int32_t firstSequence)
 {
-    const playerState_t *ps = &cg_predictedPlayerState;
+    const playerState_t *ps = &cg.predictedPlayerState;
     uint32_t count = (uint32_t)ps->eventIndex - (uint32_t)firstSequence;
     if (count > MAX_PS_EVENTS) {
         /* Overwritten events make occurrence numbers ambiguous. Leave this command unfiltered. */
@@ -106,12 +106,12 @@ static qboolean coduomp_predicted_weapon_fx_should_present(const playerState_t *
 {
     unsigned int slot = (uint32_t)sequence & (MAX_PS_EVENTS - 1u);
     const coduomp_predicted_event_id_t *id = &coduomp_event_ids[slot];
-    if (ps != &cg_predictedPlayerState || !id->valid || id->sequence != sequence ||
+    if (ps != &cg.predictedPlayerState || !id->valid || id->sequence != sequence ||
         id->event != ps->events[slot] || id->parm != ps->eventParms[slot]) {
         return qtrue;
     }
 
-    int32_t weapon = cg_predictedEventEntity.currentState.weapon;
+    int32_t weapon = cg.predictedPlayerEntity.currentState.weapon;
     switch (id->event) {
     case EV_FIRE_WEAPON:
     case EV_FIRE_WEAPONB:
@@ -148,7 +148,7 @@ static qboolean coduomp_predicted_weapon_fx_should_present(const playerState_t *
     if (history->commandNumber != id->commandNumber || history->commandTime != id->commandTime) {
         *history = (coduomp_predicted_command_fx_t) { .commandNumber = id->commandNumber, .commandTime = id->commandTime };
     }
-    coduomp_presented_weapon_event_t now = { id->event, id->parm, weapon, cg_predictedEventEntity.currentState.number, id->ordinal };
+    coduomp_presented_weapon_event_t now = { id->event, id->parm, weapon, cg.predictedPlayerEntity.currentState.number, id->ordinal };
     for (unsigned int i = 0; i < history->count; ++i) {
         const coduomp_presented_weapon_event_t *old = &history->events[i];
         if (old->event == now.event && old->parm == now.parm && old->weapon == now.weapon &&
@@ -201,18 +201,18 @@ void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops)
         // currentState.eventParm slot (+0xa4, aliased in centity_t as fxId)
         // BEFORE dispatch; 0x30034f0d..0x30034f1c call CG_EntityEvent(self=ECX, event=EAX,
         // predicted=1 on the stack).
-        cg_predictedEventEntity.currentState.eventParm = ps->eventParms[ring];
+        cg.predictedPlayerEntity.currentState.eventParm = ps->eventParms[ring];
         /* NOT_FROM_ORIGINAL_SOURCE: suppress already presented audiovisual effects without skipping the event handler. */
         qboolean presentWeaponEffects = coduomp_predicted_weapon_fx_should_present(ps, i);
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        CG_EntityEvent(&cg_predictedEventEntity, event, qtrue, presentWeaponEffects);
+        CG_EntityEvent(&cg.predictedPlayerEntity, event, qtrue, presentWeaponEffects);
 
-        // 0x30034f23/0x30034f26 cg_predictedEvents[i & 0xf] = event;
-        cg_predictedEvents[(int32_t)((uint32_t)i & (MAX_PREDICTED_EVENTS - 1u))] = event;
+        // 0x30034f23/0x30034f26 cg.predictableEvents[i & 0xf] = event;
+        cg.predictableEvents[(int32_t)((uint32_t)i & (MAX_PREDICTED_EVENTS - 1u))] = event;
 
-        // 0x30034f2d..0x30034f36 cg_predictedEventSequence++;
-        cg_predictedEventSequence = coduo_int32_from_bits(
-            (uint32_t)cg_predictedEventSequence + 1u);
+        // 0x30034f2d..0x30034f36 cg.eventSequence++;
+        cg.eventSequence = coduo_int32_from_bits(
+            (uint32_t)cg.eventSequence + 1u);
 
 next_event:
         /* INC ESI and INC EAX are target dword operations; retain their

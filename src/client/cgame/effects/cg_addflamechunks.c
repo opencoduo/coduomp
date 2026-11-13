@@ -11,8 +11,8 @@
 // SERVER combat function, matched only by byte size 0x59c) is REJECTED: this is a
 // cgame (client) routine that touches the flame-chunk subsystem globals
 // (cg_flameTime 0x300ab718, cg_flameSoundLoops 0x300a8718, cg_flameInfo
-// 0x300ab750, cg_clientFrame 0x30459140, cg_snap 0x30459160,
-// cg_refdef.vieworg 0x30487a90) and calls the flame chunk merger
+// 0x300ab750, cg.clientFrame 0x30459140, cg.snap 0x30459160,
+// cg.refdef.vieworg 0x30487a90) and calls the flame chunk merger
 // (CG_MergeFlameChunks 0x300257e0, whose "CG_MergeFlameChunks: f2 doesn't follow
 // f1" string anchors the subsystem), the recursive chunk free (CG_FreeFlameChunk
 // 0x300256e0) and the per-chunk scene renderer (CG_AddFlameToScene 0x300268e0).
@@ -75,8 +75,8 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
     double  refTime;         /* [ESP+0x48]: per-flame reference time (double) */
     double  age;             /* [ESP+0x40]: refTime - f->spawnTime (double) */
 
-    /* cg_flameTime = _ftol2(floor(2.0 * cg_time)) — the inlined
-     * CG_UpdateFlameTime (0x30023af0). 0x300272b3: FILD cg_time; FSTP double
+    /* cg_flameTime = _ftol2(floor(2.0 * cg.time)) — the inlined
+     * CG_UpdateFlameTime (0x30023af0). 0x300272b3: FILD cg.time; FSTP double
      * [ESP+0x44]; FLD double [ESP+0x48] (the same slot, across the PUSH EDI at
      * 0x300272c0); FADD ST0,ST0; FSTP double [ESP]; CALL floor (0x3005bcd0);
      * CALL _ftol2 (0x3006be3c). The int32->double round-trip is exact, so the
@@ -84,7 +84,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
      * byte-for-byte equivalent chain in cg_addflametoscene.c (0x30026904),
      * which lacks only the spill/reload pair. */
     cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(
-        floor((double)cg_time * 2.0));
+        floor((double)cg.time * 2.0));
 
     f = ownerChunk;
     prev = (flameChunk_t *)0; /* XOR ESI,ESI */
@@ -97,19 +97,19 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
         cgFlameInfo_t *info = &cg_flameInfo[ownerIndex];
 
         /* ownerIsLocal (1 iff this info entry owns f AND its stored frame stamp
-         * has reached cg_clientFrame): the machine code sets [ESP+0x10]=1 only
+         * has reached cg.clientFrame): the machine code sets [ESP+0x10]=1 only
          * inside the (info->field_40 == f) arm, then JGE skips the [ESP+0x10]=0
-         * store when info->clientFrame >= cg_clientFrame; every other path leaves
+         * store when info->clientFrame >= cg.clientFrame; every other path leaves
          * it 0. (0x300ab790 == cg_flameInfo base + 0x40; 0x300ab750 == base + 0x00.) */
         if (info->ownerChunk == f                              /* CMP EDI,[EAX+0x300ab790] */
-            && info->clientFrame >= cg_clientFrame)          /* CMP [+0x300ab750],cg_clientFrame; JGE */
+            && info->clientFrame >= cg.clientFrame)          /* CMP [+0x300ab750],cg.clientFrame; JGE */
             ownerIsLocal = 1;
         else
             ownerIsLocal = 0;
 
-        /* flameInfoActive = (ownerIndex == cg_snap->ps.psClientNum). SETZ DL on
-         * CMP ownerIndex,[cg_snap+0xe0]. */
-        flameInfoActive = (ownerIndex == cg_snap->ps.psClientNum) ? 1 : 0;
+        /* flameInfoActive = (ownerIndex == cg.snap->ps.psClientNum). SETZ DL on
+         * CMP ownerIndex,[cg.snap+0xe0]. */
+        flameInfoActive = (ownerIndex == cg.snap->ps.psClientNum) ? 1 : 0;
     }
 
     /* Pick the per-flame reference time. */
@@ -134,11 +134,11 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
         /* age = refTime - f->spawnTime (double). */
         age = refTime - f->spawnTime;
 
-        /* toView = f->origin - cg_refdef.vieworg; distToView = |toView|. */
+        /* toView = f->origin - cg.refdef.vieworg; distToView = |toView|. */
         {
-            float vx = f->worldPos[0] - cg_refdef.vieworg[0];
-            float vy = f->worldPos[1] - cg_refdef.vieworg[1];
-            float vz = f->worldPos[2] - cg_refdef.vieworg[2];
+            float vx = f->worldPos[0] - cg.refdef.vieworg[0];
+            float vy = f->worldPos[1] - cg.refdef.vieworg[1];
+            float vz = f->worldPos[2] - cg.refdef.vieworg[2];
             /* 0x300273ad..0x300273ce: the z,y,x square sum is handed to the CRT
              * sqrt helper RAW in st0 (no float store of the argument), so the
              * argument must not round to float: sqrtl on the 80-bit chain, one
@@ -308,10 +308,10 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
         }
 
         /* 0x3002766d: angle/coverage test between (f - lastKept) and
-         * (cg_refdef.vieworg - lastKept). */
+         * (cg.refdef.vieworg - lastKept). */
         {
             float toF[3];    /* [ESP+0x68..0x70]: f->origin - lastKept->origin */
-            float toView[3]; /* [ESP+0x74..0x7c]: cg_refdef.vieworg - lastKept->origin */
+            float toView[3]; /* [ESP+0x74..0x7c]: cg.refdef.vieworg - lastKept->origin */
             float lenF;      /* [ESP+0x40]: length of toF, from the first normalize */
             float lenView;   /* [ESP+0x38]: length of toView, from the second */
             float sizeCap;   /* [ESP+0x30] */
@@ -324,9 +324,9 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
             long double cosang;
             long double score, term;
 
-            toView[0] = cg_refdef.vieworg[0] - lastKept->worldPos[0];
-            toView[1] = cg_refdef.vieworg[1] - lastKept->worldPos[1];
-            toView[2] = cg_refdef.vieworg[2] - lastKept->worldPos[2];
+            toView[0] = cg.refdef.vieworg[0] - lastKept->worldPos[0];
+            toView[1] = cg.refdef.vieworg[1] - lastKept->worldPos[1];
+            toView[2] = cg.refdef.vieworg[2] - lastKept->worldPos[2];
             toF[0] = f->worldPos[0] - lastKept->worldPos[0];
             toF[1] = f->worldPos[1] - lastKept->worldPos[1];
             toF[2] = f->worldPos[2] - lastKept->worldPos[2];

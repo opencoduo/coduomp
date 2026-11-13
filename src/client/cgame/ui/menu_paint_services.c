@@ -14,7 +14,7 @@ static qboolean cgame_compat_hide_player_health_menu(
     const menuDef_t *menu, qboolean passiveHudPass)
 {
     if (passiveHudPass == qfalse || menu == NULL ||
-        (cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) == 0 ||
+        (cg.predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) == 0 ||
         menu->window.name == NULL) {
         return qfalse;
     }

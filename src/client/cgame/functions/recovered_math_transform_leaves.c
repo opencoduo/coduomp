@@ -49,15 +49,15 @@ void TransformPoint(const float matrix[16], const vec3_t point,
 // Source RVA: 0x30044cc0
 void ApplyViewKickNudge(vec3_t angles)
 {
-    angles[1] -= cg_weaponSwayOffset[1];
-    angles[2] += cg_weaponSwayOffset[2];
+    angles[1] -= cg.weaponSwayOffset[1];
+    angles[2] += cg.weaponSwayOffset[2];
 }
 
 // Source RVA: 0x3003c7a0
 void SetShellshockState(shellshock_t *params,
                                      int32_t startTime, int32_t duration)
 {
-    cg_shellShockSwayParams = params;
-    cg_shellShockSwayStartTime = startTime;
-    cg_shellShockSwayDuration = duration;
+    cg.shellShockSwayParams = params;
+    cg.shellShockSwayStartTime = startTime;
+    cg.shellShockSwayDuration = duration;
 }

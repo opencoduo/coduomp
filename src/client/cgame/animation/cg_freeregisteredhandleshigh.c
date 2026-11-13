@@ -2,15 +2,15 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30016470_300164ab.mcode
 //
 // CG_FreeRegisteredHandlesHigh — release the high block (table indices 64..1022)
-// of the parallel "DObj info" registration table (cg_dObjInfoKeys[] at 0x30487af8
-// / cg_dObjInfoHandles[] at 0x30488af4) and null both arrays for each freed slot.
+// of the parallel "DObj info" registration table (cg.dObjInfoKeys[] at 0x30487af8
+// / cg.dObjInfoHandles[] at 0x30488af4) and null both arrays for each freed slot.
 //
 // For each index i in [64, 1023):
 //   1. cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE /* 0xa8 */, i, 1) — ask the engine to
 //      release the DObj/model registration keyed by i (flag arg = 1, matching the
 //      release-with-flag call form used by the low companion 0x300163d0);
-//   2. cg_dObjInfoKeys[i]    = 0;
-//   3. cg_dObjInfoHandles[i] = 0;
+//   2. cg.dObjInfoKeys[i]    = 0;
+//   3. cg.dObjInfoHandles[i] = 0;
 //
 // This is the high-range companion of CG_FreeRegisteredHandlesLow (0x300163d0,
 // indices 0..63); together they cover the full 1023-entry table. Both are invoked
@@ -49,7 +49,7 @@ void CG_FreeRegisteredHandlesHigh(void)
         cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE, i, 1);
 
         /* 0x3001648e / 0x30016498: both arrays zeroed for this slot (EDI == 0). */
-        cg_dObjInfoKeys[i] = 0;
-        cg_dObjInfoHandles[i] = 0;
+        cg.dObjInfoKeys[i] = 0;
+        cg.dObjInfoHandles[i] = 0;
     }
 }

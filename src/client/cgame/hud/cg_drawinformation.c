@@ -37,7 +37,7 @@ void CG_DrawInformation(qboolean force)
     qhandle_t levelshotShader;
     vec4_t textColor;
 
-    if (cg_snap != NULL && force == qfalse) {
+    if (cg.snap != NULL && force == qfalse) {
         return;
     }
     if (cg_updateScreenActive != 0) {

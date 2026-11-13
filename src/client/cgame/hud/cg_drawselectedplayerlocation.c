@@ -32,7 +32,7 @@ _Static_assert(offsetof(rectDef_t, h) == 0x0c, "obj->h +0x0c");
  * CG_GetTranslatedLocationString(state->location) instead of pushing a name pointer
  * into the per-client anim state. Its body from the FLD onward is byte-for-byte identical to
  * CG_DrawPlayerLocation (0x30031280); the difference from that local-player member
- * is only the preamble (shared HUD emit cursor/table vs. cg_snap->ps.psClientNum).
+ * is only the preamble (shared HUD emit cursor/table vs. cg.snap->ps.psClientNum).
  *
  * Cursor clamp (identical preamble to CG_DrawSelectedPlayerName 0x30031020 and the
  * precacheHeadIcon script function at 0x30030f10, which share these globals):

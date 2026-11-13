@@ -2,8 +2,8 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_300172d0_3001730e.mcode
 //
 // Console debug-dump command: prints the current client view origin
-// (cg_refdef.vieworg, the vec3 at 0x30487a90) and the animated view-effect yaw
-// angle (cg_refdefViewAngles[1], the float at 0x30487acc), each truncated toward
+// (cg.refdef.vieworg, the vec3 at 0x30487a90) and the animated view-effect yaw
+// angle (cg.refdefViewAngles[1], the float at 0x30487acc), each truncated toward
 // zero by MSVC's `_ftol2`, through the low-level print backend
 // Com_PrintMessage using the format "(%i %i %i) : %i\n".
 //
@@ -22,7 +22,7 @@
 // registered as a Cmd_* console-command callback, so it has no direct CALL site
 // inside .text.
 
-#include "client/cgame/globals.h"          /* cg_refdef.vieworg, cg_refdefViewAngles[1] */
+#include "client/cgame/globals.h"          /* cg.refdef.vieworg, cg.refdefViewAngles[1] */
 #include "client/cgame/client_recovered.h" /* Q_rint, Com_PrintMessage */
 
 /*
@@ -39,10 +39,10 @@ void CG_PrintViewOriginAndSpin_f(void)
 {
     /* The retail _ftol2 calls execute in spin,z,y,x order.  Sequence them
      * explicitly rather than relying on vararg evaluation order. */
-    const int32_t spin = coduo_fp_to_i32_extended(cg_refdefViewAngles[1]);
-    const int32_t z = coduo_fp_to_i32_extended(cg_refdef.vieworg[2]);
-    const int32_t y = coduo_fp_to_i32_extended(cg_refdef.vieworg[1]);
-    const int32_t x = coduo_fp_to_i32_extended(cg_refdef.vieworg[0]);
+    const int32_t spin = coduo_fp_to_i32_extended(cg.refdefViewAngles[1]);
+    const int32_t z = coduo_fp_to_i32_extended(cg.refdef.vieworg[2]);
+    const int32_t y = coduo_fp_to_i32_extended(cg.refdef.vieworg[1]);
+    const int32_t x = coduo_fp_to_i32_extended(cg.refdef.vieworg[0]);
 
     Com_PrintMessage("(%i %i %i) : %i\n",
                      x, y, z, spin);

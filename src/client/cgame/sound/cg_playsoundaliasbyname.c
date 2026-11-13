@@ -138,7 +138,7 @@ int cgame_compat_play_local_sound_alias(int32_t spatialEntityNum, const void *so
         case SND_ALIAS_CHANNEL_MUSIC:
         case SND_ALIAS_CHANNEL_ANNOUNCER:
         case SND_ALIAS_CHANNEL_SHELLSHOCK:
-            entityNum = cg_clientNum;
+            entityNum = cg.clientNum;
             break;
         default:
             break;

@@ -25,7 +25,7 @@
 // replaces that zero with cg_crosshairAlpha_vmCvar.value.
 //
 // Entity/weapon resolve:
-//   MOV EAX,[0x30483780]; IMUL EAX,EAX,0x288; ADD EAX,0x3048c6e0  ; &cg_entities[cg_predictedPlayerState.viewLockedEntityNum]
+//   MOV EAX,[0x30483780]; IMUL EAX,EAX,0x288; ADD EAX,0x3048c6e0  ; &cg_entities[cg.predictedPlayerState.viewLockedEntityNum]
 //   MOV ESI,[EAX+0xcc]                          ; weaponIndex = cent->currentState.weapon; if 0 -> exit
 //   MOV EAX,[0x30134cd8]; MOV EDI,[EAX+ESI*4]    ; weap = bg_weaponInfos[weaponIndex]  (weaponInfo_t*)
 //   MOV ECX,[EDI+0x108]; CMP byte ptr [ECX],0; JZ exit          ; skip if icon name is empty
@@ -82,10 +82,10 @@ void CG_DrawWeaponIcon3D(void)
     if (cl_paused_vmCvar.integer != 0)
         return;
     /* View-state flag gate (kept mechanical; exact identity unresolved, see globals.h). */
-    if (cg_thirdPerson != 0)
+    if (cg.renderingThirdPerson != 0)
         return;
 
-    entityNum = cg_predictedPlayerState.viewLockedEntityNum;
+    entityNum = cg.predictedPlayerState.viewLockedEntityNum;
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
@@ -133,19 +133,19 @@ void CG_DrawWeaponIcon3D(void)
     height = (float)heightRaw;
 
     /* Center the icon in the cropped 3D-view rect. The `scale*0.0f` terms are
-     * emitted by the machine code and always contribute zero. cg_refdef.x/y/
+     * emitted by the machine code and always contribute zero. cg.refdef.x/y/
      * width/height are FILD'd / FIADD'd (integer, exact) with no FSTP DWORD
      * (0x30019c7c..0x30019cdc), so no (float) casts -- they would round. */
     /* 0x30019c7c..0x30019cb4 computes and stages Y before the corresponding
      * X chain at 0x30019cb8..0x30019cdc. */
     y = (float)(
-        ((long double)(int32_t)cg_refdef.height - (long double)height) * 0.5L +
+        ((long double)(int32_t)cg.refdef.height - (long double)height) * 0.5L +
         (long double)cgs_screenYScale * 0.0f +
-        (long double)(int32_t)cg_refdef.y);
+        (long double)(int32_t)cg.refdef.y);
     x = (float)(
-        ((long double)(int32_t)cg_refdef.width - (long double)width) * 0.5L +
+        ((long double)(int32_t)cg.refdef.width - (long double)width) * 0.5L +
         (long double)cgs_screenXScale * 0.0f +
-        (long double)(int32_t)cg_refdef.x);
+        (long double)(int32_t)cg.refdef.x);
 
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): x/y are physical
      * refdef pixels (mounted-gun reticle centered in the world viewport).

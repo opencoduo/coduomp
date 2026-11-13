@@ -20,10 +20,10 @@
 // Machine-code facts preserved:
 //   * gate on cg_noVoiceChats_vmCvar.integer (0x3045818c): JNZ skips the whole sound/icon
 //     block (nonzero => no voice sound and no icon).
-//   * CG_PlaySoundAliasByName(this=&cg_snap->ps.psOrigin (LEA [cg_snap+0x20]),
-//     soundName=msg->soundName (ESI+0x4), entityNum=cg_snap->ps.psClientNum (cg_snap+0xe0));
+//   * CG_PlaySoundAliasByName(this=&cg.snap->ps.psOrigin (LEA [cg.snap+0x20]),
+//     soundName=msg->soundName (ESI+0x4), entityNum=cg.snap->ps.psClientNum (cg.snap+0xe0));
 //     the single stack arg (entityNum) is caller-cleaned (ADD ESP,0x4).
-//   * speaker test: msg->clientNum (ESI+0x0) == cg_snap->ps.psClientNum (cg_snap+0xe0).
+//   * speaker test: msg->clientNum (ESI+0x0) == cg.snap->ps.psClientNum (cg.snap+0xe0).
 //   * cg_entities[] is the 0x288-stride client-entity array at base 0x3048c6e0,
 //     addressed by clientNum*0x288 (IMUL ...,0x288); voiceChatIcon @+0x230
 //     (0x3048c910), voiceChatTime @+0x234 (0x3048c914), lerpOrigin vec3 @+0x208..
@@ -46,20 +46,20 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg)
         /* 0x3003a000..0x3003a015: play the voice sound on the local channel. */
         /* NOT_FROM_ORIGINAL_SOURCE: stabilize nonspatial voice playback;
          * speaker icons below still belong to the viewed player or speaker. */
-        cgame_compat_play_local_sound_alias(cg_snap->ps.psClientNum,
-                                           &cg_snap->ps.psOrigin, msg->soundName);
+        cgame_compat_play_local_sound_alias(cg.snap->ps.psClientNum,
+                                           &cg.snap->ps.psOrigin, msg->soundName);
 
         /* 0x3003a017..0x3003a02a: is the speaker the local player? */
-        if (msg->clientNum == cg_snap->ps.psClientNum) {
+        if (msg->clientNum == cg.snap->ps.psClientNum) {
             /* 0x3003a02c..0x3003a072: local player — stamp the cg.* voice-chat state. */
-            cg_predictedEventEntity.voiceChatIcon = msg->icon;
+            cg.predictedPlayerEntity.voiceChatIcon = msg->icon;
             if ((uint32_t)msg->icon == cgs_voiceChatIcon) {
-                cg_predictedEventEntity.voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg_time +
+                cg.predictedPlayerEntity.voiceChatTime = coduo_int32_from_bits(
+                    (uint32_t)cg.time +
                     (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
             } else {
-                cg_predictedEventEntity.voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg_time +
+                cg.predictedPlayerEntity.voiceChatTime = coduo_int32_from_bits(
+                    (uint32_t)cg.time +
                     2u * (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
             }
         } else {
@@ -74,11 +74,11 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg)
 
             if ((uint32_t)msg->icon == cgs_voiceChatIcon) {
                 cent->voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg_time +
+                    (uint32_t)cg.time +
                     (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
             } else {
                 cent->voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg_time +
+                    (uint32_t)cg.time +
                     2u * (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
             }
         }

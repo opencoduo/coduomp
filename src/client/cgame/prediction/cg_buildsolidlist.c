@@ -18,9 +18,9 @@ _Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, solid) =
 _Static_assert(sizeof(centity_t) == 0x288,
                "mark-source array stride 0x288 (IMUL EAX,EAX,0x288)");
 _Static_assert(offsetof(snapshot_t, numEntities) == 0x4510,
-               "cg_nextSnap->numEntities at +0x4510 ([EDI+0x4510])");
+               "cg.nextSnap->numEntities at +0x4510 ([EDI+0x4510])");
 _Static_assert(offsetof(snapshot_t, entities) == 0x4518,
-               "cg_nextSnap->entities at +0x4518 (LEA EDX,[EDI+0x4518])");
+               "cg.nextSnap->entities at +0x4518 (LEA EDX,[EDI+0x4518])");
 _Static_assert(sizeof(entityState_t) == 0xf4,
                "snapshot entity stride 0xf4 (ADD EDX,0xf4)");
 
@@ -28,7 +28,7 @@ _Static_assert(sizeof(entityState_t) == 0xf4,
  * CG_BuildSolidList (0x30035030)
  *
  * Rebuild the per-frame solid and trigger lists from the incoming snapshot
- * (cg_nextSnap, 0x30459164). For every entity in the snapshot it looks up that
+ * (cg.nextSnap, 0x30459164). For every entity in the snapshot it looks up that
  * entity's centity record — element [entity->number] of the
  * centity_t array at 0x3048c6e0 (stride 0x288) and classifies it:
  *   - a SOLID_BMODEL record whose nextState eFlags non-solid bit is set is dropped;
@@ -45,7 +45,7 @@ _Static_assert(sizeof(entityState_t) == 0xf4,
  * ABI: no arguments (reads globals only); plain RET, EBX/EBP/ESI/EDI callee-saved.
  *
  * Machine-code facts proven for every behavior-affecting statement:
- *   30035034  EDI = cg_nextSnap        (MOV EDI,[0x30459164])
+ *   30035034  EDI = cg.nextSnap        (MOV EDI,[0x30459164])
  *   3003503a  EAX = snap->numEntities  (MOV EAX,[EDI+0x4510])
  *   30035040  EBP = 0  (solidEntities index)
  *   30035042  EBX = 0  (triggerEntities index)
@@ -73,7 +73,7 @@ _Static_assert(sizeof(entityState_t) == 0xf4,
  */
 void CG_BuildSolidList(void)
 {
-    snapshot_t *snap = cg_nextSnap;
+    snapshot_t *snap = cg.nextSnap;
 
     /* The centity array begins at 0x3048c6e0. */
     centity_t *entitySource =

@@ -11,7 +11,7 @@
 //
 // Behavior: pick a (width, length) tracer parameter pair by le->leFlags, bail if
 // either is negligibly small, then evaluate the entity's position trajectory at
-// cg_time, march that point `length` units along the normalized trajectory
+// cg.time, march that point `length` units along the normalized trajectory
 // velocity (le->pos.trDelta), and hand the marched end point plus `width` to the
 // tracer polygon builder (0x30048460).
 //
@@ -73,11 +73,11 @@ void CG_AddMovingTracer(localEntity_t *le)
     }
 
     /*
-     * 0x3002ab4f-0x3002ab5d: BG_EvaluateTrajectory(&le->pos, cg_time, pos).
+     * 0x3002ab4f-0x3002ab5d: BG_EvaluateTrajectory(&le->pos, cg.time, pos).
      * Register ABI proven by the callee (0x30005f30): result in ECX (LEA ECX,[ESP+0x14]),
-     * trajectory in EBX (LEA EBX,[ESI+0x18] == &le->pos), atTime in EAX (MOV EAX,[cg_time]).
+     * trajectory in EBX (LEA EBX,[ESI+0x18] == &le->pos), atTime in EAX (MOV EAX,[cg.time]).
      */
-    BG_EvaluateTrajectory(&le->pos, cg_time, pos);
+    BG_EvaluateTrajectory(&le->pos, cg.time, pos);
 
     /*
      * 0x3002ab62-0x3002ab6e: VectorNormalize2(le->pos.trDelta, dir).

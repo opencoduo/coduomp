@@ -6,7 +6,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30031cb0_30031d4e.mcode
 //
 // CG_DrawJeepBody — draw one HUD "tag" for the entity the
-// effect/HUD-tag pass is currently processing (cg_entities[cg_predictedPlayerState.viewLockedEntityNum]),
+// effect/HUD-tag pass is currently processing (cg_entities[cg.predictedPlayerState.viewLockedEntityNum]),
 // but only when the local predicted player is in the tag-enabling state and the
 // target entity matches the eType==12 / stateFilter==1 gate. The tag is a 2D
 // shader quad whose X position slides in horizontally from an animation fraction.
@@ -54,7 +54,7 @@
 //   (flags & EF_VEHICLE_ALLOW_WEAPON) == 0      TEST 0x400000 ; JNZ end
 //   entity->currentState.eType == 12                       CMP [+0x4],0xc ; JNZ end
 //   entity->currentState.stateFilter == 1                  CMP [+0x88],1  ; JNZ end
-// entity = &cg_entities[cg_predictedPlayerState.viewLockedEntityNum] via IMUL 0x288 + base 0x3048c6e0
+// entity = &cg_entities[cg.predictedPlayerState.viewLockedEntityNum] via IMUL 0x288 + base 0x3048c6e0
 // (cg_entities is modeled through the existing centity_t view of that base array).
 
 /* eType value that enables the HUD entity tag (an ET_* entity type; exact enum name
@@ -69,13 +69,13 @@ void CG_DrawJeepBody(const rectDef_t *rect, int32_t hShader,
                      const float *color)
 {
     /* 0x30031cb1..0x30031cc6: gate on the local predicted player's entityStateFlags. */
-    uint32_t flags = cg_predictedPlayerState.entityStateFlags;
+    uint32_t flags = cg.predictedPlayerState.entityStateFlags;
     if ((flags & EF_IN_VEHICLE) == 0)
         return;
     if ((flags & EF_VEHICLE_ALLOW_WEAPON) != 0)
         return;
 
-    int32_t entityNum = cg_predictedPlayerState.viewLockedEntityNum;
+    int32_t entityNum = cg.predictedPlayerState.viewLockedEntityNum;
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,

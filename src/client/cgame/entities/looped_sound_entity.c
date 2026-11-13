@@ -21,7 +21,7 @@
  *  Guards (0x30021869..0x3002189a) — emit nothing if any fails:
  *    - self->currentState.eventParm (+0xa4) == 0            -> return  (no primary looped sound)
  *    - self->loopedFxId (+0xdc) == 0     -> return  (no secondary looped sound)
- *    - if cg_snap->ps.pmType == PM_TYPE_INTERMISSION (5) AND self->currentState.vehicleEntityNum == 0x3ff
+ *    - if cg.snap->ps.pmType == PM_TYPE_INTERMISSION (5) AND self->currentState.vehicleEntityNum == 0x3ff
  *      (1023, the "no bound entity" sentinel) -> return  (suppressed at intermission)
  *
  *  Two sound-alias lookups (0x300218a0.. and 0x300218df..):
@@ -38,7 +38,7 @@
  *
  *  Start (0x30021926..): only if BOTH handles are non-zero. Otherwise nothing plays.
  *    A single float `phase` is interpolated between self->currentState.leanValue (+0x6c)
- *    and self->nextState.leanAmount (+0x160) by t = cg_frameInterpolation (0x304831a8):
+ *    and self->nextState.leanAmount (+0x160) by t = cg.frameInterpolation (0x304831a8):
  *
  *      let a = self->nextState.leanAmount, b = self->currentState.leanValue
  *      if (!(a < 0))          // FCOMP a vs 0.0f (@0x3007bcec); the JP path,
@@ -97,7 +97,7 @@ void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
      * intermission a vehicle-attached looped sound (!= the 0x3ff no-vehicle sentinel)
      * is silenced; a world sound (== 0x3ff) still plays. A prior pass used == 0x3ff,
      * inverting it. */
-    if (cg_snap->ps.pmType == PM_TYPE_INTERMISSION && self->currentState.vehicleEntityNum != 0x3ff)
+    if (cg.snap->ps.pmType == PM_TYPE_INTERMISSION && self->currentState.vehicleEntityNum != 0x3ff)
         return;
 
     // 0x300218a0..0x300218df: primary sound alias = CS_SOUNDS + fxId.
@@ -137,7 +137,7 @@ void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
         // 0x300219f9: plain lerp of the two phase samples.
         float a = self->nextState.leanAmount;
         float b = self->currentState.leanValue;
-        float t = cg_frameInterpolation;
+        float t = cg.frameInterpolation;
         phase = (float)(
             ((long double)a - (long double)b) * (long double)t +
             (long double)b);
@@ -172,7 +172,7 @@ void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
         // FST (no pop) at 0x30021999 rounds a copy into the phase slot while the
         // 0x3002199d FCOMP compares the UNROUNDED st0 against 0.99f. The stored
         // float is what 0x300219f0 later subtracts, so the two differ.
-        float fracLerp = cg_frameInterpolation;
+        float fracLerp = cg.frameInterpolation;
         long double phaseChain = (fracA - fracB) * fracLerp + fracB;
         phase = (float)phaseChain;
         if (phaseChain >= 0.99f)
@@ -186,7 +186,7 @@ void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
         long double intB = (long double)floor(absBIntDouble);
 
         // 0x300219e4 FSTP QWORD: the lerp rounds to DOUBLE (floor's argument slot).
-        float intLerpFraction = cg_frameInterpolation;
+        float intLerpFraction = cg.frameInterpolation;
         intLerp = (intA - intB) * intLerpFraction + intB;
         phase = (float)(-(long double)floor(intLerp) -
                         (long double)phase);

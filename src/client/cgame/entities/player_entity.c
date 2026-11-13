@@ -74,8 +74,8 @@ _Static_assert(offsetof(struct centity_s, corpseModelInfo) == 0xf4, "cent.modelI
 _Static_assert(offsetof(struct centity_s, lerpOrigin) == 0x208, "cent.lerpOrigin +0x208");
 _Static_assert(offsetof(struct centity_s, lerpAngles) == 0x214, "cent.lerpAngles +0x214");
 _Static_assert(offsetof(snapshot_t, ps.playerStateFlags) == 0x18,
-               "cg_snap.ps.playerStateFlags +0x18");
-_Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg_snap.clientNum +0xe0");
+               "cg.snap.ps.playerStateFlags +0x18");
+_Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg.snap.clientNum +0xe0");
 #endif
 
 /* The player DObj model-part table is bgs.clientinfo[] at 0x305e1f34 with a
@@ -159,14 +159,14 @@ void CG_Player(centity_t *cent)
      * (so the body is drawn in the third-person pass only), then clear it in the two
      * override cases below. */
     int32_t renderfx = 0;
-    if ((cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0) {
-        if ((int32_t)modelInfo->numberBits == cg_snap->ps.psClientNum) {
-            if (cg_thirdPerson == 0)
+    if ((cg.snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0) {
+        if ((int32_t)modelInfo->numberBits == cg.snap->ps.psClientNum) {
+            if (cg.renderingThirdPerson == 0)
                 renderfx = (int32_t)RF_THIRD_PERSON;
         }
     }
     /* 0x30034511 clear RF_THIRD_PERSON when the view/render-state gate is set. */
-    if (g_cgScreenReadyState != 0)
+    if (cg.screenReadyState != 0)
         renderfx &= ~(int32_t)RF_THIRD_PERSON;
     /* 0x3003451e clear RF_THIRD_PERSON on the special view path. */
     if ((modelInfo->eFlags & EF_IN_VEHICLE) != 0)
@@ -248,8 +248,8 @@ void CG_Player(centity_t *cent)
      * skip (don't emit the local player's own flame here). The compare at 0x30034614
      * reads frame slot +0x18, which 0x30034417 (MOV [ESP+0x20],EBX two pushes deep)
      * stored the animStateIndex into at function entry. */
-    if (cg_thirdPerson == 0) {
-        if ((int32_t)animStateIndex == cg_snap->ps.psClientNum)
+    if (cg.renderingThirdPerson == 0) {
+        if ((int32_t)animStateIndex == cg.snap->ps.psClientNum)
             return; /* 0x300346a8 exit */
     }
 

@@ -23,7 +23,7 @@
 //   ...epilogue at 0x300291a9: POP EDI/ESI/EBP/EBX; ADD ESP,0x354; RET
 //
 // Entry register ABI: NONE — void(void), __cdecl. Reads all inputs from globals
-// (cg_activeFlameChunks, cg_flameTime, cg_snap, the refdef view axes, cg.time).
+// (cg_activeFlameChunks, cg_flameTime, cg.snap, the refdef view axes, cg.time).
 //
 // Register roles in the body:
 //   EBP = 0 (XOR EBP,EBP at 0x30027d47) used as the constant null/zero comparand
@@ -110,7 +110,7 @@ void CG_FireFlameChunks(void)
     {
         /* FILD m32 is signed: preserve the target's Win32 clock value before
          * widening it to the double argument passed to floor. */
-        double timeD = (double)cg_time;
+        double timeD = (double)cg.time;
         cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(floor(timeD + timeD));
     }
 
@@ -132,12 +132,12 @@ void CG_FireFlameChunks(void)
     }
 
     /* 0x30027da4..0x30027dea: cache the world-flame billboard basis rows. */
-    cg_flameSpriteSrcRight[0] = cg_refdef.viewaxis[1][0];
-    cg_flameSpriteSrcRight[1] = cg_refdef.viewaxis[1][1];
-    cg_flameSpriteSrcRight[2] = cg_refdef.viewaxis[1][2];
-    cg_flameSpriteSrcUp[0] = cg_refdef.viewaxis[2][0];
-    cg_flameSpriteSrcUp[1] = cg_refdef.viewaxis[2][1];
-    cg_flameSpriteSrcUp[2] = cg_refdef.viewaxis[2][2];
+    cg_flameSpriteSrcRight[0] = cg.refdef.viewaxis[1][0];
+    cg_flameSpriteSrcRight[1] = cg.refdef.viewaxis[1][1];
+    cg_flameSpriteSrcRight[2] = cg.refdef.viewaxis[1][2];
+    cg_flameSpriteSrcUp[0] = cg.refdef.viewaxis[2][0];
+    cg_flameSpriteSrcUp[1] = cg.refdef.viewaxis[2][1];
+    cg_flameSpriteSrcUp[2] = cg.refdef.viewaxis[2][2];
 
     /* 0x30027db5 / 0x30027df0: cg_flameDamageBillboardCount reset to 0. */
     cg_flameDamageBillboardCount = 0;
@@ -640,7 +640,7 @@ void CG_FireFlameChunks(void)
                                     }
                                 } else {
                                     /* --- SMOKE PATH (0x30028847 .. 0x300288a8) --- */
-                                    if (cur->ownerInfoIndex != cg_snap->ps.psClientNum) {    /* 0x30028847..0x30028855 */
+                                    if (cur->ownerInfoIndex != cg.snap->ps.psClientNum) {    /* 0x30028847..0x30028855 */
                                         child->spawnTime = child->spawnTime - sizeDelta;       /* 0x30028857 */
                                         child->endTime = child->endTime - sizeDelta * 2.0;  /* 0x30028861..0x300288a8 */
                                     } else {
@@ -738,12 +738,12 @@ void CG_FireFlameChunks(void)
                                             left * right * 0.75f);                    /* be38 */
                                     }
                                     /* 0x30028ab3..0x30028b04: when the parent's owner (field_38) flame-info
-                                     * clientFrame >= cg_clientFrame-1, bias field_e4 by
+                                     * clientFrame >= cg.clientFrame-1, bias field_e4 by
                                      * (1.0f - pow(1.0f-field_e8, 4.0(c360)))*20.0f(be04) + field_e4. */
                                     {
                                         cgFlameInfo_t *owner = &cg_flameInfo[cur->ownerClientNum];
                                         int32_t previousFrame = coduo_int32_from_bits(
-                                            (uint32_t)cg_clientFrame - 1u);
+                                            (uint32_t)cg.clientFrame - 1u);
                                         if (owner->clientFrame >= previousFrame) {
                                             /* pow's ST0 return is rounded to FLOAT (FSTP/FLD m32
                                              * @0x30028ae4/ae8) — a double `g` would round twice.
@@ -785,9 +785,9 @@ void CG_FireFlameChunks(void)
                                             (long double)powF * 0.65f + 0.35f);
                                     }
                                     /* 0x30028bb1..0x30028be7: if the parent belongs to the local player
-                                     * (field_34 == cg_snap->ps.psClientNum) field_94 =
+                                     * (field_34 == cg.snap->ps.psClientNum) field_94 =
                                      *   (child->lifeFraction*0.2f(be10) + 0.1f(bf6c)) * field_94; else *0.25f(be58). */
-                                    if (cur->ownerInfoIndex == cg_snap->ps.psClientNum) {
+                                    if (cur->ownerInfoIndex == cg.snap->ps.psClientNum) {
                                         /* One chain (0x30028bc1..0x30028bd3), one rounding: both
                                          * branches converge on FSTP float [EBP+0x94] @0x30028be7. */
                                         child->driftSpeed = (child->lifeFraction * 0.2f + 0.1f)
@@ -808,7 +808,7 @@ void CG_FireFlameChunks(void)
                                     && cur->lifeFraction < 0.8) {                                /* 0x30028c1b c358 */
                                     /* 0x30028c32/0x30028c47: kind and owner weights. */
                                     float w4c = (cur->kind == FLAME_CHUNK_KIND_FIRE) ? 1.0f : 0.5f;
-                                    float w3c = (cur->ownerInfoIndex == cg_snap->ps.psClientNum) ? 1.0f : 0.5f;
+                                    float w3c = (cur->ownerInfoIndex == cg.snap->ps.psClientNum) ? 1.0f : 0.5f;
                                     /* 0x30028c68..0x30028cb1: probability gate —
                                      *   spawn only if pow(field_94/900,2.0)*w3c*w4c > rand/32768. */
                                     /* The target calls rand first and leaves its
@@ -953,11 +953,11 @@ finalize_child:
                              * child!=NULL path — a pool-exhausted spawn (0x30027f93
                              * JZ 0x3002901b) jumps straight to the rand() step advance
                              * below, past all of it. */
-                            /* 0x30028f62..0x30028fb3: dist = |cg_refdef.vieworg - parent
+                            /* 0x30028f62..0x30028fb3: dist = |cg.refdef.vieworg - parent
                              * world pos (field_d8/dc/e0)|. */
-                            float ddx = cg_refdef.vieworg[0] - cur->worldPos[0]; /* 0x30028f62 */
-                            float ddy = cg_refdef.vieworg[1] - cur->worldPos[1]; /* 0x30028f72 */
-                            float ddz = cg_refdef.vieworg[2] - cur->worldPos[2]; /* 0x30028f82 */
+                            float ddx = cg.refdef.vieworg[0] - cur->worldPos[0]; /* 0x30028f62 */
+                            float ddy = cg.refdef.vieworg[1] - cur->worldPos[1]; /* 0x30028f72 */
+                            float ddz = cg.refdef.vieworg[2] - cur->worldPos[2]; /* 0x30028f82 */
                             /* The square sum is never stored: the FADDP at 0x30028fac
                              * hands an inline FSQRT its argument raw in ST0, followed by
                              * one float rounding at 0x30028fb3. */
@@ -976,7 +976,7 @@ finalize_child:
                              * factor, but only for a non-child parent whose owner index is not
                              * the local client and whose radius*4 exceeds the view distance. */
                             if (stepKind == 0                                  /* 0x30028fd8 TEST ESI */
-                                && cur->ownerInfoIndex != cg_snap->ps.psClientNum          /* 0x30028fe4 */
+                                && cur->ownerInfoIndex != cg.snap->ps.psClientNum          /* 0x30028fe4 */
                                 && cur->radius * 4.0f > dist) {  /* 0x30028fec, all-float FCOMP */
                                 /* NB the DLL uses BOTH widths of 4 here: the compare above
                                  * takes float 4.0f (be40), this scale takes double 4.0
@@ -1055,7 +1055,7 @@ finalize_child:
 
     /* 0x300290cf..0x300290ed: clear the once-per-frame flame-damage flag if the
      * local owner's flame-damage window has lapsed. */
-    if (cg_flameInfo[cg_snap->ps.psClientNum].activeUntil
+    if (cg_flameInfo[cg.snap->ps.psClientNum].activeUntil
         < coduo_int32_from_bits(cg_flameTime)) {
         cg_flameDamageTakenThisFrame = 0;
     }
@@ -1094,7 +1094,7 @@ finalize_child:
     /* 0x30029166..0x30029190: arm the owner's flame-damage window if past. */
     {
         int32_t nowTime = coduo_int32_from_bits(cg_flameTime);
-        int32_t *armed = &cg_flameInfo[cg_snap->ps.psClientNum].activeUntil;
+        int32_t *armed = &cg_flameInfo[cg.snap->ps.psClientNum].activeUntil;
         if (*armed < nowTime) {
             *armed = coduo_int32_from_bits((uint32_t)nowTime + 100u);
         }

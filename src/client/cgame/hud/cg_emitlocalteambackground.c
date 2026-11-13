@@ -16,7 +16,7 @@ _Static_assert(sizeof(clientInfo_t) == 0x4d0, "bgs.clientinfo element stride");
 #endif
 _Static_assert(offsetof(clientInfo_t, infoValid) == 0x00, "infoValid +0x00");
 _Static_assert(offsetof(clientInfo_t, team) == 0x2c, "team +0x2c");
-_Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg_snap->ps.psClientNum +0xe0");
+_Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg.snap->ps.psClientNum +0xe0");
 _Static_assert(offsetof(rectDef_t, h) == 0x0c, "rect->h +0x0c");
 #endif
 
@@ -25,7 +25,7 @@ _Static_assert(offsetof(rectDef_t, h) == 0x0c, "rect->h +0x0c");
  * CG_DrawPlayerLocation (0x30031280). It draws the team-colored background bar behind
  * the local player's HUD element:
  *
- *   ps = &bgs.clientinfo[cg_snap->ps.psClientNum];  // stride 0x4d0, base 0x305e1f34
+ *   ps = &bgs.clientinfo[cg.snap->ps.psClientNum];  // stride 0x4d0, base 0x305e1f34
  *   if (ps->infoValid == 0) return;          // no valid local state -> draw nothing
  *   CG_DrawTeamBackground(ps->team,             // element +0x2c (base 0x305e1f60)
  *                         rect->x, rect->y,
@@ -52,8 +52,8 @@ _Static_assert(offsetof(rectDef_t, h) == 0x0c, "rect->h +0x0c");
  * clientInfo_t (supersedes the mechanical g_data_cg_asset_parse_305e1f60 fragment).
  *
  * Instruction map:
- *   300316b0 MOV  EAX,[0x30459160]        EAX = cg_snap
- *   300316b5 MOV  EAX,[EAX+0xe0]          EAX = cg_snap->ps.psClientNum
+ *   300316b0 MOV  EAX,[0x30459160]        EAX = cg.snap
+ *   300316b5 MOV  EAX,[EAX+0xe0]          EAX = cg.snap->ps.psClientNum
  *   300316bb IMUL EAX,EAX,0x4d0           EAX = clientNum * sizeof(clientInfo_t)
  *   300316c1 MOV  EDX,[EAX+0x305e1f34]    EDX = ps->infoValid
  *   300316c7 TEST EDX,EDX / 300316c9 JZ 0x300316f0  if (infoValid == 0) -> return
@@ -74,7 +74,7 @@ _Static_assert(offsetof(rectDef_t, h) == 0x0c, "rect->h +0x0c");
 void CG_EmitLocalTeamBackground(rectDef_t *rect, const vec4_t color)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    const int32_t clientNum = cg_snap->ps.psClientNum;
+    const int32_t clientNum = cg.snap->ps.psClientNum;
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
                   "\x15" "CG_EmitLocalTeamBackground: "

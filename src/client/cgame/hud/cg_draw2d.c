@@ -12,13 +12,13 @@
  * (which first stores the view origin/angles to 0x30487a90.. and runs the
  * world/scene passes, then CALLs this at 0x3001c478). It gates on a few
  * render-state flags, then dispatches the on-screen 2D/HUD drawing based on the
- * local player's movement state cg_snap->ps.pmType (pmType_t).
+ * local player's movement state cg.snap->ps.pmType (pmType_t).
  *
  * Name adjudication: the .mcode header's mechanical name "Fire_Lead" is REJECTED.
  * That guess is pure size-matching ("win size 0x118, matched size 0x118" from
  * game_mp.dll), which the recovery contract forbids as an identity signal. This
  * function fires no weapon and computes no bullet lead: it reads no weapon
- * definition, does no vector/x87 endpoint math, and instead reads cg_snap and a
+ * definition, does no vector/x87 endpoint math, and instead reads cg.snap and a
  * set of screen-state gate flags and issues a fixed sequence of no-argument HUD
  * draw calls plus one cgame draw trap. It is a HUD/scene draw dispatcher keyed on
  * pmType. The Mac cgame symbol CG_Draw2D has the same set of all 14 recovered
@@ -30,10 +30,10 @@
  * Control flow, proven instruction-by-instruction against the .mcode:
  *
  * Entry guards (0x3001bfe1..0x3001c00f):
- *   - if g_cgScreenSuppressFlag != 0  -> return immediately (bare RET,
+ *   - if cg.levelShot != 0  -> return immediately (bare RET,
  *     0x3001c0f6): no drawing and NOT even the fade-overlay tail. (JNZ 0x3001c0f6)
- *   - if cg_lockedViewFace != 0                -> same bare return. (JNZ 0x3001c0f6)
- *   - if g_cgScreenReadyState != 0    -> jump to the fade-overlay tail
+ *   - if cg.lockedViewFace != 0                -> same bare return. (JNZ 0x3001c0f6)
+ *   - if cg.screenReadyState != 0    -> jump to the fade-overlay tail
  *     (0x3001c0f1: CG_DrawScreenFadeOverlay then return). (JNZ 0x3001c0f1)
  *   - if cg_draw2D_vmCvar.integer == 0    -> same fade-overlay tail; the flag
  *     must be SET to proceed to drawing. (JZ 0x3001c0f1)
@@ -41,7 +41,7 @@
  * Always-run pre-pass once past the guards (0x3001c015..0x3001c01f):
  *   CG_UpdateScreenFade(); CG_DrawFlashDamage(); CG_DrawScreenBlend();
  *
- * pmType dispatch (EAX = cg_snap->ps.pmType, MOV EAX,[cg_snap]; MOV EAX,[EAX+0x10]):
+ * pmType dispatch (EAX = cg.snap->ps.pmType, MOV EAX,[cg.snap]; MOV EAX,[EAX+0x10]):
  *   - PM_TYPE_INTERMISSION (5): CG_DrawIntermission(); POP ECX; RET — this branch
  *     returns directly, skipping the fade-overlay tail. (0x3001c02f..0x3001c037)
  *   - PM_TYPE_SPECTATOR (4): CG_DrawSpectatorMessage(); CG_DrawSpectatorHud();
@@ -94,13 +94,13 @@ void CG_Draw2D(void)
     int32_t pmType;
 
     /* Entry guards. */
-    if (g_cgScreenSuppressFlag != 0) {
+    if (cg.levelShot != 0) {
         return; /* bare RET at 0x3001c0f6 — no fade-overlay tail */
     }
-    if (cg_lockedViewFace != 0) {
+    if (cg.lockedViewFace != 0) {
         return; /* bare RET at 0x3001c0f6 */
     }
-    if (g_cgScreenReadyState != 0 ||
+    if (cg.screenReadyState != 0 ||
         cg_draw2D_vmCvar.integer == 0) {
         CG_ScreenFade(); /* fade-overlay tail at 0x3001c0f1 */
         return;
@@ -111,7 +111,7 @@ void CG_Draw2D(void)
     CG_DrawFlashDamage();
     CG_DrawDamageDirectionIndicators(); /* 0x3001a980 (was provisionally CG_DrawScreenBlend) */
 
-    pmType = cg_snap->ps.pmType; /* MOV EAX,[cg_snap]; MOV EAX,[EAX+0x10] */
+    pmType = cg.snap->ps.pmType; /* MOV EAX,[cg.snap]; MOV EAX,[EAX+0x10] */
 
     if (pmType == PM_TYPE_INTERMISSION) {
         CG_DrawIntermission();

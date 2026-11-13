@@ -18,13 +18,13 @@ enum {
 
 void CG_CalcWeaponMovementAngles(vec3_t angles)
 {
-    const weaponInfo_t *weapon = cg_currentWeaponInfo;
-    const playerState_t *ps = &cg_predictedPlayerState;
-    const uint8_t stanceFlags = (uint8_t)cg_predictedEventEntity.currentState.eFlags;
+    const weaponInfo_t *weapon = cg.currentWeaponInfo;
+    const playerState_t *ps = &cg.predictedPlayerState;
+    const uint8_t stanceFlags = (uint8_t)cg.predictedPlayerEntity.currentState.eFlags;
     const qboolean sprinting =
         (ps->playerStateFlags & PMF_SPRINTING) != 0;
     long double thresholdBias = cg_gun_move_minspeed_vmCvar.value;
-    float currentSpeed = cg_weaponMoveSpeed;
+    float currentSpeed = cg.xyspeed;
     long double threshold;
     vec3_t target = { 0.0f, 0.0f, 0.0f };
 
@@ -109,9 +109,9 @@ void CG_CalcWeaponMovementAngles(vec3_t angles)
     }
 
     {
-        float *state = cg_weaponMoveAngles;
+        float *state = cg.weaponPosition.weaponMoveAngles;
         float smoothBias = cg_gun_move_rate_vmCvar.value;
-        const float frameTime = (float)(long double)cg_frametime;
+        const float frameTime = (float)(long double)cg.frametime;
         const float minimumStep = (float)(
             (long double)frameTime *
             (long double)CG_WEAPON_MOVE_MINIMUM_STEP_SCALE);

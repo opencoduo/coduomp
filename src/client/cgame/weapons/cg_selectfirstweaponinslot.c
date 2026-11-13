@@ -28,9 +28,9 @@
 // Returns qtrue in EAX if a weapon was selected, qfalse if no slot qualified.
 //
 // Globals consumed (all fields of the cgame predicted playerState at 0x304831c4):
-//   cg_predictedPlayerState.weaponSlots[slot] (0x30483708) — weapon index in each slot
-//   cg_predictedPlayerState.clips[clipIndex]  (0x304834f8) — in-clip ammo
-//   cg_predictedPlayerState.ammo[ammoIndex]   (0x304832f8) — reserve ammo
+//   cg.predictedPlayerState.weaponSlots[slot] (0x30483708) — weapon index in each slot
+//   cg.predictedPlayerState.clips[clipIndex]  (0x304834f8) — in-clip ammo
+//   cg.predictedPlayerState.ammo[ammoIndex]   (0x304832f8) — reserve ammo
 //   bg_weaponInfos[weapon] (0x30134cd8) — weaponInfo_t*, for clipIndex/ammoIndex
 //   cg_weaponSelect_vmCvar.integer (0x3044034c) — the currently-selected weapon index
 qboolean CG_SelectFirstWeaponInSlot(int32_t forward, int32_t requireAmmo)
@@ -50,10 +50,10 @@ qboolean CG_SelectFirstWeaponInSlot(int32_t forward, int32_t requireAmmo)
     }
 
     for (;;) {
-        /* 0x30047840 MOV AL,byte[ECX + cg_predictedPlayerState.weaponSlots]: read the
+        /* 0x30047840 MOV AL,byte[ECX + cg.predictedPlayerState.weaponSlots]: read the
          * weapon assigned to this slot (byte). 0x30047846 TEST AL,AL / JZ
          * 0x30047870: an empty slot (weapon 0) is skipped. */
-        int8_t weaponInSlot = cg_predictedPlayerState.weaponSlots[slot];
+        int8_t weaponInSlot = cg.predictedPlayerState.weaponSlots[slot];
         if (weaponInSlot != 0) {
             /* 0x3004784a TEST EDI,EDI / JZ 0x3004787e: when ammo is not required,
              * select this slot's weapon immediately. */
@@ -68,18 +68,18 @@ qboolean CG_SelectFirstWeaponInSlot(int32_t forward, int32_t requireAmmo)
                 weaponInfo_t *weaponInfo = bg_weaponInfos[(int32_t)(int8_t)weaponInSlot];
                 /* ADD EBX,[ammo] is modulo 2^32; only ZF is consumed. */
                 uint32_t totalBits =
-                    (uint32_t)cg_predictedPlayerState.clips[weaponInfo->clipIndex] +
-                    (uint32_t)cg_predictedPlayerState.ammo[weaponInfo->ammoIndex];
+                    (uint32_t)cg.predictedPlayerState.clips[weaponInfo->clipIndex] +
+                    (uint32_t)cg.predictedPlayerState.ammo[weaponInfo->ammoIndex];
                 qualifies = (totalBits != 0u) ? qtrue : qfalse;
             }
 
             if (qualifies) {
-                /* 0x3004787e MOVSX EAX,byte[ECX + cg_predictedPlayerState.weaponSlots]:
+                /* 0x3004787e MOVSX EAX,byte[ECX + cg.predictedPlayerState.weaponSlots]:
                  * re-read the slot's weapon index (sign-extended).
                  * 0x30047885 MOV ECX,cg_weaponSelect_vmCvar.integer.
                  * 0x3004788b CALL CG_SelectWeaponIndex(weapon, currentWeapon).
                  * 0x30047891 MOV EAX,1: return qtrue. */
-                CG_SelectWeaponIndex((int32_t)(int8_t)cg_predictedPlayerState.weaponSlots[slot],
+                CG_SelectWeaponIndex((int32_t)(int8_t)cg.predictedPlayerState.weaponSlots[slot],
                                      cg_weaponSelect_vmCvar.integer);
                 return qtrue;
             }

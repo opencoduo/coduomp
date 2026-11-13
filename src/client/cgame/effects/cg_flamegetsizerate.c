@@ -12,7 +12,7 @@
 // script_player.c command returning void). An earlier pass modelled this on a
 // provisional cg_adsAnimState_t as CG_ADSAnim_ComputeRate, but the machine code
 // operates entirely on flameChunk_t fields: kind (+0x2c), ownerInfoIndex (+0x34,
-// compared against cg_snap->ps.psClientNum), driftSpeed (+0x94), soundAmpRate (+0xb8),
+// compared against cg.snap->ps.psClientNum), driftSpeed (+0x94), soundAmpRate (+0xb8),
 // startSpeedBits (+0x5c) and the double life span endTime/spawnTime (+0x50/+0x48).
 // Its callers are all flame-subsystem functions (0x30023d3a, 0x30025c73,
 // 0x30027825, 0x30027c42 and four sites in CG_FireFlameChunks) passing a flame
@@ -82,11 +82,11 @@ long double CG_FlameGetSizeRate(flameChunk_t *f /* ESI */)
         long double doubled = cubed + cubed;
 
         // 30023bbf..30023bd2: clientMatches =
-        // (f->ownerInfoIndex == cg_snap->ps.psClientNum) ? 1 : 0. After SUB,
+        // (f->ownerInfoIndex == cg.snap->ps.psClientNum) ? 1 : 0. After SUB,
         // NEG sets CF when the difference is nonzero; SBB self produces -CF and
         // INC therefore leaves 1 only for equality.
         int32_t clientMatches =
-            (f->ownerInfoIndex == cg_snap->ps.psClientNum) ? 1 : 0;
+            (f->ownerInfoIndex == cg.snap->ps.psClientNum) ? 1 : 0;
 
         // 30023bd7..30023be7: A = doubled + (clientMatches * 0.0f + 0.8f).
         // The FILD'd flag is multiplied by the 0.0f coefficient (so it never

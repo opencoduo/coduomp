@@ -19,7 +19,7 @@ enum cgOwnerDrawValueId {
 
 float CG_OwnerDrawValue(int32_t ownerDraw, int32_t colorRangeType)
 {
-    int32_t clientNum = cg_snap->ps.psClientNum;
+    int32_t clientNum = cg.snap->ps.psClientNum;
 
     switch (ownerDraw) {
     case CG_ODV_LOCAL_HUD_VALUE: {
@@ -43,14 +43,14 @@ float CG_OwnerDrawValue(int32_t ownerDraw, int32_t colorRangeType)
         weaponInfo_t *wi = bg_weaponInfos[weapon];
         if (ownerDraw == CG_ODV_AMMO) {
             int32_t index = wi->ammoIndex;
-            int32_t value = cg_snap->ps.ammo[index];
+            int32_t value = cg.snap->ps.ammo[index];
             return colorRangeType == COLOR_RANGE_RELATIVE
                 ? (float)((long double)value /
                           (long double)bg_ammoTypeMax[index])
                 : (float)value;
         } else {
             int32_t index = wi->clipIndex;
-            int32_t value = cg_snap->ps.clips[index];
+            int32_t value = cg.snap->ps.clips[index];
             return colorRangeType == COLOR_RANGE_RELATIVE
                 ? (float)((long double)value /
                           (long double)bg_ammoClipSizes[index])

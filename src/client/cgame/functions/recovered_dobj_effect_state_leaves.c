@@ -44,14 +44,14 @@ void CG_ShutdownFlameChunks(void) /* 0x30027ab0 */
 // Source RVA: 0x3001fb80
 void SetEffectFrameTime(int32_t effectContext)
 {
-    /* 0x3001fb81: FILD cg_frametime straight into FMUL 0.001f (0x3007bd94) with NO
-     * intermediate float store, then one FSTP (0x3001fb8d). So cg_frametime is not
+    /* 0x3001fb81: FILD cg.frametime straight into FMUL 0.001f (0x3007bd94) with NO
+     * intermediate float store, then one FSTP (0x3001fb8d). So cg.frametime is not
      * (float)-cast here -- unlike CG_AddPacketEntities' twin idiom, which DOES
-     * FSTP/FLD cg_frametime first and therefore keeps its cast. */
+     * FSTP/FLD cg.frametime first and therefore keeps its cast. */
     /* The narrow native adapter pins those operand/store widths even where a
      * host compiler would materialize the float constant as an m80 value. */
     float seconds;
-    cgame_compat_effect_seconds(cg_frametime, &seconds);
+    cgame_compat_effect_seconds(cg.frametime, &seconds);
     (void)cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME, effectContext,
                         CG_FloatBits(seconds));
 }
@@ -60,16 +60,16 @@ void SetEffectFrameTime(int32_t effectContext)
 void CG_SetDObjInfo(int32_t entityNum, uint32_t key,
                     XModel *model)
 {
-    cg_dObjInfoKeys[entityNum] = key;
-    cg_dObjInfoHandles[entityNum] = model;
+    cg.dObjInfoKeys[entityNum] = key;
+    cg.dObjInfoHandles[entityNum] = model;
 }
 
 // Source RVA: 0x30016410
 qboolean CG_CheckDObjInfoMatches(int32_t entityNum, uint32_t key,
                                  const XModel *model)
 {
-    return cg_dObjInfoKeys[entityNum] == key &&
-                   cg_dObjInfoHandles[entityNum] == model
+    return cg.dObjInfoKeys[entityNum] == key &&
+                   cg.dObjInfoHandles[entityNum] == model
                ? qtrue
                : qfalse;
 }
@@ -78,8 +78,8 @@ qboolean CG_CheckDObjInfoMatches(int32_t entityNum, uint32_t key,
 void CG_FreeClientDObjInfo(int32_t entityNum)
 {
     (void)cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE, entityNum, 1);
-    cg_dObjInfoKeys[entityNum] = 0;
-    cg_dObjInfoHandles[entityNum] = 0;
+    cg.dObjInfoKeys[entityNum] = 0;
+    cg.dObjInfoHandles[entityNum] = 0;
 }
 
 // Source RVA: 0x300357d0
@@ -94,12 +94,12 @@ int32_t GetEntityTypeIfModelLoaded(int32_t entityNum)
 // Source RVA: 0x30037e30
 void CG_ScrollScoreboardUp(void)
 {
-    if (cg_scoreboardScrollPos > 0) {
-        cg_scoreboardScrollPos = coduo_int32_from_bits(
-            (uint32_t)cg_scoreboardScrollPos -
+    if (cg.scoreboardScrollPos > 0) {
+        cg.scoreboardScrollPos = coduo_int32_from_bits(
+            (uint32_t)cg.scoreboardScrollPos -
             (uint32_t)cg_scoreboardScrollStep_vmCvar.integer);
-        if (cg_scoreboardScrollPos < 0)
-            cg_scoreboardScrollPos = 0;
+        if (cg.scoreboardScrollPos < 0)
+            cg.scoreboardScrollPos = 0;
     }
 }
 

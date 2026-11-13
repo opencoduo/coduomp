@@ -11,7 +11,7 @@
 // PURE SIZE match (win 0x1a7 vs some cgame_mp.dll PPC function of size 0x1a8) with
 // zero behavioral basis — REJECTED per the no-size-matching rule. There is no
 // weapon-name and no "back(ground)" here: the body reads the crosshair-entity
-// globals (cg_crosshairEntNum/cg_crosshairEntTime, written by
+// globals (cg.crosshairClientNum/cg.crosshairClientTime, written by
 // CG_ScanForCrosshairEntity 0x3001a4d0, which it calls first), fetches that
 // client's display name out of bgs.clientinfo[], and issues the 2D-text draw
 // trap CG_R_TEXT_PAINT. The Mac cgame symbol CG_DrawCrosshairNames has the exact
@@ -22,10 +22,10 @@
 //   MOV EAX,[0x3045788c]; TEST; JZ exit        ; cg_drawCrosshairNames_vmCvar.integer == 0 -> off
 //   MOV EAX,[0x304831c0]; TEST; JNZ exit        ; view-state flag set -> off
 //   CALL 0x3001a4d0                             ; CG_ScanForCrosshairEntity()
-//   MOV EDX,[0x3048adf0]; MOV ECX,0x96; CALL 0x3001d200  ; CG_FadeColor(cg_crosshairEntTime, 150)
+//   MOV EDX,[0x3048adf0]; MOV ECX,0x96; CALL 0x3001d200  ; CG_FadeColor(cg.crosshairClientTime, 150)
 //   TEST EDI,EDI; JZ exit                       ; fade expired / not started -> nothing to draw
-//   MOV EAX,[0x3048adec]; CMP EAX,0x40; JG exit ; cg_crosshairEntNum > MAX_CLIENTS(64) -> off
-//   ECX = cg_snap->ps.psClientNum (*0x4d0 index into bgs.clientinfo)
+//   MOV EAX,[0x3048adec]; CMP EAX,0x40; JG exit ; cg.crosshairClientNum > MAX_CLIENTS(64) -> off
+//   ECX = cg.snap->ps.psClientNum (*0x4d0 index into bgs.clientinfo)
 //   local.infoValid==0 || local.team==0 -> exit
 //   crosshair.infoValid==0 -> exit
 //   if (local.team != 3 && crosshair.team != local.team) exit  ; team gate
@@ -50,32 +50,32 @@ void CG_DrawCrosshairNames(void)
     if (cg_drawCrosshairNames_vmCvar.integer == 0) {
         return;
     }
-    if (cg_thirdPerson != 0) {
+    if (cg.renderingThirdPerson != 0) {
         return;
     }
 
-    // 0x3001a63b: refresh cg_crosshairEntNum / cg_crosshairEntTime for this frame.
+    // 0x3001a63b: refresh cg.crosshairClientNum / cg.crosshairClientTime for this frame.
     CG_ScanForCrosshairEntity();
 
     // 0x3001a640..0x3001a654: fade the name over 150 ms from when the target was
     // last acquired. CG_FadeColor returns a static vec4_t RGBA (white, alpha ramped)
     // or NULL once the fade has expired. The alpha (color[3]) is reused below as the
     // name's draw opacity.
-    vec_t *fade = CG_FadeColor(cg_crosshairEntTime, 150);
+    vec_t *fade = CG_FadeColor(cg.crosshairClientTime, 150);
     if (fade == NULL) {
         return;
     }
 
     // 0x3001a65a: crosshair entity must be a real client slot.
-    int32_t entityNum = cg_crosshairEntNum;
+    int32_t entityNum = cg.crosshairClientNum;
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_CLIENTS) {
         return;
     }
 
     // 0x3001a668..0x3001a690: the LOCAL player's per-client state must be live and
-    // have a team. cg_snap->ps.psClientNum indexes bgs.clientinfo[] (stride 0x4d0).
-    snapshot_t *snap = cg_snap;
+    // have a team. cg.snap->ps.psClientNum indexes bgs.clientinfo[] (stride 0x4d0).
+    snapshot_t *snap = cg.snap;
     clientInfo_t *localState = &bgs.clientinfo[snap->ps.psClientNum];
     if (localState->infoValid == 0) {
         return;
@@ -119,12 +119,12 @@ void CG_DrawCrosshairNames(void)
 
     // 0x3001a6f0: only tint by health when the latched health entity matches the
     // entity actually under the crosshair; otherwise the name is plain white.
-    if (cg_crosshairEntNum == cg_crosshairHealthEntNum) {
-        // 0x3001a6f8..0x3001a72e: frac = clamp(cg_crosshairHealth * 0.01, 0, 1).
+    if (cg.crosshairClientNum == cg.crosshairHealthEntNum) {
+        // 0x3001a6f8..0x3001a72e: frac = clamp(cg.crosshairHealth * 0.01, 0, 1).
         // 0x3001a6f8 FILD feeds FMUL 0.01 directly (no FSTP DWORD), so the health
         // is not rounded to float first. It remains live in x87 through both
         // clamps, the 0.5 comparison, and the selected color calculation.
-        long double frac = (long double)cg_crosshairHealth * 0.01f;
+        long double frac = (long double)cg.crosshairHealth * 0.01f;
         if (frac > 1.0f) {
             frac = 1.0f;
         } else if (frac < 0.0f) {

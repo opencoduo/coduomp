@@ -65,13 +65,13 @@
 //   +0x20  float  vDir.x   (dir-derived spawn direction x)  [also loop uses]
 //   +0x24  float  vDir.y
 //   +0x28  float  vDir.z
-//   +0x2c  float  velOrAng temp (cg_snap velocity / basis)          (loop/C)
+//   +0x2c  float  velOrAng temp (cg.snap velocity / basis)          (loop/C)
 //   +0x30  float  temp                                              (loop/C)
 //   +0x34  float  temp                                              (loop/C)
 //   +0x38  float  emitOrigin.x  (cent origin blended with dir*4.0)   built A
 //   +0x3c  float  emitOrigin.y
 //   +0x40  float  emitOrigin.z  (also reused as int/float temp)
-//   +0x44  int32_t isLocalFirstPerson  (cent owner == cg_snap->ps.psClientNum &&
+//   +0x44  int32_t isLocalFirstPerson  (cent owner == cg.snap->ps.psClientNum &&
 //                                       g_data..304831c0 != 0)         set A
 //   +0x54  float  dir.x    (copy of EAX/dir vec, arg to AngleVectors #? no)
 //   +0x58  float  dir.y
@@ -202,7 +202,7 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
     int32_t        adsGate;         /* [ESP+0xa0] */
     int32_t        spawnEnabled;    /* EDI: the loop-entry / terminal-chunk predicate */
     float          radiusClamp;     /* [ESP+0x18] (Region A) */
-    float          frametimeFrac;   /* [ESP+0x1c] (float)cg_frametime, min-clamped 1e-4f */
+    float          frametimeFrac;   /* [ESP+0x1c] (float)cg.frametime, min-clamped 1e-4f */
     int32_t        chunkCount;      /* Q_rint((alpha+1)*0.5f*1666.0f) (Region A) */
     /* Far-outside sentinel init: determinizes the pre-construction
      * CG_PointContents read below (see the ORIGINAL_BINARY_BUG block). */
@@ -250,7 +250,7 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
 
     /* owner = cent[0]; info = &cg_flameInfo[owner]  (0x30024061..0x300240a7)
      * isLocalFirstPerson = 1 iff the flame belongs to the local player
-     * (owner == cg_snap->ps.psClientNum) AND the view-state gate g_data..304831c0 is
+     * (owner == cg.snap->ps.psClientNum) AND the view-state gate g_data..304831c0 is
      * CLEAR (== 0); otherwise 0.  Exact branch shape (0x30024071..0x30024086):
      *   owner != clientNum  -> [0x44] = 0                    (JNZ 0x30024084)
      *   owner == clientNum && 304831c0 == 0 -> [0x44] = 1    (JZ skips the store-0)
@@ -259,8 +259,8 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
      * of 0 overwrites it when 304831c0 != 0.) */
     owner = cent->currentState.number;   /* cent[0] = emitter owner clientNum */
     info  = &cg_flameInfo[owner];
-    if (owner == cg_snap->ps.psClientNum &&
-        cg_thirdPerson == 0) {
+    if (owner == cg.snap->ps.psClientNum &&
+        cg.renderingThirdPerson == 0) {
         isLocalFirstPerson = 1;
     } else {
         isLocalFirstPerson = 0;
@@ -283,20 +283,20 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
         return;
     }
 
-    /* cg_flameTime = Q_rint( floor( (double)cg_time * 2 ) )
-     * (0x300240e4 FILD [0x304831b0]=cg_time; FADD ST0,ST0 (=*2); FSTP dbl;
+    /* cg_flameTime = Q_rint( floor( (double)cg.time * 2 ) )
+     * (0x300240e4 FILD [0x304831b0]=cg.time; FADD ST0,ST0 (=*2); FSTP dbl;
      *  CALL floor (0x3005bcd0); CALL 0x3006be3c -> EAX; MOV [0x300ab718],EAX). */
     {
-        double t2 = (double)cg_time;
+        double t2 = (double)cg.time;
         t2 = t2 + t2;
         cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(floor(t2)); /* raw st0 into _ftol2 */
     }
 
-    /* frametimeFrac = (float)cg_frametime (0x300240ff FILD; 0x3002410a FST [0x1c]).
+    /* frametimeFrac = (float)cg.frametime (0x300240ff FILD; 0x3002410a FST [0x1c]).
      * clampedFrametime = max(frametimeFrac, 1e-4f): FCOMP against 1e-4f
      * (0x3007c130); TEST AH,0x41; when frametime <= 1e-4f the divisor is replaced
      * with 1e-4f (bit pattern 0x38d1b717). (0x3002410e..0x30024129) */
-    frametimeFrac = (float)cg_frametime;
+    frametimeFrac = (float)cg.frametime;
     float clampedFrametime = (frametimeFrac > 1e-4f) ? frametimeFrac : 1e-4f;
 
     /* --- angle-delta blocks (0x3002412d..0x300241c7): a per-axis emit-spread rate
@@ -366,8 +366,8 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
     emitBasis[2] = emitOrigin[2];
 
     /* emitter-recency gate (0x3002430b..0x30024435): sets spawnEnabled (EDI) and the
-     * spawn-direction vDir (+0x20..). owner=cent[0]; clientNum=cg_snap->ps.psClientNum;
-     * frameCutoff = cg_clientFrame - 1. vDir is initialised to {0,0} (+0x20/0x24)
+     * spawn-direction vDir (+0x20..). owner=cent[0]; clientNum=cg.snap->ps.psClientNum;
+     * frameCutoff = cg.clientFrame - 1. vDir is initialised to {0,0} (+0x20/0x24)
      * (0x3002425f/57); vDir.z stays 0 unless a branch writes it. */
     spawnEnabled = 0;
     /* vDir.x/.y are zeroed at 0x3002425f/57. The Z component NEVER touches
@@ -380,9 +380,9 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
     vDir[1] = 0.0f;
     long double vz = 0.0f;
     {
-        const int32_t clientNum = cg_snap->ps.psClientNum;
+        const int32_t clientNum = cg.snap->ps.psClientNum;
         const int32_t frameCutoff =
-            coduo_int32_from_bits((uint32_t)cg_clientFrame - 1u);
+            coduo_int32_from_bits((uint32_t)cg.clientFrame - 1u);
         const int32_t lastClientFrame = info->clientFrame;
         if (owner == clientNum) {
             /* 0x30024315 JE -> 0x3002432a: a current/recent local emitter may spawn. */
@@ -409,12 +409,12 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
          * owner!=clientNum path. */
         int velPathTaken = 0;
         if (owner == clientNum) {
-            /* local player: velocity magnitude from cg_snap+0x2c/0x30/0x34.
+            /* local player: velocity magnitude from cg.snap+0x2c/0x30/0x34.
              * FSQRT of the dot; FCOMP 1.0f (0x3007bce0); TEST AH,0x41; JNE skip.
              * (0x30024337..0x3002438a) */
-            const float velX = cg_snap->ps.velocity[0]; /* +0x2c */
-            const float velY = cg_snap->ps.velocity[1]; /* +0x30 */
-            const float velZ = cg_snap->ps.velocity[2]; /* +0x34 */
+            const float velX = cg.snap->ps.velocity[0]; /* +0x2c */
+            const float velY = cg.snap->ps.velocity[1]; /* +0x30 */
+            const float velZ = cg.snap->ps.velocity[2]; /* +0x34 */
             /* dot product and FSQRT stay on the x87 stack (0x30024340..0x30024350);
              * the FCOMP 1.0f at 0x30024358 tests the UNROUNDED square root. */
             const long double speed = coduo_x87_sqrtl(
@@ -469,12 +469,12 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
     /* CG_Trace(handle=0x2810011, origin=&emitBasis, flags=0x300851d0,
      *   out=&traceBuf, arg1=&originCopy, arg2=0x300851c4, arg3=owner)
      * (0x30024481..0x300244c9). originCopy is a scratch vec3 filled from
-     * cent->field_208/field_20c and cg_refdef.vieworg.z. */
+     * cent->field_208/field_20c and cg.refdef.vieworg.z. */
     {
         vec3_t originCopy;
         originCopy[0] = cent->lerpOrigin[0];   /* +0x208 */
         originCopy[1] = cent->lerpOrigin[1];   /* +0x20c */
-        originCopy[2] = cg_refdef.vieworg[2];
+        originCopy[2] = cg.refdef.vieworg[2];
         CG_Trace(0x2810011, emitBasis,
                            cg_flameTraceMaxs,
                            &traceBuf,
@@ -511,7 +511,7 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
     }
 
     /* non-terminal path: accumulate info->field_58 and optionally re-seed alpha.
-     *   info->field_58 += cg_frametime  (0x30024562, unconditional)
+     *   info->field_58 += cg.frametime  (0x30024562, unconditional)
      *   if (alpha > 1.0f) alpha = pow((noise+1)*0.5, 0.5) * 0.0f + 1.0f
      * APPARENT SOURCE ODDITY: the pow term is multiplied by 0.0f then 1.0f is
      * added, so the reseed always leaves alpha == 1.0f; the wave/pow chain is a
@@ -522,7 +522,7 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
          * ends in alpha = 1.0f) runs only when alpha > 1.0f. */
         const int reseedAlpha = (alpha > 1.0f);
         info->emitAccumTime = coduo_int32_from_bits(
-            (uint32_t)info->emitAccumTime + (uint32_t)cg_frametime); /* +0x58 */
+            (uint32_t)info->emitAccumTime + (uint32_t)cg.frametime); /* +0x58 */
         if (reseedAlpha) {
             /* CG_FlameWaveNoise(t=cg_flameTime, b=0.334234f, a=0.197865f)
              * (pushes 0x3e4a9d34=a, 0x3eab20b8=b, t). */
@@ -570,12 +570,12 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
             (long double)baseD * (long double)0.017777777777777778 *
             (long double)1000.0); /* @0x3007c108, @0x3007bd08 */
         if (isLocalFirstPerson == 0) {
-            /* view-distance falloff: dist between emitOrigin and cg_refdef.vieworg.
+            /* view-distance falloff: dist between emitOrigin and cg.refdef.vieworg.
              * (0x30024670..0x300246c9)  factor:
              *   dist < 2048.0        -> * 1.0
              *   2048 <= dist <= 6000 -> * dist/2048
              *   dist > 6000          -> * 6000/2048   */
-            const float dist = VectorDistance(emitOrigin, cg_refdef.vieworg);
+            const float dist = VectorDistance(emitOrigin, cg.refdef.vieworg);
             if (dist < 2048.0f) {                 /* 0x3007c100 = 2048.0f */
                 dblTemp68 = 2048.0f * 0.00048828125f * dblTemp68; /* @0x3007c0fc, == *1.0 */
             } else {
@@ -1263,7 +1263,7 @@ region_c_infoWriteback:
      *   info->prevSpawnVelA   = vDir          ([ESP+0x20/24/28])
      *   info->prevSpawnVel    = vDir          (same triple copied again)
      *   info->emitDir         = dirCopy       ([ESP+0x54/58/5c] reused)
-     *   info->clientFrame     = cg_clientFrame (0x3002553e/50)
+     *   info->clientFrame     = cg.clientFrame (0x3002553e/50)
      *   info->lastEmitTime    = cg_flameTime  (0x30025547/53) */
     info->activeFlag = arg3;                                 /* +0x60 */
     info->prevDir[0]        = dirCopy[0];    /* +0x04 */
@@ -1281,7 +1281,7 @@ region_c_infoWriteback:
     info->emitDir[0]        = dirCopy[0];    /* +0x34 */
     info->emitDir[1]        = dirCopy[1];    /* +0x38 */
     info->emitDir[2]        = dirCopy[2];    /* +0x3c */
-    info->clientFrame        = cg_clientFrame;    /* +0x00 */
+    info->clientFrame        = cg.clientFrame;    /* +0x00 */
     info->lastEmitTime      = coduo_int32_from_bits(cg_flameTime); /* +0x54 */
 
     /* common epilogue 0x30025556..0x30025560: POP EDI/ESI/EBP/EBX; ADD ESP,0x158; RET. */

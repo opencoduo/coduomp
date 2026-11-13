@@ -19,9 +19,9 @@
 //     (0x30036d60), CG_DrawScoreboardTeamHeader (0x30037090) and
 //     CG_DrawScoreboard_ScoresList (0x30037810) — the entire scoreboard section
 //     drawer family, all of which name THIS address as their sole caller;
-//   * it reads/writes the scoreboard state globals cg_scoreboardOverflowed,
-//     cg_scoreboardTeamScores[], cg_scoreboardTeamCount[], cg_scoreboardLeadTeam and
-//     cg_scoreboardScrollPos.
+//   * it reads/writes the scoreboard state globals cg.scoreboardOverflowed,
+//     cg.teamScores[], cg.scoreboardTeamCount[], cg_scoreboardLeadTeam and
+//     cg.scoreboardScrollPos.
 // The name CG_DrawScoreboardBody is the role already used by every callee's
 // reconstruction comment and by the client_recovered.h forward decl
 // (void CG_DrawScoreboardBody(float fadeAlpha)); exact original CoD symbol
@@ -67,7 +67,7 @@ void CG_DrawScoreboardBody(float fadeAlpha)
 
     /* 0x30037b66: clear the "list overflowed the visible area" latch for this
      * frame before any section drawer can set it. */
-    cg_scoreboardOverflowed = 0;
+    cg.scoreboardOverflowed = 0;
 
     int scrollable = 0; /* 0x30037b63 XOR EDI,EDI (EDI = the scrollbar flag) */
     int lineCount;      /* 0x30037b94 LEA EAX,[lineCount] -> out-param below */
@@ -110,16 +110,16 @@ void CG_DrawScoreboardBody(float fadeAlpha)
 
     /* 0x30037bf3..0x30037c06: draw the two scored team sections only when either
      * has any rows. */
-    if (cg_scoreboardTeamCount[TEAM_AXIS] != 0 ||
-        cg_scoreboardTeamCount[TEAM_ALLIES] != 0) {
+    if (cg.scoreboardTeamCount[TEAM_AXIS] != 0 ||
+        cg.scoreboardTeamCount[TEAM_ALLIES] != 0) {
         /* 0x30037c0c..0x30037c2f: the team with the higher aggregate leads and is
          * drawn first; on an exact tie reuse the previously latched lead team so
          * the order is stable across frames. Then latch the result. */
         team_t leadTeam;
-        if (cg_scoreboardTeamScores[TEAM_ALLIES] < cg_scoreboardTeamScores[TEAM_AXIS]) {
+        if (cg.teamScores[TEAM_ALLIES] < cg.teamScores[TEAM_AXIS]) {
             leadTeam = TEAM_AXIS;
-        } else if (cg_scoreboardTeamScores[TEAM_ALLIES] >
-                   cg_scoreboardTeamScores[TEAM_AXIS]) {
+        } else if (cg.teamScores[TEAM_ALLIES] >
+                   cg.teamScores[TEAM_AXIS]) {
             leadTeam = TEAM_ALLIES;
         } else {
             leadTeam = cg_scoreboardLeadTeam;
@@ -149,7 +149,7 @@ void CG_DrawScoreboardBody(float fadeAlpha)
     }
 
     /* 0x30037cbb..0x30037d02: free-for-all section, drawn when it has rows. */
-    if (cg_scoreboardTeamCount[TEAM_FREE] != 0) {
+    if (cg.scoreboardTeamCount[TEAM_FREE] != 0) {
         y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth,
                                         CG_SB_TEAM_BANNER_HEIGHT, TEAM_FREE,
                                         &sectionLine);
@@ -161,7 +161,7 @@ void CG_DrawScoreboardBody(float fadeAlpha)
     /* 0x30037d06..0x30037d49: spectator section, drawn when it has rows. Its
      * ScoresList result is discarded (0x30037d47 FSTP ST0): there is nothing
      * below it, so the running Y is not advanced past this section. */
-    if (cg_scoreboardTeamCount[TEAM_SPECTATOR] != 0) {
+    if (cg.scoreboardTeamCount[TEAM_SPECTATOR] != 0) {
         y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth,
                                         CG_SB_TEAM_BANNER_HEIGHT, TEAM_SPECTATOR,
                                         &sectionLine);
@@ -182,8 +182,8 @@ void CG_DrawScoreboardBody(float fadeAlpha)
     /* 0x30037d6a..0x30037d7f: clamp the scroll position so it can never point past
      * the last line (lineCount - 1). */
     int32_t lastLine = coduo_int32_from_bits((uint32_t)lineCount - 1u);
-    if (cg_scoreboardScrollPos > lastLine) {
-        cg_scoreboardScrollPos = lastLine;
+    if (cg.scoreboardScrollPos > lastLine) {
+        cg.scoreboardScrollPos = lastLine;
     }
 
     /* 0x30037d7f..0x30037d89: reset the 2D draw color to opaque white

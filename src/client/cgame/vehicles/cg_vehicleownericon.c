@@ -31,15 +31,15 @@
 //    block the sprite builder reads as its world origin.
 //  - loop counter EDI: 0, 500, 1000 (< 1500, step 500). 0x30021635 ADD EDI,0x1f4;
 //    0x3002163e CMP EDI,0x5dc; 0x30021644 JL.
-//  - 0x30021574..85: signed division. ECX=cg_time; EAX=EDI+cg_time; CDQ; IDIV 1500
+//  - 0x30021574..85: signed division. ECX=cg.time; EAX=EDI+cg.time; CDQ; IDIV 1500
 //    -> EDX = remainder (phaseRem). Stored [ESP+0x10].
 //  - fade curve on phaseRem (trapezoid over the 1500ms cycle):
 //      phaseRem <  500 : fade = phaseRem       * 0.002f     (ramp 0 -> 1)     [0x3007bf28]
 //      phaseRem <= 1000: fade = 1.0f                                          [0x3f800000]
 //      else            : fade = (1500 - phaseRem) * 0.002f  (ramp 1 -> 0)
-//  - tail-off gate 0x300215cc..ed: if (cg_time > cent->currentState.iconFadeEndTime - 2000)
-//      fade *= (float)(cent->currentState.iconFadeEndTime - cg_time) * 0.0005f  [0x3007c058], scaled
-//      down as cg_time approaches iconFadeEndTime. (0xfffff830 == -2000.)
+//  - tail-off gate 0x300215cc..ed: if (cg.time > cent->currentState.iconFadeEndTime - 2000)
+//      fade *= (float)(cent->currentState.iconFadeEndTime - cg.time) * 0.0005f  [0x3007c058], scaled
+//      down as cg.time approaches iconFadeEndTime. (0xfffff830 == -2000.)
 //  - 0x300215f1..fb: alphaScale = pow((double)fade, 1.5) (0x3006bb20 = MSVC _CIpow,
 //    base in ST(1), exp 1.5 (double, 0x3007c278) in ST(0)).
 //  - spin: `_ftol2` truncates phaseRem * 0.053333335f toward zero;
@@ -89,8 +89,8 @@ void CG_VehicleOwnerIcon(centity_t *cent)
 
     for (int32_t phaseOffset = 0; phaseOffset < CG_HEADICON_CYCLE_MS;
          phaseOffset += CG_HEADICON_PHASE_MS) {
-        int32_t now = cg_time;
-        /* Signed remainder of (phaseOffset + cg_time) / 1500 (CDQ + IDIV). For the
+        int32_t now = cg.time;
+        /* Signed remainder of (phaseOffset + cg.time) / 1500 (CDQ + IDIV). For the
          * positive time base this lands in [0, 1499]. */
         int32_t phaseTime = coduo_int32_from_bits(
             (uint32_t)phaseOffset + (uint32_t)now);
@@ -113,14 +113,14 @@ void CG_VehicleOwnerIcon(centity_t *cent)
                            (long double)CG_HEADICON_PULSE_RAMP);
         }
 
-        /* Tail-off: once cg_time is within the 2000ms window ending at
+        /* Tail-off: once cg.time is within the 2000ms window ending at
          * iconFadeEndTime, scale the pulse alpha down toward 0 (signed compare). */
         int32_t fadeEnd = cent->currentState.iconFadeEndTime;
         int32_t fadeWindowStart = coduo_int32_from_bits(
             (uint32_t)fadeEnd -
             (uint32_t)CG_HEADICON_FADEOUT_MS);
         if (now > fadeWindowStart) {
-            /* (iconFadeEndTime - cg_time) is an integer MOV'd to a slot then FILD'd
+            /* (iconFadeEndTime - cg.time) is an integer MOV'd to a slot then FILD'd
              * (0x300215db..df) and fed straight through FMUL fade; FMUL 0.0005f with
              * no intermediate float store — bare FILD, so no (float) cast (Class 4). */
             int32_t remaining = coduo_int32_from_bits(

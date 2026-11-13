@@ -22,7 +22,7 @@
 //      then emit this frame.
 //   2. Distance cull (0x30021a82..0x30021afd): if loopedFxCullRadius (+0x68) != 0,
 //      emit only when the effect origin (+0x208) lies within that radius of the view
-//      origin cg_predictedPlayerState.psOrigin (squared compare dist2 < radius*radius). A radius
+//      origin cg.predictedPlayerState.psOrigin (squared compare dist2 < radius*radius). A radius
 //      of 0.0f disables the cull.
 //   3. Play (0x30021afd..end): range-check loopedFxId (+0xdc) in (0,80), look up
 //      cg_effectDefs[id], and fire the play trap — oriented (0xe8, passing
@@ -43,7 +43,7 @@
 void CG_AddCEntity_LoopedFx(centity_t *cent)
 {
     // Phase 1: advance the emission cadence toward cg.time.
-    int32_t entryTime = cg_time;
+    int32_t entryTime = cg.time;
     if (entryTime <= cent->loopedFxNextTime) {
         cent->loopedFxNextTime = entryTime;
     } else {
@@ -69,8 +69,8 @@ void CG_AddCEntity_LoopedFx(centity_t *cent)
             int32_t nextTime = coduo_int32_from_bits(
                 (uint32_t)cent->loopedFxNextTime + (uint32_t)interval);
             cent->loopedFxNextTime = nextTime;
-            /* 0x30021a6e reloads cg_time after every publication. */
-            int32_t currentTime = cg_time;
+            /* 0x30021a6e reloads cg.time after every publication. */
+            int32_t currentTime = cg.time;
             elapsed = coduo_int32_from_bits(
                 (uint32_t)currentTime - (uint32_t)nextTime);
         } while (elapsed > interval);
@@ -78,9 +78,9 @@ void CG_AddCEntity_LoopedFx(centity_t *cent)
 
     // Phase 2: distance cull against the view origin (0 radius disables it).
     if (cent->currentState.loopedFxCullRadius != 0.0f) {
-        float dx = cent->lerpOrigin[0] - cg_predictedPlayerState.psOrigin[0];
-        float dy = cent->lerpOrigin[1] - cg_predictedPlayerState.psOrigin[1];
-        float dz = cent->lerpOrigin[2] - cg_predictedPlayerState.psOrigin[2];
+        float dx = cent->lerpOrigin[0] - cg.predictedPlayerState.psOrigin[0];
+        float dy = cent->lerpOrigin[1] - cg.predictedPlayerState.psOrigin[1];
+        float dz = cent->lerpOrigin[2] - cg.predictedPlayerState.psOrigin[2];
         /* long double: the sum is never stored — it rides st1 straight into the
          * FCOMPP against radius*radius (0x30021acc..0x30021af0). */
         long double dist2 =

@@ -17,7 +17,7 @@
  *     (+0x214) via AnglesToAxisNegRight (tail-called at 0x3004c200, which writes
  *     outAxis in EAX).
  *   - index in [MAX_GENTITIES, MAX_GENTITIES+0x80) -> one fixed pseudo-entity
- *     placement, cg_specialTagPlacement (orientation_t @ 0x3048b0e4): outOrigin =
+ *     placement, cg.specialTagPlacement (orientation_t @ 0x3048b0e4): outOrigin =
  *     its origin, outAxis = its axis (copied directly, no AnglesToAxis). Note the
  *     sub-index (0..0x7f) is only range-checked, not used to index — all 128
  *     values return the same placement.
@@ -84,19 +84,19 @@ void CG_GetEntityOriginAxis(int32_t index, vec3_t outOrigin, axis_t outAxis)
     }
 
     /* 0x3002ae05: copy the fixed placement directly; no AnglesToAxis. */
-    outOrigin[0] = cg_specialTagPlacement.origin[0];
-    outOrigin[1] = cg_specialTagPlacement.origin[1];
-    outOrigin[2] = cg_specialTagPlacement.origin[2];
+    outOrigin[0] = cg.specialTagPlacement.origin[0];
+    outOrigin[1] = cg.specialTagPlacement.origin[1];
+    outOrigin[2] = cg.specialTagPlacement.origin[2];
 
-    outAxis[0][0] = cg_specialTagPlacement.axis[0][0];
-    outAxis[0][1] = cg_specialTagPlacement.axis[0][1];
-    outAxis[0][2] = cg_specialTagPlacement.axis[0][2];
+    outAxis[0][0] = cg.specialTagPlacement.axis[0][0];
+    outAxis[0][1] = cg.specialTagPlacement.axis[0][1];
+    outAxis[0][2] = cg.specialTagPlacement.axis[0][2];
 
-    outAxis[1][0] = cg_specialTagPlacement.axis[1][0];
-    outAxis[1][1] = cg_specialTagPlacement.axis[1][1];
-    outAxis[1][2] = cg_specialTagPlacement.axis[1][2];
+    outAxis[1][0] = cg.specialTagPlacement.axis[1][0];
+    outAxis[1][1] = cg.specialTagPlacement.axis[1][1];
+    outAxis[1][2] = cg.specialTagPlacement.axis[1][2];
 
-    outAxis[2][0] = cg_specialTagPlacement.axis[2][0];
-    outAxis[2][1] = cg_specialTagPlacement.axis[2][1];
-    outAxis[2][2] = cg_specialTagPlacement.axis[2][2];
+    outAxis[2][0] = cg.specialTagPlacement.axis[2][0];
+    outAxis[2][1] = cg.specialTagPlacement.axis[2][1];
+    outAxis[2][2] = cg.specialTagPlacement.axis[2][2];
 }

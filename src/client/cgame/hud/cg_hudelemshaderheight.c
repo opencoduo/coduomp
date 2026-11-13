@@ -70,7 +70,7 @@ long double CG_HudElemShaderHeight(const hudElem_t *elem,
     }
 
     /* elapsed = cg.time - startTime (signed subtract; stored at [ESP+8]). */
-    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg_time -
+    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg.time -
                                       (uint32_t)elem->scaleStartTime);
     if (elapsed >= duration) {
         return goal;                      /* JGE 0x300299d9: window elapsed, ST0 = goal */

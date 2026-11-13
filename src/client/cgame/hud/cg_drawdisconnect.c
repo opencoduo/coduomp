@@ -21,7 +21,7 @@
 // Stall gate (matches the id-Tech/CoD CG_DrawDisconnect logic):
 //   cmdNum       = trap_GetCurrentCmdNumber();          // trap 0x53
 //   trap_GetUserCmd(cmdNum - (CMD_BACKUP - 1), &cmd);   // trap 0x54; -0x7f
-//   if (cmd.commandTime <= cg_snap->ps.commandTime) return;  // JLE: cmd already covered
+//   if (cmd.commandTime <= cg.snap->ps.commandTime) return;  // JLE: cmd already covered
 //   if (cmd.commandTime >  cg.time)                return;  // JG : cmd is from the future
 // Only when the oldest still-buffered cmd sits strictly between the last applied
 // command time and now does the warning draw.
@@ -81,10 +81,10 @@ void CG_DrawDisconnect(void)
 
     /* 0x30018acc..0x30018aea: draw only when the oldest buffered cmd is newer than the
      * last applied command time and not ahead of the current game clock. */
-    if (cmdServerTime <= cg_snap->ps.commandTime) {   /* JLE 0x30018bba */
+    if (cmdServerTime <= cg.snap->ps.commandTime) {   /* JLE 0x30018bba */
         return;
     }
-    if (cmdServerTime > cg_time) {  /* JG  0x30018bba */
+    if (cmdServerTime > cg.time) {  /* JG  0x30018bba */
         return;
     }
 
@@ -126,7 +126,7 @@ void CG_DrawDisconnect(void)
                   CG_DISCONNECT_TEXT_STYLE);
 
     /* 0x30018b83..0x30018b8f: blink — hide the icon while cg.time bit 0x200 is set. */
-    if ((uint32_t)cg_time & CG_DISCONNECT_BLINK_MASK) { /* JNZ 0x30018bba */
+    if ((uint32_t)cg.time & CG_DISCONNECT_BLINK_MASK) { /* JNZ 0x30018bba */
         return;
     }
 

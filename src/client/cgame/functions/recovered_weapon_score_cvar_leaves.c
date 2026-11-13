@@ -29,14 +29,14 @@ int32_t AmmoPlusClip(const playerState_t *ps, int32_t weapon)
 
 void CG_ScoresUp_f(void) /* 0x30017310: release of the +scores command */
 {
-    if (cg_scoreboardShowing) {
-        cg_scoreboardShowing = qfalse;
-        cg_scoreboardShowTime = cg_time;
+    if (cg.showScores) {
+        cg.showScores = qfalse;
+        cg.scoreFadeTime = cg.time;
     }
 }
 
 // Source RVA: 0x30037e20
 qboolean IsScoreboardShowing(void)
 {
-    return cg_scoreboardShowing != qfalse ? qtrue : qfalse;
+    return cg.showScores != qfalse ? qtrue : qfalse;
 }

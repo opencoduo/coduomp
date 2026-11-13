@@ -26,7 +26,7 @@
  *   MOV   [0x3044b6a8],EAX        ; cg_fovFade.durationMs = durationMs
  *   FMUL  float [0x3007be24]      ; ST(0) = numerator255 * (1/255)   [0x3007be24
  *                                 ;   = 0x3b808081 = 0.00392157f = 1.0f/255.0f]
- *   MOV   EAX,[0x304831b0]        ; EAX = cg.time (cg_time global, ms)
+ *   MOV   EAX,[0x304831b0]        ; EAX = cg.time (cg.time global, ms)
  *   CMP   ECX,EAX                 ; compare endTime vs cg.time
  *   FSTP  float [0x3044b69c]      ; cg_fovFade.startValue = numerator255 / 255.0f
  *   JG    0x3001ab80             ; if endTime >  cg.time the fade is still pending
@@ -56,7 +56,7 @@ void CG_StartFovFade(int32_t startTime, int32_t durationMs, int32_t numerator255
         (uint32_t)startTime + (uint32_t)durationMs);
     cg_fovFade.durationMs = durationMs;
     startValueRaw *= (long double)CG_FOV_FADE_BYTE_SCALE;
-    int32_t now = cg_time;
+    int32_t now = cg.time;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     qboolean expired = endTime <= now;
     cg_fovFade.startValue = (float)startValueRaw;

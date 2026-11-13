@@ -49,10 +49,10 @@
  *
  * SCROLL / OVERFLOW clipping (shared with CG_DrawClientScore, which reads the same
  * two globals):
- *   - cg_scoreboardOverflowed (0x3048a564): once a drawn line has flowed past the
+ *   - cg.scoreboardOverflowed (0x3048a564): once a drawn line has flowed past the
  *     bottom of the visible area this latch is set; further header/row draws for
  *     the frame early-out. The body drawer clears it to 0 at frame start.
- *   - cg_scoreboardScrollPos (0x3048a560): the top visible line index. Lines whose
+ *   - cg.scoreboardScrollPos (0x3048a560): the top visible line index. Lines whose
  *     running index is below the scroll position are skipped (counter advanced,
  *     nothing drawn).
  *
@@ -85,8 +85,8 @@ enum { CG_SB_BANNER_SHADER_MODE = 5 };
  * (0x30071a60) and cg_scoreboardColumns[0..3]. Provisional names by proven role.
  */
 enum {
-    CG_SB_VALSEL_TEAMSCORE = 1, /* draw cg_scoreboardTeamScores[team] (score column) */
-    CG_SB_VALSEL_TEAMPING  = 3  /* draw cg_scoreboardTeamPings[team]  (ping column) */
+    CG_SB_VALSEL_TEAMSCORE = 1, /* draw cg.teamScores[team] (score column) */
+    CG_SB_VALSEL_TEAMPING  = 3  /* draw cg.scoreboardTeamPings[team]  (ping column) */
 };
 
 /*
@@ -110,13 +110,13 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
     /* 0x300370a2: if the scoreboard has already overflowed the visible area this
      * frame, draw nothing and return the input Y unchanged (JNZ 0x300370b8, the
      * return-arg1 epilogue — the scroll/bottom checks are skipped entirely). */
-    if (cg_scoreboardOverflowed) {
+    if (cg.scoreboardOverflowed) {
         return y; /* 0x300370b8: FLD arg1; cookie check; RET */
     }
 
     /* 0x300370ab: lines above the current scroll position are skipped; the running
      * line counter is still advanced so the scroll math stays in step. */
-    if (*lineCounter < cg_scoreboardScrollPos) {
+    if (*lineCounter < cg.scoreboardScrollPos) {
         *lineCounter = coduo_int32_from_bits((uint32_t)*lineCounter + 1u);
         return y; /* 0x300370b8: FLD arg1; cookie check; RET */
     }
@@ -127,7 +127,7 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
         (long double)y + (long double)CG_SB_BANNER_HEIGHT;
     float bannerBottom = (float)bannerBottomWide; /* 0x300370df FST retained */
     if (bannerBottomWide > (long double)CG_SB_BOTTOM_LIMIT) {
-        cg_scoreboardOverflowed = 1;                /* 0x300370f0 MOV [..],1 */
+        cg.scoreboardOverflowed = 1;                /* 0x300370f0 MOV [..],1 */
         return y;                                   /* 0x300370fa: return arg1 */
     }
 
@@ -138,10 +138,10 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
     float alpha = drawCtx->color[3]; /* MOV ECX,[EAX+0xc] */
 
     /* 0x30037121: banner text uses the singular "PLAYER" form when this team has
-     * exactly one row, else the plural "PLAYERS" form. cg_scoreboardTeamCount is
+     * exactly one row, else the plural "PLAYERS" form. cg.scoreboardTeamCount is
      * indexed by team. va("...\x15%i", count) formats the count, then CG_SE_LOCALIZE_MESSAGE
      * localizes it under the "scoreboard banner text" key. */
-    int32_t teamCount = cg_scoreboardTeamCount[team];
+    int32_t teamCount = cg.scoreboardTeamCount[team];
     const char *countFmt = (teamCount == 1) ? CG_SB_FMT_PLAYERS_SINGULAR
                                             : CG_SB_FMT_PLAYERS_PLURAL;
     const char *countText = va(countFmt, teamCount);
@@ -269,8 +269,8 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
                 valueSelect == CG_SB_VALSEL_TEAMPING) {
                 /* 0x3003732d/0x30037336: choose the per-team value array. */
                 int32_t value = (valueSelect == CG_SB_VALSEL_TEAMSCORE)
-                                    ? cg_scoreboardTeamScores[team]
-                                    : cg_scoreboardTeamPings[team];
+                                    ? cg.teamScores[team]
+                                    : cg.scoreboardTeamPings[team];
 
                 /* 0x3003733d: format the integer value (va("%i", value)). */
                 const char *valueText = va(CG_SB_FMT_INT, value);

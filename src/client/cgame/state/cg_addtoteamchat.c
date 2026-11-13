@@ -99,7 +99,7 @@ void CG_AddToTeamChat(const char *str)
             }
             *p = '\0';               /* terminate the closed line */
 
-            teamChatMsgTimes[teamChatPos % chatHeight] = cg_time;
+            teamChatMsgTimes[teamChatPos % chatHeight] = cg.time;
             if (teamChatPos == INT32_MAX) {
                 int32_t retainedRows = teamChatPos - teamChatLastPos;
                 if (retainedRows < chatHeight) {
@@ -154,7 +154,7 @@ void CG_AddToTeamChat(const char *str)
 
     /* Finalize the last line (0x300394a4). */
     *p = '\0';
-    teamChatMsgTimes[teamChatPos % chatHeight] = cg_time;
+    teamChatMsgTimes[teamChatPos % chatHeight] = cg.time;
 
     if (teamChatPos == INT32_MAX) {
         int32_t retainedRows = teamChatPos - teamChatLastPos;

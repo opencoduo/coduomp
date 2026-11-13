@@ -111,8 +111,8 @@ void CG_DrawCrosshair(void)
     float sizeScale;
     float adsOffset;
 
-    adsFraction = cg_predictedPlayerState.adsFraction;
-    thirdPerson = cg_thirdPerson;
+    adsFraction = cg.predictedPlayerState.adsFraction;
+    thirdPerson = cg.renderingThirdPerson;
     color[0] = 1.0f;
     color[1] = 1.0f;
     color[2] = 1.0f;
@@ -125,7 +125,7 @@ void CG_DrawCrosshair(void)
         return;
     }
 
-    entityStateFlags = cg_predictedPlayerState.entityStateFlags;
+    entityStateFlags = cg.predictedPlayerState.entityStateFlags;
     zoomScopeView =
         (entityStateFlags & EF_ZOOM_FOV_MASK) != 0;
     // 0x30019d43/0x30019d49: color[3] starts as the raw cvar value.
@@ -134,7 +134,7 @@ void CG_DrawCrosshair(void)
     // 0x30019d40 TEST AH,0x60 — entityStateFlags & 0x6000 (zoom/scope pair).
     if (zoomScopeView) {
         // 0x30019d4f: CMP viewLockedEntityNum,0x3ff (1023).
-        if (cg_predictedPlayerState.viewLockedEntityNum == ENTITYNUM_NONE) {
+        if (cg.predictedPlayerState.viewLockedEntityNum == ENTITYNUM_NONE) {
             return;
         }
         CG_DrawWeaponIcon3D();  // 0x30019d5f CALL 0x30019ba0
@@ -144,9 +144,9 @@ void CG_DrawCrosshair(void)
     // 0x30019d6b TEST 0x100000 / 0x30019d76 TEST 0x400000.
     if ((entityStateFlags & EF_IN_VEHICLE) != 0 &&
         (entityStateFlags & EF_VEHICLE_ALLOW_WEAPON) == 0) {
-        int32_t vehicleType = cg_predictedPlayerState.vehicleType;
+        int32_t vehicleType = cg.predictedPlayerState.vehicleType;
         qboolean isTypeOne = vehicleType == VEHICLE_TYPE_4_WHEEL;
-        int32_t vehiclePosition = cg_predictedPlayerState.vehiclePosition;
+        int32_t vehiclePosition = cg.predictedPlayerState.vehiclePosition;
 
         // 0x30019d81..0x30019d94: vehicle type 1 in position 3 uses the
         // ordinary weapon reticle below.
@@ -186,13 +186,13 @@ void CG_DrawCrosshair(void)
 
     // 0x30019e5c..0x30019e6d: the friendly-player cursor hint (value 10, the
     // "hintFriendly" hint kind) tints the reticle green {0.25, 1.0, 0.25}.
-    if (cg_predictedPlayerState.serverCursorHint == CURSOR_HINT_FRIENDLY) {
+    if (cg.predictedPlayerState.serverCursorHint == CURSOR_HINT_FRIENDLY) {
         color[2] = 0.25f;  // 0x3e800000
         color[0] = 0.25f;
     }
 
     // 0x30019e75/0x30019e7b: the pointer is dereferenced with no NULL guard.
-    weapon = cg_currentWeaponInfo;
+    weapon = cg.currentWeaponInfo;
     weaponIndex = weapon->weaponIndex;
     if (weaponIndex == 0) {  // 0x30019e7d/0x30019e7f
         return;
@@ -223,7 +223,7 @@ void CG_DrawCrosshair(void)
 
     // 0x30019edf..0x30019f0b: no crosshair in these weapon states (compared
     // in machine order 10, 11, 5, 1, 2).
-    weaponState = cg_predictedPlayerState.weaponState;
+    weaponState = cg.predictedPlayerState.weaponState;
     if (weaponState == WEAPON_STATE_MELEE_WINDUP ||
         weaponState == WEAPON_STATE_MELEE_RELAX ||
         weaponState == WEAPON_STATE_RELOADING ||
@@ -240,13 +240,13 @@ void CG_DrawCrosshair(void)
 
     /* 0x30019f37 reloads the global weapon pointer after both draw calls and
      * before the ADS-zero comparison. */
-    weapon = cg_currentWeaponInfo;
+    weapon = cg.currentWeaponInfo;
     // 0x30019f2d..0x30019f47: ADS transition math only while adsFraction != 0.
     if (adsFraction != 0.0f) {
         // 0x30019f4d..0x30019f92: the machine specializes both branches of
-        // the cg_adsZoomingIn test with identical code over adsCrosshairInFrac
+        // the cg.weaponPosition.adsZoomingIn test with identical code over adsCrosshairInFrac
         // (+0x3cc) vs adsCrosshairOutFrac (+0x3d0).
-        float crosshairFrac = cg_adsZoomingIn ? weapon->adsCrosshairInFrac
+        float crosshairFrac = cg.weaponPosition.adsZoomingIn ? weapon->adsCrosshairInFrac
                                               : weapon->adsCrosshairOutFrac;
         long double frac = (long double)adsFraction -
                            (1.0L - (long double)crosshairFrac);
@@ -261,7 +261,7 @@ void CG_DrawCrosshair(void)
                 // 0x30019fb7..0x30019fcb: degrees -> virtual pixels via
                 // 480/fovY, scaled by the weapon's ADS pitch offset and frac.
                 adsOffset = (float)(((long double)480.0f /
-                                     (long double)cg_refdef.fov_y) *
+                                     (long double)cg.refdef.fov_y) *
                                     (long double)weapon->adsPitchOffset * frac);
             }
         }
@@ -285,7 +285,7 @@ void CG_DrawCrosshair(void)
                         cg_crosshairNoGun_vmCvar.string, R_IMAGE_TRACK_HUD);
                     /* 0x3001a011 reloads the pointer even when registration
                      * returns zero. */
-                    weapon = cg_currentWeaponInfo;
+                    weapon = cg.currentWeaponInfo;
                 }
                 if (hShader != 0) {
                     // 0x3001a022..0x3001a043: size grows as the ordinary
@@ -304,20 +304,20 @@ void CG_DrawCrosshair(void)
                      * refdef y/x FIADD'd straight into the chain -- integers
                      * kept exact, no (float) casts. */
                     float y = (float)(
-                        ((long double)cg_refdef.height - (long double)sizeForY) * 0.5f +
+                        ((long double)cg.refdef.height - (long double)sizeForY) * 0.5f +
                         (long double)cgs_screenYScale * (long double)projected[1] +
-                        (long double)cg_refdef.y);
+                        (long double)cg.refdef.y);
                     float x = (float)(
-                        ((long double)cg_refdef.width - (long double)sizeForX) * 0.5f +
+                        ((long double)cg.refdef.width - (long double)sizeForX) * 0.5f +
                         (long double)cgs_screenXScale * (long double)projected[0] +
-                        (long double)cg_refdef.x);
+                        (long double)cg.refdef.x);
 
                     // 0x3001a09b CALL 0x3003e0f0.
                     DRAW_CROSSHAIR_STRETCH_PIC(
                         x, y, sizeForX, sizeForY,
                         0.0f, 0.0f, 1.0f, 1.0f, hShader);
                     /* 0x3001a0a0 reloads after the stretch-pic call. */
-                    weapon = cg_currentWeaponInfo;
+                    weapon = cg.currentWeaponInfo;
                 }
             }
             // 0x3001a0a9..0x3001a0ba: FUCOMPP vs 1.0; TEST AH,0x44; JNP —
@@ -357,12 +357,12 @@ void CG_DrawCrosshair(void)
         // 0x3001a0f1/0x3001a114 (type), 0x3001a116..0x3001a11e (timer),
         // 0x3001a120..0x3001a128 (cookOffHold): grenade cook-off pulse.
         if (weaponType == WEAPTYPE_GRENADE) {
-            int32_t grenadeTimeLeft = cg_predictedPlayerState.grenadeTimeLeft;
+            int32_t grenadeTimeLeft = cg.predictedPlayerState.grenadeTimeLeft;
 
             if (grenadeTimeLeft != 0 && weapon->specialTimeEnabled != 0) {
                 int32_t seconds = grenadeTimeLeft / 1000;
                 int32_t remainder = grenadeTimeLeft % 1000;
-                int32_t previousRemainder = cg_grenadePulseLastSpecialTime % 1000;
+                int32_t previousRemainder = cg.grenadePulseLastSpecialTime % 1000;
 
             // 0x3001a12a..0x3001a14e: play the per-second pulse sound once per
             // wrap of the millisecond remainder, for whole seconds 0..3 (the
@@ -374,12 +374,12 @@ void CG_DrawCrosshair(void)
                 // 0x3001a15d: the machine refetches grenadeTimeLeft after
                 // the call (register refill; the sound trap cannot change it),
                 // matching the re-reads below.
-                    grenadeTimeLeft = cg_predictedPlayerState.grenadeTimeLeft;
+                    grenadeTimeLeft = cg.predictedPlayerState.grenadeTimeLeft;
                 }
             // 0x3001a166..0x3001a188: latch the counter and grow the reticle
             // by the fractional second.
                 remainder = grenadeTimeLeft % 1000;
-                cg_grenadePulseLastSpecialTime = grenadeTimeLeft;
+                cg.grenadePulseLastSpecialTime = grenadeTimeLeft;
                 centerSize = (float)((long double)remainder * 0.01f +
                                      (long double)centerSize);
             }
@@ -398,21 +398,21 @@ void CG_DrawCrosshair(void)
         /* 0x3001a1a0/0x3001a1dc: height/width FILD'd, y/x FIADD'd -- ints exact,
          * no (float) casts. */
         long double centerYRaw =
-            (long double)cg_refdef.height - (long double)centerSizeForY;
+            (long double)cg.refdef.height - (long double)centerSizeForY;
         int32_t hCenterShader =
             (int32_t)cg_weaponInfos[weaponIndex].reticleCenterShader;
         y = (float)(centerYRaw * 0.5f +
-                    (long double)cg_refdef.y + (long double)projY);
-        x = (float)(((long double)cg_refdef.width -
+                    (long double)cg.refdef.y + (long double)projY);
+        x = (float)(((long double)cg.refdef.width -
                      (long double)centerSizeForX) * 0.5f +
-                    (long double)cg_refdef.x + (long double)projX);
+                    (long double)cg.refdef.x + (long double)projX);
 
         // 0x3001a1f9 CALL 0x3003e0f0 with cg_weaponInfos[i].reticleCenterShader.
         DRAW_CROSSHAIR_STRETCH_PIC(
             x, y, centerSizeForX, centerSizeForY,
             0.0f, 0.0f, 1.0f, 1.0f, hCenterShader);
         /* 0x3001a1fe reloads the global before the side-name dereference. */
-        weapon = cg_currentWeaponInfo;
+        weapon = cg.currentWeaponInfo;
     }
 
     // 0x3001a207..0x3001a210: side reticle only with a non-empty name (again
@@ -434,7 +434,7 @@ void CG_DrawCrosshair(void)
         // the aim spread rises. The aim product is read only after the call
         // and remains unrounded in x87 for the subtraction and multiplies.
         reticleFade = CG_DrawWeapReticle();
-        aimFracRaw = (long double)cg_predictedPlayerState.aimSpreadScale *
+        aimFracRaw = (long double)cg.predictedPlayerState.aimSpreadScale *
                      (long double)(1.0f / 255.0f);
         alphaRaw = reticleFade * (1.0L - aimFracRaw) *
                    (long double)cg_crosshairAlpha_vmCvar.value;
@@ -447,23 +447,23 @@ void CG_DrawCrosshair(void)
         cgame_syscall(CG_R_SETCOLOR, (intptr_t)color);
 
         // 0x3001a25d..0x3001a26f: custom ABI (ECX=ps, EDX=weaponIndex,
-        // EAX=cg_snap->serverTime, stack ads=0).
+        // EAX=cg.snap->serverTime, stack ads=0).
         // BG_GetMinSpreadForWeapon returns raw st(0) (long double); the DLL
         // folds the lerp+scale into one 80-bit chain off that unrounded value
         // (FSUB ST0,ST1 @0x3001a283 .. FMULP/FADDP @0x3001a293 .. FMUL sizeScale)
         // and rounds ONCE at the FSTP @0x3001a2a7. A float `spread` for the
         // return would round it before the lerp.
-        serverTime = cg_snap->serverTime;
+        serverTime = cg.snap->serverTime;
         spreadRaw = BG_GetMinSpreadForWeapon(
-            &cg_predictedPlayerState, weaponIndex, serverTime, 0);
+            &cg.predictedPlayerState, weaponIndex, serverTime, 0);
         /* 0x3001a274 reloads the global after the spread helper. */
-        weapon = cg_currentWeaponInfo;
+        weapon = cg.currentWeaponInfo;
         // 0x3001a27a..0x3001a295: lerp toward maxSpread by the aim fraction,
         // then apply the ADS shrink scale. This is retained in x87: the first
         // axis is rounded at 0x3001a2a7, while the second remains live through
         // its clamp and all four loop iterations.
         maxSpreadDelta = (long double)weapon->maxSpread - spreadRaw;
-        aimFracRaw = (long double)cg_predictedPlayerState.aimSpreadScale *
+        aimFracRaw = (long double)cg.predictedPlayerState.aimSpreadScale *
                      (long double)(1.0f / 255.0f);
         spreadScaled = (spreadRaw + maxSpreadDelta * aimFracRaw) *
                        (long double)sizeScale;
@@ -476,7 +476,7 @@ void CG_DrawCrosshair(void)
         spreadX = (float)(((long double)640.0f /
                            cgame_compat_spread_fov_x()) * spreadScaled);
         spreadYRaw = ((long double)480.0f /
-                      (long double)cg_refdef.fov_y) * spreadScaled;
+                      (long double)cg.refdef.fov_y) * spreadScaled;
         // 0x3001a2b9..0x3001a2e7: both clamped up to reticleMinOfs.
         minSpread = (float)(long double)weapon->reticleMinOfs;
         if (spreadX < minSpread) {
@@ -521,7 +521,7 @@ void CG_DrawCrosshair(void)
 
             if (i != 0) {
                 /* 0x3001a39d reloads this pointer before iterations 1..3. */
-                weapon = cg_currentWeaponInfo;
+                weapon = cg.currentWeaponInfo;
             }
             // 0x3001a3a3/0x3001a3b2: recomputed each pass.
             float sideSize = (float)((long double)weapon->reticleSideSize *
@@ -552,8 +552,8 @@ void CG_DrawCrosshair(void)
                     ((long double)cg_crosshair_reticle_scale_y() - 1.0L);
             yRaw -= (long double)sideSizeForY * (long double)dir[i][1] *
                     (long double)weapon->hipReticleSidePos;
-            yRaw += (long double)cg_refdef.height * 0.5f;
-            yRaw += (long double)cg_refdef.y;
+            yRaw += (long double)cg.refdef.height * 0.5f;
+            yRaw += (long double)cg.refdef.y;
             float y = (float)yRaw;
 
             xRaw = (long double)spreadX * (long double)dir[i][0];
@@ -565,8 +565,8 @@ void CG_DrawCrosshair(void)
                     ((long double)cg_crosshair_reticle_scale_x() - 1.0L);
             xRaw -= (long double)sideSizeForX * (long double)dir[i][0] *
                     (long double)weapon->hipReticleSidePos;
-            xRaw += (long double)cg_refdef.width * 0.5f;
-            xRaw += (long double)cg_refdef.x;
+            xRaw += (long double)cg.refdef.width * 0.5f;
+            xRaw += (long double)cg.refdef.x;
             float x = (float)xRaw;
 
             // 0x3001a49b CALL 0x3003e200 (10 args, ADD ESP,0x28): the trap-75

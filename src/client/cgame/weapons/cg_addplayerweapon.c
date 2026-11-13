@@ -8,7 +8,7 @@
 // cg.frametime seconds plus an in-place trace-part begin/prep/flush pass,
 // processes weapon notetracks, offsets the entity origin by the cg_gunX/Y/Z
 // cvars along the refdef view axes, optionally submits it to the scene, commits
-// the placement to cg_specialTagPlacement, publishes the tag_brass bone's world
+// the placement to cg.specialTagPlacement, publishes the tag_brass bone's world
 // position to cg_brassEffectOrigin, and (for an actively-firing GAS weapon)
 // emits flame chunks from the tag_flash bone's world position. The tail
 // consumes the centity's weapon-fire effect latch and plays the muzzle-flash
@@ -57,8 +57,8 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
     /* 30045cc3..30045cee: localFirstPerson = snapshot first-person view flags
      * set AND this centity is the snapshot's own client. */
     qboolean localFirstPerson =
-        (cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
-        cent->currentState.number == cg_snap->ps.psClientNum;
+        (cg.snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
+        cent->currentState.number == cg.snap->ps.psClientNum;
     /* 30045cee: EDI = cent->currentState.weapon (+0xcc). */
     int32_t weaponIndex = cent->currentState.weapon;
     weaponInfo_t *weapon;
@@ -67,7 +67,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
 
     /* 30045cf6..30045d0e: with a playerState, a nonzero screen/view transition
      * gate skips everything. */
-    if (ps != NULL && g_cgScreenReadyState != 0) {
+    if (ps != NULL && cg.screenReadyState != 0) {
         return;
     }
 
@@ -138,7 +138,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
          * temporary, reload, then FMUL 0.001f (.rdata 0x3007bd94 = 0x3a83126f);
          * trap(0x98, viewDObjSelf, float bits) advances the view DObj animation. */
         {
-            float frameTime = (float)(long double)cg_frametime;
+            float frameTime = (float)(long double)cg.frametime;
             float dtSeconds = (float)(
                 (long double)frameTime * (long double)0.001f);
             cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME,
@@ -189,9 +189,9 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
              * Each product stays wide through its origin addition; the three
              * coordinate stores preserve the rounding between axis terms. */
             for (i = 0; i < 3; ++i) {
-                weaponEntity.origin[i] = (float)((long double)forward * cg_refdef.viewaxis[0][i] + weaponEntity.origin[i]);
-                weaponEntity.origin[i] = (float)((long double)cg_refdef.viewaxis[1][i] * cg_gunY_vmCvar.value + weaponEntity.origin[i]);
-                weaponEntity.origin[i] = (float)((long double)cg_refdef.viewaxis[2][i] * cg_gunZ_vmCvar.value + weaponEntity.origin[i]);
+                weaponEntity.origin[i] = (float)((long double)forward * cg.refdef.viewaxis[0][i] + weaponEntity.origin[i]);
+                weaponEntity.origin[i] = (float)((long double)cg.refdef.viewaxis[1][i] * cg_gunY_vmCvar.value + weaponEntity.origin[i]);
+                weaponEntity.origin[i] = (float)((long double)cg.refdef.viewaxis[2][i] * cg_gunZ_vmCvar.value + weaponEntity.origin[i]);
             }
         }
 
@@ -202,12 +202,12 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
         }
 
         /* 300460a7..3004614a: unconditionally commit the view-weapon placement
-         * to cg_specialTagPlacement — origin to 0x3048b0e4/e8/ec, the nine axis
+         * to cg.specialTagPlacement — origin to 0x3048b0e4/e8/ec, the nine axis
          * floats to 0x3048b0f0..0x3048b110. */
-        memcpy(cg_specialTagPlacement.origin, weaponEntity.origin,
-               sizeof(cg_specialTagPlacement.origin));
-        memcpy(cg_specialTagPlacement.axis, weaponEntity.axis,
-               sizeof(cg_specialTagPlacement.axis));
+        memcpy(cg.specialTagPlacement.origin, weaponEntity.origin,
+               sizeof(cg.specialTagPlacement.origin));
+        memcpy(cg.specialTagPlacement.axis, weaponEntity.axis,
+               sizeof(cg.specialTagPlacement.axis));
 
         /* 30046119..30046234: publish the tag_brass bone's world position.
          * trap(0xb2, viewDObjSelf, "tag_brass" @0x3007a8cc); 3004615e JLE skips
@@ -242,10 +242,10 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
         }
 
         /* 3004623d: weapon->weaponType (+0x7c) == 4; 30046247/3004624c: TEST
-         * AH,0x2 on cg_predictedPlayerState.entityStateFlags (0x30483248) —
+         * AH,0x2 on cg.predictedPlayerState.entityStateFlags (0x30483248) —
          * flame chunks only for an actively-firing GAS weapon. */
         if (weapon->weaponType == WEAPTYPE_GAS &&
-            (cg_predictedPlayerState.entityStateFlags &
+            (cg.predictedPlayerState.entityStateFlags &
              EF_FIRING) != 0) {
             /* 30046255..30046274: trap(0xb2, viewDObjSelf, "tag_flash"
              * @0x300772c0); 30046274 JLE skips emission when the bone is
@@ -270,10 +270,10 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
 
                 /* 30046330..3004633e: the snapshot's own client uses the
                  * predicted view angles (0x304832ac =
-                 * cg_predictedPlayerState.viewAngles); anyone else uses
+                 * cg.predictedPlayerState.viewAngles); anyone else uses
                  * cent->lerpAngles (+0x214..0x21c) (30046353..3004635f). */
-                if (cent->currentState.number == cg_snap->ps.psClientNum) {
-                    memcpy(flameViewAngles, cg_predictedPlayerState.viewAngles,
+                if (cent->currentState.number == cg.snap->ps.psClientNum) {
+                    memcpy(flameViewAngles, cg.predictedPlayerState.viewAngles,
                            sizeof(flameViewAngles));
                 } else {
                     memcpy(flameViewAngles, cent->lerpAngles,
@@ -348,10 +348,10 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
             }
 
             /* 30046417..3004646d: trap(0xe9, effect,
-             * cg_specialTagPlacement.origin (0x3048b0e4 — the placement
+             * cg.specialTagPlacement.origin (0x3048b0e4 — the placement
              * committed above), 0, &muzzleBolt). */
             cgame_syscall(CG_PLAY_EFFECT_ON_TAG, (intptr_t)effect,
-                          (intptr_t)cg_specialTagPlacement.origin,
+                          (intptr_t)cg.specialTagPlacement.origin,
                           (intptr_t)NULL, (intptr_t)&muzzleBolt);
         } else {
             /* 30046425..3004642d: world players use worldFlashEffect only — no

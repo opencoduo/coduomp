@@ -37,17 +37,17 @@ qboolean CG_DrawScoreboard(void)
 
     /* 0x30037da3: if the scoreboard is currently showing, draw at full alpha;
      * otherwise fade it out over the last CG_FADE_TIME (100) ms from the time the
-     * scoreboard state last changed (cg_scoreboardShowTime). */
-    if (cg_scoreboardShowing != 0) {
+     * scoreboard state last changed (cg.scoreFadeTime). */
+    if (cg.showScores != 0) {
         fadeAlpha = 1.0f;                    /* 0x30037dac MOV [ESP],0x3f800000 */
     } else {
-        /* 0x30037dbb: EDX=cg_scoreboardShowTime (startMsec), ECX=100 (totalMsec) */
-        vec_t *fade = CG_FadeColor(cg_scoreboardShowTime, CG_FADE_TIME);
+        /* 0x30037dbb: EDX=cg.scoreFadeTime (startMsec), ECX=100 (totalMsec) */
+        vec_t *fade = CG_FadeColor(cg.scoreFadeTime, CG_FADE_TIME);
         if (fade == 0) {
             /* 0x30037dc9: fully faded out -> empty the "fragged by" name string
-             * (store 0 into cg_fraggedByName[0], AL==0) so the obituary line stops
+             * (store 0 into cg.killerName[0], AL==0) so the obituary line stops
              * drawing, and draw nothing. */
-            cg_fraggedByName[0] = 0;
+            cg.killerName[0] = 0;
             return qfalse;                   /* 0x30037dce XOR EAX,EAX; RET */
         }
         /* 0x30037dd2: MOV EAX,[EAX] -> read fade[0] (the color's first component,
@@ -56,11 +56,11 @@ qboolean CG_DrawScoreboard(void)
     }
 
     /* 0x30037dd7: re-request "score" info from the server at most once every
-     * 2000 ms. cgs_scoreboardTime holds cg_time of the last request; the compare is
-     * the signed 32-bit `cmp (scoreboardTime + 2000), cg_time` with JGE skipping the
-     * request, i.e. request only when cg_time - cgs_scoreboardTime > 2000. */
-    if (coduo_int32_from_bits((uint32_t)cgs_scoreboardTime + 2000u) < cg_time) {
-        cgs_scoreboardTime = cg_time;
+     * 2000 ms. cg.scoresRequestTime holds cg.time of the last request; the compare is
+     * the signed 32-bit `cmp (scoreboardTime + 2000), cg.time` with JGE skipping the
+     * request, i.e. request only when cg.time - cg.scoresRequestTime > 2000. */
+    if (coduo_int32_from_bits((uint32_t)cg.scoresRequestTime + 2000u) < cg.time) {
+        cg.scoresRequestTime = cg.time;
         cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"score");
     }
 

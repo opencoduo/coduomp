@@ -8,8 +8,8 @@
 // Naming: the .mcode carries the size-guessed name BG_ParseWeaponInfoSpecificFieldType.
 // That is REJECTED here — this function parses nothing and touches no weapon-info
 // field-parse table. It is pure x87 FOV/zoom math over the cgame view globals
-// (cg_fov_vmCvar.value, cg_predictedPlayerState.pmType, cg.predictedPlayerState.{adsFraction, currentWeapon,
-// vehicleType, vehiclePosition, entityStateFlags}, cg_currentWeaponInfo). The FOV
+// (cg_fov_vmCvar.value, cg.predictedPlayerState.pmType, cg.predictedPlayerState.{adsFraction, currentWeapon,
+// vehicleType, vehiclePosition, entityStateFlags}, cg.currentWeaponInfo). The FOV
 // clamp signature (base FOV forced to 90 in game mode 5, clamped to [80,160]) plus
 // the float FOV return matches the cgame_mp.dll PPC symbol CG_CalcFov; adopted as a
 // provisional (behavior-based, NOT size-based) name.
@@ -28,7 +28,7 @@
 //   fov       (E-8) : the working FOV / return value
 //   adsFrac   (E-4) : a snapshot of cg.predictedPlayerState.adsFraction
 //
-// This function reads cg_frametime (0x304831ac): the current frame's elapsed time
+// This function reads cg.frametime (0x304831ac): the current frame's elapsed time
 // in ms; here it is the staleness-window width for the per-ADS-slot FOV update
 // (resolved from the cgame time-cluster consumers; see globals.h).
 //
@@ -44,7 +44,7 @@
 #include <math.h>
 
 /* File-local FOV constants (degrees), all proven as float immediates in the .mcode. */
-#define FOV_DEFAULT_GAMEMODE5 90.0f /* 0x42b40000, forced FOV in cg_predictedPlayerState.pmType == 5 */
+#define FOV_DEFAULT_GAMEMODE5 90.0f /* 0x42b40000, forced FOV in cg.predictedPlayerState.pmType == 5 */
 #define FOV_CLAMP_MIN         80.0f /* 0x42a00000 (0x3007bfb0), low clamp */
 #define FOV_CLAMP_MAX        160.0f /* 0x43200000 (0x3007be90), high clamp */
 #define FOV_VEHICLE_ADS       70.0f /* 0x428c0000 (0x3007bf84), vehicle-ADS lerp target */
@@ -69,15 +69,15 @@ enum {
 float CG_CalcFov(void)
 {
     /* EDX in the machine code: held live across the whole body. */
-    const int32_t now = cg_time;
+    const int32_t now = cg.time;
     /* EBP: local player's predicted entityStateFlags. */
-    const uint32_t flags = cg_predictedPlayerState.entityStateFlags;
+    const uint32_t flags = cg.predictedPlayerState.entityStateFlags;
 
     float fov;
     /* adsFrac snapshot (local E-4), read as a float. */
-    const float adsFrac = cg_predictedPlayerState.adsFraction;
+    const float adsFrac = cg.predictedPlayerState.adsFraction;
 
-    if (cg_predictedPlayerState.pmType == PM_TYPE_INTERMISSION) {
+    if (cg.predictedPlayerState.pmType == PM_TYPE_INTERMISSION) {
         /* 0x3003ffe2: forced 90 degrees, then straight to the tail transition logic. */
         fov = FOV_DEFAULT_GAMEMODE5;
     } else {
@@ -97,9 +97,9 @@ float CG_CalcFov(void)
 
         {
             /* Vehicle/turret view FOV path (0x3004003a). */
-            const int32_t vehiclePosition = cg_predictedPlayerState.vehiclePosition; /* ESI */
+            const int32_t vehiclePosition = cg.predictedPlayerState.vehiclePosition; /* ESI */
 
-            if (cg_predictedPlayerState.vehicleType == VEHICLE_TYPE_4_WHEEL &&
+            if (cg.predictedPlayerState.vehicleType == VEHICLE_TYPE_4_WHEEL &&
                 vehiclePosition == VEHICLE_POSITION_PASSENGER) {
                 /* 0x3004004c: passenger of a type-1 vehicle -> non-vehicle path. */
                 goto non_vehicle;
@@ -109,7 +109,7 @@ float CG_CalcFov(void)
             const int32_t adsSlot = (adsFrac != 0.0f) ? 1 : 0; /* EDI */
 
             /* 0x3004006f: current predicted weapon's ADS-enable flag. */
-            weaponInfo_t *weapon = bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+            weaponInfo_t *weapon = bg_weaponInfos[cg.predictedPlayerState.currentWeapon];
             const int32_t adsEnabled = weapon->adsEnabled; /* +0x328 */
 
             /* 0x30040083..0x300400ac: only the driver of an ADS-capable vehicle runs
@@ -124,14 +124,14 @@ float CG_CalcFov(void)
 
             /* 0x300400ae (COMMIT for the driver, adsSlot-indexed).
              * If this slot's last update is inside the current
-             * [now - cg_frametime, now] window, fall through to
+             * [now - cg.frametime, now] window, fall through to
              * the shared position-commit path; otherwise start a fade and finish. */
             {
                 const int32_t last = cg_fovAdsUpdateTime[adsSlot];
                 /* 0x300400b5: JG do-fade; 0x300400c3: JGE (in-window) commit_position. */
                 if (last <= now) {
                     int32_t windowStart = coduo_int32_from_bits(
-                        (uint32_t)now - (uint32_t)cg_frametime);
+                        (uint32_t)now - (uint32_t)cg.frametime);
                     if (last >= windowStart) {
                         goto commit_position;
                     }
@@ -176,13 +176,13 @@ float CG_CalcFov(void)
 non_vehicle:
     /* 0x3004012c: non-vehicle FOV, blended by the ADS zoom fraction. */
     {
-        weaponInfo_t *weapon = bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+        weaponInfo_t *weapon = bg_weaponInfos[cg.predictedPlayerState.currentWeapon];
         if (weapon->adsEnabled == 0) {   /* 0x30040140 */
             goto tail;
         }
         if (adsFrac == 1.0f) {           /* 0x30040148: fully zoomed */
             /* 0x30040161: FOV := current weapon's fully-zoomed ADS FOV. */
-            fov = cg_currentWeaponInfo->adsZoomFov; /* +0x274 */
+            fov = cg.currentWeaponInfo->adsZoomFov; /* +0x274 */
             goto tail;
         }
         if (adsFrac == 0.0f) {           /* 0x30040170: not zooming -> leave FOV as-is */
@@ -191,11 +191,11 @@ non_vehicle:
 
         /* 0x30040183: partial zoom. Map adsFrac through the in/out zoom fraction to a
          * blend parameter t in (0,1], then lerp FOV toward adsZoomFov by t. */
-        weaponInfo_t *cur = cg_currentWeaponInfo;
+        weaponInfo_t *cur = cg.currentWeaponInfo;
         /* t is carried in st0/st1 across both `t <= 0` FCOMs, the FDIV, and the fov
          * lerp FMUL (0x3004019e..0x300401ed) with no float store -- long double. */
         long double t;
-        if (cg_adsZoomingIn != 0) {
+        if (cg.weaponPosition.adsZoomingIn != 0) {
             /* 0x30040198: t0 = adsFrac - (1.0f - adsZoomInFrac). */
             t = (long double)adsFrac -
                 ((long double)1.0f - cur->adsZoomInFrac);

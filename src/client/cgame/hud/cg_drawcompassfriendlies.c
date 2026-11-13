@@ -48,7 +48,7 @@ enum {
 
 void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
 {
-    clientInfo_t *localState = &bgs.clientinfo[cg_nextSnap->ps.psClientNum];
+    clientInfo_t *localState = &bgs.clientinfo[cg.nextSnap->ps.psClientNum];
     team_t localTeam;
 
     if (localState->infoValid == 0) {
@@ -59,8 +59,8 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
         return;
     }
 
-    for (int32_t i = 0; i < cg_nextSnap->numEntities; i++) {
-        int32_t entityNum = cg_nextSnap->entities[i].number;
+    for (int32_t i = 0; i < cg.nextSnap->numEntities; i++) {
+        int32_t entityNum = cg.nextSnap->entities[i].number;
         centity_t *cent = &cg_entities[entityNum];
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
@@ -73,13 +73,13 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
             continue;
         }
 
-        cgCompassBlip_t *blip = &cg_compassFriendlies[entityNum];
-        blip->updateTime = cg_time;
+        cgCompassBlip_t *blip = &cg.compassFriendlies[entityNum];
+        blip->updateTime = cg.time;
         blip->origin[0] = cent->lerpOrigin[0];
         blip->origin[1] = cent->lerpOrigin[1];
         blip->origin[2] = cent->lerpAngles[1];
         if ((cent->nextState.eFlags & COMPASS_FRIEND_ENTITY_CHAT_FLAG) != 0) {
-            int32_t pulseTime = cg_time;
+            int32_t pulseTime = cg.time;
             if (blip->kindOrExpireTime <= pulseTime) {
                 blip->kindOrExpireTime = coduo_int32_from_bits(
                     (uint32_t)pulseTime + COMPASS_CHAT_PULSE_MS);
@@ -87,27 +87,27 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
         }
     }
 
-    if (cg_nextSnap->ps.compassFriendInfo != 0) {
-        uint32_t packed = cg_nextSnap->ps.compassFriendInfo;
+    if (cg.nextSnap->ps.compassFriendInfo != 0) {
+        uint32_t packed = cg.nextSnap->ps.compassFriendInfo;
         int32_t index = (int32_t)(packed & 63u);
-        cgCompassBlip_t *blip = &cg_compassFriendlies[index];
+        cgCompassBlip_t *blip = &cg.compassFriendlies[index];
         vec2_t report = {
             (float)((int32_t)((packed >> 6) & 0x1ffu) * 4 - 1020),
             (float)((int32_t)((packed >> 15) & 0x1ffu) * 4 - 1020)
         };
 
-        blip->updateTime = cg_time;
+        blip->updateTime = cg.time;
         if ((report[0] != COMPASS_PACKED_COORD_MAX &&
              report[0] != COMPASS_PACKED_COORD_MIN) &&
             (report[1] != COMPASS_PACKED_COORD_MAX &&
              report[1] != COMPASS_PACKED_COORD_MIN)) {
             vec3_t localOrigin = {
-                cg_nextSnap->ps.psOrigin[0],
-                cg_nextSnap->ps.psOrigin[1],
-                cg_nextSnap->ps.psOrigin[2] + cg_nextSnap->ps.viewHeightCurrent
+                cg.nextSnap->ps.psOrigin[0],
+                cg.nextSnap->ps.psOrigin[1],
+                cg.nextSnap->ps.psOrigin[2] + cg.nextSnap->ps.viewHeightCurrent
             };
-            AddLeanToPosition(localOrigin, cg_nextSnap->ps.viewAngles[1],
-                                  cg_nextSnap->ps.leanFraction,
+            AddLeanToPosition(localOrigin, cg.nextSnap->ps.viewAngles[1],
+                                  cg.nextSnap->ps.leanFraction,
                                   16.0f, 20.0f);
             blip->origin[0] = localOrigin[0] + report[0];
             blip->origin[1] = localOrigin[1] + report[1];
@@ -118,8 +118,8 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
         }
         blip->origin[2] = (float)(int8_t)(packed >> 24) * COMPASS_PACKED_YAW_SCALE;
 
-        if ((cg_nextSnap->ps.entityStateFlags & COMPASS_LOCAL_CHAT_FLAG) != 0) {
-            int32_t pulseTime = cg_time;
+        if ((cg.nextSnap->ps.entityStateFlags & COMPASS_LOCAL_CHAT_FLAG) != 0) {
+            int32_t pulseTime = cg.time;
             if (blip->kindOrExpireTime <= pulseTime) {
                 blip->kindOrExpireTime = coduo_int32_from_bits(
                     (uint32_t)pulseTime + COMPASS_CHAT_PULSE_MS);
@@ -144,18 +144,18 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
     vec4_t drawColor = { color[0], color[1], color[2], color[3] };
 
     for (int32_t i = 0; i < CG_COMPASS_BLIP_COUNT; i++) {
-        cgCompassBlip_t *blip = &cg_compassFriendlies[i];
+        cgCompassBlip_t *blip = &cg.compassFriendlies[i];
         float distance;
         float sizeDistance;
         uint32_t packedBearing;
         float bearingDeg;
 
-        if (blip->updateTime > cg_time) {
+        if (blip->updateTime > cg.time) {
             blip->updateTime = 0;
         }
         if (blip->updateTime < coduo_int32_from_bits(
-                (uint32_t)cg_time - COMPASS_BLIP_LIFETIME_MS) ||
-            i == cg_nextSnap->ps.psClientNum) {
+                (uint32_t)cg.time - COMPASS_BLIP_LIFETIME_MS) ||
+            i == cg.nextSnap->ps.psClientNum) {
             continue;
         }
 
@@ -165,7 +165,7 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
             (double)fabsf(blip->origin[1]) <= COMPASS_AT_ORIGIN_MAX) {
             packedBearing = (uint32_t)coduo_fp_to_i32_extended(
                 ((long double)vectoyaw(blip->origin) -
-                 (long double)cg_compassRefYaw) *
+                 (long double)cg.compassRefYaw) *
                 (long double)COMPASS_ANGLE2SHORT) & 0xffffu;
             bearingDeg = (float)(int32_t)packedBearing * COMPASS_SHORT2ANGLE;
             distance = cg_hudCompassMaxRange_vmCvar.value;
@@ -179,13 +179,13 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
                 (long double)cg_hudObjectiveMinAlpha_vmCvar.value);
         } else {
             vec3_t delta = {
-                blip->origin[0] - cg_refdef.vieworg[0],
-                blip->origin[1] - cg_refdef.vieworg[1],
+                blip->origin[0] - cg.refdef.vieworg[0],
+                blip->origin[1] - cg.refdef.vieworg[1],
                 0.0f
             };
             packedBearing = (uint32_t)coduo_fp_to_i32_extended(
                 ((long double)vectoyaw(delta) -
-                 (long double)cg_compassRefYaw) *
+                 (long double)cg.compassRefYaw) *
                 (long double)COMPASS_ANGLE2SHORT) & 0xffffu;
             bearingDeg = (float)(int32_t)packedBearing * COMPASS_SHORT2ANGLE;
             distance = (float)coduomp_crt_sqrtl(
@@ -255,13 +255,13 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
              (long double)quadSize * (long double)0.5f) -
             (long double)cosBearing * (long double)ringRadius);
         uint32_t packedRotation = (uint32_t)coduo_fp_to_i32_extended(
-            ((long double)cg_refdefViewAngles[1] -
+            ((long double)cg.refdefViewAngles[1] -
              (long double)blip->origin[2]) *
             (long double)COMPASS_ANGLE2SHORT) & 0xffffu;
         float rotation = (float)(int32_t)packedRotation * COMPASS_SHORT2ANGLE;
 
         int32_t pulse = 0;
-        int32_t pulseTime = cg_time;
+        int32_t pulseTime = cg.time;
         if (blip->kindOrExpireTime > pulseTime) {
             pulse = (coduo_int32_from_bits(
                          (uint32_t)blip->kindOrExpireTime -

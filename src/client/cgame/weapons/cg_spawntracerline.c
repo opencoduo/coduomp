@@ -43,8 +43,8 @@
  *   float @0x304506e8 = cg_tracerlengthlmg_vmCvar.value  (mode-A tracer length; .data)
  *   float @0x30530668 = cg_tracerlength_vmCvar.value  (mode-B tracer length; .data)
  *   float @0x304556c8 = cg_tracerSpeed        (tracer travel speed, units/s; .data)
- *   int32 @0x304831ac = cg_frametime  (current client frame duration, ms)
- *   int32 @0x304831b0 = cg_time       (current client time base, ms)
+ *   int32 @0x304831ac = cg.frametime  (current client frame duration, ms)
+ *   int32 @0x304831b0 = cg.time       (current client time base, ms)
  * The -1000.0f is a .rdata pool constant (dumped via objdump -s -j .rdata); the rest are
  * mutable .data floats/ints declared in globals.h.
  */
@@ -132,8 +132,8 @@ void CG_SpawnTracerLine(const vec3_t endOrigin, const vec3_t startOrigin, int32_
      * >= 0 for rand() >= 0, so this is a small non-negative sub-frame ms offset used to
      * spread otherwise-coincident tracer spawns across the frame. */
     int32_t startDither;
-    if (cg_frametime != 0) { /* 0x304831ac */
-        startDither = (coduo_crt_rand() % cg_frametime) / 2; /* rand 0x3005b879 */
+    if (cg.frametime != 0) { /* 0x304831ac */
+        startDither = (coduo_crt_rand() % cg.frametime) / 2; /* rand 0x3005b879 */
     } else {
         startDither = 0;
     }
@@ -144,7 +144,7 @@ void CG_SpawnTracerLine(const vec3_t endOrigin, const vec3_t startOrigin, int32_
      * that == startTime + span*1000/speed. i.e. the ms at which the TR_LINEAR trajectory
      * (speed units/s) carries the tracer the full `span` from start to newEnd. */
     int32_t startTime = coduo_int32_from_bits(
-        (uint32_t)cg_time - (uint32_t)startDither); /* 0x304831b0 */
+        (uint32_t)cg.time - (uint32_t)startDither); /* 0x304831b0 */
     int32_t travelMs = coduo_fp_to_i32_extended(
         (long double)span * (long double)-1000.0f /
         (long double)cg_tracerSpeed_vmCvar.value); /* 0x3007bff8 / 0x304556c8, trunc 0x3006be3c */

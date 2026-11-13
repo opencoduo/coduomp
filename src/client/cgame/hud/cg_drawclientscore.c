@@ -50,10 +50,10 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
     /* 0x30037420..0x30037440: once overflow is latched, or while this line is
      * above the scroll position, leave y unchanged. Skipped scroll lines still
      * advance the logical line counter. */
-    if (cg_scoreboardOverflowed) {
+    if (cg.scoreboardOverflowed) {
         return y;
     }
-    if (*counter < cg_scoreboardScrollPos) {
+    if (*counter < cg.scoreboardScrollPos) {
         *counter = coduo_int32_from_bits((uint32_t)*counter + 1u);
         return y;
     }
@@ -67,7 +67,7 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
         (long double)y + (long double)CG_SB_ROW_HEIGHT;
     float nextY = (float)nextYSum;
     if (nextYSum > CG_SB_ROW_BOTTOM_LIMIT) {
-        cg_scoreboardOverflowed = qtrue;
+        cg.scoreboardOverflowed = qtrue;
         return y;
     }
     *counter = coduo_int32_from_bits((uint32_t)*counter + 1u);
@@ -84,7 +84,7 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
      * highlight; other alternating rows get a dimmer black background. */
     const char *backgroundShaderName = (const char *)0;
     float backgroundAlphaScale = 0.0f;
-    if (entry->client == cg_clientNum) {
+    if (entry->client == cg.clientNum) {
         backgroundShaderName = cg_whiteMaterialName;
         backgroundAlphaScale = CG_SB_ROW_LOCAL_ALPHA_SCALE;
     } else if (alternateShade != 0) {

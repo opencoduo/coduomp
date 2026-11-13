@@ -21,14 +21,14 @@
 //   view rect, or set the cg_viewsize cvar. Zero behavioral overlap.
 //
 // GLOBALS consumed (resolved and renamed at their definitions):
-//   cg_nextSnap            [0x30459164]  snapshot_t* : ps.pmType at +0x10
+//   cg.nextSnap            [0x30459164]  snapshot_t* : ps.pmType at +0x10
 //   cg_viewSizeCvar        [0x3052eec0]  vmCvar_t      : .integer at +0xc
 //   cg_letterbox_vmCvar.integer   [0x304567ac]  qboolean gate : scale height to 85%
 //   cgs_glconfig.vidWidth  [0x30447a88]  backbuffer width
 //   cgs_glconfig.vidHeight [0x30447a8c]  backbuffer height
-//   cg_refdef.x/Y/Width/Height [0x30487a78..0x30487a84]  output rectangle
+//   cg.refdef.x/Y/Width/Height [0x30487a78..0x30487a84]  output rectangle
 //
-// INTERMISSION GATE (0x3003f511..0x3003f526): reads cg_nextSnap, then
+// INTERMISSION GATE (0x3003f511..0x3003f526): reads cg.nextSnap, then
 //   CMP [snap+0x10],5 ; JNZ use-cvar. Field +0x10 is the embedded playerState
 //   pmType (snapshot_t.psPmType); value 5 is PM_TYPE_INTERMISSION. So during
 //   intermission the view is forced full-size (viewsize 100); otherwise the
@@ -79,7 +79,7 @@ void CG_CalcVrect(void)
     int32_t widthSize;
     int32_t heightSize;
 
-    if (cg_nextSnap->ps.pmType == PM_TYPE_INTERMISSION) {
+    if (cg.nextSnap->ps.pmType == PM_TYPE_INTERMISSION) {
         /* Intermission: force a full-size view. */
         widthSize = CG_VIEWSIZE_MAX;
     } else {
@@ -136,9 +136,9 @@ void CG_CalcVrect(void)
         int32_t viewY =
             presentationY + (presentationHeight - height) / 2;
 
-        cg_refdef.x      = (uint32_t)viewX;
-        cg_refdef.height = (uint32_t)height;
-        cg_refdef.width  = (uint32_t)width;
-        cg_refdef.y      = (uint32_t)viewY;
+        cg.refdef.x      = (uint32_t)viewX;
+        cg.refdef.height = (uint32_t)height;
+        cg.refdef.width  = (uint32_t)width;
+        cg.refdef.y      = (uint32_t)viewY;
     }
 }

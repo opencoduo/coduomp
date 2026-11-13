@@ -39,7 +39,7 @@
 #include "client/common/client_format_validation.h"
 
 /* Stance flag bits latched into cg_stanceHintFlags (= playerState snapshot flags
- * & 0x10003) and tested against cg_predictedPlayerState.playerStateFlags. Exact EF/PMF source
+ * & 0x10003) and tested against cg.predictedPlayerState.playerStateFlags. Exact EF/PMF source
  * flag names unresolved; named by the shader selected for each bit. */
 enum {
     STANCE_FLAG_PRONE  = 0x00000001u, /* 0x1     -> prone table / prone icons */
@@ -88,19 +88,19 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
      * function copies colorVec[0..2] into [0..2]; the alpha [3] is overwritten per
      * draw. Modelled as one local, matching the machine code's buffer reuse. */
     float drawColor[4];
-    int32_t now = cg_time;
+    int32_t now = cg.time;
     float slideX;   /* frame -0x154: animated horizontal slide offset (all icons) */
 
     /* 0x3002efc0: gate on the predicted playerState entity-state flags. Proceed only
      * when 0x100000 is clear, OR 0x400000 is set. */
-    if ((cg_predictedPlayerState.entityStateFlags & STANCE_VIEW_RESTRICTED) != 0u &&
-        (cg_predictedPlayerState.entityStateFlags & STANCE_VIEW_OVERRIDE) == 0u) {
+    if ((cg.predictedPlayerState.entityStateFlags & STANCE_VIEW_RESTRICTED) != 0u &&
+        (cg.predictedPlayerState.entityStateFlags & STANCE_VIEW_OVERRIDE) == 0u) {
         return;
     }
 
     {
         /* 0x3002efed: snapshot / stance-change detection. */
-        const uint32_t stanceFlags = cg_predictedPlayerState.playerStateFlags;
+        const uint32_t stanceFlags = cg.predictedPlayerState.playerStateFlags;
 
         if (cg_hudStanceHintPrints_vmCvar.integer == 0u) {
             cg_stanceHintChangeTime = -1;                        /* 0x3002f005 */
@@ -140,7 +140,7 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
             /* 0x3002f096: while the slide window is open, draw the animated
              * stance-change label. */
             if (expire > now) {
-                if (((uint8_t)cg_predictedEventEntity.nextState.eFlags &
+                if (((uint8_t)cg.predictedPlayerEntity.nextState.eFlags &
                      STANCE_HINT_SUPPRESS_BIT) != 0u) {
                     expire = -1;                                  /* 0x3002f0a7 */
                     cg_stanceHintExpireTime = expire;
@@ -196,7 +196,7 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
                                   0,
                                   0,
                                   textArgC);
-                    now = cg_time; /* 0x3002f17b reload */
+                    now = cg.time; /* 0x3002f17b reload */
                 }
             }
         }
@@ -242,7 +242,7 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
 
         /* 0x3002f3db: refresh the cached key bindings before querying them. */
         Controls_GetConfig();
-        now = cg_time; /* 0x3002f3e5 reload after call */
+        now = cg.time; /* 0x3002f3e5 reload after call */
 
         /* 0x3002f3e0: fade-in over the last 1000ms of the 3000ms window; stored into
          * the alpha slot drawColor[3] (change+2000 > now ? 1.0 : (change-now+3000)/1000). */
@@ -416,12 +416,12 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
 
         /* 0x3002f762: draw the partial fatigue overlay only when the fatigue
          * fraction is > 0.0f (FCOMP against 0.0f). */
-        if (cg_predictedPlayerState.fatigueScale > 0.0f) {                   /* 0x3007bcec = 0.0f */
+        if (cg.predictedPlayerState.fatigueScale > 0.0f) {                   /* 0x3007bcec = 0.0f */
             /* 0x3002f77c..0x3002f796 keeps 1-fatigueScale live in x87 after
              * storing its rounded float copy for the texture coordinate.  The
              * live value, not that copy, feeds the filled-height multiply. */
             long double fracWide = 1.0L -
-                (long double)cg_predictedPlayerState.fatigueScale;
+                (long double)cg.predictedPlayerState.fatigueScale;
             float frac = (float)fracWide;                                    /* 0x3002f796 FST */
             float filledHeight = (float)((long double)iconRect->h * fracWide); /* 0x3002f7a2..0x3002f7aa */
             /* 0x3002f7a2..0x3002f7f8: the overlay covers the BOTTOM (1-frac) part of
@@ -447,7 +447,7 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
     }
 
     /* -------- countdown overlay (0x3002f81f) -------- */
-    now = cg_time; /* 0x3002f824 countdown reload */
+    now = cg.time; /* 0x3002f824 countdown reload */
     if (coduo_int32_from_bits((uint32_t)cg_stanceHintChangeTime + 1000u) > now) {
         int32_t e = coduo_int32_from_bits(
             (uint32_t)cg_stanceHintChangeTime - (uint32_t)now + 1000u);

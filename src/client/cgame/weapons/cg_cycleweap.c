@@ -12,7 +12,7 @@
 //
 // Name adjudication: the .mcode header's assigned vmMain name is a size/corpus
 // collision and is rejected. This function is not the exported VM dispatcher; it
-// reads cg_snap, cg_weaponSelect_vmCvar.integer, bg_weaponInfos, cg weapon-slot/ammo globals, and
+// reads cg.snap, cg_weaponSelect_vmCvar.integer, bg_weaponInfos, cg weapon-slot/ammo globals, and
 // commits cvars through CG_SelectWeaponIndex/trap_Cvar_Set. The existing header
 // The Mac CG_CycleWeap shares BG_GetStackSlotForWeapon and
 // CG_SelectFirstWeaponInSlot, and the corresponding next/previous-weapon command
@@ -32,10 +32,10 @@ void CG_CycleWeap(int32_t forward, int32_t requireAmmo)
 
     /* 0x30047960..0x30047977: no weapon cycling unless a snapshot exists and the
      * local snapshot flags include the 0x80000 player-state flag. */
-    if (cg_snap == 0) {
+    if (cg.snap == 0) {
         return;
     }
-    if ((cg_snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {
+    if ((cg.snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {
         return;
     }
 
@@ -50,7 +50,7 @@ void CG_CycleWeap(int32_t forward, int32_t requireAmmo)
     }
 
     currentWeapon = cg_weaponSelect_vmCvar.integer;
-    ps = &cg_predictedPlayerState;
+    ps = &cg.predictedPlayerState;
 
     slot = BG_IsPlayerWeaponInSlot(ps, currentWeapon, 1);
     if (slot == WEAPSLOT_NONE) {
@@ -74,7 +74,7 @@ void CG_CycleWeap(int32_t forward, int32_t requireAmmo)
                 uint32_t heldMask = 1u << ((uint32_t)weapon & 0x1f);
                 int32_t heldWord =
                     coduo_int32_sar((uint32_t)weapon, 5);
-                if ((cg_predictedPlayerState.weaponBits[heldWord] & heldMask) == 0) {
+                if ((cg.predictedPlayerState.weaponBits[heldWord] & heldMask) == 0) {
                     continue;
                 }
 
@@ -106,9 +106,9 @@ void CG_CycleWeap(int32_t forward, int32_t requireAmmo)
 
                 if (requireAmmo != 0) {
                     weaponInfo = bg_weaponInfos[weapon];
-                    if ((uint32_t)cg_predictedPlayerState.clips[
+                    if ((uint32_t)cg.predictedPlayerState.clips[
                             weaponInfo->clipIndex] +
-                            (uint32_t)cg_predictedPlayerState.ammo[
+                            (uint32_t)cg.predictedPlayerState.ammo[
                                 weaponInfo->ammoIndex] ==
                         0u) {
                         continue;
@@ -142,7 +142,7 @@ next_weapon:
             (uint32_t)WEAPSLOT_PRIMARY_FIRST);
     }
     while (slot != stopSlot) {
-        int8_t slotWeaponByte = cg_predictedPlayerState.weaponSlots[slot];
+        int8_t slotWeaponByte = cg.predictedPlayerState.weaponSlots[slot];
         if (slotWeaponByte != 0) {
             if (requireAmmo == 0) {
                 CG_SelectWeaponIndex((int32_t)(int8_t)slotWeaponByte, cg_weaponSelect_vmCvar.integer);
@@ -150,12 +150,12 @@ next_weapon:
             }
 
             weaponInfo_t *weaponInfo = bg_weaponInfos[(int32_t)(int8_t)slotWeaponByte];
-            if ((uint32_t)cg_predictedPlayerState.clips[
+            if ((uint32_t)cg.predictedPlayerState.clips[
                     weaponInfo->clipIndex] +
-                    (uint32_t)cg_predictedPlayerState.ammo[
+                    (uint32_t)cg.predictedPlayerState.ammo[
                         weaponInfo->ammoIndex] !=
                 0u) {
-                CG_SelectWeaponIndex((int32_t)(int8_t)cg_predictedPlayerState.weaponSlots[slot],
+                CG_SelectWeaponIndex((int32_t)(int8_t)cg.predictedPlayerState.weaponSlots[slot],
                                      cg_weaponSelect_vmCvar.integer);
                 return;
             }
@@ -178,13 +178,13 @@ next_weapon:
 
 reconcile_current_weapon:
     currentWeapon = cg_weaponSelect_vmCvar.integer;
-    if ((cg_predictedPlayerState.weaponBits[
+    if ((cg.predictedPlayerState.weaponBits[
              coduo_int32_sar((uint32_t)currentWeapon, 5)] &
          (1u << ((uint32_t)currentWeapon & 0x1f))) != 0) {
         return;
     }
 
-    cg_weaponSelectTime = cg_time;
+    cg.weaponSelectTime = cg.time;
     if (currentWeapon == 0) {
         return;
     }
