@@ -85,26 +85,26 @@ void CG_DrawHudElemClock(cgAlignedDrawItem *item, hudElem_t *elem)
 
     /*
      * 3002a02e..a044: register the clock-FACE shader. The machine inlines
-     * CG_RegisterMaterial's body — CG_DrawInformation(0) loading pump
-     * (3002a030), then cgame_syscall(CG_R_REGISTERSHADER, name, 5) (3002a03e).
-     * Expressed as the equivalent CG_RegisterMaterial call with
-     * R_IMAGE_TRACK_HUD (the machine's literal 5), matching
-     * CG_DrawHudElemShader. Handle kept in EBP across the body.
+     * trap_R_RegisterShaderNoMip (0x3003dda0): CG_DrawInformation(0) loading
+     * pump (3002a030), then cgame_syscall(CG_R_REGISTERSHADER, name, 5)
+     * (3002a03e), with R_IMAGE_TRACK_HUD as the machine's literal 5. This is not
+     * CG_RegisterMaterial (0x3003db80, trap 0x30), which CG_DrawHudElemShader
+     * calls. Handle kept in EBP across the body.
      */
     qhandle_t hFace =
-        CG_RegisterMaterial(shaderName, R_IMAGE_TRACK_HUD);
+        trap_R_RegisterShaderNoMip(shaderName, R_IMAGE_TRACK_HUD);
 
     /*
      * 3002a044..a074: append the literal "Needle" to the config-string name and
-     * register that as the clock HAND shader (same inlined register-material
-     * sequence). The suffix bytes are copied from the .rdata string at 0x300777d0
+     * register that as the clock HAND shader (same inlined NoMip register
+     * sequence, 3002a075..a083). The suffix bytes are copied from the .rdata string at 0x300777d0
      * ("Needle\0", dumped via objdump -s -j .rdata) onto the NUL terminator found
      * by the a050 strlen loop — i.e. strcat(shaderName, "Needle").
      */
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     strcat(shaderName, CG_CLOCK_NEEDLE_SUFFIX);
     qhandle_t hNeedle =
-        CG_RegisterMaterial(shaderName, R_IMAGE_TRACK_HUD);
+        trap_R_RegisterShaderNoMip(shaderName, R_IMAGE_TRACK_HUD);
 
     /*
      * 3002a092..a10e: convert the element's timer value into a needle rotation
