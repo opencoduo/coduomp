@@ -24,7 +24,7 @@
 
 enum {
     CG_VOTE_TEXT_STYLE = 3,
-    /* Jump table @0x3001bbb8: cg_complaintClientNum+4 indexes; -1 -> "CGAME_COMPLAINTFILED"
+    /* Jump table @0x3001bbb8: cgs.complaintClientNum+4 indexes; -1 -> "CGAME_COMPLAINTFILED"
      * (0x3001b8c4), -2 -> DISMISSED, -3 -> SERVERHOST, -4 -> "CGAME_SERVERHOSTTEAMKILLED"
      * (0x3001b8d9). A prior pass had these enum values reversed (FILED=-4..TEAMKILL=-1),
      * so every complaint status string was shown for the wrong code. */
@@ -37,7 +37,7 @@ enum {
 void CG_DrawVote(void)
 {
     int32_t initialNow = cg.time;
-    int32_t initialComplaintEnd = cg_complaintEndTime;
+    int32_t initialComplaintEnd = cgs.complaintEndTime;
     float color[4] = {1.0f, 1.0f, 0.0f, 1.0f};
     char yesKey[256];
     char noKey[256];
@@ -46,7 +46,7 @@ void CG_DrawVote(void)
     /* 0x3001b7f0..0x3001b893 skips only the binding construction when the
      * entry snapshots say that neither display is active. It does not return:
      * both timing globals are read again at 0x3001b89a. */
-    if (initialComplaintEnd > initialNow || cg_voteTime != 0) {
+    if (initialComplaintEnd > initialNow || cgs.voteTime != 0) {
         /* Both complaint and ordinary vote text can show the current yes/no
          * bindings. The DLL uses CRT strncpy(count=255) followed by an explicit
          * byte-255 NUL. */
@@ -66,11 +66,11 @@ void CG_DrawVote(void)
     }
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (cg_complaintEndTime > cg.time) {
+    if (cgs.complaintEndTime > cg.time) {
         const char *statusToken = NULL;
         const char *text;
 
-        switch (cg_complaintClientNum) {
+        switch (cgs.complaintClientNum) {
         case CG_COMPLAINT_STATUS_FILED:
             statusToken = "CGAME_COMPLAINTFILED";
             break;
@@ -102,7 +102,7 @@ void CG_DrawVote(void)
             return;
         }
 
-        int32_t validityClientNum = cg_complaintClientNum;
+        int32_t validityClientNum = cgs.complaintClientNum;
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if ((uint32_t)validityClientNum >= MAX_CLIENTS) {
             Com_Error(ERR_DROP,
@@ -120,7 +120,7 @@ void CG_DrawVote(void)
          * callback-mutated client number and repeats the target-width IMUL. */
         const char *teamkillFormat =
             CG_SafeTranslateString_Internal("cgame", "CGAME_COMPLAINTTEAMKILLFILE");
-        int32_t nameClientNum = cg_complaintClientNum;
+        int32_t nameClientNum = cgs.complaintClientNum;
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if ((uint32_t)nameClientNum >= MAX_CLIENTS) {
             Com_Error(ERR_DROP,
@@ -161,16 +161,16 @@ void CG_DrawVote(void)
 
     /* 0x3001ba02..0x3001ba08: without an active vote the target returns before
      * clearing voteModified, playing the alert, or querying milliseconds. */
-    if (cg_voteTime == 0) {
+    if (cgs.voteTime == 0) {
         return;
     }
 
-    if (cg_voteModified != qfalse) {
+    if (cgs.voteModified != qfalse) {
         snapshot_t *soundSnap = cg.snap;
         const void *soundOrigin = &soundSnap->ps.psOrigin;
-        cg_voteModified = qfalse;
+        cgs.voteModified = qfalse;
         int32_t soundClientNum = soundSnap->ps.psClientNum;
-        const char *talkSound = cgs_media_playerTalkSound;
+        const char *talkSound = cgs.media.talkSound;
         /* NOT_FROM_ORIGINAL_SOURCE: keep the local notification's nonspatial
          * owner stable without changing its captured spatial source. */
         cgame_compat_play_local_sound_alias(soundClientNum, soundOrigin, talkSound);
@@ -180,7 +180,7 @@ void CG_DrawVote(void)
         int32_t milliseconds = coduo_int32_from_bits(
             (uint32_t)cgame_syscall(CG_MILLISECONDS));
         int32_t delta = coduo_int32_from_bits(
-            (uint32_t)cg_voteTime - (uint32_t)milliseconds);
+            (uint32_t)cgs.voteTime - (uint32_t)milliseconds);
         int32_t seconds = delta / 1000;
         qboolean keysHidden;
         const char *voteLabel;
@@ -200,7 +200,7 @@ void CG_DrawVote(void)
         keysHidden = (cg.snap->ps.entityStateFlags &
                       PS_EFLAG_VOTE_KEYS_HIDDEN) != 0;
         voteLabel = CG_SafeTranslateString_Internal("cgame", "CGAME_VOTE");
-        text = va("%s(%i):%s", voteLabel, seconds, cg_voteString);
+        text = va("%s(%i):%s", voteLabel, seconds, cgs.voteString);
         trap_R_Text_Paint(CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(200.0f), 0,
                   CG_FloatBits(0.20833333f), (intptr_t)color,
                   (intptr_t)text, 0, 0, CG_VOTE_TEXT_STYLE);
@@ -210,8 +210,8 @@ void CG_DrawVote(void)
         /* Both paths read voteNo before voteYes (0x3001badb/0x3001bae1 and
          * 0x3001bb56/0x3001bb5d), after both translation calls. */
         {
-            int32_t voteNo = cg_voteNo;
-            int32_t voteYes = cg_voteYes;
+            int32_t voteNo = cgs.voteNo;
+            int32_t voteYes = cgs.voteYes;
 
             if (keysHidden) {
                 text = va("%s:%i, %s:%i", yesLabel, voteYes, noLabel, voteNo);

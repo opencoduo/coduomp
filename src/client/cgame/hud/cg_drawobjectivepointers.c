@@ -36,7 +36,7 @@
  * 182.04444885f = 65536/360 ANGLE2SHORT scale (0x3007bd60), 0.0054931640625f =
  * 360/65536 SHORT2ANGLE scale (0x3007bd5c), 0.0f (0x3007bcec), pi 3.14159274f
  * (0x3007bd88), 180.0f (0x3007bd50), and the double 43.75 (0x3007c1e8).
- * cgs_screenXScale/cgs_screenYScale (0x30447aa4/0x30447aa8) scale virtual-640x480 draw
+ * cgs.screenXScale/cgs.screenYScale (0x30447aa4/0x30447aa8) scale virtual-640x480 draw
  * coordinates to the real framebuffer. cg.refdef.vieworg (0x30487a90) is the view origin.
  */
 
@@ -289,10 +289,10 @@ void CG_DrawObjectivePointers(const rectDef_t *rect, const vec3_t color)
         /* 0x30030244..0x30030297: draw the icon quad, scaling the virtual-640x480
          * coordinates to the real framebuffer. Position uses iconX/iconY; the quad is
          * the full ring square (R x R). Texcoords are (s1,t1,s2,t2) = (0,0,1,1). */
-        trap_R_DrawStretchPic(CG_FloatBits(cgs_screenXScale * iconX),      /* x */
-                              CG_FloatBits(cgs_screenYScale * iconY),      /* y */
-                              CG_FloatBits(cgs_screenXScale * ringRadius), /* w */
-                              CG_FloatBits(cgs_screenYScale * ringRadius), /* h */
+        trap_R_DrawStretchPic(CG_FloatBits(cgs.screenXScale * iconX),      /* x */
+                              CG_FloatBits(cgs.screenYScale * iconY),      /* y */
+                              CG_FloatBits(cgs.screenXScale * ringRadius), /* w */
+                              CG_FloatBits(cgs.screenYScale * ringRadius), /* h */
                               CG_FloatBits(0.0f),                          /* s1 */
                               CG_FloatBits(0.0f),                          /* t1 */
                               CG_FloatBits(1.0f),                          /* s2 */

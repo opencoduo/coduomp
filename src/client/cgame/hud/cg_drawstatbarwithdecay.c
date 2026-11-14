@@ -142,12 +142,12 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
 
     if (drawFirst) {
         // 0x3002fa3c..0x3002fa6f: build the four scaled coordinates of segment 1.
-        float x = cgs_screenXScale * rect->x;      /* [ESP+0x18] */
-        float y = cgs_screenYScale * rect->y;      /* [ESP+0x14] */
+        float x = cgs.screenXScale * rect->x;      /* [ESP+0x18] */
+        float y = cgs.screenYScale * rect->y;      /* [ESP+0x14] */
         scaledFillW = (float)(
             (long double)frac * (long double)rect->w *
-            (long double)cgs_screenXScale); /* [ESP+0x10] */
-        float h = cgs_screenYScale * rect->h;      /* [ESP+0x0c] */
+            (long double)cgs.screenXScale); /* [ESP+0x10] */
+        float h = cgs.screenYScale * rect->h;      /* [ESP+0x0c] */
 
         // 0x3002fa73 FCOM 0.5f (0x3007bce8); TEST AH,0x41; JNZ 0x3002faf2 -> the
         // green path runs when barWidthFrac <= 0.5, the white-fade path when it is
@@ -235,14 +235,14 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
         float trailX = (float)(
             ((long double)frac * (long double)rect->w +
              (long double)rect->x) *
-            (long double)cgs_screenXScale);                                   /* [ESP+0x20] */
-        float trailY = cgs_screenYScale * rect->y;                             /* [ESP+0x1c] */
+            (long double)cgs.screenXScale);                                   /* [ESP+0x20] */
+        float trailY = cgs.screenYScale * rect->y;                             /* [ESP+0x1c] */
         /* 0x3002fc2c executes after two pushes, so [esp+0x10] aliases the
          * original live-frac slot [esp+0x08], not scaledFillW [esp+0x10]. */
         float trailW = (float)(
             ((long double)display - (long double)frac) *
-            (long double)rect->w * (long double)cgs_screenXScale);             /* [ESP+0x18] */
-        float trailH = cgs_screenYScale * rect->h;                             /* [ESP+0x14] */
+            (long double)rect->w * (long double)cgs.screenXScale);             /* [ESP+0x18] */
+        float trailH = cgs.screenYScale * rect->h;                             /* [ESP+0x14] */
 
         // 0x3002fc46: force the trailing bar RGB to red (1,0,0), retaining
         // the caller's alpha; EAX=0 from XOR sets color[1],color[2].

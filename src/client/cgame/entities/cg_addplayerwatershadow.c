@@ -153,6 +153,6 @@ void CG_AddPlayerWaterShadow(centity_t *cent)
     }
 
     cgame_syscall(CG_R_ADDPOLYTOSCENE,
-                  (int32_t)cgs_media_wakeMarkShader, 4,
+                  (int32_t)cgs.media.wakeMarkShader, 4,
                   (intptr_t)verts);
 }

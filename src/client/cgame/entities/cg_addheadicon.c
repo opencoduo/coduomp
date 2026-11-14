@@ -104,7 +104,7 @@ void CG_AddHeadIcon(centity_t *cent)
      * IS that client (i.e. we are not actually watching ourselves die). */
     if (cent->currentState.number == cg.clientNum) {
         if (cg.snap->ps.psClientNum != cg.clientNum) {
-            CG_AddHeadIconSprite(cent, cgs_youInKillCamIcon, coduo_fp_to_i32_extended(size), 1);
+            CG_AddHeadIconSprite(cent, cgs.media.youInKillCamIcon, coduo_fp_to_i32_extended(size), 1);
             return;
         }
         /* 0x30032b72 je 0x30032b94: when psClientNum == cg.clientNum (we are not
@@ -119,7 +119,7 @@ void CG_AddHeadIcon(centity_t *cent)
 
     /* Disconnected clients get the "disconnected" icon regardless of team. */
     if ((eFlags & EF_HEADICON_DISCONNECTED) != 0) {
-        CG_AddHeadIconSprite(cent, cgs_disconnectedIcon, coduo_fp_to_i32_extended(size), 0);
+        CG_AddHeadIconSprite(cent, cgs.media.connectionShader, coduo_fp_to_i32_extended(size), 0);
         return;
     }
 
@@ -134,7 +134,7 @@ void CG_AddHeadIcon(centity_t *cent)
         /* Otherwise, if the entity is flagged as typing/chatting, draw the talk balloon
          * (rendered slightly smaller: size - 5.0). */
         if ((eFlags & EF_HEADICON_TALKING) != 0) {
-            CG_AddHeadIconSprite(cent, cgs_talkBalloonIcon,
+            CG_AddHeadIconSprite(cent, cgs.media.balloonShader,
                                  coduo_fp_to_i32_extended(
                                      (long double)size -
                                      (long double)CG_TALKBALLOON_SIZE_BIAS),

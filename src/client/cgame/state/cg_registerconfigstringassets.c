@@ -20,8 +20,8 @@
 //     "menu/art/unknownmap" fallback) as a 2D-UI shader via
 //     trap_R_RegisterShaderNoMip(name, R_IMAGE_TRACK_UI); (b) resets the 2D color
 //     with cgame_syscall(CG_R_SETCOLOR, 0); (c) draws the levelshot full-screen via
-//     cgame_syscall(CG_R_DRAWSTRETCHPIC, ...) with x = cgs_screenXScale*0,
-//     y = cgs_screenYScale*0, w = cgs_screenXScale*640, h = cgs_screenYScale*480,
+//     cgame_syscall(CG_R_DRAWSTRETCHPIC, ...) with x = cgs.screenXScale*0,
+//     y = cgs.screenYScale*0, w = cgs.screenXScale*640, h = cgs.screenYScale*480,
 //     s/t = (0,0)-(1,1); (d) reads "com_expectedhunkusage" via
 //     cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, ...) into a 64-byte buffer and
 //     atoi's it, and when positive draws the styled loading bar at (200,468,240,10)
@@ -33,13 +33,13 @@
 //     (same {0.5,0.5,0.5,0.3}/{1,1,1,0.3} colors, flags 0x18, rect 200,468,240,10)
 //     into a direct CG_FilledBar (0x3001c5d0) call — semantically identical.
 //   * Config-string reads are inlined as
-//     &cg_gameState.stringData[cg_gameState.stringOffsets[cfg]] (offset table
+//     &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfg]] (offset table
 //     0x30440a00, data base 0x30442a00), carrying CG_ConfigString's out-of-range
 //     Com_ErrorMessage("CG_ConfigString: bad index: %i", cfg) diagnostic (bounds
 //     [0, MAX_CONFIGSTRINGS); the error is emitted but the lookup still proceeds).
 //     Same inline idiom as sibling CG_SetConfigValues (0x30038430).
 //   * The HUD-stat seeds store into the parallel signed-int trio
-//     cg_hudStat5Value/cg_hudStat6Value/cg_hudStat14Value from config strings
+//     cgs.scores1/cgs.scores2/cgs.levelStartTime from config strings
 //     5, 6, 14.
 //
 // i386/ABI facts recorded but not source behavior: /GS stack cookie
@@ -83,7 +83,7 @@ enum {
 /*
  * Resolve config string `cfg` (the inlined CG_ConfigString body): report the shared
  * out-of-range diagnostic and still proceed with the unbounded offset lookup, then
- * return &cg_gameState.stringData[cg_gameState.stringOffsets[cfg]]. Matches the
+ * return &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfg]]. Matches the
  * machine's inlined bounds check at every config-string reference in this function.
  */
 /* NOT_FROM_ORIGINAL_SOURCE: readable factoring of the repeated inlined
@@ -94,7 +94,7 @@ cgame_compat_config_string_inline(int32_t cfg)
     if (cfg < 0 || cfg >= MAX_CONFIGSTRINGS) {          /* TEST/JL + CMP 0x800/JL */
         Com_ErrorMessage(cg_configStringBadIndexFmt, cfg);
     }
-    return &cg_gameState.stringData[cg_gameState.stringOffsets[cfg]];
+    return &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfg]];
 }
 
 /*
@@ -142,7 +142,7 @@ cgame_compat_register_assets_loading_pump(void)
      * "levelshots/<map>.tga" shader, or fall back to "menu/art/unknownmap".
      * (0x30038995..0x300389e2.) Info_ValueForKey takes info in ECX, key in EBX. */
     mapName = Info_ValueForKey(
-        &cg_gameState.stringData[cg_gameState.stringOffsets[0]], "mapname");
+        &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]], "mapname");
 
     levelShotShader = 0;
     if (mapName != NULL && mapName[0] != '\0') {        /* 0x300389ab..0x300389b2 */
@@ -159,16 +159,16 @@ cgame_compat_register_assets_loading_pump(void)
 
     /* Draw the levelshot full-screen. Coordinates are virtual->real scaled and
      * forwarded as raw float bit patterns to the stretch-pic trap:
-     *   x = cgs_screenXScale * 0.0f,   y = cgs_screenYScale * 0.0f,
-     *   w = cgs_screenXScale * 640.0f, h = cgs_screenYScale * 480.0f,  s/t (0,0)-(1,1).
+     *   x = cgs.screenXScale * 0.0f,   y = cgs.screenYScale * 0.0f,
+     *   w = cgs.screenXScale * 640.0f, h = cgs.screenYScale * 480.0f,  s/t (0,0)-(1,1).
      * (0x300389ee..0x30038a79, FMULs against 0x3007bcec=0.0f / 0x3007bf34=640.0f /
      * 0x3007c148=480.0f; the heavily-interleaved x87 frame is identical to
      * CG_DrawActive's.) */
     {
-        float x = (float)((long double)cgs_screenXScale * 0.0L);
-        float y = (float)((long double)cgs_screenYScale * 0.0L);
-        float w = (float)((long double)cgs_screenXScale * 640.0L);
-        float h = (float)((long double)cgs_screenYScale * 480.0L);
+        float x = (float)((long double)cgs.screenXScale * 0.0L);
+        float y = (float)((long double)cgs.screenYScale * 0.0L);
+        float w = (float)((long double)cgs.screenXScale * 640.0L);
+        float h = (float)((long double)cgs.screenYScale * 480.0L);
         trap_R_DrawStretchPic(CG_FloatBits(x), CG_FloatBits(y),
                               CG_FloatBits(w), CG_FloatBits(h),
                               CG_FloatBits(0.0f), CG_FloatBits(0.0f),  /* s1, t1 */
@@ -220,12 +220,12 @@ void CG_RegisterConfigStringAssets(void)
 
     /* Seed the three signed HUD-stat integers from config strings 5, 6, 14 (inlined
      * config-string lookups + Q_atoi). (0x30038836..0x30038888.) */
-    cg_hudStat5Value  = coduo_crt_atoi(
-        &cg_gameState.stringData[cg_gameState.stringOffsets[CS_TEAM_SCORE_AXIS]]);
-    cg_hudStat6Value  = coduo_crt_atoi(
-        &cg_gameState.stringData[cg_gameState.stringOffsets[CS_TEAM_SCORE_ALLIES]]);
-    cg_hudStat14Value = coduo_crt_atoi(
-        &cg_gameState.stringData[cg_gameState.stringOffsets[CS_HUD_STAT_14]]);
+    cgs.scores1  = coduo_crt_atoi(
+        &cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_TEAM_SCORE_AXIS]]);
+    cgs.scores2  = coduo_crt_atoi(
+        &cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_TEAM_SCORE_ALLIES]]);
+    cgs.levelStartTime = coduo_crt_atoi(
+        &cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_HUD_STAT_14]]);
 
     /* Parse the map's fog config string. (0x3003888d CALL CG_ParseFog.) */
     CG_ParseFog();

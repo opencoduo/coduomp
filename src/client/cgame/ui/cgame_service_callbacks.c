@@ -30,7 +30,7 @@ int32_t CG_OwnerDrawWidth(int32_t ownerDraw, int32_t font,
 
     if (ownerDraw == OWNERDRAW_WIDTH_GAMETYPE)
         return coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_R_TEXT_WIDTH, (intptr_t)cgs_gametype, font,
+            CG_R_TEXT_WIDTH, (intptr_t)cgs.gametype, font,
             CG_FloatBits(scale), 0));
     if (ownerDraw != OWNERDRAW_WIDTH_FRAGGED_BY) return 0;
     const char *text = cg.killerName[0] != '\0'

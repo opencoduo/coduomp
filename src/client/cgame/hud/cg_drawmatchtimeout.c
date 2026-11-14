@@ -16,25 +16,25 @@
  *
  * NAME: the .mcode header's size-guess "PM_ReloadClip" is REJECTED. This is not a
  * PM_Weapon step: it touches no playerState, no clip/reserve ammo, no bg_* weapon
- * info, and no pmove state. Its body reads the timeout HUD state (cg_timeoutEndTime
- * / cg_timeoutActive / cg_timeoutString), localizes "CGAME_PAUSED" in the "cgame"
+ * info, and no pmove state. Its body reads the timeout HUD state (cgs.timeoutEndTime
+ * / cgs.timeoutActive / cgs.timeoutString), localizes "CGAME_PAUSED" in the "cgame"
  * domain, formats a display string, and dispatches cgame draw syscalls (trap 52
  * measure, trap 53 measure, trap 54 draw) through *0x30085e9c. The "PM_ReloadClip"
  * label was a pure win/PPC size collision (0x14b vs 0x14c) with no behavioral basis
  * (name_evidence in the .mcode admits it is a size match). The behavioral name is
  * corroborated by the same-module PPC anchor CG_DrawMatchTimeout in cgame_mp.dll.
  * It is the draw-time counterpart of CG_BuildTimeoutHudStrings (0x3002de90), which
- * fills cg_timeoutEndTime / cg_timeoutActive / cg_timeoutString from the config
+ * fills cgs.timeoutEndTime / cgs.timeoutActive / cgs.timeoutString from the config
  * strings; this function renders them.
  *
  * Control flow / gate (0x3001bbd3..0x3001bbfa):
- *   EAX = cg_timeoutEndTime (0x30447fd0); if it is 0 the function only writes the
+ *   EAX = cgs.timeoutEndTime (0x30447fd0); if it is 0 the function only writes the
  *   local white color vec4 (unused on this path) and returns (JZ 0x3001bd17). So the
  *   overlay is drawn only while a timeout end time is set.
  *
  * Seconds-remaining (0x3001bc00..0x3001bc26), only used on the inactive branch:
  *   trap(6) returns the engine milliseconds (CG_MILLISECONDS, same as
- *   CG_BuildTimeoutHudStrings). remainingMs = cg_timeoutEndTime - now; the
+ *   CG_BuildTimeoutHudStrings). remainingMs = cgs.timeoutEndTime - now; the
  *   0x10624dd3 multiply + `SAR EDX,6` + sign fixup is the classic signed
  *   divide-by-1000 (remainingMs / 1000). The trailing `SHR EAX,0x1f; ADD EAX,EDX;
  *   JNS; XOR EAX,EAX` clamps a negative quotient to 0, i.e.
@@ -42,12 +42,12 @@
  *
  * Display string (0x3001bc28..0x3001bc70):
  *   translated = CG_SafeTranslateString_Internal("cgame", "CGAME_PAUSED")  (fastcall EAX=domain,
- *   ECX=reference at 0x3001bc36/0x3001bc3d). Then, branching on cg_timeoutActive
+ *   ECX=reference at 0x3001bc36/0x3001bc3d). Then, branching on cgs.timeoutActive
  *   (0x30447fd4, TEST/JZ at 0x3001bc2f/0x3001bc3b):
- *     - active   != 0: str = va("%s\n%s",      translated, cg_timeoutString)
+ *     - active   != 0: str = va("%s\n%s",      translated, cgs.timeoutString)
  *     - active   == 0: str = va("%s: %i \n%s", translated, secondsRemaining,
- *                               cg_timeoutString)
- *   (the "%s\n%s" 0x30076ac4 and "%s: %i \n%s" 0x30076ab8 literals; cg_timeoutString
+ *                               cgs.timeoutString)
+ *   (the "%s\n%s" 0x30076ac4 and "%s: %i \n%s" 0x30076ab8 literals; cgs.timeoutString
  *   is 0x30447fd8, pushed at 0x3001bc31 before the branch). va (0x3004e8a0) returns
  *   its rolling temp buffer, stored in ESI as the text to draw.
  *
@@ -101,7 +101,7 @@ void CG_DrawMatchTimeout(void)
 {
     /* 0x3001bbd3 reads the gate before materializing the local color, then tests
      * the captured dword only after all four stores. */
-    int32_t timeoutEnd = cg_timeoutEndTime;
+    int32_t timeoutEnd = cgs.timeoutEndTime;
     vec4_t white = {1.0f, 1.0f, 1.0f, 1.0f};
 
     /* No timeout end time set -> draw nothing. */
@@ -109,13 +109,13 @@ void CG_DrawMatchTimeout(void)
         return;
     }
 
-    /* max(0, (cg_timeoutEndTime - engineMilliseconds) / 1000). Computed with the
+    /* max(0, (cgs.timeoutEndTime - engineMilliseconds) / 1000). Computed with the
      * signed divide-by-1000 magic sequence; negative quotients clamp to 0. Only
      * used on the "not active" display branch below. */
     int32_t milliseconds = coduo_int32_from_bits(
         (uint32_t)cgame_syscall(CG_MILLISECONDS));
     int32_t remainingMs = coduo_int32_from_bits(
-        (uint32_t)cg_timeoutEndTime - (uint32_t)milliseconds);
+        (uint32_t)cgs.timeoutEndTime - (uint32_t)milliseconds);
     int32_t secondsRemaining = remainingMs / 1000;
     if (secondsRemaining < 0) {
         secondsRemaining = 0;
@@ -125,17 +125,17 @@ void CG_DrawMatchTimeout(void)
      * omitted; otherwise it is embedded as "%i". 0x3001bc28 snapshots the
      * active word before translation; each leg then performs its own translation
      * so no callback can change the selected format. */
-    int32_t timeoutActive = cg_timeoutActive;
+    int32_t timeoutActive = cgs.timeoutActive;
     char *str;
     if (timeoutActive != 0) {
         char *translated =
             CG_SafeTranslateString_Internal("cgame", "CGAME_PAUSED");
-        str = (char *)va("%s\n%s", translated, cg_timeoutString);
+        str = (char *)va("%s\n%s", translated, cgs.timeoutString);
     } else {
         char *translated =
             CG_SafeTranslateString_Internal("cgame", "CGAME_PAUSED");
         str = (char *)va("%s: %i \n%s", translated, secondsRemaining,
-                         cg_timeoutString);
+                         cgs.timeoutString);
     }
 
     /* Measure the text and center it on the 640x480 virtual screen. */

@@ -6,7 +6,7 @@
 // Source: uo_cgame_mp_x86.dll 0x3001a7c0..0x3001a8db
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3001a7c0_3001a8db.mcode
 //
-// CG_ScreenFade — advance the cg_fovFade timed alpha animator by real elapsed time
+// CG_ScreenFade — advance the cgs.scrFade timed alpha animator by real elapsed time
 // and, if the resulting alpha is positive, fill the whole virtual 640x480 screen
 // with an opaque-black quad at that alpha. Runs once per frame with no arguments.
 //
@@ -19,7 +19,7 @@
 // symbol by behavior (advance a timed fade fraction, then draw a fullscreen black
 // quad); it is provisional (no cgame symbol table recovered), not a size match.
 //
-// The animator storage is cg_fovFade (cgFovFade_t at 0x3044b69c, defined in
+// The animator storage is cgs.scrFade (cgFovFade_t at 0x3044b69c, defined in
 // globals.h): startValue (+0x00) is the fade target, currentValue (+0x04) is the
 // live alpha, startTime (+0x08) and durationMs (+0x0c) are the schedule. It is
 // seeded by CG_StartFovFade (startValue = numerator/255.0) and by CG_CalcFov,
@@ -27,7 +27,7 @@
 // the trap_Milliseconds() tick from the previous advance.
 //
 // Machine-code proof of behavior (per-instruction):
-//   endTime = cg_fovFade.startTime + cg_fovFade.durationMs        (EAX+EDX)
+//   endTime = cgs.scrFadeStartTime + cgs.scrFadeDuration        (EAX+EDX)
 //   ECX = 0                                                        (XOR ECX,ECX)
 //   if (endTime < cg.time)  -> snap currentValue = startValue      (CMP;JL 0xa877)
 //   else:
@@ -77,18 +77,18 @@ void CG_ScreenFade(void)
      * already-at-target paths reset cg_screenFadeLastMs to 0. */
     int32_t lastMsWriteback = 0;
 
-    int32_t startTime = cg_fovFade.startTime;
-    int32_t durationMs = cg_fovFade.durationMs;
+    int32_t startTime = cgs.scrFadeStartTime;
+    int32_t durationMs = cgs.scrFadeDuration;
     int32_t endTime = coduo_int32_from_bits((uint32_t)startTime +
                                        (uint32_t)durationMs);
     int32_t cgameTime = cg.time;
 
     if (endTime < cgameTime) {
         /* 0xa877: schedule expired -> settle immediately at the target. */
-        cg_fovFade.currentValue = cg_fovFade.startValue;
+        cgs.scrFadeAlphaCurrent = cgs.scrFadeAlpha;
     } else {
-        float targetForEquality = cg_fovFade.startValue;
-        float currentForEquality = cg_fovFade.currentValue;
+        float targetForEquality = cgs.scrFadeAlpha;
+        float currentForEquality = cgs.scrFadeAlphaCurrent;
 
         if (currentForEquality != targetForEquality) {
         /* Fade still scheduled and not yet at target: step by real elapsed time. */
@@ -99,30 +99,30 @@ void CG_ScreenFade(void)
             lastMsWriteback = now;
 
             if (deltaMs < CG_SCREEN_FADE_MAX_STEP_MS && deltaMs > 0) {
-                float currentForDirection = cg_fovFade.currentValue;
-                float targetForDirection = cg_fovFade.startValue;
+                float currentForDirection = cgs.scrFadeAlphaCurrent;
+                float targetForDirection = cgs.scrFadeAlpha;
                 long double step =
-                    (long double)deltaMs / (long double)cg_fovFade.durationMs;
+                    (long double)deltaMs / (long double)cgs.scrFadeDuration;
 
                 /* TEST AH,0x41 sends less, equal, and unordered through the
                  * rising arm; only ordered greater selects the falling arm. */
                 if (!(currentForDirection > targetForDirection)) {
                     /* 0xa85e: rising toward the target. */
                     long double candidate =
-                        step + cg_fovFade.currentValue;
-                    cg_fovFade.currentValue = (float)candidate;
-                    if (candidate > cg_fovFade.startValue) {
+                        step + cgs.scrFadeAlphaCurrent;
+                    cgs.scrFadeAlphaCurrent = (float)candidate;
+                    if (candidate > cgs.scrFadeAlpha) {
                         /* overshot up -> snap to target; equality already stored it */
-                        cg_fovFade.currentValue = cg_fovFade.startValue;
+                        cgs.scrFadeAlphaCurrent = cgs.scrFadeAlpha;
                     }
                 } else {
                     /* 0xa837: falling toward the target (currentValue -= step). */
                     long double candidate =
-                        (long double)cg_fovFade.currentValue - step;
-                    cg_fovFade.currentValue = (float)candidate;
-                    if (candidate < cg_fovFade.startValue) {
+                        (long double)cgs.scrFadeAlphaCurrent - step;
+                    cgs.scrFadeAlphaCurrent = (float)candidate;
+                    if (candidate < cgs.scrFadeAlpha) {
                         /* overshot down -> snap to target */
-                        cg_fovFade.currentValue = cg_fovFade.startValue;
+                        cgs.scrFadeAlphaCurrent = cgs.scrFadeAlpha;
                     }
                 }
             }
@@ -135,12 +135,12 @@ void CG_ScreenFade(void)
     cg_screenFadeLastMs = lastMsWriteback;
 
     /* 0xa88d: draw only while the alpha is strictly positive (double-0.0 compare). */
-    if (cg_fovFade.currentValue > 0.0f) {
+    if (cgs.scrFadeAlphaCurrent > 0.0f) {
         /* 0xa89a..: build color (0,0,0,alpha) in stack locals and fill the whole
          * virtual screen. The four color dwords are written 0,0,0 then the alpha
-         * from currentValue (MOV [ESP+0x24],ECX where ECX = cg_fovFade.currentValue
+         * from currentValue (MOV [ESP+0x24],ECX where ECX = cgs.scrFadeAlphaCurrent
          * bits). */
-        float alpha = cg_fovFade.currentValue;
+        float alpha = cgs.scrFadeAlphaCurrent;
         float color[4];
         color[0] = 0.0f;
         color[1] = 0.0f;

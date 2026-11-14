@@ -12,7 +12,7 @@
 //   cfgIndex = locationIndex + 53
 //   if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS)
 //       Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);   // 0x30077d90
-//   raw = &cg_gameState.stringData[cg_gameState.stringOffsets[cfgIndex]];
+//   raw = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]];
 //   if (raw == NULL || raw[0] == '\0') raw = "CGAME_UNKNOWN";           // 0x300797d0
 // This is the same table/base pair and out-of-range diagnostic as CG_ConfigString
 // (0x3002c990: table 0x30440a00, data base 0x30442a00, bound 0x800). The +53 offset
@@ -79,12 +79,12 @@ const char *CG_GetTranslatedLocationString(int32_t locationIndex)
         Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
     }
 
-    /* 0x300310ce..0x300310e5: raw = &cg_gameState.stringData[
-     *     cg_gameState.stringOffsets[cfgIndex]].  The JZ at 0x300310db tests the
+    /* 0x300310ce..0x300310e5: raw = &cgs.gameState.stringData[
+     *     cgs.gameState.stringOffsets[cfgIndex]].  The JZ at 0x300310db tests the
      * post-ADD pointer for null (preserved from the machine code though the nonzero
      * data base makes it effectively unreachable); the CMP byte [ESI],0 tests for an
      * empty string. Either case falls through to the "CGAME_UNKNOWN" placeholder. */
-    raw = &cg_gameState.stringData[cg_gameState.stringOffsets[cfgIndex]];
+    raw = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]];
     if (raw == (const char *)0 || raw[0] == '\0') {
         /* 0x300310e2: raw = "CGAME_UNKNOWN". */
         raw = "CGAME_UNKNOWN";

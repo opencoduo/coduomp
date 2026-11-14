@@ -60,7 +60,7 @@
  * calling the function; see the inline comments for the per-value evidence.
  *
  * Screen scale: CG_EmitTrap54DrawScaled(adjustFlag=0) divides x/width by
- * cgs_screenXScale (0x30447aa4) and the y-sum/height-scale by cgs_screenYScale
+ * cgs.screenXScale (0x30447aa4) and the y-sum/height-scale by cgs.screenYScale
  * (0x30447aa8), the CG_AdjustFrom640 rescale. The colour pointer passed is the
  * shared white .rdata constant cg_colorWhite (0x30072034), start of
  * a {1,1,1,1} RGBA. 1.0f is the .rdata pool constant at 0x3007bce0.
@@ -168,7 +168,7 @@ void CG_DrawSoundOverlay(void)
          * each argument rounded once at its FSTP (0x3001aeaa..0x3001aec9). */
         {
             long double invX =
-                (long double)1.0f / (long double)cgs_screenXScale;
+                (long double)1.0f / (long double)cgs.screenXScale;
 
             /* The inlined helper still initializes its unused local-white
              * fallback before selecting the nonnull shared white pointer. */
@@ -181,7 +181,7 @@ void CG_DrawSoundOverlay(void)
             float invXf = (float)invX;                     /* FST 0x3001ae70 */
             long double xArgRaw = invX + invX;
             long double invYRaw =
-                (long double)1.0f / (long double)cgs_screenYScale;
+                (long double)1.0f / (long double)cgs.screenYScale;
             float invYf = (float)invYRaw;                  /* FSTP 0x3001ae82 */
             long double sumArgRaw =
                 ((long double)y + (long double)12.8f) *

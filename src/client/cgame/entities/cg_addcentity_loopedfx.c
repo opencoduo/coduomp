@@ -8,7 +8,7 @@
 // CG_AddCEntity_LoopedFx (eType 10 handler; EAX=cent, proven by the CG_AddCEntity
 // dispatcher 0x30022170). The .mcode's size-matched "AngleVectors" guess is
 // REJECTED: the body contains no sin/cos, no FSINCOS and no euler->basis math. It
-// is the looped-effect emitter tail that shares cg_effectDefs, the 0xe7/0xe8 play
+// is the looped-effect emitter tail that shares cgs.effectDefs, the 0xe7/0xe8 play
 // traps and the "ERROR: CG_PlayFx called with invalid effect id %i\n" (0x30077150)
 // diagnostic with CG_PlayFx (0x30022720) — this is the culling/cadence variant the
 // CG_PlayFx reconstruction already names.
@@ -25,7 +25,7 @@
 //      origin cg.predictedPlayerState.psOrigin (squared compare dist2 < radius*radius). A radius
 //      of 0.0f disables the cull.
 //   3. Play (0x30021afd..end): range-check loopedFxId (+0xdc) in (0,80), look up
-//      cg_effectDefs[id], and fire the play trap — oriented (0xe8, passing
+//      cgs.effectDefs[id], and fire the play trap — oriented (0xe8, passing
 //      &cent->currentState.effectEndOrigin as dir) when that emission-direction vector is nonzero,
 //      otherwise origin-only (0xe7). Out-of-range id prints the shared error string.
 //
@@ -106,7 +106,7 @@ void CG_AddCEntity_LoopedFx(centity_t *cent)
         return;
     }
 
-    uint32_t handle = cg_effectDefs[fxId];
+    uint32_t handle = cgs.effectDefs[fxId];
 
     // The per-entity emission direction reuses the effectEndOrigin vec3 (+0x5c).
     float dirX = cent->currentState.effectEndOrigin[0];

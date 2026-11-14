@@ -47,13 +47,8 @@ typedef struct centity_s centity_t;
  * the pointer declarations well-formed. */
 typedef struct flameChunk_s flameChunk_t;
 
-extern gameState_t cg_gameState;
-/* NOT_FROM_ORIGINAL_SOURCE: portable typed equivalent of CG_Init's original
- * monolithic cgs_t REP-STOSD clear. */
-void cgame_compat_reset_recovered_cgs_state(void);
 void cgame_compat_reset_module_load_state(void);
 
-typedef struct shellshock_s shellshock_t;
 
 /*
  * Flame-chunk pool / per-owner flame-info sizing, proven by CG_ClearFlameChunks
@@ -108,19 +103,11 @@ int hudElemSortCompare(const void *a, const void *b);
  * ring index being masked with 0x7f before every access (& (LAG_SAMPLES-1)). */
 enum { LAG_SAMPLES = 128 };
 
-/* lagometer_t — the cgame network-lag graph ring, based at 0x305380a4. Only the
- * snapshot-side tail is modelled here, since that is all the reconstructed
- * consumers touch: CG_AddLagometerSnapshotInfo (0x30018a40) and the inlined
- * dropped-snapshot path of CG_ReadNextSnapshot (0x3003d220) write snapshotSamples
- * and snapshotFlags at [snapshotCount & (LAG_SAMPLES-1)] and bump snapshotCount;
- * the lagometer draw pass (0x30018bc0) reads snapshotSamples via FILD and byte-
- * tests bit 0x1 of snapshotFlags. Field addresses proven: snapshotFlags at
- * 0x305380a4, snapshotSamples at 0x305382a4 (+0x200), snapshotCount at 0x305384a4
- * (+0x400); the 0x200 gaps are LAG_SAMPLES*4. The Q3 frame-side ring
- * (frameSamples/frameCount) precedes this base and is not modelled until its own
- * consumer is reconstructed. Provisional: field names by Q3 role, exact struct
- * name unresolved. Retyped from the three mechanical uint32_t symbols (the
- * owner=vector4scale label was the first-touching function, not the identity). */
+/* lagometer_t — Q3 cg_draw.c lagometer at 0x30537ea0: CG_AddLagometerFrameInfo
+ * (0x30018a10) writes frameSamples/frameCount, CG_AddLagometerSnapshotInfo
+ * (0x30018a40) snapshotSamples/snapshotFlags/snapshotCount, and CG_DrawLagometer
+ * (0x30018bc0) reads both rings. One object: each sample store reloads its count
+ * (INC dword [0x305380a0] at 0x30018a2d). */
 typedef union lagometerSnapshotFlags_u {
     int32_t word;                         /* producer dword store */
     uint8_t bytes[sizeof(int32_t)];        /* consumer byte test */
@@ -129,12 +116,14 @@ _Static_assert(sizeof(lagometerSnapshotFlags_t) == 4,
                "lagometer snapshot flag entry is one dword");
 
 typedef struct lagometer_s {
-    lagometerSnapshotFlags_t snapshotFlags[LAG_SAMPLES]; /* +0x000 (0x305380a4): dword entries; byte[0] bit 0x1 tested by draw */
-    int32_t snapshotSamples[LAG_SAMPLES]; /* +0x200 (0x305382a4): per-snapshot latency sample; -1 marks a dropped snapshot */
-    int32_t snapshotCount;                /* +0x400 (0x305384a4): running count; index = snapshotCount & (LAG_SAMPLES-1) */
+    int32_t frameSamples[LAG_SAMPLES];    /* +0x000 (0x30537ea0) */
+    int32_t frameCount;                   /* +0x200 (0x305380a0) */
+    lagometerSnapshotFlags_t snapshotFlags[LAG_SAMPLES]; /* +0x204 (0x305380a4) */
+    int32_t snapshotSamples[LAG_SAMPLES]; /* +0x404 (0x305382a4); -1 marks a dropped snapshot */
+    int32_t snapshotCount;                /* +0x604 (0x305384a4) */
 } lagometer_t;
-_Static_assert(offsetof(lagometer_t, snapshotSamples) == 0x200, "lagometer snapshotSamples at +0x200");
-_Static_assert(offsetof(lagometer_t, snapshotCount) == 0x400, "lagometer snapshotCount at +0x400");
+_Static_assert(offsetof(lagometer_t, snapshotSamples) == 0x404, "lagometer snapshotSamples at +0x404");
+_Static_assert(offsetof(lagometer_t, snapshotCount) == 0x604, "lagometer snapshotCount at +0x604");
 
 /*
  * menuDef_t — element type of the global Menus table (0x30136940), looked up by
@@ -1280,8 +1269,8 @@ extern uint32_t cg_flameSpriteState[5];
 /* 0x30085d70 .data — cg_numberShaderNames[11]: an initialized .rdata-pointer table of
  * the eleven HUD bitmap-number shader names ("gfx/2d/numbers/zero_32b".."nine_32b", then
  * "minus_32b"). CG_RegisterGraphics (0x3002ba50) walks it (MOV EAX,[ESI + 0x30085d70],
- * ESI = 0,4,..,0x28) to register each into cg_numberShaders[i]. Element count 11 matches
- * cg_numberShaders[11] and the loop bound. owner=pm_updateviewangles was a size-guess. */
+ * ESI = 0,4,..,0x28) to register each into cgs.media.numberShaders[i]. Element count 11 matches
+ * cgs.media.numberShaders[11] and the loop bound. owner=pm_updateviewangles was a size-guess. */
 extern const char *const cg_numberShaderNames[11];
 /* 0x30085da0 .data — cg_stanceHintChangeTime: cg.time (ms) the player's stance/
  * snapshot flags last changed, or -1 when no snapshot. Consumed by CG_DrawPlayerStance.
@@ -1528,7 +1517,7 @@ extern int32_t bg_ammoClipSizes[MAX_AMMO_TYPES];
  * dword symbols; unified here into the real int[32]. */
 extern int32_t cg_statsFrameTimes[32];
 /* 0x300a84b8 .data: last real-time (engine milliseconds) at which the screen-fade
- * animator (cg_fovFade) was advanced by CG_ScreenFade (0x3001a7c0). That evaluator
+ * animator (cgs.scrFade) was advanced by CG_ScreenFade (0x3001a7c0). That evaluator
  * reads trap_Milliseconds(), computes deltaMs = now - this, advances the fade only
  * when 0 < deltaMs < 500, then stores the new "now" back here. Both refs (read at
  * 0x3001a800, write at 0x3001a887) are in CG_ScreenFade. The mechanical
@@ -1839,7 +1828,7 @@ extern vec3_t cg_vehicleViewSwayPreviousViewAngles;
  * when none is pending. Set to cg.time by the vehicle-view path (0x300400ea,
  * 0x30040113, 0x30040234) and to -1 (0x30040283) after the non-vehicle transition
  * window elapses; the tail tests it against cg.time-50 (0x3004024d) to drive the
- * cg_fovFade animator. A signed int (holds -1). The mechanical
+ * cgs.scrFade animator. A signed int (holds -1). The mechanical
  * owner=bg_parseweaponinfospecificfieldtyp label was a wrong size-based first-touch. */
 extern int32_t cg_fovTransitionTime;
 /* 0x300dc9f8/fc .data — cg_vehicleViewSwayViewAngles: the BG_CalculateWeaponPosition_Sway
@@ -2350,578 +2339,20 @@ extern cgWeaponInfo_t cg_weaponInfos[MAX_WEAPONS];
  * original symbol name unresolved (no writer/string), so the address suffix is
  * kept as the only disambiguator. */
 
-/* 0x30440a00..0x30447a04 is the single cg_gameState object declared above.
- * Address-shaped scalars in this interval are stringOffsets[] elements or bytes
- * within the packed stringData buffer, not independent globals. */
-/* 0x30447a04: shared inherited glconfig_t block filled by trap 0x4e during CG_Init.
- * CoDUOMP.exe 0x0040339a copies the complete 0xa0-byte i386 renderer record
- * (MOV ECX,0x28; REP MOVSD), including five leading pointers. Keep those
- * pointers typed so this engine/module ABI expands consistently on 64-bit
- * hosts; a fixed 0x84-byte prefix would leave vidWidth/vidHeight at their
- * obsolete i386 offsets and make the engine's native-sized copy overrun this
- * object. The original i386 member offsets and total size remain asserted. */
-extern glconfig_t cgs_glconfig;
-/* 0x30447aa4 .data refs=96 (owner=pm_cmdscale label is wrong).
- * cgs.screenXScale: virtual -> real horizontal scale factor. Written once in
- * the cgs-init path (0x3002e016) as (float)glconfig.vidWidth * (1.0f/640.0f)
- * [FILD [0x30447a88]; FMUL [0x3007c3f4]=0.0015625f; FSTP [0x30447aa4]], and
- * multiplied into every X/width UI coordinate. Consumed as a float by CG_DrawPic
- * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_DrawTurretTagQuad at
- * 0x3001ccf0). The 1/640 divisor is proven from the writer's .rdata constant
- * 0x3007c3f4. */
-extern float cgs_screenXScale;
-/* 0x30447aa8 .data refs=96 (owner=pm_cmdscale label is wrong).
- * cgs.screenYScale: virtual -> real vertical scale factor. Written once in the
- * cgs-init path (0x3002e028) as (float)glconfig.vidHeight * (1.0f/480.0f)
- * [FILD [0x30447a8c]; FMUL [0x3007c3f0]=0.0020833334f; FSTP [0x30447aa8]], and
- * multiplied into every Y/height UI coordinate. Consumed as a float by CG_DrawPic
- * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_DrawTurretTagQuad at
- * 0x3001ccf0). The 1/480 divisor is proven from the writer's .rdata constant
- * 0x3007c3f0. */
-extern float cgs_screenYScale;
-/* 0x30447ab0 (.data): cgs.serverCommandSequence — the highest server-command
- * sequence number cgame has processed. Lives in the cgs block (adjacent to the
- * cgs.screenXScale/screenYScale fields above). Printed as the "cmd:%i" field of
- * CG_DrawSnapshot (0x30018020), matching stock CoD/Q3 which draws
- * cgs.serverCommandSequence there; also read/updated in the cgame init/config
- * path (write at 0x3002dfbb, reads at 0x3003b476/0x3003b49b). Retyped from the
- * mechanical uint32_t; the (owner=scr_getobjectfield) label was wrong. */
-extern int32_t cgs_serverCommandSequence;
-/* 0x30447ab4 (.data): cg.processedSnapshotNum — the snapshot number cgame has
- * consumed up through. CG_ReadNextSnapshot (0x3003d220) increments it before each
- * trap_GetSnapshot and prints the "way out of range" warning when
- * cg.latestSnapshotNum - processedSnapshotNum > 1000; CG_ProcessSnapshots
- * (0x3003d2d0) compares it against cg.latestSnapshotNum to drive the read loop.
- * Signed compare (JLE/JGE/JL). Retyped from the mechanical uint32_t (owner=g_runframe
- * was the first-touching function, not the identity). */
-extern int32_t cg_processedSnapshotNum;
-/* 0x30447ab8 .data refs=5 width=4 first=0x30018bd0.
- * cgs_localServer — cgame "config values already registered" once-guard.
- * Set in the config/init path (0x3002b20d), read as `if (flag != 0) return;` by
- * every config-value setter (CG_SetConfigValues 0x30038430, sibling 0x30038380,
- * 0x30018bd0) to make cvar registration idempotent. Role name; exact CoD symbol
- * unproven. Mechanical owner=cmd_veh_fireturret is a wrong first-touch guess. */
-extern int32_t cgs_localServer;
 /* ------------------------------------------------------------------------
- * cgs serverinfo mirror cluster (0x30447abc..0x30447c20). CG_ParseServerinfo
- * (0x30038380) parses config string 0 (the serverinfo string) and fills these
- * four fields via Info_ValueForKey; many cgame consumers then read them. The
- * four are contiguous in memory in this order: gametype[32], hostname[256],
- * maxclients (int32), mapname[64]. Sizes proven by the Q_strncpyz/Com_sprintf
- * size arguments (0x20, 0x100, 0x40) and the address deltas. Mechanical
- * owner=<first-touch> labels (script_method_scriptbuiltin_getatt,
- * g_getactivateent, cg_playerturretpositionandblend, g_runframe) are wrong
- * first-touch guesses and are rejected. Exact CoD cgs_t field names are the
- * stock Q3/CoD gametype/hostname/maxClients/mapname mirrors; kept as cgs_*.
+ * cgs_t: the client static state object at 0x30440a00..0x3044f180 (0xe780
+ * bytes). CG_Init (0x3002df30) clears it with one 0x39e0-dword REP STOSD before
+ * clearing cg. Members are at their retail offsets; those whose retail role
+ * matches a Quake 3 / RTCW cgs_t field carry that name. field_XXXX members are
+ * unreferenced spans (offset into the enclosing struct).
  * ------------------------------------------------------------------------ */
-/* 0x30447abc .data — cgs.gametype: g_gametype cvar value copied from serverinfo
- * (Q_strncpyz size 0x20). Read by e.g. 0x3002d5ef, 0x30031c40, 0x30036361. */
-extern char cgs_gametype[32];
-/* 0x30447adc .data — cgs.hostname: sv_hostname value from serverinfo
- * (Q_strncpyz size 0x100). Read by e.g. 0x30036757, 0x300367cd, 0x3003682e. */
-extern char cgs_hostname[256];
-/* 0x30447bdc .data — cgs.maxclients: atoi(sv_maxclients) from serverinfo.
- * Read as an int by 0x30026344 (CMP) and 0x300327f1 (MOV EBP). */
-extern int32_t cgs_maxclients;
-/* 0x30447be0 .data — cgs.mapname: "maps/mp/%s.bsp" built from the serverinfo
- * mapname (Com_sprintf size 0x40). Read by e.g. 0x3002e0f7..0x3002e1f8,
- * 0x30036420. */
-extern char cgs_mapname[MAX_QPATH];
-extern char cgs_teamNames[2][64];
-/* ------------------------------------------------------------------------
- * cgame vote HUD display cluster (cgs.vote* mirror of the Q3/CoD vote state).
- * These four scalars + the display string + the "modified" flag are rebuilt in
- * batch by CG_BuildVoteHudStrings (0x3002ddf0) at gamestate setup, and updated
- * per-field by the CG_ConfigStringModified dispatcher (0x30038e70) cases 0x10
- * (voteTime), 0x11 (voteString), 0x12 (voteYes), 0x13 (voteNo). The vote HUD is
- * drawn by 0x3001b7d0: it early-outs if voteTime==0, computes the remaining
- * seconds as (voteTime - trap(6) ms)/1000, and formats voteString with the
- * (voteYes/voteNo) tallies. Mechanical owner=cg_drawtracer / itemparse_model_origin
- * first-touch labels are rejected; names proven by the vote-string format literal
- * (0x300779cc "vote string"), the trap(6) end-time idiom, and the /1000 draw. */
-/* 0x30447ca0 .data refs=10 width=4. cgs.voteTime: absolute engine-ms end time of
- * the current vote. CG_BuildVoteHudStrings/dispatcher set it to Q_atoi(configString)
- * and, when nonzero, add the engine-milliseconds trap(6) to make it absolute. */
-extern int32_t cg_voteTime;
-/* 0x30447ca4 .data refs=5. cgs.voteYes: "yes" tally, Q_atoi of the vote-yes config
- * string; pushed as a printf arg by the vote HUD drawer (0x3001bae9/0x3001bb69).
- * CG_PlayFxOnTag's indexed instruction uses this numerical displacement only
- * because MSVC folded the ASCII digit bias into the cg_effectDefs address; it
- * does not access the vote object. */
-extern int32_t cg_voteYes;
-/* 0x30447ca8 .data refs=4. cgs.voteNo: "no" tally, Q_atoi of the vote-no config
- * string; pushed as a printf arg by the vote HUD drawer (0x3001bae7/0x3001bb56). */
-extern int32_t cg_voteNo;
-/* 0x30447cac .data refs=5 width=4 first=0x3001ba0e. cgs.voteModified: vote-state
- * "changed since last drawn" flag; set to 1 by the dispatcher (0x30039003), tested
- * and cleared by the vote HUD drawer (0x3001ba0e/0x3001ba1e). Not touched by
- * CG_BuildVoteHudStrings; retained address suffix pending its own consumer pass. */
-extern qboolean cg_voteModified;
-/* 0x30447cb0..0x30447daf .data. cgs.voteString[256]: the vote HUD display text.
- * Both writers call strncpy(...,255) and then write zero at +255, proving that
- * the final byte is the array terminator rather than a separate "dirty" flag.
- * The drawer at 0x3001ba7a consumes the buffer. */
-extern char cg_voteString[256];
-extern int32_t cg_teamVoteTime[2];
-extern int32_t cg_teamVoteYes[2];
-extern int32_t cg_teamVoteNo[2];
-extern qboolean cg_teamVoteModified[2];
-extern char cg_teamVoteString[2][256];
-/* 0x30447fd0 .data refs=11 width=4 first=0x3001bbd3. Timeout HUD end time (ms):
- * CG_BuildTimeoutHudStrings and the CS-0x775 case of CG_ConfigStringModified
- * (0x300390da) set it to Q_atoi(configString) and, when nonzero, add the engine
- * milliseconds trap(6) to make an absolute end time. Written 0 when the scoreboard
- * is disabled. Address suffix retained: the remaining reads (weapon/sound-overlay
- * clusters) are not yet reconstructed, so the timeout role is proven but not fully
- * adjudicated; mechanical owner=pm_reloadclip first-touch label rejected. */
-extern int32_t cg_timeoutEndTime;
-/* 0x30447fd4 .data refs=4 width=4 first=0x3001bc28. Timeout-active flag: set to 1
- * by CG_BuildTimeoutHudStrings when the parsed end time is nonzero, else 0 (also
- * cleared by the CS-0x775 dispatcher case at 0x300390fa). Address suffix retained
- * pending adjudication of the other consumers. */
-extern int32_t cg_timeoutActive;
-/* 0x30447fd8..0x304480d7 .data. Timeout HUD display string[256]. Both writers
- * copy 255 bytes and then store a zero at +255, proving one bounded string object;
- * the former separate "dirty flag" interpretation had no read-side evidence. */
-extern char cg_timeoutString[256];
-/* 0x304480d8: first sibling of the d8/dc/e0 signed HUD-stat triple. Writers
- * parse config string 14 with Q_atoi; exact displayed stat name remains unresolved. */
-extern int32_t cg_hudStat14Value;
-/*
- * cg_hudStat5Value (0x304480dc) — middle sibling of the parallel HUD-stat
- * integer array d8/dc/e0 (see cg_hudStat6Value below). Written by the same
- * atoi-parsing writer cluster (0x3003885d stores an int here) and read by two of
- * the trap-54 HUD emitters: this slot's display emitter CG_DrawRedScore
- * (0x30031521) and CG_Draw1stPlace (0x30031b60). Signed-compared
- * against the "not set" sentinel -9999 (0xffffd8f1) by the display emitter, so it
- * is a signed int stat, not an unsigned dword. Retail UO owner-draw id
- * CG_RED_SCORE and the matching macOS CG_DrawRedScore symbol establish this
- * slot's displayed role; the flattened global's original enclosing-field name
- * remains unresolved. Mechanical
- * owner=menuparse_itemdef label REJECTED (no menu-parse code touches it). */
-extern int32_t cg_hudStat5Value;
-/*
- * cg_hudStat6Value (0x304480e0) — an atoi-parsed integer stat displayed by
- * the cgame system-info HUD. The two writers at 0x30038840/0x30038f60 store
- * atoi(str) (callee 0x3005b6ce is atoi: skips ctype-whitespace, parses digits) into
- * this slot and the two adjacent siblings 0x304480d8/0x304480dc, so d8/dc/e0 form a
- * small parallel array of parsed integer stats. Readers compare it against the
- * sentinel -9999 (0xffffd8f1): the display code at 0x300315f1 prints "-" (0x30079760)
- * when it holds the sentinel and otherwise formats the value, and the emitter at
- * 0x30031bd0 forwards va("%2i", value) to cgame trap 54 only when it is not the
- * sentinel. A third reader FILDs it to float at 0x30031856. The mechanical
- * owner=script_orbit label is REJECTED (no script code touches it; it is HUD stat
- * state). Retail UO owner-draw id CG_BLUE_SCORE and the matching macOS
- * CG_DrawBlueScore symbol establish this slot's displayed role; the flattened
- * global's original enclosing-field name remains unresolved. Zero-initialized
- * .data (VA past the on-disk .data tail).
- */
-extern int32_t cg_hudStat6Value;
-/* 0x304480e4..0x304484e3 .data — cg_gameModels[256], the registered render-model
- * handles for CS_MODELS. The registration loop starts at config string 0x196 and
- * destination 0x304480e8, filling elements 1..255; element 0 remains empty. vmMain
- * command 10 and four entity renderers index from 0x304480e4, proving the base. */
-extern qhandle_t cg_gameModels[CS_MODELS_COUNT];
-/*
- * cg_effectDefs[80] (0x304484e4, .data): the cgame effect-handle table, indexed
- * by an effect id in [1,80). Each element is an opaque effect handle returned by
- * the engine's "register effect" trap (id 0xe2) and later passed straight to the
- * effect-play traps (0xe7/0xe8/0xe9). Proven an 80-element array by three
- * consumers that index cg_effectDefs[id] after checking 0 < id < 80
- * (0x30022720, 0x30021a30, 0x300164b0), by the registration loop at 0x3002c760
- * that writes handles into it, and by the array end coinciding exactly with the
- * next distinct global (0x304484e4 + 80*4 = 0x30448624). The mechanical export
- * mislabeled this as owner=bg_indexforstring and split element [1] (0x304484e8)
- * into a separate symbol; superseded here as the real array.
- */
-extern uint32_t cg_effectDefs[80];
-/* NOTE: 0x304484e8 is &cg_effectDefs[1]; the registration loop at 0x3002c755
- * (FUN_3002ba50) loads it as a base pointer. Reconstruct that caller to use
- * &cg_effectDefs[1] rather than a standalone symbol. */
-/* 0x30448624 .data: cg_consoleShellShock — the 124-byte shellshock_t parameter
- * block for the manual "cg_shellshock" console command. Declared as the typed
- * shellshock_t in client_recovered.h (next to CG_SetShellShockParams); its owning
- * consumer CG_ShellShock_f (0x300174b0) passes it by pointer. The mechanical
- * owner=concatargs label came from a size-guessed name for 0x300174b0 and is
- * wrong. Storage in globals.c. */
-/* 0x304486a0 .data — cg_shellShocks[15]: the loaded shellshock_t parameter blocks for
- * the CS_SHELLSHOCKS config-string block (stride 0x7c). CG_RegisterGraphics (0x3002ba50)
- * loads each nonempty shellshock config string (CG_ShellShockLoad) and fills the block via
- * CG_SetShellShockParams. The loop visits config-string indices 1..15 (index zero
- * is the separate manual block), proving 15 array elements ending at 0x30448de4.
- * owner=pm_updateviewangles
- * was a size-guess and is rejected. Declared as the typed shellshock_t[16] in
- * client_recovered.h (where shellshock_t is complete); storage in globals.c. */
-/* 0x30448de4 .data refs=2 width=4 first=0x3002c641 owner=pm_updateviewangles */
-extern int32_t cg_numInlineModels;
-/* 0x30448de8..0x304495e7 .data — cg_inlineModelHandles[MAX_SUBMODELS]:
- * per-submodel registered render-model
- * handle table (the "*N" inline/brush models). Filled at load time by the
- * registration loop at 0x3002c5.. (formats "*%i - inline models" and stores each
- * model-register trap (0x4d) result at table[i], write 0x3002c67b); the entry
- * count is the adjacent word 0x30448de4. Indexed by currentState.modelindex.
- * The mechanical export mislabeled owner=matrixmultiply43 (the rejected size-guess
- * name of CG_Mover at 0x3001f120) and captured only the first dword; the datum is
- * the array. Consumers: CG_Mover (0x3001f120, read 0x3001f22e) and 0x3001f388.
- * The next independently proven datum is cg_inlineModelMidpoints at 0x304495e8,
- * fixing this interval at 0x800 bytes, or 512 handles. There is no separate
- * original global at the reconstruction's former artificial 256-row split. */
-extern int32_t cg_inlineModelHandles[MAX_SUBMODELS];
-/* 0x304495e8..0x3044ade8 .data —
- * cgs.inlineModelMidpoints[MAX_SUBMODELS].
- * CG_RegisterGraphics starts at &array[1] (0x304495f4), advances by one vec3,
- * and stops at cg_numInlineModels. CG_EntityEffects indexes the array base with
- * currentState.modelindex. The enclosing interval proves MAX_MODELS == 512. */
-extern vec3_t cg_inlineModelMidpoints[MAX_SUBMODELS];
-/* 0x3044ade8 .data: cgs.teamChatMsgs — the team-chat scroll ring buffer.
- * TEAMCHAT_HEIGHT (8) lines of TEAMCHAT_WIDTH*3+1 = 271 bytes each (worst case
- * every visible char preceded by a "^x" color code, plus NUL). Written by
- * CG_AddToTeamChat (0x30039390) and read by the team-info drawer (0x30018770).
- * Was mechanically captured as a single uint32_t; the machine code (stride 0x10f
- * = 271 across an 8-entry mod ring) proves the array shape, so superseded here. */
-extern char teamChatMsgs[TEAMCHAT_HEIGHT][TEAMCHAT_LINE_BYTES];
-/* 0x3044b660 .data: cgs.teamChatMsgTimes[TEAMCHAT_HEIGHT] — cg.time stamp per
- * ring line, indexed by (teamChatPos % chatHeight). Written by CG_AddToTeamChat. */
-extern int teamChatMsgTimes[TEAMCHAT_HEIGHT];
-/* 0x3044b680 .data: cgs.teamChatPos — team-chat ring write cursor (monotonic;
- * indexed modulo the clamped chatHeight). Written by CG_AddToTeamChat. */
-extern int teamChatPos;
-/* 0x3044b684 .data: cgs.teamChatLastPos — oldest still-visible ring line cursor,
- * trails teamChatPos by at most chatHeight. Written by CG_AddToTeamChat. */
-extern int teamChatLastPos;
-/* 0x3044b688/0x3044b68c .data — cgs cursor coordinates synchronized into the
- * shared UI display context by vmMain's CGVM_MOUSE_EVENT command. */
-extern int32_t cgs_cursorX;
-extern int32_t cgs_cursorY;
-/* 0x3044b69c..0x3044b6a8 .data: a single 16-byte timed float-value fade animator
- * used by the FOV/zoom subsystem. The mechanical export split it into four
- * g_data_vectosignedangles_* uint32 scalars with a wrong first-touch owner label;
- * superseded here as the struct it actually is. Updater CG_StartFovFade
- * (0x3001ab50) seeds all four fields; the evaluator at 0x3001a7c0 lerps
- * currentValue from startValue over durationMs starting at startTime (via
- * trap_Milliseconds); CG_CalcFov (0x3003ffc0) consumes/updates it. Provisional
- * field names (no cgame symbol table recovered); exact original names unproven. */
-typedef struct cgFovFade_s {
-    float startValue;   /* +0x00 (0x3044b69c) fade start/anchor value */
-    float currentValue; /* +0x04 (0x3044b6a0) current interpolated value */
-    int32_t startTime;  /* +0x08 (0x3044b6a4) cg.time when the fade began (ms) */
-    int32_t durationMs; /* +0x0c (0x3044b6a8) fade duration (ms) */
-} cgFovFade_t;
-extern cgFovFade_t cg_fovFade;
-/* 0x3044b6ac/b0/b4: the three initial shader registrations in CG_Init. Tracking
- * EAX across the pipelined stores proves the order white, hudSoftLine,
- * hudSoftLineH; earlier first-touch labels were shifted by one registration. */
-extern qhandle_t cgs_media_whiteShader;
-extern qhandle_t cgs_media_hudSoftLineShader;
-extern qhandle_t cgs_media_hudSoftLineHShader;
-/* 0x3044b6b8 .data refs=1 width=4 first=0x3002c4d6 resolved: cgs.media handle for "hudAxisIcon" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_hudAxisIcon;
-/* 0x3044b6bc .data refs=1 width=4 first=0x3002c4c5 resolved: cgs.media handle for "hudAlliedIcon" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_hudAlliedIcon;
-/* 0x3044b6c0 .data refs=3 width=4 first=0x30017e23 (owner=cg_initvote is wrong).
- * cgs.media hudColorBar shader handle: registered in the cgame media-init path at
- * 0x3002c4b4, storing the qhandle_t returned by the "hudColorBar" shader lookup
- * (string 0x30078048, registered by the call at 0x3002c4a8). Consumed as the
- * qhandle_t passed to trap_R_DrawStretchPic by CG_DrawTeamBackground (0x30017dd0,
- * MOV EAX,[0x3044b6c0] at 0x30017e23) and read again at 0x3001890c. */
-extern qhandle_t cgs_media_hudColorBar;
-/* 0x3044b6c8 .data — cg_railCoreShader: the qhandle_t of the "railCore" render
- * shader. Registered once by the cgame media-registration path at 0x3002c567
- * (EAX = trap_R_RegisterShader("railCore" @0x30077fb0, 2), stored here), then
- * consumed by the rail-trail segment builder (0x300430a0) which copies it into
- * refEntity.spriteShaderHandle (+0x68). Real name resolved from the registered
- * shader string; supersedes the mechanical owner=pm_updateviewangles guess. */
-extern qhandle_t cg_railCoreShader;
-/* 0x3044b6cc .data refs=3 width=4 (owner label pm_updateviewangles is the mechanical
- * first-touch and is wrong). cgs_voiceChatIcon: the registered head-icon shader handle
- * for the "headiconVoiceChat" icon, shown over a client while they are voice-chatting.
- * Written once by the cgame media-registration function at 0x3002c54d (result of
- * registering shader "headiconVoiceChat", pushed at 0x30077fd0); read twice by
- * CG_PlayVoiceChat (0x30039ff0) to decide the display duration and to stamp
- * cg_entities[client].voiceChatIcon. */
-extern uint32_t cgs_voiceChatIcon;
-/* 0x3044b6d0 .data refs=2 (owner label pm_updateviewangles is the mechanical
- * first-touch and is wrong). cgs_talkBalloonIcon: the registered head-icon shader
- * handle for the "headiconTalkBalloon" icon, drawn over a client whose currentState
- * eFlags carry the 0x20000 "typing/chatting" bit. Written once by the cgame
- * media-registration path at 0x3002c55d (result of registering shader
- * "headiconTalkBalloon" @0x30077fbc, type 2), then read only by CG_AddHeadIcon
- * (0x30032ac0). Real name resolved from the registered shader string; supersedes
- * the mechanical owner=pm_updateviewangles guess. */
-extern qhandle_t cgs_talkBalloonIcon;
-/* 0x3044b6d4 .data refs=2 (owner label pm_updateviewangles is the mechanical
- * first-touch and is wrong). cgs_disconnectedIcon: the registered head-icon shader
- * handle for the "headiconDisconnected" icon, drawn over a client whose currentState
- * eFlags carry the 0x800 "disconnected" bit. Written once by the cgame
- * media-registration path at 0x3002bb25 (result of registering shader
- * "headiconDisconnected" @0x30078320, type 5), then read only by CG_AddHeadIcon
- * (0x30032ac0). Real name resolved from the registered shader string. */
-extern qhandle_t cgs_disconnectedIcon;
-/* 0x3044b6d8 .data refs=2 (owner label pm_updateviewangles is the mechanical
- * first-touch and is wrong). cgs_youInKillCamIcon: the registered head-icon shader
- * handle for the "headiconYouInKillCam" icon, drawn over the local client's own
- * entity when it is being rendered as the kill-cam subject. Written once by the
- * cgame media-registration path at 0x3002bb36 (result of registering shader
- * "headiconYouInKillCam" @0x30078308, type 5), then read only by CG_AddHeadIcon
- * (0x30032ac0). Real name resolved from the registered shader string. */
-extern qhandle_t cgs_youInKillCamIcon;
-/* 0x3044b6dc .data refs=1 width=4 first=0x3002bbee resolved: cgs.media handle for "gfx/2d/select" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_selectShader;
-/* 0x3044b6e4 .data refs=3 width=4 first=0x3002bbdd resolved: cgs.media handle for "gfx/misc/tracer" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_tracerShader;
-/* 0x3044b6e8 .data refs=1 width=4 first=0x3002bb03 resolved: cgs.media handle for "gfx/2d/net.tga" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_lagometerShader;
-/* 0x3044b6ec: registered "lagometer" sample-graph shader. */
-extern qhandle_t cgs_lagometerShader;
-/* 0x3044b6f0 (.data): cgs.media.backTileShader — the tiling shader handle used to
- * fill the letterbox border around a cropped 3D view. Loaded into EAX before each
- * of the four CG_TileClearBox edge draws in CG_TileClear (0x3001d160). qhandle_t
- * stored as a 32-bit int. Zero-initialized .data. (owner=initweaponinfo was the
- * mechanical first-toucher and is wrong.) */
-extern qhandle_t cgs_media_backTileShader;
-/* 0x3044b6f4 .data refs=2 width=4 first=0x3002c492 resolved: cgs.media handle for "hudNoWeaponIcon" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_hudNoWeaponIcon;
-/* 0x3044b6f8..0x3044b720: cgs media handles indexed directly by
- * cg.usableHintKind. Slots 0 and 1 remain zero because those selector values draw
- * nothing; slots 2..9 are registered consecutively by CG_RegisterGraphics. */
-/* playerState.serverCursorHint value 10 (== CURSOR_HINT_WEAPON_BASE) — the friendly-player
- * hint. CG_DrawCursorhint (0x300303a0) maps hint kinds >= 10 to
- * cg_weaponHudIcons[kind - 10], whose element 0 is registered from the material
- * "hintFriendly" (CG_RegisterGraphics, 0x3044b720), and CG_DrawCrosshair
- * (0x30019e5c) tints the crosshair green {0.25, 1, 0.25} for exactly this value.
- * Role proven by both consumers and by the game-module hintStrings table. */
-extern qhandle_t
-    cgs_media_usableHintShaders[CURSOR_HINT_BUILTIN_ICON_COUNT];
-/* 0x3044b720..0x3044b91f and 0x3044b920..0x3044bb1f: per-weapon HUD
- * and ammo-icon handles. CG_RegisterWeapon indexes both arrays by weapon index;
- * CG_RegisterGraphics initializes element zero of the first array to hintFriendly. */
-extern qhandle_t cg_weaponHudIcons[MAX_WEAPONS];
-extern qhandle_t cg_weaponAmmoIcons[MAX_WEAPONS];
-/* cg_stanceHudShaders[9] — the nine preregistered stance/fatigue HUD icon shader
- * handles at 0x3044bb24..0x3044bb47 (contiguous qhandle_t[9]). Registered by the
- * HUD asset setup (0x3002bc9b..0x3002bd26) via trap_R_RegisterShader(name,5):
- *   [0] hudStanceStand   [1] hudStanceCrouch [2] hudStanceProne [3] hudStanceSprint
- *   [4] hudStanceFlash   [5] hudFatigueStand [6] hudFatigueCrouch
- *   [7] hudFatigueProne  [8] hudFatigueSprint
- * Read by CG_DrawPlayerStance (0x3002f63b..0x3002f8db). The old mechanical owner
- * label "pm_updateviewangles" was a wrong size-guess; superseded here. */
-extern qhandle_t cg_stanceHudShaders[9];
-/* 0x3044bb48 .data — cg_hudObjectiveReserved: a single qhandle_t slot between the
- * cg_stanceHudShaders[9] array and cg_objectiveShaders[3]. CG_RegisterGraphics (0x3002ba50)
- * explicitly zeroes it (MOV [0x3044bb48],0 at 0x3002bd2b) as part of objective-asset setup;
- * no other reconstructed code references it. Provisional role name (reserved/unused objective
- * slot); owner=pm_updateviewangles was a size-guess and is rejected. */
-extern qhandle_t cg_hudObjectiveReserved;
-/*
- * cg_objectiveShaders[3] — the three preregistered HUD objective/compass icon
- * shader handles, at 0x3044bb4c/0x50/0x54. Written by the objective-asset setup
- * (0x3002bd35..0x3002bd68), each entry filled by trap_R_RegisterShader(name, 5):
- *   [0] = "hudObjective"     (0x300781b4)
- *   [1] = "hudObjectiveUp"   (0x300781a4)
- *   [2] = "hudObjectiveDown" (0x30078190)
- * Read by CG_GetObjectiveShaderForDir (0x3002fd90) as cg_objectiveShaders[dir]
- * when no per-shader config-string override is requested. The old mechanical
- * owner label "pm_updateviewangles" was wrong (size-guess); superseded here.
- */
-extern qhandle_t cg_objectiveShaders[3];
-/* Compass blip materials registered by CG_RegisterGraphics and consumed by the
- * two team/vehicle compass passes. */
-extern qhandle_t cg_compassFriendlyShaders[2];
-extern qhandle_t cg_compassTankShaders[3];
-/* 0x3044bb6c .data — cg_hitDirectionShader: the 2D shader handle for the
- * damage-direction ("hit direction") HUD arrow. Registered by the asset-load path
- * (0x3002bdc5) via CG_RegisterMaterial("hudHitDirection", R_IMAGE_TRACK_HUD),
- * and consumed by CG_DrawDamageDirectionIndicators (0x3001aac9) as the quad's shader. The
- * material name "hudHitDirection" proves the role; mechanical owner=cg_ejectweaponbrass
- * rejected. */
-extern qhandle_t cg_hitDirectionShader;
-/* 0x3044bb70 (.data): cg_numberShaders[11] — the registered 2D shader handles for
- * the HUD bitmap number font: indices 0..9 are the digit glyphs '0'..'9' and index
- * 10 is the minus sign '-'. The registration loop at 0x3002bad1..0x3002baee fills all
- * eleven slots (ESI = 0,4,..,0x28; RegisterShader(name[i]) stored to [ESI+0x3044bb70]),
- * proving the array shape and the 0x2c-byte extent (next global at 0x3044bb9c). Read
- * back as cg_numberShaders[digit] by the HUD digit drawer 0x30031300 (MOV ECX,[ESI*4+
- * 0x3044bb70], ESI = digitValue or 10 for '-') and by 0x30017cfb. The mechanical export
- * only captured element 0; superseded here as the full qhandle_t[11] array (mechanical
- * owner=pm_cmdscale label rejected — a first-toucher, not the identity). Provisional
- * role name; exact source symbol unresolved. */
-extern qhandle_t cg_numberShaders[11];
-/* 0x3044bb9c .data refs=2 width=4 first=0x3002c5e4 resolved: cgs.media handle for "markShadow" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_markShadowShader;
-/* 0x3044bba0 .data refs=1 width=4 first=0x3002c4a3 resolved: cgs.media handle for "flareShader" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_flareShader;
-/* 0x3044bba4 .data refs=2 width=4 first=0x3002c5fd resolved: cgs.media handle for the
- * "wake" material (registered by CG_RegisterGraphics 0x3002c5f1: PUSH 0x30077f90
- * "wake"; the old markShadowFade label was a mis-read of the adjacent
- * "markShadow" string). Consumed by CG_AddPlayerWaterShadow, matching the
- * Q3/RTCW cgs.media.wakeMarkShader role. */
-extern qhandle_t cgs_media_wakeMarkShader;
-/* 0x3044bba8 .data refs=1 width=4 first=0x3002c503 resolved: cgs.media handle for "gfx/hud/headicon@allies_flag" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_headiconAlliesFlag;
-/* 0x3044bbac .data refs=1 width=4 first=0x3002c4e7 resolved: cgs.media handle for "gfx/hud/headicon@axis_flag" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_headiconAxisFlag;
-/* 0x3044bbb0 .data refs=1 width=4 first=0x3002b615 owner=playercmd_finishplayerdamage */
-extern const char *cg_soundPlayerGib;
-/* 0x3044bbb4 .data refs=1 width=4 first=0x3002b62a owner=playercmd_finishplayerdamage */
-extern const char *cg_soundPlayerGibBounce;
-/* 0x3044bbb8 (.data): cg_soundOutOfAmmo — the registered sound identifier for the
- * "player_out_of_ammo" local sound. The cgame sound-registration pass (0x3002b560)
- * registers "player_out_of_ammo" (string 0x30078794) via engine syscall 0xc3 and
- * stores the returned handle here (MOV [0x3044bbb8],EAX at 0x3002b654 captures the
- * result of the 0x3002b644 syscall whose arg was that string). CG_OutOfAmmoChange
- * (0x30034a00) loads it and passes it as the sound identifier to CG_PlaySoundAliasByName.
- * Typed const char * to match CG_PlaySoundAliasByName's soundName parameter. Was the
- * mechanical g_data_cmd_callvote_f_3044bbb8 (owner=first-touching function, wrong). */
-extern const char *cg_soundOutOfAmmo;
-/* 0x3044bbbc .data refs=2 width=4 first=0x30022a4f owner=cmd_callvote_f */
-extern const char *cg_soundLandDamage;
-/* 0x3044bbc0 .data refs=1 width=4 first=0x300234bc owner=cmd_callvote_f */
-extern const char *cg_soundDeath;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
-/* 0x3044bbc4 .data refs=1 width=4 first=0x3002318f owner=cmd_callvote_f */
-extern const char *cg_soundPlayerTeleportIn;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
-/* 0x3044bbc8 .data refs=1 width=4 first=0x300231a9 owner=cmd_callvote_f */
-extern const char *cg_soundPlayerTeleportOut;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
-/* 0x3044bbcc .data refs=1 width=4 first=0x300231ce owner=cmd_callvote_f */
-extern const char *cg_soundItemRespawn;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
-/* 0x3044bbd0 .data: registered "player_talk" sound reference. The registration
- * pipeline at 0x3002b64a..0x3002b669 stores the result of registering the literal
- * "player_talk" here; CG_DrawVote plays it when voteModified is consumed. */
-extern const char *cgs_media_playerTalkSound;
-/* 0x3044bbd4 .data refs=2 width=4 first=0x30023257 owner=cmd_callvote_f */
-extern const char *cg_grenadeBounceSurfaceSounds[23];
-/* 0x3044bc30 .data refs=2 width=4 first=0x30023417 owner=cmd_callvote_f */
-extern const char *cg_grenadeExplodeSurfaceSounds[23];
-extern const char *cg_unusedSurfaceSoundSet0[23];
-/* 0x3044bce8 .data refs=1 width=imm first=0x3002b7c3 owner=playercmd_finishplayerdamage */
-extern const char *cg_rocketExplodeSurfaceSounds[23];
-extern const char *cg_unusedSurfaceSoundSet1[23];
-/* 0x3044bda0 .data refs=1 width=imm first=0x3002b7e1 owner=playercmd_finishplayerdamage */
-extern const char *cg_artilleryExplodeSurfaceSounds[23];
-/* 0x3044bdfc .data refs=1 width=imm first=0x3002b7d2 owner=playercmd_finishplayerdamage */
-extern const char *cg_mortarExplodeSurfaceSounds[23];
-/* 0x3044be58 .data refs=1 width=imm first=0x3002b7f0 owner=playercmd_finishplayerdamage */
-extern const char *cg_tankExplodeSurfaceSounds[23];
-extern const char *cg_eventSurfaceSounds[23];
-/* 0x3044bf10 .data refs=3 width=4 first=0x3002b7ff owner=playercmd_finishplayerdamage.
- * One canonical "bullet_small_<surfaceName>" alias-name pointer per
- * surface type (0..22). Filled once by CG_RegisterSurfaceTypeSounds(table, "bullet_small")
- * at 0x3002b7ff; consumed indexed by surface type at 0x30048f11 and by
- * CG_ModelEventFireWeapon (0x3004906b). */
-extern const char *cg_bulletSmallSurfaceSounds[23];
-/* 0x3044bf6c .data refs=3 width=4 first=0x3002b80e owner=playercmd_finishplayerdamage.
- * One canonical "bullet_large_<surfaceName>" alias-name pointer per
- * surface type (0..22). Filled once by CG_RegisterSurfaceTypeSounds(table, "bullet_large")
- * at 0x3002b80e; consumed indexed by surface type at 0x30048f04 and by
- * CG_ModelEventFireWeapon (0x30049074). */
-extern const char *cg_bulletLargeSurfaceSounds[23];
-/* 0x3044bfc8 .data refs=1 width=imm first=0x3002b81d owner=playercmd_finishplayerdamage */
-extern const char *cg_stepSprintSurfaceSounds[23];
-/* 0x3044c024 .data refs=1 width=imm first=0x3002b82c owner=playercmd_finishplayerdamage */
-extern const char *cg_stepRunSurfaceSounds[23];
-/* 0x3044c080 .data refs=1 width=imm first=0x3002b83b owner=playercmd_finishplayerdamage */
-extern const char *cg_stepWalkSurfaceSounds[23];
-/* 0x3044c0dc .data refs=1 width=imm first=0x3002b84a owner=playercmd_finishplayerdamage */
-extern const char *cg_stepProneSurfaceSounds[23];
-/* 0x3044c138 .data refs=1 width=imm first=0x3002b859 owner=playercmd_finishplayerdamage */
-extern const char *cg_landSurfaceSounds[23];
-/* 0x3044c194 .data refs=2 width=4 first=0x300232fa owner=cmd_callvote_f */
-extern const char *cg_shellFlashSounds[8];
-/* 0x3044c1b4 .data refs=2 width=4 first=0x3002332f owner=cmd_callvote_f */
-extern const char *cg_barrageIncomingSounds[8];
-/* 0x3044c1d4 .data refs=2 width=4 first=0x30022910 owner=cmd_callvote_f */
-extern const char *cg_soundGearRattleSprint;
-/* 0x3044c1d8 .data refs=3 width=4 first=0x300228c4 owner=cmd_callvote_f */
-extern const char *cg_soundGearRattleRun;
-/* 0x3044c1dc .data refs=2 width=4 first=0x3002295c owner=cmd_callvote_f */
-extern const char *cg_soundGearRattleWalk;
-/* 0x3044c1e0 .data refs=2 width=4 first=0x30022b09 owner=cmd_callvote_f */
-extern const char *cg_soundMovementFoliage;
-/* 0x3044c1e4 .data refs=2 width=4 first=0x3002b953 owner=playercmd_finishplayerdamage */
-extern const char *cg_soundWhizby;
-/* 0x3044c1e8 .data refs=2 width=4 first=0x3002312e owner=cmd_callvote_f */
-extern const char *cg_soundMeleeSwingLarge;
-/* 0x3044c1ec .data refs=2 width=4 first=0x30023115 owner=cmd_callvote_f */
-extern const char *cg_soundMeleeSwingSmall;
-/* 0x3044c1f0 .data refs=2 width=4 first=0x30023157 owner=cmd_callvote_f */
-extern const char *cg_soundMeleeHit;
-/* 0x3044c1f4 .data refs=2 width=4 first=0x30022b3c owner=cmd_callvote_f */
-extern const char *cg_soundFatigueBreath;
-/* 0x3044c1f8 .data refs=2 width=4 first=0x30022b23 owner=cmd_callvote_f */
-extern const char *cg_soundSprintBreathLast;
-/* 0x3044c1fc .data refs=2 width=4 first=0x30023298 owner=cmd_callvote_f */
-extern const char *cg_soundUsGrenadeLever;
-/* 0x3044c200 .data refs=2 width=4 first=0x3002324a owner=cmd_callvote_f */
-extern const char *cg_soundSatchelBounce;
-/* 0x3044c204 .data refs=2 width=4 first=0x300232d6 owner=cmd_callvote_f */
-extern const char *cg_soundMgOverheat;
-/* 0x3044c208 .data refs=2 width=4 first=0x300232c1 owner=cmd_callvote_f */
-extern const char *cg_soundMgOverheatVehicle;
-/* 0x3044c20c .data refs=2 width=4 first=0x3002ba13 owner=playercmd_finishplayerdamage */
-extern const char *cg_soundGameMessage;
-/* 0x3044c210 .data refs=1 width=4 first=0x3002ba2b owner=playercmd_finishplayerdamage */
-extern const char *cg_soundObjectiveComplete;
-/* 0x3044c214 .data refs=1 width=4 first=0x3002b5be owner=playercmd_finishplayerdamage */
-extern const char *cg_soundMpAnnounceGTwoMinutes;
-/* 0x3044c218 .data refs=1 width=4 first=0x3002b5d3 owner=playercmd_finishplayerdamage */
-extern const char *cg_soundMpAnnounceATwoMinutes;
-/* 0x3044c21c .data refs=1 width=4 first=0x3002b5eb owner=playercmd_finishplayerdamage */
-extern const char *cg_soundMpAnnounceGThirtySeconds;
-/* 0x3044c220 .data refs=1 width=4 first=0x3002b600 owner=playercmd_finishplayerdamage */
-extern const char *cg_soundMpAnnounceAThirtySeconds;
-/* 0x3044c224 .data refs=2 width=4 first=0x30022cff owner=cmd_callvote_f */
-extern const char *cg_soundPlayerWaterIn;
-/* 0x3044c228 .data refs=2 width=4 first=0x30022d19 owner=cmd_callvote_f */
-extern const char *cg_soundPlayerWaterOut;
-/* 0x3044c22c .data refs=1 width=4 first=0x3002b714 owner=playercmd_finishplayerdamage */
-extern const char *cg_soundDebrisBounce;
-/* 0x3044c230 .data — the four per-second grenade cook-off pulse sound alias
- * names. CG_DrawCrosshair (0x3001a150) plays cg_soundGrenadePulse[seconds] once
- * per wrap of the cook-off millisecond remainder for whole seconds 0..3; the
- * writer at 0x3002b6c0 fills the table. The old owner=veh_playercollision label
- * was the consumer's size-guess mislabel. */
-extern const char *cg_soundGrenadePulse[4];
-/* 0x3044c234 .data refs=1 width=4 first=0x3002b6d5 owner=playercmd_finishplayerdamage */
-/* 0x3044c240 .data refs=1 width=4 first=0x3002ba3b owner=playercmd_finishplayerdamage */
-extern const char *cg_soundSpotlightSpark;
-/* 0x3044c244 .data — cg_flameFireSound: canonical alias-name pointer from trap 0xc3,
- * "flamethrower_fire") stored at 0x3002b741. RESOLVED by tracing the sound-
- * registration writer (0x3002b700 block registers the flamethrower sound aliases
- * in order). CG_UpdateFlamethrowerSounds gates a per-chunk sound emit on it (0x30029546). */
-extern const char *cg_flameFireSound;
-/* 0x3044c24c .data — cg_flameStartSound: an alias-name pointer resolved by a flame-init
- * function (writer 0x3002b756) and passed as the soundName to CG_PlaySoundAliasByName
- * by CG_EmitPlayerFlameChunks (0x3002522c, the terminal-chunk emit path).
- * RESOLVED (role) on consume; exact CoD sound alias name unresolved. */
-extern const char *cg_flameStartSound;
-/* 0x3044c250 .data — cg_flameStreamSound: alias-name pointer from trap 0xc3,
- * "flamethrower_stream") stored at 0x3002b76b. CG_UpdateFlamethrowerSounds gates the
- * active-stream sound emit on it (0x300294d2). */
-extern const char *cg_flameStreamSound;
-/* 0x3044c258 .data — cg_flameCooldownSound: alias-name pointer from trap 0xc3,
- * "flamethrower_cooldown") stored at 0x3002b795. CG_UpdateFlamethrowerSounds gates the
- * cooldown/decay sound emit on it (0x30029645/0x300296e8). */
-extern const char *cg_flameCooldownSound;
-/* 0x3044c25c .data refs=1 width=4 first=0x3002b780 owner=playercmd_finishplayerdamage */
-extern const char *cg_soundPlayerBoneBounce;
-/* 0x3044c260 .data refs=1 width=4 first=0x3002b729 owner=playercmd_finishplayerdamage */
-extern const char *cg_soundDebrisHitPlayer;
-/* 0x3044c264 .data refs=2 width=4 first=0x300231e8 owner=cmd_callvote_f */
-extern const char *cg_soundFlameBarrelBounce;
-/* 0x3044c268 .data refs=1 width=4 first=0x3002bffe resolved: cgs.media handle for "ui/assets/checkbox_clear" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_checkboxClear;
-/* 0x3044c26c .data refs=1 width=4 first=0x3002c232 resolved: cgs.media handle for "ui/assets/checkbox_checked" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_checkboxChecked;
-/* 0x3044c270 .data refs=1 width=4 first=0x3002c470 resolved: cgs.media handle for
- * "ui/assets/checkbox_fail" (0x30078080, trap id 0x59 at 0x3002c459). A prior mechanical
- * pass mislabeled this cgs_media_backTileShader (a name-address collision); the real
- * backTileShader is 0x3044b6f0 ("gfx/2d/backtile"). Binary-adjudicated. */
-extern qhandle_t cgs_media_checkboxFail;
 /* CG_IMPACT_EFFECT_TYPES — number of impact effect types (weapon/explosion
  * categories). Proven from CG_RegisterImpactEffects (0x3001dfb0): it walks 22
  * parallel (name, effectDef_t[24], qhandle_t[24]) triples — the final loop runs its
  * byte cursor from 0 to 0x58 in steps of 4 (0x58/4 == 22), and hands the parser the
  * count 0x16 (22). */
 enum { CG_IMPACT_EFFECT_TYPES = 22 };
+
 
 /* CG_IMPACT_SURFACE_TYPES — surface types per effect type (one effectDef_t /
  * qhandle_t per surface). Proven from CG_RegisterImpactEffects: the per-type
@@ -2930,38 +2361,6 @@ enum { CG_IMPACT_EFFECT_TYPES = 22 };
  * CG_RegisterEffectDefSurfaces. */
 enum { CG_IMPACT_SURFACE_TYPES = 24 };
 
-/* 0x3044c274 .data: cg_impactEffects[CG_IMPACT_EFFECT_TYPES][CG_IMPACT_SURFACE_TYPES]
- * — the registered impact/explosion effect-handle table, one qhandle_t per
- * (effectType, surfaceType). RESOLVED, superseding the mechanical export which
- * mislabeled this single contiguous array as 22 separate `g_trypushingentity`
- * scalars plus three overlapping `[0x400]` tables (the `g_trypushingentity` owner
- * name is a size-guess for FUN_3001dfb0, whose real name is CG_RegisterImpactEffects).
- *
- * Proven to be ONE array by two independent consumers:
- *  - the producer CG_RegisterImpactEffects (0x3001dfb0) hands the 22 row bases
- *    (&cg_impactEffects[i][0], each 0x60 == 24*4 apart, contiguous from 0x3044c274
- *    to 0x3044cab4 == 0x3044c274 + 22*24*4) to CG_RegisterEffectDefSurfaces, which
- *    fills 24 surface handles per row;
- *  - CG_EntityEvent (0x30022810) reads it flat as cg_impactEffects[row][weapon +
- *    surface*24] for the weapon-fire/impact events (rows 12/13/14 were the three
- *    interior `[0x400]` symbols; the flat index walks across rows, which is why
- *    row-major C storage reproduces the machine code exactly).
- * Retyped from uint32_t to qhandle_t (the register-effect trap returns a qhandle_t).
- * Zero-initialized. The `[0x400]` over-sizing on the old interior symbols is dropped
- * in favor of the array's proven [22][24] extent. */
-extern qhandle_t cg_impactEffects[CG_IMPACT_EFFECT_TYPES][CG_IMPACT_SURFACE_TYPES];
-/* 0x3044cab4 .data refs=2 width=4 first=0x3002c836 resolved: cgs.media handle for "fx/impacts/flesh_hit_noblood.efx" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
-extern qhandle_t cgs_media_fleshImpactEffect;
-/* 0x3044cab8 .data refs=1 width=4 first=0x30027a7f owner=bg_finditem (mechanical
- * owner is wrong). RESOLVED: the flamethrower smoke effect handle. CG_InitFlameChunks
- * (0x30027a7f) stores here the effect handle returned by registering the effect asset
- * "fx/smoke/smoke_flamethrower.efx" via cgame trap 0xe2. cgame effect handle. */
-extern qhandle_t cg_flameSmokeEffect;
-/* 0x3044cabc .data refs=1 width=4 first=0x30027a94 owner=bg_finditem (mechanical
- * owner is wrong). RESOLVED: the large flamethrower smoke effect handle.
- * CG_InitFlameChunks (0x30027a94) stores here the effect handle returned by
- * registering "fx/smoke/smoke_flamethrower_lg.efx" via cgame trap 0xe2. */
-extern qhandle_t cg_flameSmokeEffectLarge;
 typedef enum vehicleTreadEffectIndex_e {
     VEH_TREAD_EFFECT_NONE = 0,
     VEH_TREAD_EFFECT_TANK_GRASS,
@@ -2980,38 +2379,874 @@ typedef enum vehicleTreadEffectIndex_e {
     VEH_TREAD_EFFECT_COUNT = VEH_TREAD_EFFECT_JEEP_SNOW_ALT + 1
 } vehicleTreadEffectIndex_t;
 
-/* cgs_media_vehicleTreadEffects (0x3044cac0, .data) — the vehicle
- * tread/wheel dust-effect handle table indexed by surface-material class.
- * CG_Vehicle_DoControllers (0x30020540) computes a material class 1..6 from the
- * traced surface flags, adds VEH_TREAD_EFFECT_JEEP_OFFSET for a jeep-type vehicle
- * (cg[+0x88]==1) to select the
- * jeepwheel_* row instead of the tanktread_* row, and reads
- * cgs_media_vehicleTreadEffects[class] as the CG_PLAY_EFFECT_ORIENTED (0xe8) handle.
- * Slots 1..6 are tank grass/sand/dirt/rock/snow/snow-alt; slots 7..12 are the
- * corresponding jeep-wheel variants. Slot 0 is the "no effect" default. The two
- * snow-alt slots intentionally register the same assets as their snow siblings,
- * matching the original machine code. Supersedes
- * the mechanical g_data_bg_animparseanimscript_3044cac0 (owner label was
- * first-touching, not the identity); this is the [0] cell of that array. */
-extern qhandle_t cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_COUNT];
 enum { CG_COMPLAINT_STATUS_COUNT = 4 };
 
-/* 0x3044caf4/0x3044caf8: complaint-vote HUD state. CG_ServerCommand stores the
- * complained-about client number or one of four negative status codes and an
- * absolute display deadline (cg.time+20000, shortened to +10000 for a status
- * code); CG_MapRestart resets them to -1/0. */
-extern int32_t cg_complaintClientNum;
-extern int32_t cg_complaintEndTime;
-/* 0x3044cafc: startup random value in [-1,1), computed from the MSVC rand result
- * as rand()/32768*2-1. Its downstream semantic role is not yet resolved. */
-extern float cg_initialRandomValue;
-/* 0x3044cb00 .data: base of the per-corpse client animation/info table
- * (0x4d0-stride clientInfo_t, indexed by corpse entity number - 0x40).
- * Superseded from the mechanical g_data_bg_calculateweaponangles_3044cb00 scalar
- * (wrong first-touch owner label). Declared as cg_corpseInfo in
- * client_recovered.h after this header is included; the shared clientInfo_t
- * declaration is already available from client_info_types.h. Storage is in
- * globals.c. */
+/*
+ * shellshock_t (124 bytes) — the resolved parameter block for a screen/blur/
+ * sound "shellshock" post-effect. Proven a 124-byte object three ways: the
+ * console-command trigger CG_ShellShock_f (0x300174b0) treats 0x30448624 as the
+ * base of one such block; the scene reader (0x30042160) indexes a table of these
+ * with element stride 0x7c (`base + index*0x7c`); and the resolver
+ * CG_SetShellShockParams (0x3003ba10) writes fields at offsets up to +0x78, with
+ * the next distinct .data global sitting exactly at 0x30448624 + 0x7c.
+ *
+ * The leading blur fields and the sound block through +0x64 are decoded by
+ * CG_ShellShockCalcVibrate and CG_UpdateShellShockSound. The mouse-input tail
+ * (offsets +0x68 .. +0x78) is decoded directly by the resolver:
+ * enable, fade time, sensitivity scale, maximum pitch speed, and maximum yaw
+ * speed. The camera update (0x3003c230) uses many earlier float fields
+ * (+0x34 .. +0x64); the blur update (0x3003c630) reads a separate object. Those are
+ * not decoded here — only the fields a reconstructed consumer proves are named; the
+ * remaining bytes stay reserved. */
+typedef struct shellshock_s {
+    int32_t blurDivisor;        /* +0x00: screen-blur ramp divisor */
+    float   blurRate;           /* +0x04: screen-blur phase rate */
+    float   blurScale;          /* +0x08: screen-blur displacement scale */
+    int32_t screenBlendFadeTime;/* +0x0c: screen-blend fade time, ms */
+    int32_t screenBlendTime;    /* +0x10: screen-blend hold time, ms */
+    qboolean soundEnabled;      /* +0x14: nonzero => apply sound/reverb effects */
+    int32_t soundFadeInTime;    /* +0x18: sound fade-in time, ms */
+    int32_t soundFadeOutTime;   /* +0x1c: sound fade-out time, ms */
+    float   soundWetLevel;      /* +0x20: room/reverb wet level */
+    char    soundRoomType[16];  /* +0x24: room-type name */
+    float   soundVolume[SND_ALIAS_CHANNEL_COUNT]; /* +0x34..+0x5b */
+    int32_t soundModEndDelay;   /* +0x5c: modifier end delay, ms */
+    int32_t soundLoopFadeTime;  /* +0x60: loop crossfade time, ms */
+    int32_t soundLoopEndDelay;  /* +0x64: loop end delay, ms */
+    qboolean mouseEnabled;      /* +0x68: cg_shock_mouse != 0 */
+    int32_t mouseFadeTime;      /* +0x6c: mouse attenuation fade time, ms */
+    float   mouseSensitivityScale; /* +0x70 */
+    float   mouseMaxPitchSpeed; /* +0x74 */
+    float   mouseMaxYawSpeed;   /* +0x78 */
+} shellshock_t;
+_Static_assert(sizeof(shellshock_t) == 0x7c,
+               "shellshock_t is 124 bytes (0x30448624 .. 0x304486a0)");
+_Static_assert(offsetof(shellshock_t, mouseEnabled) == 0x68, "shellshock_t.mouseEnabled @ +0x68");
+_Static_assert(offsetof(shellshock_t, mouseFadeTime) == 0x6c, "shellshock_t.mouseFadeTime @ +0x6c");
+_Static_assert(offsetof(shellshock_t, mouseSensitivityScale) == 0x70, "shellshock_t.mouseSensitivityScale @ +0x70");
+_Static_assert(offsetof(shellshock_t, mouseMaxPitchSpeed) == 0x74, "shellshock_t.mouseMaxPitchSpeed @ +0x74");
+_Static_assert(offsetof(shellshock_t, mouseMaxYawSpeed) == 0x78, "shellshock_t.mouseMaxYawSpeed @ +0x78");
+_Static_assert(offsetof(shellshock_t, soundEnabled) == 0x14, "shellshock_t.soundEnabled @ +0x14");
+_Static_assert(offsetof(shellshock_t, soundRoomType) == 0x24, "shellshock_t.soundRoomType @ +0x24");
+_Static_assert(offsetof(shellshock_t, soundVolume) == 0x34, "shellshock_t.soundVolume @ +0x34");
+_Static_assert(offsetof(shellshock_t, soundLoopEndDelay) == 0x64, "shellshock_t.soundLoopEndDelay @ +0x64");
+
+/* cgMedia_t: the registered media handles and sound-alias names at
+ * 0x3044b6ac..0x3044caf4 (cgs.media). field_XXXX offsets are into cgMedia_t. */
+typedef struct cgMedia_s {
+    /* 0x3044b6ac/b0/b4: the three initial shader registrations in CG_Init. Tracking
+     * EAX across the pipelined stores proves the order white, hudSoftLine,
+     * hudSoftLineH; earlier first-touch labels were shifted by one registration. */
+    qhandle_t whiteShader;
+    qhandle_t hudSoftLineShader;
+    qhandle_t hudSoftLineHShader;
+    /* 0x3044b6b8 .data refs=1 width=4 first=0x3002c4d6 resolved: cgs.media handle for "hudAxisIcon" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t hudAxisIcon;
+    /* 0x3044b6bc .data refs=1 width=4 first=0x3002c4c5 resolved: cgs.media handle for "hudAlliedIcon" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t hudAlliedIcon;
+    /* 0x3044b6c0 .data refs=3 width=4 first=0x30017e23 (owner=cg_initvote is wrong).
+     * cgs.media hudColorBar shader handle: registered in the cgame media-init path at
+     * 0x3002c4b4, storing the qhandle_t returned by the "hudColorBar" shader lookup
+     * (string 0x30078048, registered by the call at 0x3002c4a8). Consumed as the
+     * qhandle_t passed to trap_R_DrawStretchPic by CG_DrawTeamBackground (0x30017dd0,
+     * MOV EAX,[0x3044b6c0] at 0x30017e23) and read again at 0x3001890c. */
+    qhandle_t hudColorBar;
+    /* cgMedia_t +0x18 (0x3044b6c4): no reference in the retail image. */
+    int field_18;
+    /* 0x3044b6c8 .data — cgs.media.railCoreShader: the qhandle_t of the "railCore" render
+     * shader. Registered once by the cgame media-registration path at 0x3002c567
+     * (EAX = trap_R_RegisterShader("railCore" @0x30077fb0, 2), stored here), then
+     * consumed by the rail-trail segment builder (0x300430a0) which copies it into
+     * refEntity.spriteShaderHandle (+0x68). Real name resolved from the registered
+     * shader string; supersedes the mechanical owner=pm_updateviewangles guess. */
+    qhandle_t railCoreShader;
+    /* 0x3044b6cc .data refs=3 width=4 (owner label pm_updateviewangles is the mechanical
+     * first-touch and is wrong). cgs.media.voiceChatIcon: the registered head-icon shader handle
+     * for the "headiconVoiceChat" icon, shown over a client while they are voice-chatting.
+     * Written once by the cgame media-registration function at 0x3002c54d (result of
+     * registering shader "headiconVoiceChat", pushed at 0x30077fd0); read twice by
+     * CG_PlayVoiceChat (0x30039ff0) to decide the display duration and to stamp
+     * cg_entities[client].voiceChatIcon. */
+    uint32_t voiceChatIcon;
+    /* 0x3044b6d0 .data refs=2 (owner label pm_updateviewangles is the mechanical
+     * first-touch and is wrong). cgs.media.balloonShader: the registered head-icon shader
+     * handle for the "headiconTalkBalloon" icon, drawn over a client whose currentState
+     * eFlags carry the 0x20000 "typing/chatting" bit. Written once by the cgame
+     * media-registration path at 0x3002c55d (result of registering shader
+     * "headiconTalkBalloon" @0x30077fbc, type 2), then read only by CG_AddHeadIcon
+     * (0x30032ac0). Real name resolved from the registered shader string; supersedes
+     * the mechanical owner=pm_updateviewangles guess. */
+    qhandle_t balloonShader;
+    /* 0x3044b6d4 .data refs=2 (owner label pm_updateviewangles is the mechanical
+     * first-touch and is wrong). cgs.media.connectionShader: the registered head-icon shader
+     * handle for the "headiconDisconnected" icon, drawn over a client whose currentState
+     * eFlags carry the 0x800 "disconnected" bit. Written once by the cgame
+     * media-registration path at 0x3002bb25 (result of registering shader
+     * "headiconDisconnected" @0x30078320, type 5), then read only by CG_AddHeadIcon
+     * (0x30032ac0). Real name resolved from the registered shader string. */
+    qhandle_t connectionShader;
+    /* 0x3044b6d8 .data refs=2 (owner label pm_updateviewangles is the mechanical
+     * first-touch and is wrong). cgs.media.youInKillCamIcon: the registered head-icon shader
+     * handle for the "headiconYouInKillCam" icon, drawn over the local client's own
+     * entity when it is being rendered as the kill-cam subject. Written once by the
+     * cgame media-registration path at 0x3002bb36 (result of registering shader
+     * "headiconYouInKillCam" @0x30078308, type 5), then read only by CG_AddHeadIcon
+     * (0x30032ac0). Real name resolved from the registered shader string. */
+    qhandle_t youInKillCamIcon;
+    /* 0x3044b6dc .data refs=1 width=4 first=0x3002bbee resolved: cgs.media handle for "gfx/2d/select" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t selectShader;
+    /* cgMedia_t +0x34 (0x3044b6e0): no reference in the retail image. */
+    int field_34;
+    /* 0x3044b6e4 .data refs=3 width=4 first=0x3002bbdd resolved: cgs.media handle for "gfx/misc/tracer" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t tracerShader;
+    /* 0x3044b6e8 .data refs=1 width=4 first=0x3002bb03 resolved: cgs.media handle for "gfx/2d/net.tga" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t netShader;
+    /* 0x3044b6ec: registered "lagometer" sample-graph shader. */
+    qhandle_t lagometerShader;
+    /* 0x3044b6f0 (.data): cgs.media.backTileShader — the tiling shader handle used to
+     * fill the letterbox border around a cropped 3D view. Loaded into EAX before each
+     * of the four CG_TileClearBox edge draws in CG_TileClear (0x3001d160). qhandle_t
+     * stored as a 32-bit int. Zero-initialized .data. (owner=initweaponinfo was the
+     * mechanical first-toucher and is wrong.) */
+    qhandle_t backTileShader;
+    /* 0x3044b6f4 .data refs=2 width=4 first=0x3002c492 resolved: cgs.media handle for "hudNoWeaponIcon" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t hudNoWeaponIcon;
+    /* 0x3044b6f8..0x3044b720: cgs media handles indexed directly by
+     * cg.usableHintKind. Slots 0 and 1 remain zero because those selector values draw
+     * nothing; slots 2..9 are registered consecutively by CG_RegisterGraphics. */
+    /* playerState.serverCursorHint value 10 (== CURSOR_HINT_WEAPON_BASE) — the friendly-player
+     * hint. CG_DrawCursorhint (0x300303a0) maps hint kinds >= 10 to
+     * cgs.media.weaponHudIcons[kind - 10], whose element 0 is registered from the material
+     * "hintFriendly" (CG_RegisterGraphics, 0x3044b720), and CG_DrawCrosshair
+     * (0x30019e5c) tints the crosshair green {0.25, 1, 0.25} for exactly this value.
+     * Role proven by both consumers and by the game-module hintStrings table. */
+    qhandle_t usableHintShaders[CURSOR_HINT_BUILTIN_ICON_COUNT];
+    /* 0x3044b720..0x3044b91f and 0x3044b920..0x3044bb1f: per-weapon HUD
+     * and ammo-icon handles. CG_RegisterWeapon indexes both arrays by weapon index;
+     * CG_RegisterGraphics initializes element zero of the first array to hintFriendly. */
+    qhandle_t weaponHudIcons[MAX_WEAPONS];
+    qhandle_t weaponAmmoIcons[MAX_WEAPONS];
+    /* cgMedia_t +0x474 (0x3044bb20): no reference in the retail image. */
+    int field_474;
+    /* cgs.media.stanceHudShaders[9] — the nine preregistered stance/fatigue HUD icon shader
+     * handles at 0x3044bb24..0x3044bb47 (contiguous qhandle_t[9]). Registered by the
+     * HUD asset setup (0x3002bc9b..0x3002bd26) via trap_R_RegisterShader(name,5):
+     *   [0] hudStanceStand   [1] hudStanceCrouch [2] hudStanceProne [3] hudStanceSprint
+     *   [4] hudStanceFlash   [5] hudFatigueStand [6] hudFatigueCrouch
+     *   [7] hudFatigueProne  [8] hudFatigueSprint
+     * Read by CG_DrawPlayerStance (0x3002f63b..0x3002f8db). The old mechanical owner
+     * label "pm_updateviewangles" was a wrong size-guess; superseded here. */
+    qhandle_t stanceHudShaders[9];
+    /* 0x3044bb48 .data — cgs.media.hudObjectiveReserved: a single qhandle_t slot between the
+     * cgs.media.stanceHudShaders[9] array and cgs.media.objectiveShaders[3]. CG_RegisterGraphics (0x3002ba50)
+     * explicitly zeroes it (MOV [0x3044bb48],0 at 0x3002bd2b) as part of objective-asset setup;
+     * no other reconstructed code references it. Provisional role name (reserved/unused objective
+     * slot); owner=pm_updateviewangles was a size-guess and is rejected. */
+    qhandle_t hudObjectiveReserved;
+    /*
+     * cgs.media.objectiveShaders[3] — the three preregistered HUD objective/compass icon
+     * shader handles, at 0x3044bb4c/0x50/0x54. Written by the objective-asset setup
+     * (0x3002bd35..0x3002bd68), each entry filled by trap_R_RegisterShader(name, 5):
+     *   [0] = "hudObjective"     (0x300781b4)
+     *   [1] = "hudObjectiveUp"   (0x300781a4)
+     *   [2] = "hudObjectiveDown" (0x30078190)
+     * Read by CG_GetObjectiveShaderForDir (0x3002fd90) as cgs.media.objectiveShaders[dir]
+     * when no per-shader config-string override is requested. The old mechanical
+     * owner label "pm_updateviewangles" was wrong (size-guess); superseded here.
+     */
+    qhandle_t objectiveShaders[3];
+    /* Compass blip materials registered by CG_RegisterGraphics and consumed by the
+     * two team/vehicle compass passes. */
+    qhandle_t compassFriendlyShaders[2];
+    qhandle_t compassTankShaders[3];
+    /* 0x3044bb6c .data — cgs.media.hitDirectionShader: the 2D shader handle for the
+     * damage-direction ("hit direction") HUD arrow. Registered by the asset-load path
+     * (0x3002bdc5) via CG_RegisterMaterial("hudHitDirection", R_IMAGE_TRACK_HUD),
+     * and consumed by CG_DrawDamageDirectionIndicators (0x3001aac9) as the quad's shader. The
+     * material name "hudHitDirection" proves the role; mechanical owner=cg_ejectweaponbrass
+     * rejected. */
+    qhandle_t hitDirectionShader;
+    /* 0x3044bb70 (.data): cgs.media.numberShaders[11] — the registered 2D shader handles for
+     * the HUD bitmap number font: indices 0..9 are the digit glyphs '0'..'9' and index
+     * 10 is the minus sign '-'. The registration loop at 0x3002bad1..0x3002baee fills all
+     * eleven slots (ESI = 0,4,..,0x28; RegisterShader(name[i]) stored to [ESI+0x3044bb70]),
+     * proving the array shape and the 0x2c-byte extent (next global at 0x3044bb9c). Read
+     * back as cgs.media.numberShaders[digit] by the HUD digit drawer 0x30031300 (MOV ECX,[ESI*4+
+     * 0x3044bb70], ESI = digitValue or 10 for '-') and by 0x30017cfb. The mechanical export
+     * only captured element 0; superseded here as the full qhandle_t[11] array (mechanical
+     * owner=pm_cmdscale label rejected — a first-toucher, not the identity). Provisional
+     * role name; exact source symbol unresolved. */
+    qhandle_t numberShaders[11];
+    /* 0x3044bb9c .data refs=2 width=4 first=0x3002c5e4 resolved: cgs.media handle for "markShadow" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t shadowMarkShader;
+    /* 0x3044bba0 .data refs=1 width=4 first=0x3002c4a3 resolved: cgs.media handle for "flareShader" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t flareShader;
+    /* 0x3044bba4 .data refs=2 width=4 first=0x3002c5fd resolved: cgs.media handle for the
+     * "wake" material (registered by CG_RegisterGraphics 0x3002c5f1: PUSH 0x30077f90
+     * "wake"; the old markShadowFade label was a mis-read of the adjacent
+     * "markShadow" string). Consumed by CG_AddPlayerWaterShadow, matching the
+     * Q3/RTCW cgs.media.wakeMarkShader role. */
+    qhandle_t wakeMarkShader;
+    /* 0x3044bba8 .data refs=1 width=4 first=0x3002c503 resolved: cgs.media handle for "gfx/hud/headicon@allies_flag" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t headiconAlliesFlag;
+    /* 0x3044bbac .data refs=1 width=4 first=0x3002c4e7 resolved: cgs.media handle for "gfx/hud/headicon@axis_flag" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t headiconAxisFlag;
+    /* 0x3044bbb0 .data refs=1 width=4 first=0x3002b615 owner=playercmd_finishplayerdamage */
+    const char *soundPlayerGib;
+    /* 0x3044bbb4 .data refs=1 width=4 first=0x3002b62a owner=playercmd_finishplayerdamage */
+    const char *soundPlayerGibBounce;
+    /* 0x3044bbb8 (.data): cgs.media.soundOutOfAmmo — the registered sound identifier for the
+     * "player_out_of_ammo" local sound. The cgame sound-registration pass (0x3002b560)
+     * registers "player_out_of_ammo" (string 0x30078794) via engine syscall 0xc3 and
+     * stores the returned handle here (MOV [0x3044bbb8],EAX at 0x3002b654 captures the
+     * result of the 0x3002b644 syscall whose arg was that string). CG_OutOfAmmoChange
+     * (0x30034a00) loads it and passes it as the sound identifier to CG_PlaySoundAliasByName.
+     * Typed const char * to match CG_PlaySoundAliasByName's soundName parameter. Was the
+     * mechanical g_data_cmd_callvote_f_3044bbb8 (owner=first-touching function, wrong). */
+    const char *soundOutOfAmmo;
+    /* 0x3044bbbc .data refs=2 width=4 first=0x30022a4f owner=cmd_callvote_f */
+    const char *soundLandDamage;
+    /* 0x3044bbc0 .data refs=1 width=4 first=0x300234bc owner=cmd_callvote_f */
+    const char *soundDeath;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
+    /* 0x3044bbc4 .data refs=1 width=4 first=0x3002318f owner=cmd_callvote_f */
+    const char *teleInSound;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
+    /* 0x3044bbc8 .data refs=1 width=4 first=0x300231a9 owner=cmd_callvote_f */
+    const char *teleOutSound;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
+    /* 0x3044bbcc .data refs=1 width=4 first=0x300231ce owner=cmd_callvote_f */
+    const char *respawnSound;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
+    /* 0x3044bbd0 .data: registered "player_talk" sound reference. The registration
+     * pipeline at 0x3002b64a..0x3002b669 stores the result of registering the literal
+     * "player_talk" here; CG_DrawVote plays it when voteModified is consumed. */
+    const char *talkSound;
+    /* 0x3044bbd4 .data refs=2 width=4 first=0x30023257 owner=cmd_callvote_f */
+    const char *grenadeBounceSurfaceSounds[23];
+    /* 0x3044bc30 .data refs=2 width=4 first=0x30023417 owner=cmd_callvote_f */
+    const char *grenadeExplodeSurfaceSounds[23];
+    const char *unusedSurfaceSoundSet0[23];
+    /* 0x3044bce8 .data refs=1 width=imm first=0x3002b7c3 owner=playercmd_finishplayerdamage */
+    const char *rocketExplodeSurfaceSounds[23];
+    const char *unusedSurfaceSoundSet1[23];
+    /* 0x3044bda0 .data refs=1 width=imm first=0x3002b7e1 owner=playercmd_finishplayerdamage */
+    const char *artilleryExplodeSurfaceSounds[23];
+    /* 0x3044bdfc .data refs=1 width=imm first=0x3002b7d2 owner=playercmd_finishplayerdamage */
+    const char *mortarExplodeSurfaceSounds[23];
+    /* 0x3044be58 .data refs=1 width=imm first=0x3002b7f0 owner=playercmd_finishplayerdamage */
+    const char *tankExplodeSurfaceSounds[23];
+    const char *eventSurfaceSounds[23];
+    /* 0x3044bf10 .data refs=3 width=4 first=0x3002b7ff owner=playercmd_finishplayerdamage.
+     * One canonical "bullet_small_<surfaceName>" alias-name pointer per
+     * surface type (0..22). Filled once by CG_RegisterSurfaceTypeSounds(table, "bullet_small")
+     * at 0x3002b7ff; consumed indexed by surface type at 0x30048f11 and by
+     * CG_ModelEventFireWeapon (0x3004906b). */
+    const char *bulletSmallSurfaceSounds[23];
+    /* 0x3044bf6c .data refs=3 width=4 first=0x3002b80e owner=playercmd_finishplayerdamage.
+     * One canonical "bullet_large_<surfaceName>" alias-name pointer per
+     * surface type (0..22). Filled once by CG_RegisterSurfaceTypeSounds(table, "bullet_large")
+     * at 0x3002b80e; consumed indexed by surface type at 0x30048f04 and by
+     * CG_ModelEventFireWeapon (0x30049074). */
+    const char *bulletLargeSurfaceSounds[23];
+    /* 0x3044bfc8 .data refs=1 width=imm first=0x3002b81d owner=playercmd_finishplayerdamage */
+    const char *stepSprintSurfaceSounds[23];
+    /* 0x3044c024 .data refs=1 width=imm first=0x3002b82c owner=playercmd_finishplayerdamage */
+    const char *stepRunSurfaceSounds[23];
+    /* 0x3044c080 .data refs=1 width=imm first=0x3002b83b owner=playercmd_finishplayerdamage */
+    const char *stepWalkSurfaceSounds[23];
+    /* 0x3044c0dc .data refs=1 width=imm first=0x3002b84a owner=playercmd_finishplayerdamage */
+    const char *stepProneSurfaceSounds[23];
+    /* 0x3044c138 .data refs=1 width=imm first=0x3002b859 owner=playercmd_finishplayerdamage */
+    const char *landSurfaceSounds[23];
+    /* 0x3044c194 .data refs=2 width=4 first=0x300232fa owner=cmd_callvote_f */
+    const char *shellFlashSounds[8];
+    /* 0x3044c1b4 .data refs=2 width=4 first=0x3002332f owner=cmd_callvote_f */
+    const char *barrageIncomingSounds[8];
+    /* 0x3044c1d4 .data refs=2 width=4 first=0x30022910 owner=cmd_callvote_f */
+    const char *soundGearRattleSprint;
+    /* 0x3044c1d8 .data refs=3 width=4 first=0x300228c4 owner=cmd_callvote_f */
+    const char *soundGearRattleRun;
+    /* 0x3044c1dc .data refs=2 width=4 first=0x3002295c owner=cmd_callvote_f */
+    const char *soundGearRattleWalk;
+    /* 0x3044c1e0 .data refs=2 width=4 first=0x30022b09 owner=cmd_callvote_f */
+    const char *soundMovementFoliage;
+    /* 0x3044c1e4 .data refs=2 width=4 first=0x3002b953 owner=playercmd_finishplayerdamage */
+    const char *soundWhizby;
+    /* 0x3044c1e8 .data refs=2 width=4 first=0x3002312e owner=cmd_callvote_f */
+    const char *soundMeleeSwingLarge;
+    /* 0x3044c1ec .data refs=2 width=4 first=0x30023115 owner=cmd_callvote_f */
+    const char *soundMeleeSwingSmall;
+    /* 0x3044c1f0 .data refs=2 width=4 first=0x30023157 owner=cmd_callvote_f */
+    const char *soundMeleeHit;
+    /* 0x3044c1f4 .data refs=2 width=4 first=0x30022b3c owner=cmd_callvote_f */
+    const char *soundFatigueBreath;
+    /* 0x3044c1f8 .data refs=2 width=4 first=0x30022b23 owner=cmd_callvote_f */
+    const char *soundSprintBreathLast;
+    /* 0x3044c1fc .data refs=2 width=4 first=0x30023298 owner=cmd_callvote_f */
+    const char *soundUsGrenadeLever;
+    /* 0x3044c200 .data refs=2 width=4 first=0x3002324a owner=cmd_callvote_f */
+    const char *soundSatchelBounce;
+    /* 0x3044c204 .data refs=2 width=4 first=0x300232d6 owner=cmd_callvote_f */
+    const char *soundMgOverheat;
+    /* 0x3044c208 .data refs=2 width=4 first=0x300232c1 owner=cmd_callvote_f */
+    const char *soundMgOverheatVehicle;
+    /* 0x3044c20c .data refs=2 width=4 first=0x3002ba13 owner=playercmd_finishplayerdamage */
+    const char *soundGameMessage;
+    /* 0x3044c210 .data refs=1 width=4 first=0x3002ba2b owner=playercmd_finishplayerdamage */
+    const char *soundObjectiveComplete;
+    /* 0x3044c214 .data refs=1 width=4 first=0x3002b5be owner=playercmd_finishplayerdamage */
+    const char *soundMpAnnounceGTwoMinutes;
+    /* 0x3044c218 .data refs=1 width=4 first=0x3002b5d3 owner=playercmd_finishplayerdamage */
+    const char *soundMpAnnounceATwoMinutes;
+    /* 0x3044c21c .data refs=1 width=4 first=0x3002b5eb owner=playercmd_finishplayerdamage */
+    const char *soundMpAnnounceGThirtySeconds;
+    /* 0x3044c220 .data refs=1 width=4 first=0x3002b600 owner=playercmd_finishplayerdamage */
+    const char *soundMpAnnounceAThirtySeconds;
+    /* 0x3044c224 .data refs=2 width=4 first=0x30022cff owner=cmd_callvote_f */
+    const char *watrInSound;
+    /* 0x3044c228 .data refs=2 width=4 first=0x30022d19 owner=cmd_callvote_f */
+    const char *watrOutSound;
+    /* 0x3044c22c .data refs=1 width=4 first=0x3002b714 owner=playercmd_finishplayerdamage */
+    const char *soundDebrisBounce;
+    /* 0x3044c230 .data — the four per-second grenade cook-off pulse sound alias
+     * names. CG_DrawCrosshair (0x3001a150) plays cgs.media.soundGrenadePulse[seconds] once
+     * per wrap of the cook-off millisecond remainder for whole seconds 0..3; the
+     * writer at 0x3002b6c0 fills the table. The old owner=veh_playercollision label
+     * was the consumer's size-guess mislabel. */
+    const char *soundGrenadePulse[4];
+    /* 0x3044c234 .data refs=1 width=4 first=0x3002b6d5 owner=playercmd_finishplayerdamage */
+    /* 0x3044c240 .data refs=1 width=4 first=0x3002ba3b owner=playercmd_finishplayerdamage */
+    const char *soundSpotlightSpark;
+    /* 0x3044c244 .data — cgs.media.flameFireSound: canonical alias-name pointer from trap 0xc3,
+     * "flamethrower_fire") stored at 0x3002b741. RESOLVED by tracing the sound-
+     * registration writer (0x3002b700 block registers the flamethrower sound aliases
+     * in order). CG_UpdateFlamethrowerSounds gates a per-chunk sound emit on it (0x30029546). */
+    const char *flameFireSound;
+    /* cgMedia_t +0xb9c (0x3044c248): no reference in the retail image. */
+    int field_b9c;
+    /* 0x3044c24c .data — cgs.media.flameStartSound: an alias-name pointer resolved by a flame-init
+     * function (writer 0x3002b756) and passed as the soundName to CG_PlaySoundAliasByName
+     * by CG_EmitPlayerFlameChunks (0x3002522c, the terminal-chunk emit path).
+     * RESOLVED (role) on consume; exact CoD sound alias name unresolved. */
+    const char *flameStartSound;
+    /* 0x3044c250 .data — cgs.media.flameStreamSound: alias-name pointer from trap 0xc3,
+     * "flamethrower_stream") stored at 0x3002b76b. CG_UpdateFlamethrowerSounds gates the
+     * active-stream sound emit on it (0x300294d2). */
+    const char *flameStreamSound;
+    /* cgMedia_t +0xba8 (0x3044c254): no reference in the retail image. */
+    int field_ba8;
+    /* 0x3044c258 .data — cgs.media.flameCooldownSound: alias-name pointer from trap 0xc3,
+     * "flamethrower_cooldown") stored at 0x3002b795. CG_UpdateFlamethrowerSounds gates the
+     * cooldown/decay sound emit on it (0x30029645/0x300296e8). */
+    const char *flameCooldownSound;
+    /* 0x3044c25c .data refs=1 width=4 first=0x3002b780 owner=playercmd_finishplayerdamage */
+    const char *soundPlayerBoneBounce;
+    /* 0x3044c260 .data refs=1 width=4 first=0x3002b729 owner=playercmd_finishplayerdamage */
+    const char *soundDebrisHitPlayer;
+    /* 0x3044c264 .data refs=2 width=4 first=0x300231e8 owner=cmd_callvote_f */
+    const char *soundFlameBarrelBounce;
+    /* 0x3044c268 .data refs=1 width=4 first=0x3002bffe resolved: cgs.media handle for "ui/assets/checkbox_clear" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t checkboxClear;
+    /* 0x3044c26c .data refs=1 width=4 first=0x3002c232 resolved: cgs.media handle for "ui/assets/checkbox_checked" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t checkboxChecked;
+    /* 0x3044c270 .data refs=1 width=4 first=0x3002c470 resolved: cgs.media handle for
+     * "ui/assets/checkbox_fail" (0x30078080, trap id 0x59 at 0x3002c459). A prior mechanical
+     * pass mislabeled this cgs.media.backTileShader (a name-address collision); the real
+     * backTileShader is 0x3044b6f0 ("gfx/2d/backtile"). Binary-adjudicated. */
+    qhandle_t checkboxFail;
+    /* 0x3044c274 .data: cgs.media.impactEffects[CG_IMPACT_EFFECT_TYPES][CG_IMPACT_SURFACE_TYPES]
+     * — the registered impact/explosion effect-handle table, one qhandle_t per
+     * (effectType, surfaceType). RESOLVED, superseding the mechanical export which
+     * mislabeled this single contiguous array as 22 separate `g_trypushingentity`
+     * scalars plus three overlapping `[0x400]` tables (the `g_trypushingentity` owner
+     * name is a size-guess for FUN_3001dfb0, whose real name is CG_RegisterImpactEffects).
+     *
+     * Proven to be ONE array by two independent consumers:
+     *  - the producer CG_RegisterImpactEffects (0x3001dfb0) hands the 22 row bases
+     *    (&cgs.media.impactEffects[i][0], each 0x60 == 24*4 apart, contiguous from 0x3044c274
+     *    to 0x3044cab4 == 0x3044c274 + 22*24*4) to CG_RegisterEffectDefSurfaces, which
+     *    fills 24 surface handles per row;
+     *  - CG_EntityEvent (0x30022810) reads it flat as cgs.media.impactEffects[row][weapon +
+     *    surface*24] for the weapon-fire/impact events (rows 12/13/14 were the three
+     *    interior `[0x400]` symbols; the flat index walks across rows, which is why
+     *    row-major C storage reproduces the machine code exactly).
+     * Retyped from uint32_t to qhandle_t (the register-effect trap returns a qhandle_t).
+     * Zero-initialized. The `[0x400]` over-sizing on the old interior symbols is dropped
+     * in favor of the array's proven [22][24] extent. */
+    qhandle_t impactEffects[CG_IMPACT_EFFECT_TYPES][CG_IMPACT_SURFACE_TYPES];
+    /* 0x3044cab4 .data refs=2 width=4 first=0x3002c836 resolved: cgs.media handle for "fx/impacts/flesh_hit_noblood.efx" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
+    qhandle_t fleshImpactEffect;
+    /* 0x3044cab8 .data refs=1 width=4 first=0x30027a7f owner=bg_finditem (mechanical
+     * owner is wrong). RESOLVED: the flamethrower smoke effect handle. CG_InitFlameChunks
+     * (0x30027a7f) stores here the effect handle returned by registering the effect asset
+     * "fx/smoke/smoke_flamethrower.efx" via cgame trap 0xe2. cgame effect handle. */
+    qhandle_t flameSmokeEffect;
+    /* 0x3044cabc .data refs=1 width=4 first=0x30027a94 owner=bg_finditem (mechanical
+     * owner is wrong). RESOLVED: the large flamethrower smoke effect handle.
+     * CG_InitFlameChunks (0x30027a94) stores here the effect handle returned by
+     * registering "fx/smoke/smoke_flamethrower_lg.efx" via cgame trap 0xe2. */
+    qhandle_t flameSmokeEffectLarge;
+    /* cgs.media.vehicleTreadEffects (0x3044cac0, .data) — the vehicle
+     * tread/wheel dust-effect handle table indexed by surface-material class.
+     * CG_Vehicle_DoControllers (0x30020540) computes a material class 1..6 from the
+     * traced surface flags, adds VEH_TREAD_EFFECT_JEEP_OFFSET for a jeep-type vehicle
+     * (cg[+0x88]==1) to select the
+     * jeepwheel_* row instead of the tanktread_* row, and reads
+     * cgs.media.vehicleTreadEffects[class] as the CG_PLAY_EFFECT_ORIENTED (0xe8) handle.
+     * Slots 1..6 are tank grass/sand/dirt/rock/snow/snow-alt; slots 7..12 are the
+     * corresponding jeep-wheel variants. Slot 0 is the "no effect" default. The two
+     * snow-alt slots intentionally register the same assets as their snow siblings,
+     * matching the original machine code. Supersedes
+     * the mechanical g_data_bg_animparseanimscript_3044cac0 (owner label was
+     * first-touching, not the identity); this is the [0] cell of that array. */
+    qhandle_t vehicleTreadEffects[VEH_TREAD_EFFECT_COUNT];
+} cgMedia_t;
+
+typedef struct cgs_s {
+    /* +0x0000 (0x30440a00..0x30447a04): the gameState_t filled by trap 79
+     * (CG_GET_GAME_STATE) in CG_Init. Address-shaped scalars inside it are
+     * stringOffsets[] elements or bytes of the packed stringData buffer. */
+    gameState_t gameState;
+    /* 0x30447a04: shared inherited glconfig_t block filled by trap 0x4e during CG_Init.
+     * CoDUOMP.exe 0x0040339a copies the complete 0xa0-byte i386 renderer record
+     * (MOV ECX,0x28; REP MOVSD), including five leading pointers. Keep those
+     * pointers typed so this engine/module ABI expands consistently on 64-bit
+     * hosts; a fixed 0x84-byte prefix would leave vidWidth/vidHeight at their
+     * obsolete i386 offsets and make the engine's native-sized copy overrun this
+     * object. The original i386 member offsets and total size remain asserted. */
+    glconfig_t glconfig;
+    /* 0x30447aa4 .data refs=96 (owner=pm_cmdscale label is wrong).
+     * cgs.screenXScale: virtual -> real horizontal scale factor. Written once in
+     * the cgs-init path (0x3002e016) as (float)glconfig.vidWidth * (1.0f/640.0f)
+     * [FILD [0x30447a88]; FMUL [0x3007c3f4]=0.0015625f; FSTP [0x30447aa4]], and
+     * multiplied into every X/width UI coordinate. Consumed as a float by CG_DrawPic
+     * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_DrawTurretTagQuad at
+     * 0x3001ccf0). The 1/640 divisor is proven from the writer's .rdata constant
+     * 0x3007c3f4. */
+    float screenXScale;
+    /* 0x30447aa8 .data refs=96 (owner=pm_cmdscale label is wrong).
+     * cgs.screenYScale: virtual -> real vertical scale factor. Written once in the
+     * cgs-init path (0x3002e028) as (float)glconfig.vidHeight * (1.0f/480.0f)
+     * [FILD [0x30447a8c]; FMUL [0x3007c3f0]=0.0020833334f; FSTP [0x30447aa8]], and
+     * multiplied into every Y/height UI coordinate. Consumed as a float by CG_DrawPic
+     * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_DrawTurretTagQuad at
+     * 0x3001ccf0). The 1/480 divisor is proven from the writer's .rdata constant
+     * 0x3007c3f0. */
+    float screenYScale;
+    /* +0x70ac (0x30447aac): no reference in the retail image. */
+    int field_70ac;
+    /* 0x30447ab0 (.data): cgs.serverCommandSequence — the highest server-command
+     * sequence number cgame has processed. Lives in the cgs block (adjacent to the
+     * cgs.screenXScale/screenYScale fields above). Printed as the "cmd:%i" field of
+     * CG_DrawSnapshot (0x30018020), matching stock CoD/Q3 which draws
+     * cgs.serverCommandSequence there; also read/updated in the cgame init/config
+     * path (write at 0x3002dfbb, reads at 0x3003b476/0x3003b49b). Retyped from the
+     * mechanical uint32_t; the (owner=scr_getobjectfield) label was wrong. */
+    int32_t serverCommandSequence;
+    /* 0x30447ab4 (.data): cg.processedSnapshotNum — the snapshot number cgame has
+     * consumed up through. CG_ReadNextSnapshot (0x3003d220) increments it before each
+     * trap_GetSnapshot and prints the "way out of range" warning when
+     * cg.latestSnapshotNum - processedSnapshotNum > 1000; CG_ProcessSnapshots
+     * (0x3003d2d0) compares it against cg.latestSnapshotNum to drive the read loop.
+     * Signed compare (JLE/JGE/JL). Retyped from the mechanical uint32_t (owner=g_runframe
+     * was the first-touching function, not the identity). */
+    int32_t processedSnapshotNum;
+    /* 0x30447ab8 .data refs=5 width=4 first=0x30018bd0.
+     * cgs.localServer — cgame "config values already registered" once-guard.
+     * Set in the config/init path (0x3002b20d), read as `if (flag != 0) return;` by
+     * every config-value setter (CG_SetConfigValues 0x30038430, sibling 0x30038380,
+     * 0x30018bd0) to make cvar registration idempotent. Role name; exact CoD symbol
+     * unproven. Mechanical owner=cmd_veh_fireturret is a wrong first-touch guess. */
+    int32_t localServer;
+    /* ------------------------------------------------------------------------
+     * cgs serverinfo mirror cluster (0x30447abc..0x30447c20). CG_ParseServerinfo
+     * (0x30038380) parses config string 0 (the serverinfo string) and fills these
+     * four fields via Info_ValueForKey; many cgame consumers then read them. The
+     * four are contiguous in memory in this order: gametype[32], hostname[256],
+     * maxclients (int32), mapname[64]. Sizes proven by the Q_strncpyz/Com_sprintf
+     * size arguments (0x20, 0x100, 0x40) and the address deltas. Mechanical
+     * owner=<first-touch> labels (script_method_scriptbuiltin_getatt,
+     * g_getactivateent, cg_playerturretpositionandblend, g_runframe) are wrong
+     * first-touch guesses and are rejected. Exact CoD cgs_t field names are the
+     * stock Q3/CoD gametype/hostname/maxClients/mapname mirrors; kept as cgs_*.
+     * ------------------------------------------------------------------------ */
+    /* 0x30447abc .data — cgs.gametype: g_gametype cvar value copied from serverinfo
+     * (Q_strncpyz size 0x20). Read by e.g. 0x3002d5ef, 0x30031c40, 0x30036361. */
+    char gametype[32];
+    /* 0x30447adc .data — cgs.hostname: sv_hostname value from serverinfo
+     * (Q_strncpyz size 0x100). Read by e.g. 0x30036757, 0x300367cd, 0x3003682e. */
+    char hostname[256];
+    /* 0x30447bdc .data — cgs.maxclients: atoi(sv_maxclients) from serverinfo.
+     * Read as an int by 0x30026344 (CMP) and 0x300327f1 (MOV EBP). */
+    int32_t maxclients;
+    /* 0x30447be0 .data — cgs.mapname: "maps/mp/%s.bsp" built from the serverinfo
+     * mapname (Com_sprintf size 0x40). Read by e.g. 0x3002e0f7..0x3002e1f8,
+     * 0x30036420. */
+    char mapname[MAX_QPATH];
+    char teamNames[2][64];
+    /* ------------------------------------------------------------------------
+     * cgame vote HUD display cluster (cgs.vote* mirror of the Q3/CoD vote state).
+     * These four scalars + the display string + the "modified" flag are rebuilt in
+     * batch by CG_BuildVoteHudStrings (0x3002ddf0) at gamestate setup, and updated
+     * per-field by the CG_ConfigStringModified dispatcher (0x30038e70) cases 0x10
+     * (voteTime), 0x11 (voteString), 0x12 (voteYes), 0x13 (voteNo). The vote HUD is
+     * drawn by 0x3001b7d0: it early-outs if voteTime==0, computes the remaining
+     * seconds as (voteTime - trap(6) ms)/1000, and formats voteString with the
+     * (voteYes/voteNo) tallies. Mechanical owner=cg_drawtracer / itemparse_model_origin
+     * first-touch labels are rejected; names proven by the vote-string format literal
+     * (0x300779cc "vote string"), the trap(6) end-time idiom, and the /1000 draw. */
+    /* 0x30447ca0 .data refs=10 width=4. cgs.voteTime: absolute engine-ms end time of
+     * the current vote. CG_BuildVoteHudStrings/dispatcher set it to Q_atoi(configString)
+     * and, when nonzero, add the engine-milliseconds trap(6) to make it absolute. */
+    int32_t voteTime;
+    /* 0x30447ca4 .data refs=5. cgs.voteYes: "yes" tally, Q_atoi of the vote-yes config
+     * string; pushed as a printf arg by the vote HUD drawer (0x3001bae9/0x3001bb69).
+     * CG_PlayFxOnTag's indexed instruction uses this numerical displacement only
+     * because MSVC folded the ASCII digit bias into the cgs.effectDefs address; it
+     * does not access the vote object. */
+    int32_t voteYes;
+    /* 0x30447ca8 .data refs=4. cgs.voteNo: "no" tally, Q_atoi of the vote-no config
+     * string; pushed as a printf arg by the vote HUD drawer (0x3001bae7/0x3001bb56). */
+    int32_t voteNo;
+    /* 0x30447cac .data refs=5 width=4 first=0x3001ba0e. cgs.voteModified: vote-state
+     * "changed since last drawn" flag; set to 1 by the dispatcher (0x30039003), tested
+     * and cleared by the vote HUD drawer (0x3001ba0e/0x3001ba1e). Not touched by
+     * CG_BuildVoteHudStrings; retained address suffix pending its own consumer pass. */
+    qboolean voteModified;
+    /* 0x30447cb0..0x30447daf .data. cgs.voteString[256]: the vote HUD display text.
+     * Both writers call strncpy(...,255) and then write zero at +255, proving that
+     * the final byte is the array terminator rather than a separate "dirty" flag.
+     * The drawer at 0x3001ba7a consumes the buffer. */
+    char voteString[256];
+    int32_t teamVoteTime[2];
+    int32_t teamVoteYes[2];
+    int32_t teamVoteNo[2];
+    qboolean teamVoteModified[2];
+    char teamVoteString[2][256];
+    /* 0x30447fd0 .data refs=11 width=4 first=0x3001bbd3. Timeout HUD end time (ms):
+     * CG_BuildTimeoutHudStrings and the CS-0x775 case of CG_ConfigStringModified
+     * (0x300390da) set it to Q_atoi(configString) and, when nonzero, add the engine
+     * milliseconds trap(6) to make an absolute end time. Written 0 when the scoreboard
+     * is disabled. Address suffix retained: the remaining reads (weapon/sound-overlay
+     * clusters) are not yet reconstructed, so the timeout role is proven but not fully
+     * adjudicated; mechanical owner=pm_reloadclip first-touch label rejected. */
+    int32_t timeoutEndTime;
+    /* 0x30447fd4 .data refs=4 width=4 first=0x3001bc28. Timeout-active flag: set to 1
+     * by CG_BuildTimeoutHudStrings when the parsed end time is nonzero, else 0 (also
+     * cleared by the CS-0x775 dispatcher case at 0x300390fa). Address suffix retained
+     * pending adjudication of the other consumers. */
+    int32_t timeoutActive;
+    /* 0x30447fd8..0x304480d7 .data. Timeout HUD display string[256]. Both writers
+     * copy 255 bytes and then store a zero at +255, proving one bounded string object;
+     * the former separate "dirty flag" interpretation had no read-side evidence. */
+    char timeoutString[256];
+    /* 0x304480d8: first sibling of the d8/dc/e0 signed HUD-stat triple. Writers
+     * parse config string 14 with Q_atoi; exact displayed stat name remains unresolved. */
+    int32_t levelStartTime;
+    /*
+     * cgs.scores1 (0x304480dc) — middle sibling of the parallel HUD-stat
+     * integer array d8/dc/e0 (see cgs.scores2 below). Written by the same
+     * atoi-parsing writer cluster (0x3003885d stores an int here) and read by two of
+     * the trap-54 HUD emitters: this slot's display emitter CG_DrawRedScore
+     * (0x30031521) and CG_Draw1stPlace (0x30031b60). Signed-compared
+     * against the "not set" sentinel -9999 (0xffffd8f1) by the display emitter, so it
+     * is a signed int stat, not an unsigned dword. Retail UO owner-draw id
+     * CG_RED_SCORE and the matching macOS CG_DrawRedScore symbol establish this
+     * slot's displayed role; the flattened global's original enclosing-field name
+     * remains unresolved. Mechanical
+     * owner=menuparse_itemdef label REJECTED (no menu-parse code touches it). */
+    int32_t scores1;
+    /*
+     * cgs.scores2 (0x304480e0) — an atoi-parsed integer stat displayed by
+     * the cgame system-info HUD. The two writers at 0x30038840/0x30038f60 store
+     * atoi(str) (callee 0x3005b6ce is atoi: skips ctype-whitespace, parses digits) into
+     * this slot and the two adjacent siblings 0x304480d8/0x304480dc, so d8/dc/e0 form a
+     * small parallel array of parsed integer stats. Readers compare it against the
+     * sentinel -9999 (0xffffd8f1): the display code at 0x300315f1 prints "-" (0x30079760)
+     * when it holds the sentinel and otherwise formats the value, and the emitter at
+     * 0x30031bd0 forwards va("%2i", value) to cgame trap 54 only when it is not the
+     * sentinel. A third reader FILDs it to float at 0x30031856. The mechanical
+     * owner=script_orbit label is REJECTED (no script code touches it; it is HUD stat
+     * state). Retail UO owner-draw id CG_BLUE_SCORE and the matching macOS
+     * CG_DrawBlueScore symbol establish this slot's displayed role; the flattened
+     * global's original enclosing-field name remains unresolved. Zero-initialized
+     * .data (VA past the on-disk .data tail).
+     */
+    int32_t scores2;
+    /* 0x304480e4..0x304484e3 .data — cgs.gameModels[256], the registered render-model
+     * handles for CS_MODELS. The registration loop starts at config string 0x196 and
+     * destination 0x304480e8, filling elements 1..255; element 0 remains empty. vmMain
+     * command 10 and four entity renderers index from 0x304480e4, proving the base. */
+    qhandle_t gameModels[CS_MODELS_COUNT];
+    /*
+     * cgs.effectDefs[80] (0x304484e4, .data): the cgame effect-handle table, indexed
+     * by an effect id in [1,80). Each element is an opaque effect handle returned by
+     * the engine's "register effect" trap (id 0xe2) and later passed straight to the
+     * effect-play traps (0xe7/0xe8/0xe9). Proven an 80-element array by three
+     * consumers that index cgs.effectDefs[id] after checking 0 < id < 80
+     * (0x30022720, 0x30021a30, 0x300164b0), by the registration loop at 0x3002c760
+     * that writes handles into it, and by the array end coinciding exactly with the
+     * next distinct global (0x304484e4 + 80*4 = 0x30448624). The mechanical export
+     * mislabeled this as owner=bg_indexforstring and split element [1] (0x304484e8)
+     * into a separate symbol; superseded here as the real array.
+     */
+    uint32_t effectDefs[80];
+    /* NOTE: 0x304484e8 is &cgs.effectDefs[1]; the registration loop at 0x3002c755
+     * (FUN_3002ba50) loads it as a base pointer. Reconstruct that caller to use
+     * &cgs.effectDefs[1] rather than a standalone symbol. */
+    /* 0x30448624 .data: cgs.shellshocks[0] — the 124-byte shellshock_t parameter
+     * block for the manual "cg_shellshock" console command. Declared as the typed
+     * shellshock_t in client_recovered.h (next to CG_SetShellShockParams); its owning
+     * consumer CG_ShellShock_f (0x300174b0) passes it by pointer. The mechanical
+     * owner=concatargs label came from a size-guessed name for 0x300174b0 and is
+     * wrong. Storage in globals.c. */
+    /* 0x304486a0 .data — cgs.shellshocks[16]: the loaded shellshock_t parameter blocks for
+     * the CS_SHELLSHOCKS config-string block (stride 0x7c). CG_RegisterGraphics (0x3002ba50)
+     * loads each nonempty shellshock config string (CG_ShellShockLoad) and fills the block via
+     * CG_SetShellShockParams. The loop visits config-string indices 1..15 (index zero
+     * is the separate manual block), proving 15 array elements ending at 0x30448de4.
+     * owner=pm_updateviewangles
+     * was a size-guess and is rejected. Declared as the typed shellshock_t[16] in
+     * client_recovered.h (where shellshock_t is complete); storage in globals.c. */
+    /* cgs.shellshocks[0] (0x30448624) is the console block; the scene reader
+     * (0x3004251a) indexes the whole array as base + index*0x7c, and
+     * CG_ConfigStringModified writes &shellshocks[index - CS_SHELLSHOCKS]. */
+    shellshock_t shellshocks[16];
+    /* 0x30448de4 .data refs=2 width=4 first=0x3002c641 owner=pm_updateviewangles */
+    int32_t numInlineModels;
+    /* 0x30448de8..0x304495e7 .data — cgs.inlineDrawModel[MAX_SUBMODELS]:
+     * per-submodel registered render-model
+     * handle table (the "*N" inline/brush models). Filled at load time by the
+     * registration loop at 0x3002c5.. (formats "*%i - inline models" and stores each
+     * model-register trap (0x4d) result at table[i], write 0x3002c67b); the entry
+     * count is the adjacent word 0x30448de4. Indexed by currentState.modelindex.
+     * The mechanical export mislabeled owner=matrixmultiply43 (the rejected size-guess
+     * name of CG_Mover at 0x3001f120) and captured only the first dword; the datum is
+     * the array. Consumers: CG_Mover (0x3001f120, read 0x3001f22e) and 0x3001f388.
+     * The next independently proven datum is cgs.inlineModelMidpoints at 0x304495e8,
+     * fixing this interval at 0x800 bytes, or 512 handles. There is no separate
+     * original global at the reconstruction's former artificial 256-row split. */
+    int32_t inlineDrawModel[MAX_SUBMODELS];
+    /* 0x304495e8..0x3044ade8 .data —
+     * cgs.inlineModelMidpoints[MAX_SUBMODELS].
+     * CG_RegisterGraphics starts at &array[1] (0x304495f4), advances by one vec3,
+     * and stops at cgs.numInlineModels. CG_EntityEffects indexes the array base with
+     * currentState.modelindex. The enclosing interval proves MAX_MODELS == 512. */
+    vec3_t inlineModelMidpoints[MAX_SUBMODELS];
+    /* 0x3044ade8..0x3044b688 .data: the cgs team-chat ring, one object.
+     * msgs: TEAMCHAT_HEIGHT (8) lines of TEAMCHAT_WIDTH*3+1 = 271 bytes each (worst
+     * case every visible char preceded by a "^x" color code, plus NUL; stride 0x10f).
+     * msgTimes (0x3044b660): cg.time stamp per ring line, indexed pos % chatHeight.
+     * pos (0x3044b680): monotonic ring write cursor. lastPos (0x3044b684): oldest
+     * still-visible line, trailing pos by at most chatHeight. Written by
+     * CG_AddToTeamChat (0x30039390), read by CG_DrawTeamInfo (0x30018770); the line
+     * stores there alias the cursors, which the original reloads after each store. */
+    /* +0xa3e8..+0xac88 (0x3044ade8..0x3044b688): the Quake 3 team-chat ring. */
+    char teamChatMsgs[TEAMCHAT_HEIGHT][TEAMCHAT_LINE_BYTES];
+    int teamChatMsgTimes[TEAMCHAT_HEIGHT];
+    int teamChatPos;
+    int teamLastChatPos;
+    /* 0x3044b688/0x3044b68c .data — cgs cursor coordinates synchronized into the
+     * shared UI display context by vmMain's CGVM_MOUSE_EVENT command. */
+    int32_t cursorX;
+    int32_t cursorY;
+    /* +0xac90..+0xac9b (0x3044b690..0x3044b69b): no reference in the retail image. */
+    int field_ac90[3];
+    /* 0x3044b69c..0x3044b6a8 .data: a single 16-byte timed float-value fade animator
+     * used by the FOV/zoom subsystem. The mechanical export split it into four
+     * g_data_vectosignedangles_* uint32 scalars with a wrong first-touch owner label;
+     * superseded here as the struct it actually is. Updater CG_StartFovFade
+     * (0x3001ab50) seeds all four fields; the evaluator at 0x3001a7c0 lerps
+     * currentValue from startValue over durationMs starting at startTime (via
+     * trap_Milliseconds); CG_CalcFov (0x3003ffc0) consumes/updates it. Provisional
+     * field names (no cgame symbol table recovered); exact original names unproven. */
+    /* RTCW cgs.scrFade* (CG_Fade_f stores the same four fields in the same
+     * way): alpha target, current alpha, start time and duration in ms. */
+    float scrFadeAlpha;
+    float scrFadeAlphaCurrent;
+    int scrFadeStartTime;
+    int scrFadeDuration;
+    /* +0xacac (0x3044b6ac..0x3044caf4). */
+    cgMedia_t media;
+    /* 0x3044caf4/0x3044caf8: complaint-vote HUD state. CG_ServerCommand stores the
+     * complained-about client number or one of four negative status codes and an
+     * absolute display deadline (cg.time+20000, shortened to +10000 for a status
+     * code); CG_MapRestart resets them to -1/0. */
+    int32_t complaintClientNum;
+    int32_t complaintEndTime;
+    /* 0x3044cafc: startup random value in [-1,1), computed from the MSVC rand result
+     * as rand()/32768*2-1. Its downstream semantic role is not yet resolved. */
+    float initialRandomValue;
+    /* 0x3044cb00 .data: base of the per-corpse client animation/info table
+     * (0x4d0-stride clientInfo_t, indexed by corpse entity number - 0x40).
+     * Superseded from the mechanical g_data_bg_calculateweaponangles_3044cb00 scalar
+     * (wrong first-touch owner label). Declared as cgs.corpseInfo in
+     * client_recovered.h after this header is included; the shared clientInfo_t
+     * declaration is already available from client_info_types.h. Storage is in
+     * globals.c. */
+    /* cgs.corpseInfo: 8 clientInfo_t records, 0x3044cb00..0x3044f180 (end of cgs). */
+    clientInfo_t corpseInfo[PLAYER_CLONE_COUNT];
+} cgs_t;
+
+extern cgs_t cgs;
+
+#if UINTPTR_MAX == UINT32_MAX
+_Static_assert(sizeof(cgs_t) == 0xe780, "cgs_t clear: 0x39e0 dwords at 0x30440a00");
+_Static_assert(sizeof(cgMedia_t) == 0x1448, "cgs.media spans 0x3044b6ac..0x3044caf4");
+_Static_assert(offsetof(cgs_t, gameState) == 0x0, "cgs.gameState at 0x30440a00");
+_Static_assert(offsetof(cgs_t, glconfig) == 0x7004, "cgs.glconfig at 0x30447a04");
+_Static_assert(offsetof(cgs_t, screenXScale) == 0x70a4, "cgs.screenXScale at 0x30447aa4");
+_Static_assert(offsetof(cgs_t, screenYScale) == 0x70a8, "cgs.screenYScale at 0x30447aa8");
+_Static_assert(offsetof(cgs_t, field_70ac) == 0x70ac, "cgs.field_70ac at 0x30447aac");
+_Static_assert(offsetof(cgs_t, serverCommandSequence) == 0x70b0, "cgs.serverCommandSequence at 0x30447ab0");
+_Static_assert(offsetof(cgs_t, processedSnapshotNum) == 0x70b4, "cgs.processedSnapshotNum at 0x30447ab4");
+_Static_assert(offsetof(cgs_t, localServer) == 0x70b8, "cgs.localServer at 0x30447ab8");
+_Static_assert(offsetof(cgs_t, gametype) == 0x70bc, "cgs.gametype at 0x30447abc");
+_Static_assert(offsetof(cgs_t, hostname) == 0x70dc, "cgs.hostname at 0x30447adc");
+_Static_assert(offsetof(cgs_t, maxclients) == 0x71dc, "cgs.maxclients at 0x30447bdc");
+_Static_assert(offsetof(cgs_t, mapname) == 0x71e0, "cgs.mapname at 0x30447be0");
+_Static_assert(offsetof(cgs_t, teamNames) == 0x7220, "cgs.teamNames at 0x30447c20");
+_Static_assert(offsetof(cgs_t, voteTime) == 0x72a0, "cgs.voteTime at 0x30447ca0");
+_Static_assert(offsetof(cgs_t, voteYes) == 0x72a4, "cgs.voteYes at 0x30447ca4");
+_Static_assert(offsetof(cgs_t, voteNo) == 0x72a8, "cgs.voteNo at 0x30447ca8");
+_Static_assert(offsetof(cgs_t, voteModified) == 0x72ac, "cgs.voteModified at 0x30447cac");
+_Static_assert(offsetof(cgs_t, voteString) == 0x72b0, "cgs.voteString at 0x30447cb0");
+_Static_assert(offsetof(cgs_t, teamVoteTime) == 0x73b0, "cgs.teamVoteTime at 0x30447db0");
+_Static_assert(offsetof(cgs_t, teamVoteYes) == 0x73b8, "cgs.teamVoteYes at 0x30447db8");
+_Static_assert(offsetof(cgs_t, teamVoteNo) == 0x73c0, "cgs.teamVoteNo at 0x30447dc0");
+_Static_assert(offsetof(cgs_t, teamVoteModified) == 0x73c8, "cgs.teamVoteModified at 0x30447dc8");
+_Static_assert(offsetof(cgs_t, teamVoteString) == 0x73d0, "cgs.teamVoteString at 0x30447dd0");
+_Static_assert(offsetof(cgs_t, timeoutEndTime) == 0x75d0, "cgs.timeoutEndTime at 0x30447fd0");
+_Static_assert(offsetof(cgs_t, timeoutActive) == 0x75d4, "cgs.timeoutActive at 0x30447fd4");
+_Static_assert(offsetof(cgs_t, timeoutString) == 0x75d8, "cgs.timeoutString at 0x30447fd8");
+_Static_assert(offsetof(cgs_t, levelStartTime) == 0x76d8, "cgs.levelStartTime at 0x304480d8");
+_Static_assert(offsetof(cgs_t, scores1) == 0x76dc, "cgs.scores1 at 0x304480dc");
+_Static_assert(offsetof(cgs_t, scores2) == 0x76e0, "cgs.scores2 at 0x304480e0");
+_Static_assert(offsetof(cgs_t, gameModels) == 0x76e4, "cgs.gameModels at 0x304480e4");
+_Static_assert(offsetof(cgs_t, effectDefs) == 0x7ae4, "cgs.effectDefs at 0x304484e4");
+_Static_assert(offsetof(cgs_t, shellshocks) == 0x7c24, "cgs.shellshocks at 0x30448624");
+_Static_assert(offsetof(cgs_t, numInlineModels) == 0x83e4, "cgs.numInlineModels at 0x30448de4");
+_Static_assert(offsetof(cgs_t, inlineDrawModel) == 0x83e8, "cgs.inlineDrawModel at 0x30448de8");
+_Static_assert(offsetof(cgs_t, inlineModelMidpoints) == 0x8be8, "cgs.inlineModelMidpoints at 0x304495e8");
+_Static_assert(offsetof(cgs_t, teamChatMsgs) == 0xa3e8, "cgs.teamChatMsgs at 0x3044ade8");
+_Static_assert(offsetof(cgs_t, teamChatMsgTimes) == 0xac60, "cgs.teamChatMsgTimes at 0x3044b660");
+_Static_assert(offsetof(cgs_t, teamChatPos) == 0xac80, "cgs.teamChatPos at 0x3044b680");
+_Static_assert(offsetof(cgs_t, teamLastChatPos) == 0xac84, "cgs.teamLastChatPos at 0x3044b684");
+_Static_assert(offsetof(cgs_t, cursorX) == 0xac88, "cgs.cursorX at 0x3044b688");
+_Static_assert(offsetof(cgs_t, cursorY) == 0xac8c, "cgs.cursorY at 0x3044b68c");
+_Static_assert(offsetof(cgs_t, field_ac90) == 0xac90, "cgs.field_ac90 at 0x3044b690");
+_Static_assert(offsetof(cgs_t, scrFadeAlpha) == 0xac9c, "cgs.scrFadeAlpha at 0x3044b69c");
+_Static_assert(offsetof(cgs_t, scrFadeAlphaCurrent) == 0xaca0, "cgs.scrFadeAlphaCurrent at 0x3044b6a0");
+_Static_assert(offsetof(cgs_t, scrFadeStartTime) == 0xaca4, "cgs.scrFadeStartTime at 0x3044b6a4");
+_Static_assert(offsetof(cgs_t, scrFadeDuration) == 0xaca8, "cgs.scrFadeDuration at 0x3044b6a8");
+_Static_assert(offsetof(cgs_t, media) == 0xacac, "cgs.media at 0x3044b6ac");
+_Static_assert(offsetof(cgs_t, complaintClientNum) == 0xc0f4, "cgs.complaintClientNum at 0x3044caf4");
+_Static_assert(offsetof(cgs_t, complaintEndTime) == 0xc0f8, "cgs.complaintEndTime at 0x3044caf8");
+_Static_assert(offsetof(cgs_t, initialRandomValue) == 0xc0fc, "cgs.initialRandomValue at 0x3044cafc");
+_Static_assert(offsetof(cgs_t, corpseInfo) == 0xc100, "cgs.corpseInfo at 0x3044cb00");
+_Static_assert(offsetof(cgMedia_t, whiteShader) == 0x0, "cgs.media.whiteShader at 0x3044b6ac");
+_Static_assert(offsetof(cgMedia_t, hudSoftLineShader) == 0x4, "cgs.media.hudSoftLineShader at 0x3044b6b0");
+_Static_assert(offsetof(cgMedia_t, hudSoftLineHShader) == 0x8, "cgs.media.hudSoftLineHShader at 0x3044b6b4");
+_Static_assert(offsetof(cgMedia_t, hudAxisIcon) == 0xc, "cgs.media.hudAxisIcon at 0x3044b6b8");
+_Static_assert(offsetof(cgMedia_t, hudAlliedIcon) == 0x10, "cgs.media.hudAlliedIcon at 0x3044b6bc");
+_Static_assert(offsetof(cgMedia_t, hudColorBar) == 0x14, "cgs.media.hudColorBar at 0x3044b6c0");
+_Static_assert(offsetof(cgMedia_t, field_18) == 0x18, "cgs.media.field_18 at 0x3044b6c4");
+_Static_assert(offsetof(cgMedia_t, railCoreShader) == 0x1c, "cgs.media.railCoreShader at 0x3044b6c8");
+_Static_assert(offsetof(cgMedia_t, voiceChatIcon) == 0x20, "cgs.media.voiceChatIcon at 0x3044b6cc");
+_Static_assert(offsetof(cgMedia_t, balloonShader) == 0x24, "cgs.media.balloonShader at 0x3044b6d0");
+_Static_assert(offsetof(cgMedia_t, connectionShader) == 0x28, "cgs.media.connectionShader at 0x3044b6d4");
+_Static_assert(offsetof(cgMedia_t, youInKillCamIcon) == 0x2c, "cgs.media.youInKillCamIcon at 0x3044b6d8");
+_Static_assert(offsetof(cgMedia_t, selectShader) == 0x30, "cgs.media.selectShader at 0x3044b6dc");
+_Static_assert(offsetof(cgMedia_t, field_34) == 0x34, "cgs.media.field_34 at 0x3044b6e0");
+_Static_assert(offsetof(cgMedia_t, tracerShader) == 0x38, "cgs.media.tracerShader at 0x3044b6e4");
+_Static_assert(offsetof(cgMedia_t, netShader) == 0x3c, "cgs.media.netShader at 0x3044b6e8");
+_Static_assert(offsetof(cgMedia_t, lagometerShader) == 0x40, "cgs.media.lagometerShader at 0x3044b6ec");
+_Static_assert(offsetof(cgMedia_t, backTileShader) == 0x44, "cgs.media.backTileShader at 0x3044b6f0");
+_Static_assert(offsetof(cgMedia_t, hudNoWeaponIcon) == 0x48, "cgs.media.hudNoWeaponIcon at 0x3044b6f4");
+_Static_assert(offsetof(cgMedia_t, usableHintShaders) == 0x4c, "cgs.media.usableHintShaders at 0x3044b6f8");
+_Static_assert(offsetof(cgMedia_t, weaponHudIcons) == 0x74, "cgs.media.weaponHudIcons at 0x3044b720");
+_Static_assert(offsetof(cgMedia_t, weaponAmmoIcons) == 0x274, "cgs.media.weaponAmmoIcons at 0x3044b920");
+_Static_assert(offsetof(cgMedia_t, field_474) == 0x474, "cgs.media.field_474 at 0x3044bb20");
+_Static_assert(offsetof(cgMedia_t, stanceHudShaders) == 0x478, "cgs.media.stanceHudShaders at 0x3044bb24");
+_Static_assert(offsetof(cgMedia_t, hudObjectiveReserved) == 0x49c, "cgs.media.hudObjectiveReserved at 0x3044bb48");
+_Static_assert(offsetof(cgMedia_t, objectiveShaders) == 0x4a0, "cgs.media.objectiveShaders at 0x3044bb4c");
+_Static_assert(offsetof(cgMedia_t, compassFriendlyShaders) == 0x4ac, "cgs.media.compassFriendlyShaders at 0x3044bb58");
+_Static_assert(offsetof(cgMedia_t, compassTankShaders) == 0x4b4, "cgs.media.compassTankShaders at 0x3044bb60");
+_Static_assert(offsetof(cgMedia_t, hitDirectionShader) == 0x4c0, "cgs.media.hitDirectionShader at 0x3044bb6c");
+_Static_assert(offsetof(cgMedia_t, numberShaders) == 0x4c4, "cgs.media.numberShaders at 0x3044bb70");
+_Static_assert(offsetof(cgMedia_t, shadowMarkShader) == 0x4f0, "cgs.media.shadowMarkShader at 0x3044bb9c");
+_Static_assert(offsetof(cgMedia_t, flareShader) == 0x4f4, "cgs.media.flareShader at 0x3044bba0");
+_Static_assert(offsetof(cgMedia_t, wakeMarkShader) == 0x4f8, "cgs.media.wakeMarkShader at 0x3044bba4");
+_Static_assert(offsetof(cgMedia_t, headiconAlliesFlag) == 0x4fc, "cgs.media.headiconAlliesFlag at 0x3044bba8");
+_Static_assert(offsetof(cgMedia_t, headiconAxisFlag) == 0x500, "cgs.media.headiconAxisFlag at 0x3044bbac");
+_Static_assert(offsetof(cgMedia_t, soundPlayerGib) == 0x504, "cgs.media.soundPlayerGib at 0x3044bbb0");
+_Static_assert(offsetof(cgMedia_t, soundPlayerGibBounce) == 0x508, "cgs.media.soundPlayerGibBounce at 0x3044bbb4");
+_Static_assert(offsetof(cgMedia_t, soundOutOfAmmo) == 0x50c, "cgs.media.soundOutOfAmmo at 0x3044bbb8");
+_Static_assert(offsetof(cgMedia_t, soundLandDamage) == 0x510, "cgs.media.soundLandDamage at 0x3044bbbc");
+_Static_assert(offsetof(cgMedia_t, soundDeath) == 0x514, "cgs.media.soundDeath at 0x3044bbc0");
+_Static_assert(offsetof(cgMedia_t, teleInSound) == 0x518, "cgs.media.teleInSound at 0x3044bbc4");
+_Static_assert(offsetof(cgMedia_t, teleOutSound) == 0x51c, "cgs.media.teleOutSound at 0x3044bbc8");
+_Static_assert(offsetof(cgMedia_t, respawnSound) == 0x520, "cgs.media.respawnSound at 0x3044bbcc");
+_Static_assert(offsetof(cgMedia_t, talkSound) == 0x524, "cgs.media.talkSound at 0x3044bbd0");
+_Static_assert(offsetof(cgMedia_t, grenadeBounceSurfaceSounds) == 0x528, "cgs.media.grenadeBounceSurfaceSounds at 0x3044bbd4");
+_Static_assert(offsetof(cgMedia_t, grenadeExplodeSurfaceSounds) == 0x584, "cgs.media.grenadeExplodeSurfaceSounds at 0x3044bc30");
+_Static_assert(offsetof(cgMedia_t, unusedSurfaceSoundSet0) == 0x5e0, "cgs.media.unusedSurfaceSoundSet0 at 0x3044bc8c");
+_Static_assert(offsetof(cgMedia_t, rocketExplodeSurfaceSounds) == 0x63c, "cgs.media.rocketExplodeSurfaceSounds at 0x3044bce8");
+_Static_assert(offsetof(cgMedia_t, unusedSurfaceSoundSet1) == 0x698, "cgs.media.unusedSurfaceSoundSet1 at 0x3044bd44");
+_Static_assert(offsetof(cgMedia_t, artilleryExplodeSurfaceSounds) == 0x6f4, "cgs.media.artilleryExplodeSurfaceSounds at 0x3044bda0");
+_Static_assert(offsetof(cgMedia_t, mortarExplodeSurfaceSounds) == 0x750, "cgs.media.mortarExplodeSurfaceSounds at 0x3044bdfc");
+_Static_assert(offsetof(cgMedia_t, tankExplodeSurfaceSounds) == 0x7ac, "cgs.media.tankExplodeSurfaceSounds at 0x3044be58");
+_Static_assert(offsetof(cgMedia_t, eventSurfaceSounds) == 0x808, "cgs.media.eventSurfaceSounds at 0x3044beb4");
+_Static_assert(offsetof(cgMedia_t, bulletSmallSurfaceSounds) == 0x864, "cgs.media.bulletSmallSurfaceSounds at 0x3044bf10");
+_Static_assert(offsetof(cgMedia_t, bulletLargeSurfaceSounds) == 0x8c0, "cgs.media.bulletLargeSurfaceSounds at 0x3044bf6c");
+_Static_assert(offsetof(cgMedia_t, stepSprintSurfaceSounds) == 0x91c, "cgs.media.stepSprintSurfaceSounds at 0x3044bfc8");
+_Static_assert(offsetof(cgMedia_t, stepRunSurfaceSounds) == 0x978, "cgs.media.stepRunSurfaceSounds at 0x3044c024");
+_Static_assert(offsetof(cgMedia_t, stepWalkSurfaceSounds) == 0x9d4, "cgs.media.stepWalkSurfaceSounds at 0x3044c080");
+_Static_assert(offsetof(cgMedia_t, stepProneSurfaceSounds) == 0xa30, "cgs.media.stepProneSurfaceSounds at 0x3044c0dc");
+_Static_assert(offsetof(cgMedia_t, landSurfaceSounds) == 0xa8c, "cgs.media.landSurfaceSounds at 0x3044c138");
+_Static_assert(offsetof(cgMedia_t, shellFlashSounds) == 0xae8, "cgs.media.shellFlashSounds at 0x3044c194");
+_Static_assert(offsetof(cgMedia_t, barrageIncomingSounds) == 0xb08, "cgs.media.barrageIncomingSounds at 0x3044c1b4");
+_Static_assert(offsetof(cgMedia_t, soundGearRattleSprint) == 0xb28, "cgs.media.soundGearRattleSprint at 0x3044c1d4");
+_Static_assert(offsetof(cgMedia_t, soundGearRattleRun) == 0xb2c, "cgs.media.soundGearRattleRun at 0x3044c1d8");
+_Static_assert(offsetof(cgMedia_t, soundGearRattleWalk) == 0xb30, "cgs.media.soundGearRattleWalk at 0x3044c1dc");
+_Static_assert(offsetof(cgMedia_t, soundMovementFoliage) == 0xb34, "cgs.media.soundMovementFoliage at 0x3044c1e0");
+_Static_assert(offsetof(cgMedia_t, soundWhizby) == 0xb38, "cgs.media.soundWhizby at 0x3044c1e4");
+_Static_assert(offsetof(cgMedia_t, soundMeleeSwingLarge) == 0xb3c, "cgs.media.soundMeleeSwingLarge at 0x3044c1e8");
+_Static_assert(offsetof(cgMedia_t, soundMeleeSwingSmall) == 0xb40, "cgs.media.soundMeleeSwingSmall at 0x3044c1ec");
+_Static_assert(offsetof(cgMedia_t, soundMeleeHit) == 0xb44, "cgs.media.soundMeleeHit at 0x3044c1f0");
+_Static_assert(offsetof(cgMedia_t, soundFatigueBreath) == 0xb48, "cgs.media.soundFatigueBreath at 0x3044c1f4");
+_Static_assert(offsetof(cgMedia_t, soundSprintBreathLast) == 0xb4c, "cgs.media.soundSprintBreathLast at 0x3044c1f8");
+_Static_assert(offsetof(cgMedia_t, soundUsGrenadeLever) == 0xb50, "cgs.media.soundUsGrenadeLever at 0x3044c1fc");
+_Static_assert(offsetof(cgMedia_t, soundSatchelBounce) == 0xb54, "cgs.media.soundSatchelBounce at 0x3044c200");
+_Static_assert(offsetof(cgMedia_t, soundMgOverheat) == 0xb58, "cgs.media.soundMgOverheat at 0x3044c204");
+_Static_assert(offsetof(cgMedia_t, soundMgOverheatVehicle) == 0xb5c, "cgs.media.soundMgOverheatVehicle at 0x3044c208");
+_Static_assert(offsetof(cgMedia_t, soundGameMessage) == 0xb60, "cgs.media.soundGameMessage at 0x3044c20c");
+_Static_assert(offsetof(cgMedia_t, soundObjectiveComplete) == 0xb64, "cgs.media.soundObjectiveComplete at 0x3044c210");
+_Static_assert(offsetof(cgMedia_t, soundMpAnnounceGTwoMinutes) == 0xb68, "cgs.media.soundMpAnnounceGTwoMinutes at 0x3044c214");
+_Static_assert(offsetof(cgMedia_t, soundMpAnnounceATwoMinutes) == 0xb6c, "cgs.media.soundMpAnnounceATwoMinutes at 0x3044c218");
+_Static_assert(offsetof(cgMedia_t, soundMpAnnounceGThirtySeconds) == 0xb70, "cgs.media.soundMpAnnounceGThirtySeconds at 0x3044c21c");
+_Static_assert(offsetof(cgMedia_t, soundMpAnnounceAThirtySeconds) == 0xb74, "cgs.media.soundMpAnnounceAThirtySeconds at 0x3044c220");
+_Static_assert(offsetof(cgMedia_t, watrInSound) == 0xb78, "cgs.media.watrInSound at 0x3044c224");
+_Static_assert(offsetof(cgMedia_t, watrOutSound) == 0xb7c, "cgs.media.watrOutSound at 0x3044c228");
+_Static_assert(offsetof(cgMedia_t, soundDebrisBounce) == 0xb80, "cgs.media.soundDebrisBounce at 0x3044c22c");
+_Static_assert(offsetof(cgMedia_t, soundGrenadePulse) == 0xb84, "cgs.media.soundGrenadePulse at 0x3044c230");
+_Static_assert(offsetof(cgMedia_t, soundSpotlightSpark) == 0xb94, "cgs.media.soundSpotlightSpark at 0x3044c240");
+_Static_assert(offsetof(cgMedia_t, flameFireSound) == 0xb98, "cgs.media.flameFireSound at 0x3044c244");
+_Static_assert(offsetof(cgMedia_t, field_b9c) == 0xb9c, "cgs.media.field_b9c at 0x3044c248");
+_Static_assert(offsetof(cgMedia_t, flameStartSound) == 0xba0, "cgs.media.flameStartSound at 0x3044c24c");
+_Static_assert(offsetof(cgMedia_t, flameStreamSound) == 0xba4, "cgs.media.flameStreamSound at 0x3044c250");
+_Static_assert(offsetof(cgMedia_t, field_ba8) == 0xba8, "cgs.media.field_ba8 at 0x3044c254");
+_Static_assert(offsetof(cgMedia_t, flameCooldownSound) == 0xbac, "cgs.media.flameCooldownSound at 0x3044c258");
+_Static_assert(offsetof(cgMedia_t, soundPlayerBoneBounce) == 0xbb0, "cgs.media.soundPlayerBoneBounce at 0x3044c25c");
+_Static_assert(offsetof(cgMedia_t, soundDebrisHitPlayer) == 0xbb4, "cgs.media.soundDebrisHitPlayer at 0x3044c260");
+_Static_assert(offsetof(cgMedia_t, soundFlameBarrelBounce) == 0xbb8, "cgs.media.soundFlameBarrelBounce at 0x3044c264");
+_Static_assert(offsetof(cgMedia_t, checkboxClear) == 0xbbc, "cgs.media.checkboxClear at 0x3044c268");
+_Static_assert(offsetof(cgMedia_t, checkboxChecked) == 0xbc0, "cgs.media.checkboxChecked at 0x3044c26c");
+_Static_assert(offsetof(cgMedia_t, checkboxFail) == 0xbc4, "cgs.media.checkboxFail at 0x3044c270");
+_Static_assert(offsetof(cgMedia_t, impactEffects) == 0xbc8, "cgs.media.impactEffects at 0x3044c274");
+_Static_assert(offsetof(cgMedia_t, fleshImpactEffect) == 0x1408, "cgs.media.fleshImpactEffect at 0x3044cab4");
+_Static_assert(offsetof(cgMedia_t, flameSmokeEffect) == 0x140c, "cgs.media.flameSmokeEffect at 0x3044cab8");
+_Static_assert(offsetof(cgMedia_t, flameSmokeEffectLarge) == 0x1410, "cgs.media.flameSmokeEffectLarge at 0x3044cabc");
+_Static_assert(offsetof(cgMedia_t, vehicleTreadEffects) == 0x1414, "cgs.media.vehicleTreadEffects at 0x3044cac0");
+#endif
+
 /* 0x3044f18c .data — cg_drawFPS_vmCvar.integer: the detail level of the renderer-stats
  * HUD (a cvar-backed int). CG_DrawFPS (0x30018090) reads it and, only when it is
  * > 1, fetches cg_rendererStats and prints the detailed tris/verts/prims/ents/mb/dc
@@ -3656,7 +3891,7 @@ struct centity_s {
                                * yet elapsed. Provisional field name. */
     int32_t voiceChatIcon;    /* +0x230: registered head-icon shader handle shown while
                                * this client is voice-chatting. Written by CG_PlayVoiceChat
-                               * (0x30039ff0) from cgs_voiceChatIcon (the "headiconVoiceChat"
+                               * (0x30039ff0) from cgs.media.voiceChatIcon (the "headiconVoiceChat"
                                * shader handle at 0x3044b6cc). Provisional field name; role
                                * proven by the writer, exact centity_t source name unproven. */
     int32_t voiceChatTime;    /* +0x234: cg.time deadline until which voiceChatIcon is shown.
@@ -4279,7 +4514,7 @@ typedef struct cg_s {
      * weapon-pickup selector in [0xb,0x8a] or [0x8b,0x10a] selects a weapon hint,
      * CURSOR_HINT_LMG (7) selects the mount hint, CURSOR_HINT_HEALTH (8)
      * selects the health hint, and it is used to index the validity
-     * table cgs_media_usableHintShaders (0x3044b6f8). CG_DrawCursorhint clears it to 0 once the
+     * table cgs.media.usableHintShaders (0x3044b6f8). CG_DrawCursorhint clears it to 0 once the
      * hint has fully faded (CG_FadeColor returned NULL). Reset with 0x3048ae0c/0x10 by
      * the state-reset block at 0x30034d8c. Mechanical owner=pm_jumpforsurface (a
      * size-match mislabel) rejected; named by proven role, exact CoD name unproven. */
@@ -4853,7 +5088,7 @@ _Static_assert(offsetof(cg_t, adsViewErrorLatched) == 0x32ec4, "cg.adsViewErrorL
 /* 0x3052ec8c .data — cg_blood_vmCvar.integer: the integer value of the "cg_blood_vmCvar.integer" cvar (blood
  * effects enabled). Sole reader is CG_BulletHitEvent (0x30048e60, at 0x30048f2d):
  * when cg_blood_vmCvar.integer == 0 AND the impacted surface is flesh (surfaceType == 7) it swaps
- * the primary impact effect for the no-blood flesh effect (cgs_media_fleshImpactEffect,
+ * the primary impact effect for the no-blood flesh effect (cgs.media.fleshImpactEffect,
  * "fx/impacts/flesh_hit_noblood.efx") and suppresses the secondary blood effect. No
  * writer in this DLL (set by the engine/cvar layer), so left as a plain int32 mirror.
  * Named by proven role (the "cg_blood_vmCvar.integer" cvar string @0x300788cc + the noblood.efx
@@ -4988,16 +5223,8 @@ extern struct localEntity_s *cg_freeLocalEntities;
  * self-links both. (The mechanical export split .next into a separate symbol at
  * 0x30537da4; both are fields of this one struct, so they are unified here.) */
 extern struct localEntity_s cg_activeLocalEntities;
-/* 0x30537ea0 .data refs=2 width=4 first=0x30018c9e owner=cmd_veh_fireturret */
-extern int32_t cg_lagometerFrameSamples[LAG_SAMPLES];
-/* 0x305380a0 .data refs=3 width=4 first=0x30018c92 owner=cmd_veh_fireturret */
-extern int32_t cg_lagometerFrameCount;
-/* 0x305380a4 (.data): cg_lagometer — the network-lag graph ring; its snapshot-side
- * tail (snapshotFlags at 0x305380a4, snapshotSamples at 0x305382a4, snapshotCount at
- * 0x305384a4) is modelled by lagometer_t above. Retyped from the three mechanical
- * uint32_t symbols (owner=vector4scale was the first-touching function, not the
- * identity); the three addresses are three fields of this one object. */
-extern lagometer_t cg_lagometer;
+/* 0x30537ea0 .data — lagometer (Q3 cg_draw.c), 0x608 bytes. */
+extern lagometer_t lagometer;
 /* 0x305384c0 .data — cg_hudEmitClientTable[]: the index->clientNum lookup table of
  * the HUD trap-54 emit family. Read as `MOV EAX,[EAX*4 + 0x305384c0]` (dword array
  * indexed by cg_currentSelectedPlayer_vmCvar.integer) by 0x30030f10 / 0x30031020 / 0x300311f0; the result

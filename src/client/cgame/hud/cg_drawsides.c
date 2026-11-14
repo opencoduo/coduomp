@@ -46,18 +46,18 @@ void CG_DrawSides(float x, float y, float width, float height, float size)
 {
     /* 0x3001c8e0 loads X scale, then snapshots the first shader handle before
      * completing and storing the first product. */
-    long double xScaleForX = (long double)cgs_screenXScale;
-    qhandle_t firstShader = cgs_media_whiteShader;
+    long double xScaleForX = (long double)cgs.screenXScale;
+    qhandle_t firstShader = cgs.media.whiteShader;
     float xs = (float)(xScaleForX * (long double)x);
-    float ys = (float)((long double)cgs_screenYScale * (long double)y);
+    float ys = (float)((long double)cgs.screenYScale * (long double)y);
     /* ws is the one scaled term the DLL never stores to a float slot: it is kept
      * in st(0) as the extended intermediate and consumed by (xs + ws) - ss at
      * 0x3001c956 (FADD ST0,ST1). A float local would round it where the DLL does
      * not, so ws is long double. xs/ys/hs/ss ARE spilled to float
      * (0x3001c8f2/0x3001c90b/0x3001c929/0x3001c93c) and stay float. */
-    long double ws = (long double)cgs_screenXScale * (long double)width;
-    float hs = (float)((long double)cgs_screenYScale * (long double)height);
-    float ss = (float)((long double)cgs_screenXScale * (long double)size);
+    long double ws = (long double)cgs.screenXScale * (long double)width;
+    float hs = (float)((long double)cgs.screenYScale * (long double)height);
+    float ss = (float)((long double)cgs.screenXScale * (long double)size);
 
     /* left vertical bar */
     trap_R_DrawStretchPic(CG_FloatBits(xs),
@@ -73,7 +73,7 @@ void CG_DrawSides(float x, float y, float width, float height, float size)
     /* right vertical bar, at the scaled right edge minus one bar width */
     {
         long double rightBase = (long double)xs;
-        qhandle_t secondShader = cgs_media_whiteShader;
+        qhandle_t secondShader = cgs.media.whiteShader;
         float right = (float)((rightBase + ws) - (long double)ss);
         trap_R_DrawStretchPic(CG_FloatBits(right),
                           CG_FloatBits(ys),

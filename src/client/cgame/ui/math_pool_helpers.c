@@ -6,10 +6,10 @@
 // Source RVA: 0x3001c490
 void CG_AdjustFrom640Rect(float *x, float *y, float *w, float *h)
 {
-    *x *= cgs_screenXScale;
-    *y *= cgs_screenYScale;
-    *w *= cgs_screenXScale;
-    *h *= cgs_screenYScale;
+    *x *= cgs.screenXScale;
+    *y *= cgs.screenYScale;
+    *w *= cgs.screenXScale;
+    *h *= cgs.screenYScale;
 }
 
 void CG_FreeMarkPoly(markPoly_t *mark) /* 0x3002e450 */

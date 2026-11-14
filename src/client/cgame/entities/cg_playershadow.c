@@ -150,7 +150,7 @@ qboolean CG_PlayerShadow(float *shadowPlane, centity_t *cent)
 
     scale = scale * alpha0;
 
-    CG_ImpactMark(cgs_media_markShadowShader, traceResult.endpos,
+    CG_ImpactMark(cgs.media.shadowMarkShader, traceResult.endpos,
                   traceResult.normal,
                   0.0f, scale, scale, scale, 1.0f, qfalse, 16.0f, 1, -1);
 

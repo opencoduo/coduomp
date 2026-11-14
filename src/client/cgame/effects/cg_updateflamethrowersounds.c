@@ -281,7 +281,7 @@ void CG_UpdateFlamethrowerSounds(void)
                 /* 0x300294d2..0x30029543: when the flamethrower-stream alias name is
                  * registered and this index's envB remains nonzero, start the stream
                  * sound positioned near the effect slot's origin. */
-                if (cg_flameStreamSound != 0) {                 /* TEST EDX ; JZ 0x30029546 */
+                if (cgs.media.flameStreamSound != 0) {                 /* TEST EDX ; JZ 0x30029546 */
                     /* 0x300294dc..0x300294f3: FLD 0.0; FLD envB; FUCOMPP; TEST AH,0x44;
                      * JNP is taken when envB == 0.0 (equal => PF=0), jumping past the
                      * block to 0x30029546. So the stream start fires when envB != 0.0
@@ -302,10 +302,10 @@ void CG_UpdateFlamethrowerSounds(void)
                         scratch[2] = (FLAME_ONEF - cg_flameSoundLoops[idx].envB)
                                    * FLAME_STREAM_FADE + cg_entities[idx].lerpOrigin[2];
                         /* 0x30029538: CG_PlaySoundAliasByName(channelObj=scratch (ECX),
-                         * soundName=cg_flameStreamSound (EAX=EDX, an alias-name pointer),
+                         * soundName=cgs.media.flameStreamSound (EAX=EDX, an alias-name pointer),
                          * entityNum=idx (ECX pushed at 0x3002951a)). */
                         (void)CG_PlaySoundAliasByName(idx, &scratch[0],
-                                                       cg_flameStreamSound);
+                                                       cgs.media.flameStreamSound);
                         /* 0x3002953d: reload flameTime latch (unchanged). */
                     }
                 }
@@ -313,7 +313,7 @@ void CG_UpdateFlamethrowerSounds(void)
                 /* 0x30029546..0x30029573: when the flamethrower-fire sound is
                  * registered, emit it for this chunk and then start it as a local
                  * sound on this frame's channel. */
-                if (cg_flameFireSound != 0) {                   /* MOV EAX,fire ; TEST ; JZ */
+                if (cgs.media.flameFireSound != 0) {                   /* MOV EAX,fire ; TEST ; JZ */
                     /* 0x3002954f..0x30029555: compute the chunk's current vec3
                      * origin into the stack block beginning at ESP+0x2c. */
                     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -329,7 +329,7 @@ void CG_UpdateFlamethrowerSounds(void)
                      * [ESP+0x2c].  The alias-name pointer is reloaded in EAX. */
                     (void)CG_PlaySoundAliasByName(ENTITYNUM_WORLD,
                                                    soundOrigin,
-                                                   cg_flameFireSound);
+                                                   cgs.media.flameFireSound);
                     /* 0x3002956d: reload flameTime latch (unchanged). */
                 }
 
@@ -426,7 +426,7 @@ void CG_UpdateFlamethrowerSounds(void)
     float scaledDelta = (float)scaledDeltaFull;               /* FST [ESP+0x18] @0x30029662 */
     float envStep = (float)(scaledDeltaFull * FLAME_ENVDECAY_SCALE); /* FMUL 4.0f; FSTP [ESP+0x1c] @0x3002966c */
 
-    const char *cooldownSound = cg_flameCooldownSound;         /* 0x30029645 MOV ECX,cooldown */
+    const char *cooldownSound = cgs.media.flameCooldownSound;         /* 0x30029645 MOV ECX,cooldown */
 
     for (int32_t i = 0; i < FLAME_INFO_COUNT; ++i) {           /* ESI 0x300ab7b0.. step 0xb8 */
         cgFlameSoundLoop_t *loop = &cg_flameSoundLoops[i];     /* EDI 0x300a8718.. step 12 */
@@ -474,7 +474,7 @@ void CG_UpdateFlamethrowerSounds(void)
                 fi->activeFlag = 0;
                 (void)CG_PlaySoundAliasByName(
                     i, &cg_entities[i].lerpOrigin[0], cooldownSound);
-                cooldownSound = cg_flameCooldownSound;         /* 0x300296e8 reload ECX */
+                cooldownSound = cgs.media.flameCooldownSound;         /* 0x300296e8 reload ECX */
             }
         }
 

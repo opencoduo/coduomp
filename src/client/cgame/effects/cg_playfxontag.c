@@ -39,13 +39,13 @@
  *     else PUSH cfgIndex; PUSH "CG_ConfigString: bad index: %i"; CALL
  *     Com_ErrorMessage (0x3002b300); the lookup still proceeds afterwards (matches
  *     CG_ConfigString's inlined behaviour).
- *   - 300227a7 MOV EAX,[ESI*4 + 0x30440a00]  offset = cg_gameState.stringOffsets[cfgIndex]
- *   - 300227ae ADD EAX,0x30442a00            EAX = &cg_gameState.stringData[offset] = cfg
+ *   - 300227a7 MOV EAX,[ESI*4 + 0x30440a00]  offset = cgs.gameState.stringOffsets[cfgIndex]
+ *   - 300227ae ADD EAX,0x30442a00            EAX = &cgs.gameState.stringData[offset] = cfg
  *   - 300227b3 MOVSX ECX,byte [EAX]          d0 = (signed char)cfg[0]
  *   - 300227b6 MOVSX EDX,byte [EAX+1]        d1 = (signed char)cfg[1]
  *   - 300227ba LEA ECX,[ECX+ECX*4]  (ECX*5)
  *   - 300227bd LEA ECX,[EDX+ECX*2]           biasedId = d1 + d0*10
- *   - 300227c0 MOV ESI,[ECX*4 + 0x30447ca4]  handle = cg_effectDefs[id]
+ *   - 300227c0 MOV ESI,[ECX*4 + 0x30447ca4]  handle = cgs.effectDefs[id]
  *     because 0x304484e4 - 0x30447ca4 == 528*4 and biasedId == id + 48*11.
  *     Mac 0x1003451c..0x10034538 instead subtracts ASCII '0' explicitly.
  *   - 300227c7 MOV ECX,[EDI]                 objId = self->currentState.number
@@ -83,9 +83,9 @@ void CG_PlayFxOnTag(centity_t *self, int fxId)
     }
 
     int32_t stringOffset = cgame_compat_read_target_i32_index(
-        cg_gameState.stringOffsets, cfgIndex);
+        cgs.gameState.stringOffsets, cfgIndex);
     cfg = (const char *)(
-        (uintptr_t)(const void *)cg_gameState.stringData +
+        (uintptr_t)(const void *)cgs.gameState.stringData +
         (uintptr_t)(intptr_t)stringOffset);
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
@@ -109,7 +109,7 @@ void CG_PlayFxOnTag(centity_t *self, int fxId)
             id, cfgIndex);
         return;
     }
-    handle = cg_effectDefs[id];
+    handle = cgs.effectDefs[id];
     tagName = cfg + 2;
 
     boltInfo.entityNum = self->currentState.number;

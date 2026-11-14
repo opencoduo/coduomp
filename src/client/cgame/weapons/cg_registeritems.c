@@ -36,7 +36,7 @@ void CG_RegisterItems(void)
     // 0x30044ba2..0x30044ba7: inlined CG_ConfigString(CS_ITEMS). The config
     // string is a hex-packed item-present bitfield.
     const char *itemBits =
-        &cg_gameState.stringData[cg_gameState.stringOffsets[CS_ITEMS]];
+        &cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_ITEMS]];
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     for (int n = 0;
          n < CG_ITEMS_CONFIGSTRING_NIBBLE_COUNT && itemBits[n] != '\0';

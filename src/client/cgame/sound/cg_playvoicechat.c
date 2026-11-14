@@ -7,7 +7,7 @@
 // is REJECTED. This function never touches an itemDef_t, a cvar-value string, or an
 // enable/disable list. Its proven behavior is the voice-chat notify path:
 //   - play the voice sound on the local sound channel (CG_PlaySoundAliasByName),
-//   - stamp the speaker's talking head-icon (cgs_voiceChatIcon, "headiconVoiceChat")
+//   - stamp the speaker's talking head-icon (cgs.media.voiceChatIcon, "headiconVoiceChat")
 //     and a cg.time display deadline — into the local cg_localVoiceChat* globals when
 //     the speaker is the local client, otherwise into cg_entities[speaker],
 //   - append the chat text to the team-chat buffer and print it (unless voice-only
@@ -29,7 +29,7 @@
 //     (0x3048c910), voiceChatTime @+0x234 (0x3048c914), lerpOrigin vec3 @+0x208..
 //     (0x3048c8e8/0x8ec/0x8f0).
 //   * display deadline: cg.time (0x304831b0) + duration (0x30450dac) when the icon is
-//     cgs_voiceChatIcon (ADD), else cg.time + 2*duration (LEA [t + d*2]).
+//     cgs.media.voiceChatIcon (ADD), else cg.time + 2*duration (LEA [t + d*2]).
 //   * text path gate: msg->voiceOnly (ESI+0xc) == 0 AND cg_noVoiceText_vmCvar.integer
 //     (0x304505cc) == 0.
 //   * CG_AddToTeamChat(msg->text) takes its arg in ECX (MOV ECX,ESI after ADD
@@ -53,7 +53,7 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg)
         if (msg->clientNum == cg.snap->ps.psClientNum) {
             /* 0x3003a02c..0x3003a072: local player — stamp the cg.* voice-chat state. */
             cg.predictedPlayerEntity.voiceChatIcon = msg->icon;
-            if ((uint32_t)msg->icon == cgs_voiceChatIcon) {
+            if ((uint32_t)msg->icon == cgs.media.voiceChatIcon) {
                 cg.predictedPlayerEntity.voiceChatTime = coduo_int32_from_bits(
                     (uint32_t)cg.time +
                     (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
@@ -72,7 +72,7 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg)
             cent->lerpOrigin[1] = msg->spriteOrigin[1];
             cent->lerpOrigin[2] = msg->spriteOrigin[2];
 
-            if ((uint32_t)msg->icon == cgs_voiceChatIcon) {
+            if ((uint32_t)msg->icon == cgs.media.voiceChatIcon) {
                 cent->voiceChatTime = coduo_int32_from_bits(
                     (uint32_t)cg.time +
                     (uint32_t)cg_voiceSpriteTime_vmCvar.integer);

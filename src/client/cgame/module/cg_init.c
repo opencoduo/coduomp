@@ -29,7 +29,7 @@ enum {
 void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
              int32_t clientNum)
 {
-    cgame_compat_reset_recovered_cgs_state();
+    memset(&cgs, 0, sizeof(cgs));
     memset(&cg, 0, sizeof(cg));
     memset(cg_entities, 0, sizeof(cg_entities));
     memset(cg_weaponInfos, 0, sizeof(cg_weaponInfos));
@@ -44,47 +44,47 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     bgs.soundEventCallback = CG_PlayEntitySoundAliasByName;
 
     cg.clientNum = clientNum;
-    cg_processedSnapshotNum = serverMessageNum;
-    cgs_serverCommandSequence = serverCommandSequence;
+    cgs.processedSnapshotNum = serverMessageNum;
+    cgs.serverCommandSequence = serverCommandSequence;
 
-    cgs_media_whiteShader =
+    cgs.media.whiteShader =
         CG_RegisterMaterial("white", R_IMAGE_TRACK_HUD);
-    cgs_media_hudSoftLineShader =
+    cgs.media.hudSoftLineShader =
         CG_RegisterMaterial("hudSoftLine", R_IMAGE_TRACK_HUD);
-    cgs_media_hudSoftLineHShader =
+    cgs.media.hudSoftLineHShader =
         CG_RegisterMaterial("hudSoftLineH", R_IMAGE_TRACK_HUD);
 
     CG_RegisterCvars();
     CG_InitConsoleCommands();
 
-    cgame_syscall(CG_GET_GLCONFIG, &cgs_glconfig);
-    cgs_screenXScale = (float)(
-        (long double)cgs_glconfig.vidWidth * (long double)(1.0f / 640.0f));
-    cgs_screenYScale = (float)(
-        (long double)cgs_glconfig.vidHeight * (long double)(1.0f / 480.0f));
+    cgame_syscall(CG_GET_GLCONFIG, &cgs.glconfig);
+    cgs.screenXScale = (float)(
+        (long double)cgs.glconfig.vidWidth * (long double)(1.0f / 640.0f));
+    cgs.screenYScale = (float)(
+        (long double)cgs.glconfig.vidHeight * (long double)(1.0f / 480.0f));
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): keep the recovered
      * assignments above intact, then let the isolated presentation interface
      * select the proportional centered-canvas scale for native widescreen. */
     cgame_compat_configure_screen_scales();
 
-    cgame_syscall(CG_GET_GAME_STATE, &cg_gameState);
+    cgame_syscall(CG_GET_GAME_STATE, &cgs.gameState);
 
     {
         const char *serverGame =
-            &cg_gameState.stringData[cg_gameState.stringOffsets[2]];
+            &cgs.gameState.stringData[cgs.gameState.stringOffsets[2]];
         if (memcmp("cod", serverGame, CG_INIT_GAME_VERSION_BYTES) != 0) {
             Com_ErrorMessage("Client/Server game mismatch: %s/%s",
                              "cod", serverGame);
         }
     }
 
-    cg_hudStat14Value = coduo_crt_atoi(
-        &cg_gameState.stringData[
-            cg_gameState.stringOffsets[CG_INIT_HUD_STAT_CONFIGSTRING]]);
+    cgs.levelStartTime = coduo_crt_atoi(
+        &cgs.gameState.stringData[
+            cgs.gameState.stringOffsets[CG_INIT_HUD_STAT_CONFIGSTRING]]);
 
     /* 0x3002e080..0x3002e09b: MSVC rand returns 0..32767. The x87 code
      * multiplies by 1/32768, doubles, then subtracts 1. */
-    cg_initialRandomValue = (float)(
+    cgs.initialRandomValue = (float)(
         (long double)coduo_crt_rand() *
         (long double)(1.0f / 32768.0f) * 2.0L - 1.0L);
 
@@ -94,7 +94,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     CGScr_LoadAnimTrees();
 
     CG_LoadingString("collision map");
-    cgame_syscall(CG_CM_LOAD_MAP, cgs_mapname);
+    cgame_syscall(CG_CM_LOAD_MAP, cgs.mapname);
 
     String_Init();
 
@@ -102,11 +102,11 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     memset(&cg.refdef, 0, sizeof(cg.refdef));
     cgame_syscall(CG_R_CLEAR_SCENE);
 
-    CG_LoadingString(cgs_mapname);
-    cgame_syscall(CG_R_LOAD_WORLD_MAP, cgs_mapname);
+    CG_LoadingString(cgs.mapname);
+    cgame_syscall(CG_R_LOAD_WORLD_MAP, cgs.mapname);
 
     CG_LoadingString("sound aliases");
-    cgame_syscall(CG_COM_LOAD_SOUND_ALIASES, cgs_mapname);
+    cgame_syscall(CG_COM_LOAD_SOUND_ALIASES, cgs.mapname);
 
     CG_LoadingString("sounds");
     CG_RegisterSounds();
@@ -129,7 +129,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     CG_LoadingString("");
 
     cg.hudSpinBaseTime = (float)coduo_compat_atof(
-        &cg_gameState.stringData[cg_gameState.stringOffsets[11]]);
+        &cgs.gameState.stringData[cgs.gameState.stringOffsets[11]]);
 
     cgame_syscall(CG_R_FINISH_LOADING_MODELS);
     cgame_syscall(CG_MSS_STOP_SOUNDS, 0);

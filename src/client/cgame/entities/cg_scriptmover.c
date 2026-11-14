@@ -19,13 +19,13 @@
 // Shape: this handler is CG_AddCEntity_General (0x3001e430) plus CG_Mover's
 // (0x3001f120) static-inline-model branch:
 //   * Like CG_General, it (re)binds the entity's DObj anim tree via
-//     CG_RefreshEntityDObjAnimTree(cent->currentState.eType, cg_gameModels[modelIndex])
+//     CG_RefreshEntityDObjAnimTree(cent->currentState.eType, cgs.gameModels[modelIndex])
 //     (entityNum in ESI), and — on the DObj-model path — fills the lighting origin via
 //     CG_SetupWeaponLightingOrigin(cent, &re) before submitting.
 //   * Like CG_Mover, it early-outs on a null DObj skeleton only when
 //     solid != SOLID_BMODEL, and when
 //     solid == SOLID_BMODEL it draws a static
-//     inline/brush model instead (reType 0, hModel = cg_inlineModelHandles[itemIndex]).
+//     inline/brush model instead (reType 0, hModel = cgs.inlineDrawModel[itemIndex]).
 //
 // The axis is built the same way CG_Mover builds it: AngleVectors (0x3004a200,
 // register ABI EDX=angles, ESI=forward, EDI=right, EBX=up) gives forward/right/up,
@@ -67,7 +67,7 @@ void CG_ScriptMover(centity_t *cent /* one 32-bit stack arg */)
                   modelIndex);
         return;
     }
-    qhandle_t modelHandle = cg_gameModels[modelIndex];
+    qhandle_t modelHandle = cgs.gameModels[modelIndex];
     int32_t eType = cent->currentState.eType;
     int32_t entityNum = cent->currentState.number;
     CG_RefreshEntityDObjAnimTree(entityNum, eType, modelHandle);
@@ -123,7 +123,7 @@ void CG_ScriptMover(centity_t *cent /* one 32-bit stack arg */)
          * inline-model handle table indexed by currentState.itemIndex (cent+0x8c),
          * reType 0. */
         /* The unsigned 9-bit wire field exactly spans this 512-entry table. */
-        re.hModel = cg_inlineModelHandles[cent->currentState.itemIndex];
+        re.hModel = cgs.inlineDrawModel[cent->currentState.itemIndex];
         re.reType = 0;
     } else {
         /* 0x3001f35d..0x3001f37b: animated DObj model. Remember the skeleton handle

@@ -71,10 +71,10 @@ float CG_OwnerDrawValue(int32_t ownerDraw, int32_t colorRangeType)
     }
 
     case CG_ODV_HUD_STAT_DC:
-        return (float)cg_hudStat5Value;
+        return (float)cgs.scores1;
 
     case CG_ODV_HUD_STAT_E0:
-        return (float)cg_hudStat6Value;
+        return (float)cgs.scores2;
 
     case CG_ODV_ITERATED_HUD_VALUE:
         if (cg_currentSelectedPlayer_vmCvar.integer < 0 || cg_currentSelectedPlayer_vmCvar.integer >= cg_hudEmitCount) {

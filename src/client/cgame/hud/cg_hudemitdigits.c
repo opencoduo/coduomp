@@ -13,7 +13,7 @@
  * (siblings CG_HudEmitIconOrValue 0x30030f10, CG_DrawPlayerLocation 0x30031280).
  * It draws ONE per-client integer HUD value into a caller-supplied rect, EITHER as a
  * single icon shader stretched to the whole rect (icon mode, hIcon != 0) OR — when no
- * icon is supplied — as a run of bitmap digit glyphs (cg_numberShaders[]) laid out
+ * icon is supplied — as a run of bitmap digit glyphs (cgs.media.numberShaders[]) laid out
  * left-to-right, one stretch-pic per character.
  *
  * VALUE SOURCE (0x30031310..0x30031351):
@@ -82,10 +82,10 @@ enum {
 /* Maximum glyphs drawn (CMP EBX,3 / MOV EBX,3): at most three characters. */
 enum { CG_HUD_EMIT_MAX_GLYPHS = 3 };
 
-/* The minus sign occupies the last cg_numberShaders[] slot (MOV ESI,0xa on '-'). */
+/* The minus sign occupies the last cgs.media.numberShaders[] slot (MOV ESI,0xa on '-'). */
 enum { CG_NUMBER_SHADER_MINUS = 10 };
 
-/* cgs_screenXScale (0x30447aa4) / cgs_screenYScale (0x30447aa8): virtual-640x480 ->
+/* cgs.screenXScale (0x30447aa4) / cgs.screenYScale (0x30447aa8): virtual-640x480 ->
  * real-pixel scale factors read as floats by every 2D-draw path (FMUL [0x30447aa4] /
  * FMUL [0x30447aa8]); declared in globals.h. */
 
@@ -208,19 +208,19 @@ void CG_HudEmitDigits(qhandle_t hIcon /*ECX*/,
          * so no (float) casts (they would round under -std=c11); the sole rounding per
          * coordinate is the FSTP DWORD to its arg slot (0x30031496/ac/bf/d2). */
         float px = (float)((long double)cursorX *
-                           (long double)cgs_screenXScale);
+                           (long double)cgs.screenXScale);
         float py = (float)((long double)drawY *
-                           (long double)cgs_screenYScale);
+                           (long double)cgs.screenYScale);
         float pw = (float)((long double)charAdvance *
-                           (long double)cgs_screenXScale);
+                           (long double)cgs.screenXScale);
         float ph = (float)((long double)charHeight *
-                           (long double)cgs_screenYScale);
+                           (long double)cgs.screenYScale);
 
         trap_R_DrawStretchPic(CG_FloatBits(px), CG_FloatBits(py),
                               CG_FloatBits(pw), CG_FloatBits(ph),
                               CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                               CG_FloatBits(1.0f), CG_FloatBits(1.0f),
-                              cg_numberShaders[glyphIndex]);
+                              cgs.media.numberShaders[glyphIndex]);
 
         /* Advance the cursor and step to the next character (0x300314e3..0x300314f7);
          * the loop stops on NUL or when the three-glyph budget is exhausted. */

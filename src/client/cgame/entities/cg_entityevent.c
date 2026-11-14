@@ -118,19 +118,19 @@ enum {
     PROJECTILE_EXPLOSION_SOUND_BANK_COUNT = PROJECTILE_EXPLOSION_NONE,
     CG_EVENT_SOUND_NONE = 8,
     CG_SHELL_FLASH_SOUND_COUNT =
-        sizeof(cg_shellFlashSounds) / sizeof(cg_shellFlashSounds[0]),
+        sizeof(cgs.media.shellFlashSounds) / sizeof(cgs.media.shellFlashSounds[0]),
     CG_BARRAGE_SOUND_COUNT =
-        sizeof(cg_barrageIncomingSounds) /
-        sizeof(cg_barrageIncomingSounds[0]),
+        sizeof(cgs.media.barrageIncomingSounds) /
+        sizeof(cgs.media.barrageIncomingSounds[0]),
 };
 
 #define CG_SURFACE_SOUND_COUNT \
-    (sizeof(cg_grenadeExplodeSurfaceSounds) / \
-     sizeof(cg_grenadeExplodeSurfaceSounds[0]))
+    (sizeof(cgs.media.grenadeExplodeSurfaceSounds) / \
+     sizeof(cgs.media.grenadeExplodeSurfaceSounds[0]))
 
 _Static_assert(CG_SURFACE_SOUND_COUNT ==
-                   sizeof(cg_grenadeBounceSurfaceSounds) /
-                       sizeof(cg_grenadeBounceSurfaceSounds[0]),
+                   sizeof(cgs.media.grenadeBounceSurfaceSounds) /
+                       sizeof(cgs.media.grenadeBounceSurfaceSounds[0]),
                "grenade surface sound rows differ in size");
 _Static_assert(CG_SURFACE_SOUND_COUNT <= CG_IMPACT_SURFACE_TYPES,
                "surface sound domain exceeds impact effect domain");
@@ -147,14 +147,14 @@ _Static_assert(CG_EVENT_SOUND_NONE == CG_SHELL_FLASH_SOUND_COUNT,
 static const char *(*const cg_projectileExplosionSurfaceSoundBanks
                     [PROJECTILE_EXPLOSION_SOUND_BANK_COUNT])
                    [CG_SURFACE_SOUND_COUNT] = {
-    [PROJECTILE_EXPLOSION_GRENADE] = &cg_grenadeExplodeSurfaceSounds,
-    [PROJECTILE_EXPLOSION_SMOKE] = &cg_unusedSurfaceSoundSet0,
-    [PROJECTILE_EXPLOSION_ROCKET] = &cg_rocketExplodeSurfaceSounds,
-    [PROJECTILE_EXPLOSION_MOLOTOV] = &cg_unusedSurfaceSoundSet1,
-    [PROJECTILE_EXPLOSION_ARTILLERY] = &cg_artilleryExplodeSurfaceSounds,
-    [PROJECTILE_EXPLOSION_MORTAR] = &cg_mortarExplodeSurfaceSounds,
-    [PROJECTILE_EXPLOSION_TANK] = &cg_tankExplodeSurfaceSounds,
-    [PROJECTILE_EXPLOSION_B17] = &cg_eventSurfaceSounds,
+    [PROJECTILE_EXPLOSION_GRENADE] = &cgs.media.grenadeExplodeSurfaceSounds,
+    [PROJECTILE_EXPLOSION_SMOKE] = &cgs.media.unusedSurfaceSoundSet0,
+    [PROJECTILE_EXPLOSION_ROCKET] = &cgs.media.rocketExplodeSurfaceSounds,
+    [PROJECTILE_EXPLOSION_MOLOTOV] = &cgs.media.unusedSurfaceSoundSet1,
+    [PROJECTILE_EXPLOSION_ARTILLERY] = &cgs.media.artilleryExplodeSurfaceSounds,
+    [PROJECTILE_EXPLOSION_MORTAR] = &cgs.media.mortarExplodeSurfaceSounds,
+    [PROJECTILE_EXPLOSION_TANK] = &cgs.media.tankExplodeSurfaceSounds,
+    [PROJECTILE_EXPLOSION_B17] = &cgs.media.eventSurfaceSounds,
 };
 
 void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentWeaponEffects)
@@ -228,36 +228,36 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
     if (event >= EV_STEP_A_LO && event < EV_STEP_A_HI) {          /* [1, 0x18) */
         if (cg_footsteps) {
             CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
-                                cg_stepRunSurfaceSounds[event - EV_STEP_A_LO]);
+                                cgs.media.stepRunSurfaceSounds[event - EV_STEP_A_LO]);
         }
-        CG_PlayEntitySoundAliasByName(entNum, cg_soundGearRattleRun);
+        CG_PlayEntitySoundAliasByName(entNum, cgs.media.soundGearRattleRun);
         return;
     }
 
     if (event >= EV_STEP_D_LO && event < EV_STEP_D_HI) {          /* [0x46, 0x5d) */
         if (cg_footsteps) {
             CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
-                                cg_stepSprintSurfaceSounds[event - EV_STEP_D_LO]);
+                                cgs.media.stepSprintSurfaceSounds[event - EV_STEP_D_LO]);
         }
-        CG_PlayEntitySoundAliasByName(entNum, cg_soundGearRattleSprint);
+        CG_PlayEntitySoundAliasByName(entNum, cgs.media.soundGearRattleSprint);
         return;
     }
 
     if (event >= EV_STEP_B_LO && event < EV_STEP_B_HI) {          /* [0x18, 0x2f) */
         if (cg_footsteps) {
             CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
-                                cg_stepWalkSurfaceSounds[event - EV_STEP_B_LO]);
+                                cgs.media.stepWalkSurfaceSounds[event - EV_STEP_B_LO]);
         }
-        CG_PlayEntitySoundAliasByName(entNum, cg_soundGearRattleWalk);
+        CG_PlayEntitySoundAliasByName(entNum, cgs.media.soundGearRattleWalk);
         return;
     }
 
     if (event >= EV_STEP_C_LO && event < EV_STEP_C_HI) {          /* [0x2f, 0x46) */
         if (cg_footsteps) {
             CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
-                                cg_stepProneSurfaceSounds[event - EV_STEP_C_LO]);
+                                cgs.media.stepProneSurfaceSounds[event - EV_STEP_C_LO]);
         }
-        CG_PlayEntitySoundAliasByName(entNum, cg_soundGearRattleWalk);
+        CG_PlayEntitySoundAliasByName(entNum, cgs.media.soundGearRattleWalk);
         return;
     }
 
@@ -266,13 +266,13 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
      * is UNREACHABLE: every event in [0x46, 0x5d) is consumed and returned by the
      * first D leg above (0x300228e8). The reference is preserved here in a comment
      * rather than as dead C. Its shifted base also resolves to
-     * cg_stepRunSurfaceSounds[event - EV_STEP_D_LO]. */
+     * cgs.media.stepRunSurfaceSounds[event - EV_STEP_D_LO]. */
 
     /* [0x5d, 0x74): bullet-flesh events. Play the flesh pool; then, only for the
      * local client, set the weapon-movement float state. */
     if (event >= EV_FLESH_LO && event < EV_FLESH_HI) {
         CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
-                            cg_landSurfaceSounds[event - EV_FLESH_LO]);
+                            cgs.media.landSurfaceSounds[event - EV_FLESH_LO]);
         if (clientNum == cg.predictedPlayerState.psClientNum) {
             cg.landTime = cg.time;
             cg.landChange = -(long double)eventParm; /* FILD raw; FCHS; FSTP (0x30022a0a..0x30022a1c): no pre-store round */
@@ -285,8 +285,8 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
      * clamp its rounded result before stamping the kick state. */
     if (event >= EV_BODY_LO && event < EV_BODY_HI) {
         CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
-                            cg_landSurfaceSounds[event - EV_BODY_LO]);
-        CG_PlayEntitySoundAliasByName(entNum, cg_soundLandDamage);
+                            cgs.media.landSurfaceSounds[event - EV_BODY_LO]);
+        CG_PlayEntitySoundAliasByName(entNum, cgs.media.soundLandDamage);
         if (clientNum == cg.predictedPlayerState.psClientNum) {
             /* envelope = (hi - lo) * eventParm * 0.01 + lo; FCOM against 12.0.
              * TEST AH,0x41 followed by JNP at 0x30022a97 skips the kick only for
@@ -341,15 +341,15 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
     switch (event) {
 
     case EV_FOLIAGE_SOUND:  /* 0x8b, 0x30022b09 */
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundMovementFoliage);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.soundMovementFoliage);
         return;
 
     case EV_FATIGUE_SOUND:  /* 0x8d, 0x30022b23 */
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundSprintBreathLast);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.soundSprintBreathLast);
         return;
 
     case EV_FATIGUE_LAST_SOUND:  /* 0x8c, 0x30022b3c */
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundFatigueBreath);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.soundFatigueBreath);
         return;
 
     /* 0x8e/0x8f/0x90 (0x30022b56/b92/bcd): taunt/voice. For a non-local client,
@@ -428,11 +428,11 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
         }
 
     case EV_WATER_TOUCH:  /* 0x92, 0x30022cff */
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundPlayerWaterIn);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.watrInSound);
         return;
 
     case EV_WATER_LEAVE:  /* 0x93, 0x30022d19 */
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundPlayerWaterOut);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.watrOutSound);
         return;
 
     /* 0x94/0x95/0x96 (0x30022d32): weapon-fire foley from the item-indexed
@@ -524,7 +524,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
      * share the local-player out-of-ammo-change tail described below. */
     /* 0x97 (0x30022e92) and 0xcb (0x30022eb7) share the use-check tail at 0x30022ed9.
      * 0x97: if the weapon descriptor has an alt-mode sound (desc+0x340 != 0) it
-     * plays NO sound; otherwise it plays the shared cg_soundOutOfAmmo. 0xcb: plays
+     * plays NO sound; otherwise it plays the shared cgs.media.soundOutOfAmmo. 0xcb: plays
      * the weapon's +0x10c sound when present. Both then, for the local player with
      * a fire flag set, call CG_OutOfAmmoChange. */
     case EV_NOAMMO:
@@ -543,7 +543,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
             }
             weaponInfo_t *weaponInfo = bg_weaponInfos[weaponIndex];
             if (weaponInfo->clipRequired == 0) {
-                CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundOutOfAmmo);
+                CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.soundOutOfAmmo);
             }
         } else {
             cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
@@ -678,10 +678,10 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
         weaponInfo_t *weaponInfo = bg_weaponInfos[weaponIndex];
         if (weaponInfo->ricochet == 0 &&
             weaponInfo->weaponType != WEAPTYPE_PROJECTILE) {
-            CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundMeleeSwingSmall);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.soundMeleeSwingSmall);
             return;
         }
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundMeleeSwingLarge);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.soundMeleeSwingLarge);
         return;
     }
 
@@ -690,7 +690,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
     case EV_MELEE_HIT: {
         vec3_t evOrigin;
         ByteToDir(coduo_int32_from_bits(self->currentState.eventParm), evOrigin);
-        CG_PlayEntitySoundAliasByName((int)self->currentState.vehicleEntityNum, cg_soundMeleeHit);
+        CG_PlayEntitySoundAliasByName((int)self->currentState.vehicleEntityNum, cgs.media.soundMeleeHit);
         return;
     }
 
@@ -743,7 +743,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
         ByteToDir(coduo_int32_from_bits(self->currentState.eventParm), evOrigin);
         weaponInfo_t *weaponInfo = bg_weaponInfos[weaponIndex];
         if (weaponInfo->cloth != 0) {
-            muzzle = cg_soundSatchelBounce;
+            muzzle = cgs.media.soundSatchelBounce;
         } else {
             if ((uint32_t)surfaceType >=
                 (uint32_t)CG_SURFACE_SOUND_COUNT) {
@@ -753,14 +753,14 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
                     surfaceType, event);
                 return;
             }
-            muzzle = cg_grenadeBounceSurfaceSounds[surfaceType];
+            muzzle = cgs.media.grenadeBounceSurfaceSounds[surfaceType];
         }
         CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin, muzzle);
 
-        /* Row 12 of cg_impactEffects (0x3044c6f4 ==
-         * &cg_impactEffects[12][0]), indexed by surfType. */
+        /* Row 12 of cgs.media.impactEffects (0x3044c6f4 ==
+         * &cgs.media.impactEffects[12][0]), indexed by surfType. */
         flashHandle = (uint32_t)cgame_compat_read_target_i32_index(
-            &cg_impactEffects[0][0],
+            &cgs.media.impactEffects[0][0],
             coduo_int32_from_bits(12u * CG_IMPACT_SURFACE_TYPES +
                              (uint32_t)surfaceType));
         if (flashHandle == 0) {
@@ -775,18 +775,18 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
 
     case EV_GRENADE_SPOON:  /* 0xb6, 0x30023298 */
         CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin,
-                                cg_soundUsGrenadeLever);
+                                cgs.media.soundUsGrenadeLever);
         return;
 
     /* 0xd0 (0x300232b4): flag-selected sound at &self->lerpOrigin. */
     case EV_OVERHEATING:
         if ((self->currentState.eType & EFLAGS_STEP_ALT) != 0) {
             CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin,
-                                    cg_soundMgOverheatVehicle);
+                                    cgs.media.soundMgOverheatVehicle);
             return;
         }
         CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin,
-                                cg_soundMgOverheat);
+                                cgs.media.soundMgOverheat);
         return;
 
     /* EV_PROJECTILE_LAUNCH (0xb7, 0x300232eb): eventParm-indexed sound
@@ -805,7 +805,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
                 p, event);
             return;
         }
-        name = cg_shellFlashSounds[p];
+        name = cgs.media.shellFlashSounds[p];
         if (name == NULL) {
             return;
         }
@@ -829,7 +829,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
                 p, event);
             return;
         }
-        name = cg_barrageIncomingSounds[p];
+        name = cgs.media.barrageIncomingSounds[p];
         if (name == NULL) {
             return;
         }
@@ -884,12 +884,12 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
             boltInfo.boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
                 CG_RESOLVE_TAG, self->currentState.number, (intptr_t)"g_body"));
             if (boltInfo.boneIndex >= 0) {
-                /* Row 14 of cg_impactEffects
-                 * (0x3044c7b4 == &cg_impactEffects[14][0]) is the
+                /* Row 14 of cgs.media.impactEffects
+                 * (0x3044c7b4 == &cgs.media.impactEffects[14][0]) is the
                  * smoke_grenade_explode effect family, indexed by surface type. */
                 uint32_t handle =
                     (uint32_t)cgame_compat_read_target_i32_index(
-                        &cg_impactEffects[0][0],
+                        &cgs.media.impactEffects[0][0],
                         coduo_int32_from_bits(
                             14u * CG_IMPACT_SURFACE_TYPES +
                             (uint32_t)surfaceType));
@@ -902,7 +902,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
         } else if (explosionType != PROJECTILE_EXPLOSION_NONE) {
             int handled = 0;
             if ((self->currentState.eFlags & EFLAGS_PROJECTILE_HIT_VEHICLE) != 0) {
-                /* 0x3044c7b0 == &cg_impactEffects[13][23]; the flat
+                /* 0x3044c7b0 == &cgs.media.impactEffects[13][23]; the flat
                  * explosionType*24 walk selects column 23 (the vehicle surface)
                  * in the explosion-type effect row. */
                 uint32_t flatIndex =
@@ -910,7 +910,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
                     (uint32_t)explosionType * CG_IMPACT_SURFACE_TYPES;
                 uint32_t handle =
                     (uint32_t)cgame_compat_read_target_i32_index(
-                        &cg_impactEffects[0][0],
+                        &cgs.media.impactEffects[0][0],
                         coduo_int32_from_bits(flatIndex));
                 if (handle != 0) {
                     cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
@@ -921,7 +921,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
                 }
             }
             if (!handled) {
-                /* 0x3044c754 == &cg_impactEffects[13][0]; the flat
+                /* 0x3044c754 == &cgs.media.impactEffects[13][0]; the flat
                  * surfaceType+explosionType*24 index selects the ordinary surface
                  * column in the explosion-type effect row. */
                 uint32_t flatIndex =
@@ -930,7 +930,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
                     (uint32_t)surfaceType;
                 uint32_t handle =
                     (uint32_t)cgame_compat_read_target_i32_index(
-                        &cg_impactEffects[0][0],
+                        &cgs.media.impactEffects[0][0],
                         coduo_int32_from_bits(flatIndex));
                 if (handle != 0) {
                     cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
@@ -977,7 +977,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
         return;
 
     case EV_DEATH:  /* 0xc1, 0x300234bc */
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundDeath);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.soundDeath);
         return;
 
     case EV_DEBUG_LINE:  /* 0xc2, 0x300234e6 */
@@ -1003,25 +1003,25 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
         return;
 
     case EV_FLAMEBARREL_BOUNCE:  /* 0xc8, 0x300231e8 */
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundFlameBarrelBounce);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.soundFlameBarrelBounce);
         return;
 
     /* 0xcc (0x300231c2): stamp cg.time into self->miscTime, then play 0x3044bbcc. */
     case EV_ITEM_RESPAWN:
         self->miscTime = cg.time;
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundItemRespawn);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.respawnSound);
         return;
 
     case EV_ITEM_POP:  /* 0xcd, 0x300231ce */
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundItemRespawn);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.respawnSound);
         return;
 
     case EV_PLAYER_TELEPORT_IN:  /* 0xce, 0x3002318f */
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundPlayerTeleportIn);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.teleInSound);
         return;
 
     case EV_PLAYER_TELEPORT_OUT:  /* 0xcf, 0x300231a9 */
-        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundPlayerTeleportOut);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cgs.media.teleOutSound);
         return;
 
     case EV_OBITUARY:  /* 0xd1, 0x300234d5 */

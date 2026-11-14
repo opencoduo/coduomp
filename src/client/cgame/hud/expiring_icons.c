@@ -43,8 +43,8 @@
  * Callees / globals (objdump-resolved):
  *   cgame_syscall        <- [0x30085e9c]  (the cgame VM trap dispatcher pointer)
  *   trap_R_DrawStretchPic (trap id 0x49 == CG_R_DRAWSTRETCHPIC)
- *   cgs_screenXScale     <- float [0x30447aa4]
- *   cgs_screenYScale     <- float [0x30447aa8]
+ *   cgs.screenXScale     <- float [0x30447aa4]
+ *   cgs.screenYScale     <- float [0x30447aa8]
  *   .rdata floats: 32.0f [0x3007bdd0], 34.0f [0x3007bf20], 68.0f [0x3007bf1c]
  */
 
@@ -76,20 +76,20 @@ void CG_DrawExpiringIconGrid(void)
             /* 0x3001b1c9..0x3001b248: height is begun first, with the shader
              * dword read while its scale is live; width follows, then screen Y,
              * then screen X. Each FSTP m32 boundary is explicit. */
-            long double heightValue = (long double)cgs_screenYScale;
+            long double heightValue = (long double)cgs.screenYScale;
             int32_t shaderHandle = list[i].shaderHandle;
             heightValue *= 32.0L;
             float height = (float)heightValue;
 
-            long double widthValue = (long double)cgs_screenXScale;
+            long double widthValue = (long double)cgs.screenXScale;
             widthValue *= 32.0L;
             float width = (float)widthValue;
 
-            long double screenYValue = (long double)cgs_screenYScale;
+            long double screenYValue = (long double)cgs.screenYScale;
             screenYValue *= (long double)y;
             float screenY = (float)screenYValue;
 
-            long double screenXValue = (long double)cgs_screenXScale;
+            long double screenXValue = (long double)cgs.screenXScale;
             screenXValue *= (long double)x;
             float screenX = (float)screenXValue;
 

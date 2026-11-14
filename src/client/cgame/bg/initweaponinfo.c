@@ -112,11 +112,11 @@ void InitWeaponInfo(void)
         // (config string 7 = the space-separated weapon-name list) into the local
         // buffer, tokenize it on spaces, and register the weapons.
         //
-        // 0x30010ea5..0x30010eaa: cg_gameState.stringData + stringOffsets[CS_WEAPONS]
+        // 0x30010ea5..0x30010eaa: cgs.gameState.stringData + stringOffsets[CS_WEAPONS]
         // is the config-string text. The SUB/MOV byte loop is a strcpy into
         // weaponListBuf.
         const char *weaponList =
-            &cg_gameState.stringData[cg_gameState.stringOffsets[CS_WEAPONS]];
+            &cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_WEAPONS]];
         {
             const char *src = weaponList;
             char *dst = weaponListBuf;

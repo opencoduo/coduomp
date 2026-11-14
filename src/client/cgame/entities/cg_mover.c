@@ -30,7 +30,7 @@
 #include <string.h>
 
 /*
- * cg_inlineModelHandles[] — per-submodel registered render-model handle table
+ * cgs.inlineDrawModel[] — per-submodel registered render-model handle table
  * (the "*N" inline/brush models), indexed by cent->currentState.modelindex. It
  * is filled at load time by the registration loop at 0x3002c5.. which formats
  * "*%i - inline models" (string 0x30077f78) and calls the model-registration
@@ -62,7 +62,7 @@
  *
  *   if (cent->currentState.solid == SOLID_BMODEL) {
  *       ent.reType = 0;                          // static inline-model beam
- *       ent.hModel = cg_inlineModelHandles[cent->currentState.itemIndex];
+ *       ent.hModel = cgs.inlineDrawModel[cent->currentState.itemIndex];
  *   } else {
  *       ent.reType = RT_MODEL;                   // 1, DObj-animated model
  *       ent.dobj       = dobjHandle;
@@ -134,7 +134,7 @@ void CG_Mover(centity_t *cent /* one 32-bit stack arg */)
          * handle table indexed by currentState.modelindex (cent+0x8c). */
         ent.reType = 0;
         /* The unsigned 9-bit wire field exactly spans this 512-entry table. */
-        ent.hModel = cg_inlineModelHandles[cent->currentState.itemIndex];
+        ent.hModel = cgs.inlineDrawModel[cent->currentState.itemIndex];
     } else {
         /* Animated DObj model: reType RT_MODEL, remember the skeleton handle and
          * the owning centity for the engine. */

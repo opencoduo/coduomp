@@ -12,7 +12,7 @@
  * digit-count field `width`, an integer `value`, a screen position and a per-glyph
  * cell size, it clamps the value to what fits in `width` characters, formats it as
  * signed decimal ("%i"), and blits each character left-to-right as one bitmap glyph
- * from cg_numberShaders[] via trap_R_DrawStretchPic (cgame trap 0x49 ==
+ * from cgs.media.numberShaders[] via trap_R_DrawStretchPic (cgame trap 0x49 ==
  * CG_R_DRAWSTRETCHPIC). It returns the field's starting X pen position (after any
  * right/center-justify adjustment), matching the pen-advance return of the sibling.
  *
@@ -36,7 +36,7 @@
  *     X pen is shifted left by (2 + glyphs*charWidth); a non-zero flag leaves it as-is
  *     (left-justify). The adjusted pen is what the function returns.
  *   - Per-character loop (0x30017cd0..0x30017d9a): for each formatted character, index
- *     cg_numberShaders[] by digit value (MOVSX AL; SUB '0') or by 10 for '-'
+ *     cgs.media.numberShaders[] by digit value (MOVSX AL; SUB '0') or by 10 for '-'
  *     (CG_NUMBER_SHADER_MINUS), and — only when the draw-enable flag arg is non-zero
  *     (0x30017cef TEST/JZ) — issue trap_R_DrawStretchPic with the glyph's device-pixel
  *     rect: x = pen*screenXScale, y = y*screenYScale, w = charWidth*screenXScale,
@@ -56,7 +56,7 @@
  *   arg5  = drawGlyphs  — draw-enable flag: 0 lays out the pen without emitting any pic
  *   arg6  = justify     — 0 => right/center adjust (pen -= 2 + glyphs*charWidth); != 0 => left
  * Returns the (justify-adjusted) starting X pen in EAX. All coordinates are virtual
- * 640x480 units scaled to device pixels by cgs_screenXScale/cgs_screenYScale, exactly
+ * 640x480 units scaled to device pixels by cgs.screenXScale/cgs.screenYScale, exactly
  * as CG_HudEmitDigits and the other 2D draw paths do.
  *
  * Both exits carry the MSVC /GS canary boilerplate (MOV EAX,[__security_cookie] at
@@ -66,7 +66,7 @@
  * Name adjudication: the .mcode header's mechanical guess "PM_CmdScale" (a pure win-size
  * 0x1f3 == matched-size 0x1f4 guess) is REJECTED — the real PM_CmdScale is 0x30008690
  * (reconstructed already), a pmove command-scaling routine with no drawing. This body
- * formats an integer and issues per-glyph 2D HUD stretch-pics against cg_numberShaders[]
+ * formats an integer and issues per-glyph 2D HUD stretch-pics against cgs.media.numberShaders[]
  * with screen-scale multiplies and the 0x49 draw trap. The same-module Mac symbol
  * bank identifies this exact bitmap numeric-field behavior as CG_DrawField. That
  * name also avoids colliding with the distinct CG_DrawHudElemString at 0x30029f70.
@@ -95,7 +95,7 @@ enum {
     CG_HUDELEM_MAX_WIDTH = 5,
 };
 
-/* The minus sign occupies the last cg_numberShaders[] slot (MOV EAX,0xa on '-'). */
+/* The minus sign occupies the last cgs.media.numberShaders[] slot (MOV EAX,0xa on '-'). */
 enum { CG_NUMBER_SHADER_MINUS = 10 };
 
 /* Right/center-justify pen bias: MOV EAX,0xfffffffe (-2) minus glyphs*charWidth. */
@@ -211,20 +211,20 @@ int CG_DrawField(int width /*ECX*/,
                  * 0x30017cf7 FILD; 0x30017d0f FMUL), so it stays exact in 80-bit -- no
                  * (float) casts, which would round the integers first. */
                 float px = (float)((long double)pen *
-                                   (long double)cgs_screenXScale);
+                                   (long double)cgs.screenXScale);
                 float py = (float)((long double)y *
-                                   (long double)cgs_screenYScale);
+                                   (long double)cgs.screenYScale);
                 float pw = (float)((long double)charWidth *
-                                   (long double)cgs_screenXScale);
+                                   (long double)cgs.screenXScale);
                 float ph = (float)((long double)charHeight *
-                                   (long double)cgs_screenYScale);
+                                   (long double)cgs.screenYScale);
 
                 cgame_syscall(CG_R_DRAWSTRETCHPIC,
                               CG_FloatBits(px), CG_FloatBits(py),
                               CG_FloatBits(pw), CG_FloatBits(ph),
                               CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                               CG_FloatBits(1.0f), CG_FloatBits(1.0f),
-                              cg_numberShaders[glyphIndex]);
+                              cgs.media.numberShaders[glyphIndex]);
             }
 
             /* Advance the pen and step to the next character (0x30017d8e..0x30017d9a);

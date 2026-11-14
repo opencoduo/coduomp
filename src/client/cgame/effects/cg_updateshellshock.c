@@ -11,8 +11,8 @@
 //   EAX = startTime  (cg.time captured when the shellshock began; either
 //                     cg.shellShockStartTime for the manual "cg_shellshock" console
 //                     command, or the active snapshot's shellshock start field)
-//   EBX = params     (the active shellshock_t*: cg_consoleShellShock 0x30448624 for
-//                     the console command, or &cg_shellShocks[index] for a
+//   EBX = params     (the active shellshock_t*: cgs.shellshocks[0] 0x30448624 for
+//                     the console command, or &cgs.shellshocks[index + 1] for a
 //                     config-string shellshock)
 //   EDI = duration   (the shellshock duration in ms: cg.shellShockDuration, or the
 //                     active snapshot's shellshock duration field)

@@ -45,18 +45,18 @@
 
 void CG_DrawTopBottom(float x, float y, float width, float height, float size)
 {
-    long double xScaleForX = (long double)cgs_screenXScale;
-    qhandle_t firstShader = cgs_media_whiteShader;
+    long double xScaleForX = (long double)cgs.screenXScale;
+    qhandle_t firstShader = cgs.media.whiteShader;
     float xs = (float)(xScaleForX * (long double)x);
-    float ys = (float)((long double)cgs_screenYScale * (long double)y);
-    float ws = (float)((long double)cgs_screenXScale * (long double)width);
+    float ys = (float)((long double)cgs.screenYScale * (long double)y);
+    float ws = (float)((long double)cgs.screenXScale * (long double)width);
     /* hs stays 80-bit: the DLL keeps screenYScale*height in ST0 across draw call 1
      * and feeds it UNSTORED into (ys + hs) - ss (FMUL @0x3001c9cd; FADD ST0,ST1
      * @0x3001c9f6, never an FSTP DWORD). A float local would round it before that
      * add, which the DLL does not (Class 8/1). ys and ss ARE stored+reloaded floats
      * (FSTP @0x3001c9ab reloaded @0x3001c9ec; FSTP @0x3001c9db), so they stay float. */
-    long double hs = (long double)cgs_screenYScale * (long double)height;
-    float ss = (float)((long double)cgs_screenYScale * (long double)size);
+    long double hs = (long double)cgs.screenYScale * (long double)height;
+    float ss = (float)((long double)cgs.screenYScale * (long double)size);
 
     /* top horizontal bar */
     trap_R_DrawStretchPic(CG_FloatBits(xs),
@@ -72,7 +72,7 @@ void CG_DrawTopBottom(float x, float y, float width, float height, float size)
     /* bottom horizontal bar, at the scaled bottom edge minus one bar height */
     {
         long double bottomBase = (long double)ys;
-        qhandle_t secondShader = cgs_media_whiteShader;
+        qhandle_t secondShader = cgs.media.whiteShader;
         float bottom = (float)((bottomBase + hs) - (long double)ss);
         trap_R_DrawStretchPic(CG_FloatBits(xs),
                           CG_FloatBits(bottom),

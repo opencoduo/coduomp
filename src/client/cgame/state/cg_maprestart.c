@@ -40,10 +40,10 @@ void CG_MapRestart(qboolean restart)
         Com_PrintMessage("CG_MapRestart\n");
     }
 
-    /* if (cgs_localServer) { cgame_syscall(0xcc, 1); InitWeaponInfo(); }
-     *   CMP [cgs_localServer],0; JZ; PUSH 1; PUSH 0xcc; CALL *cgame_syscall; ADD ESP,8;
+    /* if (cgs.localServer) { cgame_syscall(0xcc, 1); InitWeaponInfo(); }
+     *   CMP [cgs.localServer],0; JZ; PUSH 1; PUSH 0xcc; CALL *cgame_syscall; ADD ESP,8;
      *   CALL 0x30010df0. */
-    if (cgs_localServer != 0) {
+    if (cgs.localServer != 0) {
         cgame_syscall(CG_FREE_WEAPON_INFO_MEMORY, 1);
         InitWeaponInfo();
     }
@@ -54,8 +54,8 @@ void CG_MapRestart(qboolean restart)
     cg.centerPrintTime = 0;                     /* MOV [0x3048a9ac],ESI */
     cg.weaponSelectTimeA = 0;          /* MOV [0x3048ae3c],ESI */
     cg.overlayFadeDuration = 0;                 /* MOV [0x3048ae10],ESI */
-    cg_complaintClientNum = -1;                 /* MOV [0x3044caf4],-1 */
-    cg_complaintEndTime = 0;                    /* MOV [0x3044caf8],ESI */
+    cgs.complaintClientNum = -1;                 /* MOV [0x3044caf4],-1 */
+    cgs.complaintEndTime = 0;                    /* MOV [0x3044caf8],ESI */
 
     /* Re-initialise the local-entity and mark-poly (decal) pools, then issue the
      * two post-init engine traps that always follow this pair in the reset paths. */
@@ -68,8 +68,8 @@ void CG_MapRestart(qboolean restart)
      * The two zeros go in via ESI; the whole [0xed .. 0xd7] push batch is cleaned
      * together (there is no ADD ESP between them — cgame_syscall is caller-cleaned
      * and the id-0xd7 site pushes ESI==0 as its single argument). */
-    cg_voteTime = 0;                            /* MOV [0x30447ca0],ESI */
-    cg_timeoutEndTime = 0;             /* MOV [0x30447fd0],ESI */
+    cgs.voteTime = 0;                            /* MOV [0x30447ca0],ESI */
+    cgs.timeoutEndTime = 0;             /* MOV [0x30447fd0],ESI */
     cg.mapRestart = 1;        /* MOV [0x304831bc],1 */
     cgame_syscall(CG_MSS_STOP_SOUNDS, 0);              /* PUSH 0(ESI); PUSH 0xd7; CALL *cgame_syscall */
     /* 0x30039590: re-register config-string 3's sound alias immediately after
@@ -165,18 +165,18 @@ void cgame_compat_demo_rewind(int32_t processedSnapshotNum,
 
     memset(&cg, 0, sizeof(cg));
     memset(cg_entities, 0, sizeof(cg_entities));
-    memset(cg_lagometerFrameSamples, 0,
-           sizeof(cg_lagometerFrameSamples));
-    memset(&cg_lagometer, 0, sizeof(cg_lagometer));
-    cg_lagometerFrameCount = 0;
+    memset(lagometer.frameSamples, 0,
+           sizeof(lagometer.frameSamples));
+    memset(&lagometer, 0, sizeof(lagometer));
+    lagometer.frameCount = 0;
     cg_effectTime = 0;
     cg_effectAnimTime = 0;
     cg_effectFrameTime = 0;
 
     cg.clientNum = clientNum;
-    cg_processedSnapshotNum = processedSnapshotNum;
-    cgs_serverCommandSequence = serverCommandSequence;
-    cgame_syscall(CG_GET_GAME_STATE, (intptr_t)&cg_gameState);
+    cgs.processedSnapshotNum = processedSnapshotNum;
+    cgs.serverCommandSequence = serverCommandSequence;
+    cgame_syscall(CG_GET_GAME_STATE, (intptr_t)&cgs.gameState);
     CG_ParseServerinfo();
     CG_SetConfigValues();
 }

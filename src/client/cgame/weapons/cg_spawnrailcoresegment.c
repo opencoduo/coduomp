@@ -65,9 +65,9 @@ void CG_SpawnRailCoreSegment(const vec3_t start, const vec3_t end,
     le->refEntity.shaderTime = (float)(
         (long double)timeMilliseconds / 1000.0L);
 
-    /* 30043107 MOV ECX,[cg_railCoreShader]; 3004310d MOV [EAX+0xb8],ECX:
-     * le->refEntity.spriteShaderHandle = cg_railCoreShader (registered "railCore"). */
-    le->refEntity.spriteShaderHandle = cg_railCoreShader;
+    /* 30043107 MOV ECX,[cgs.media.railCoreShader]; 3004310d MOV [EAX+0xb8],ECX:
+     * le->refEntity.spriteShaderHandle = cgs.media.railCoreShader (registered "railCore"). */
+    le->refEntity.spriteShaderHandle = cgs.media.railCoreShader;
 
     /* 30043113..30043127 copy [EBX+0/4/8] into [EAX+0x94/0x98/0x9c]:
      * le->refEntity.origin = start. */

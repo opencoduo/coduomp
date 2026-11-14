@@ -12,10 +12,10 @@ void CG_DrawRotatedQuadPic(const vec4_t color, float x, float y,
 {
     cgame_syscall(CG_R_SETCOLOR, (intptr_t)color);
     cgame_syscall(CG_R_DRAW_STRETCH_PIC_ROTATE,
-                  CG_FloatBits(x * cgs_screenXScale),
-                  CG_FloatBits(y * cgs_screenYScale),
-                  CG_FloatBits(width * cgs_screenXScale),
-                  CG_FloatBits(height * cgs_screenYScale),
-                  0, 0, 0, 0, cgs_media_whiteShader, rotation, pivot);
+                  CG_FloatBits(x * cgs.screenXScale),
+                  CG_FloatBits(y * cgs.screenYScale),
+                  CG_FloatBits(width * cgs.screenXScale),
+                  CG_FloatBits(height * cgs.screenYScale),
+                  0, 0, 0, 0, cgs.media.whiteShader, rotation, pivot);
     cgame_syscall(CG_R_SETCOLOR, 0);
 }

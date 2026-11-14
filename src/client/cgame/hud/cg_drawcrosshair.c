@@ -65,7 +65,7 @@ enum cgCrosshairVehiclePosition_e {
  * are anchored, not centered, and post-hoc expansion collapses the arm gaps. */
 /* Per-axis factors: in classic 4:3 presentation the backend compresses 2D x
  * by the fitted-viewport ratio and cgame pre-compensates through
- * cgs_screenXScale (exactly as the stock spread conversion does), so width
+ * cgs.screenXScale (exactly as the stock spread conversion does), so width
  * terms must scale by the X factor and height terms by the Y factor.  In
  * native widescreen the two factors are equal. */
 /* Half the 640x480 screen fraction: matches the raw-pixel reticle feel of
@@ -76,7 +76,7 @@ enum cgCrosshairVehiclePosition_e {
 static float cg_crosshair_reticle_scale_x(void)
 {
     const float screenScale =
-        cgs_screenXScale > 0.0f ? cgs_screenXScale : 1.0f;
+        cgs.screenXScale > 0.0f ? cgs.screenXScale : 1.0f;
     const float scale = screenScale * CG_CROSSHAIR_PROPORTION;
 
     /* Never below the stock raw-pixel size. */
@@ -86,7 +86,7 @@ static float cg_crosshair_reticle_scale_x(void)
 static float cg_crosshair_reticle_scale_y(void)
 {
     const float screenScale =
-        cgs_screenYScale > 0.0f ? cgs_screenYScale : 1.0f;
+        cgs.screenYScale > 0.0f ? cgs.screenYScale : 1.0f;
     const float scale = screenScale * CG_CROSSHAIR_PROPORTION;
 
     return scale > 1.0f ? scale : 1.0f;
@@ -305,11 +305,11 @@ void CG_DrawCrosshair(void)
                      * kept exact, no (float) casts. */
                     float y = (float)(
                         ((long double)cg.refdef.height - (long double)sizeForY) * 0.5f +
-                        (long double)cgs_screenYScale * (long double)projected[1] +
+                        (long double)cgs.screenYScale * (long double)projected[1] +
                         (long double)cg.refdef.y);
                     float x = (float)(
                         ((long double)cg.refdef.width - (long double)sizeForX) * 0.5f +
-                        (long double)cgs_screenXScale * (long double)projected[0] +
+                        (long double)cgs.screenXScale * (long double)projected[0] +
                         (long double)cg.refdef.x);
 
                     // 0x3001a09b CALL 0x3003e0f0.
@@ -343,11 +343,11 @@ void CG_DrawCrosshair(void)
     // shader handle itself is NOT checked; handle 0 is passed through).
     if (weapon->reticleCenter[0] != '\0') {
         // 0x3001a0e8..0x3001a106: projected point scaled to real pixels.
-        long double screenXScaleRaw = (long double)cgs_screenXScale;
+        long double screenXScaleRaw = (long double)cgs.screenXScale;
         int32_t weaponType = weapon->weaponType;
         float projX = (float)(screenXScaleRaw *
                               (long double)projected[0]);
-        float projY = (float)((long double)cgs_screenYScale *
+        float projY = (float)((long double)cgs.screenYScale *
                               (long double)projected[1]);
         // 0x3001a10a/0x3001a110: FILD reticleCenterSize.
         float centerSize = (float)(long double)weapon->reticleCenterSize;
@@ -370,7 +370,7 @@ void CG_DrawCrosshair(void)
                 if (previousRemainder < remainder &&
                     (uint32_t)seconds < 4u) {
                 // 0x3001a150..0x3001a158: alias table indexed by whole seconds.
-                    CG_PlayClientSoundAliasByName(cg_soundGrenadePulse[seconds]);
+                    CG_PlayClientSoundAliasByName(cgs.media.soundGrenadePulse[seconds]);
                 // 0x3001a15d: the machine refetches grenadeTimeLeft after
                 // the call (register refill; the sound trap cannot change it),
                 // matching the re-reads below.
@@ -545,7 +545,7 @@ void CG_DrawCrosshair(void)
              * refdef x/y FIADD'd -- integers exact, no (float) casts. */
             yRaw = spreadYRaw * (long double)dir[i][1];
             yRaw += (long double)projected[1];
-            yRaw *= (long double)cgs_screenYScale;
+            yRaw *= (long double)cgs.screenYScale;
             yRaw += (long double)sideSizeForY * (long double)align[i][1];
             yRaw += (long double)nudge[i][1];
             yRaw += (long double)nudge[i][1] *
@@ -558,7 +558,7 @@ void CG_DrawCrosshair(void)
 
             xRaw = (long double)spreadX * (long double)dir[i][0];
             xRaw += (long double)projected[0];
-            xRaw *= (long double)cgs_screenXScale;
+            xRaw *= (long double)cgs.screenXScale;
             xRaw += (long double)sideSizeForX * (long double)align[i][0];
             xRaw += (long double)nudge[i][0];
             xRaw += (long double)nudge[i][0] *

@@ -51,16 +51,16 @@ void CG_FillRect(float x, float y, float width, float height, const float *color
     /* 0x3001c4ed..0x3001c539: load/evaluate/store in the exact height, width,
      * y, x order. The height scale is loaded before the shader handle and its
      * product remains in ST0 across that integer load. */
-    long double scaledHeightRaw = (long double)cgs_screenYScale;
-    qhandle_t shader = cgs_media_whiteShader;
+    long double scaledHeightRaw = (long double)cgs.screenYScale;
+    qhandle_t shader = cgs.media.whiteShader;
     scaledHeightRaw *= (long double)height;
     float scaledHeight = (float)scaledHeightRaw;
     float scaledWidth = (float)(
-        (long double)cgs_screenXScale * (long double)width);
+        (long double)cgs.screenXScale * (long double)width);
     float scaledY = (float)(
-        (long double)cgs_screenYScale * (long double)y);
+        (long double)cgs.screenYScale * (long double)y);
     float scaledX = (float)(
-        (long double)cgs_screenXScale * (long double)x);
+        (long double)cgs.screenXScale * (long double)x);
 
     trap_R_DrawStretchPic(CG_FloatBits(scaledX),
                           CG_FloatBits(scaledY),

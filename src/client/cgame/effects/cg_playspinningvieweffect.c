@@ -38,7 +38,7 @@
 //   PUSH 0                    (a4 = 0, from XOR EAX,EAX)
 //   PUSH &axis (=F+0x18)      (a3 = orientation)
 //   PUSH &origin (=F+0xc)     (a2 = origin)
-//   PUSH cg_effectDefs[effectId] (a1 = engine effect handle; EAX*4+table)
+//   PUSH cgs.effectDefs[effectId] (a1 = engine effect handle; EAX*4+table)
 //   PUSH 0xe9                 (id = CG_PLAY_EFFECT_ON_TAG)
 // After the call `ADD ESP,0x18` cleans 6 dwords: the 5 syscall pushes plus the
 // single angle arg to YawVectors (which returns with a plain RET, so the
@@ -71,7 +71,7 @@ void CG_PlaySpinningViewEffect(int effectId)
     long double axisLeftY = (long double)0.0f - (long double)right[1];
     axis[2][0] = 0.0f;           /* 0x300164e1 MOV [F+0x30],0 */
     axis[2][1] = 0.0f;           /* 0x300164e9 MOV [F+0x34],0 */
-    uint32_t effectHandle = cg_effectDefs[effectId];
+    uint32_t effectHandle = cgs.effectDefs[effectId];
     axis[1][1] = (float)axisLeftY;
 
     long double axisLeftZ = (long double)0.0f - (long double)right[2];
@@ -86,7 +86,7 @@ void CG_PlaySpinningViewEffect(int effectId)
                         (long double)cg.refdef.vieworg[2]);
 
     /*
-     * 0x30016559: fire the effect. cg_effectDefs[effectId] is the engine handle
+     * 0x30016559: fire the effect. cgs.effectDefs[effectId] is the engine handle
      * (EAX*4 + 0x304484e4). Trailing argument is a literal 0.
      */
     cgame_syscall(CG_PLAY_EFFECT_ON_TAG,

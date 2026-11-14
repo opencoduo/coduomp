@@ -124,8 +124,8 @@ void CG_DrawWeaponIcon3D(void)
      * width=size*sx (FMUL ST1) and height=size*sy (FMUL) with no FSTP, so it is
      * long double -- a float `size` would round it before the two multiplies. */
     long double size = weap->reticleCenterSize;
-    width = (float)((long double)cgs_screenXScale * size);
-    long double heightRaw = size * (long double)cgs_screenYScale;
+    width = (float)((long double)cgs.screenXScale * size);
+    long double heightRaw = size * (long double)cgs.screenYScale;
     /* 0x30019c67 loads the shader while the unrounded height is still live,
      * before its binary32 store at 0x30019c74. */
     qhandle_t centerShader =
@@ -140,11 +140,11 @@ void CG_DrawWeaponIcon3D(void)
      * X chain at 0x30019cb8..0x30019cdc. */
     y = (float)(
         ((long double)(int32_t)cg.refdef.height - (long double)height) * 0.5L +
-        (long double)cgs_screenYScale * 0.0f +
+        (long double)cgs.screenYScale * 0.0f +
         (long double)(int32_t)cg.refdef.y);
     x = (float)(
         ((long double)(int32_t)cg.refdef.width - (long double)width) * 0.5L +
-        (long double)cgs_screenXScale * 0.0f +
+        (long double)cgs.screenXScale * 0.0f +
         (long double)(int32_t)cg.refdef.x);
 
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): x/y are physical

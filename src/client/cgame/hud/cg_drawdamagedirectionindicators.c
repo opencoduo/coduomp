@@ -52,20 +52,20 @@
 //                    lifetime, then fades to 0 over the second half);
 //       color     = (1,1,1,alpha);  cgame_syscall(CG_R_SETCOLOR, color);
 //       CG_DrawTurretTagQuad(cornerOffsets, sx, sy, cg_damageDirShaderParams,
-//                            yaw, cg_hitDirectionShader);   // rotated icon at the anchor
+//                            yaw, cgs.media.hitDirectionShader);   // rotated icon at the anchor
 //
 // .rdata / .data constants recovered exactly via objdump -s -j:
 //   [0x3007c030]=320.0f, [0x3007c02c]=240.0f (screen-center recenter offsets);
 //   [0x3007bce8]=0.5f, [0x3007bce4]=2.0f, [0x3007bce0]=1.0f (icon-half and fade math);
 //   [0x30071854]= the static shaderParams float{1,1,0,1,0,0,0,1} (cg_damageDirShaderParams);
-//   [0x3044bb6c]= the "hudHitDirection" shader handle (cg_hitDirectionShader),
+//   [0x3044bb6c]= the "hudHitDirection" shader handle (cgs.media.hitDirectionShader),
 //                 registered by the asset-load path via CG_RegisterMaterial.
 
 #include <stddef.h>
 #include <stdint.h>
 
 /* Draw descriptors: cg_damageDirShaderParams (0x30071854 .rdata) and the
- * "hudHitDirection" shader handle cg_hitDirectionShader (0x3044bb6c .data) are both
+ * "hudHitDirection" shader handle cgs.media.hitDirectionShader (0x3044bb6c .data) are both
  * declared in globals.h. */
 
 void CG_DrawDamageDirectionIndicators(void)
@@ -175,7 +175,7 @@ void CG_DrawDamageDirectionIndicators(void)
         color[3] = alpha;
 
         cgame_syscall(CG_R_SETCOLOR, (intptr_t)color);
-        qhandle_t shader = cg_hitDirectionShader;
+        qhandle_t shader = cgs.media.hitDirectionShader;
         CG_DrawTurretTagQuad(cornerOffsets, sx, sy, cg_damageDirShaderParams,
                              yaw, shader);
     }

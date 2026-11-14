@@ -20,7 +20,7 @@
 // The Mac cgame symbol CG_Vehicle_DoControllers shares eight distinctive direct
 // callees with this body. Combined with the DObj-tag trap vocabulary, the tag
 // names "tag_turret"/"tag_barrel"/"tag_steeringwheel"/wheel tags, and the resolved
-// cgs_media_vehicleTreadEffects table, this resolves the source name.
+// cgs.media.vehicleTreadEffects table, this resolves the source name.
 //
 // The first-person follow transform and the six-wheel contact/effect loop are
 // reconstructed from every x87 data dependency in 0x300207f0..0x30020a46 and
@@ -665,7 +665,7 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
                     }
 
                     if (material != VEH_TREAD_EFFECT_NONE) {
-                        if (cgs_media_vehicleTreadEffects[material] != 0) {
+                        if (cgs.media.vehicleTreadEffects[material] != 0) {
                             float randomX = (float)coduo_crt_rand();
                             delta[0] = (float)(
                                 -((((long double)randomX /
@@ -690,7 +690,7 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
                             /* 0x300212df reloads the table entry after all three
                              * rand calls instead of carrying the pre-test value. */
                             cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                                          cgs_media_vehicleTreadEffects[material],
+                                          cgs.media.vehicleTreadEffects[material],
                                           (intptr_t)effectOrigin,
                                           (intptr_t)delta);
                         }

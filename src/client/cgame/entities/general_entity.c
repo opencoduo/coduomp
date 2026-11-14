@@ -24,7 +24,7 @@
 //   2. `MOV AL,[EBX+8]; TEST AL,AL; JS 0x3001e4fa` — if the low byte of cent->currentState.eFlags has
 //      bit 7 set (EF_NODRAW = 0x80), skip everything and return.
 //   3. Refresh the entity's DObj weapon anim tree: load
-//      cg_gameModels[cent->currentState.modelIndex] from the registered-model table at
+//      cgs.gameModels[cent->currentState.modelIndex] from the registered-model table at
 //      0x304480e4, and call CG_RefreshEntityDObjAnimTree(cent->currentState.eType, thatParam) with
 //      ESI = cent->currentState.number (register arg). It is caller-cleaned (plain RET); the two
 //      pushed args' cleanup is deferred and folded into the `ADD ESP,0x10` after the
@@ -64,7 +64,7 @@ void CG_General(centity_t *cent /* EBX */)
         return;
 
     /* 0x3001e455: MOV EAX,[EBX+0x90]; MOV ECX,[EAX*4+0x304480e4]. The table base
-     * is cg_gameModels[0], proven by its registration loop and vmMain command 10. */
+     * is cgs.gameModels[0], proven by its registration loop and vmMain command 10. */
     int32_t modelIndex = cent->currentState.modelIndex;
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)modelIndex >= (uint32_t)CS_MODELS_COUNT) {
@@ -73,7 +73,7 @@ void CG_General(centity_t *cent /* EBX */)
                   modelIndex);
         return;
     }
-    qhandle_t modelHandle = cg_gameModels[modelIndex];
+    qhandle_t modelHandle = cgs.gameModels[modelIndex];
     int32_t eType = cent->currentState.eType;
     int32_t entityNum = cent->currentState.number;
     CG_RefreshEntityDObjAnimTree(entityNum, eType, modelHandle);

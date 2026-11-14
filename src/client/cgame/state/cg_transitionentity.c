@@ -127,7 +127,7 @@ void CG_TransitionEntity(centity_t *cent /* [ESP+0xc] */)
                       cent->currentState.number);
             return;
         }
-        clientInfo_t *corpse = &cg_corpseInfo[corpseIndex];
+        clientInfo_t *corpse = &cgs.corpseInfo[corpseIndex];
 
         /* The live player's 0x4d0-byte clientInfo_t row for this client. */
         /* Retail used the same unchecked wire clientNum for the live row copied

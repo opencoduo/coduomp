@@ -111,14 +111,14 @@ void CG_DrawActive(int32_t stereoView)
 
         /*
          * Resolve the map name from config string 0 (CS_SERVERINFO):
-         *   info = &cg_gameState.stringData[cg_gameState.stringOffsets[0]]
+         *   info = &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]]
          *   mapName = Info_ValueForKey(info, "mapname")   (ECX=info, EBX=key)
          * If the map name is present and non-empty, register its levelshot shader
          * "levelshots/<map>.tga"; otherwise fall back to "menu/art/unknownmap".
          */
         {
             const char *serverInfo =
-                &cg_gameState.stringData[cg_gameState.stringOffsets[0]]; /* 0x3001c1ac..0x3001c1b8 */
+                &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]]; /* 0x3001c1ac..0x3001c1b8 */
             mapName = Info_ValueForKey(serverInfo, "mapname");         /* 0x3001c1bd CALL Info_ValueForKey */
 
             levelShotShader = 0;
@@ -151,10 +151,10 @@ void CG_DrawActive(int32_t stereoView)
         {
             /* 0x3001c21e..0x3001c26f evaluates and stores h, w, y, then x,
              * reloading the scale global for each product. */
-            float h = (float)((long double)cgs_screenYScale * 480.0L);
-            float w = (float)((long double)cgs_screenXScale * 640.0L);
-            float y = (float)((long double)cgs_screenYScale * 0.0L);
-            float x = (float)((long double)cgs_screenXScale * 0.0L);
+            float h = (float)((long double)cgs.screenYScale * 480.0L);
+            float w = (float)((long double)cgs.screenXScale * 640.0L);
+            float y = (float)((long double)cgs.screenYScale * 0.0L);
+            float x = (float)((long double)cgs.screenXScale * 0.0L);
             uint32_t xb, yb, wb, hb, one, zero;
             /* reinterpret the floats as their 32-bit words (the syscall slots) */
             memcpy(&xb, &x, 4);

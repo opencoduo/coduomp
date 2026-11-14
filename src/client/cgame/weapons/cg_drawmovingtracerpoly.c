@@ -87,7 +87,7 @@ void CG_DrawMovingTracerPoly(const vec3_t tailPoint, const vec3_t headPoint,
         verts[i].modulate[2] = 255;
         verts[i].modulate[3] = 255;
     }
-    cgame_syscall(CG_R_ADDPOLYTOSCENE, cgs_media_tracerShader, 4, verts);
+    cgame_syscall(CG_R_ADDPOLYTOSCENE, cgs.media.tracerShader, 4, verts);
 
     for (i = 0; i < 3; ++i) {
         center[i] = (float)((long double)direction[i] * 0.5L +
@@ -166,5 +166,5 @@ void CG_DrawMovingTracerPoly(const vec3_t tailPoint, const vec3_t headPoint,
         verts[i].modulate[2] = 255;
         verts[i].modulate[3] = 255;
     }
-    cgame_syscall(CG_R_ADDPOLYTOSCENE, cgs_media_tracerShader, 4, verts);
+    cgame_syscall(CG_R_ADDPOLYTOSCENE, cgs.media.tracerShader, 4, verts);
 }

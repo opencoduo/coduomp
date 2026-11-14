@@ -2,7 +2,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3003ffc0_300402a7.mcode
 //
 // CG_CalcFov (0x3003ffc0) — compute the current view field of view (degrees) and,
-// as a side effect, maintain the FOV/zoom transition trackers and the cg_fovFade
+// as a side effect, maintain the FOV/zoom transition trackers and the cgs.scrFade
 // animator. The value is returned on the x87 stack (a float return).
 //
 // Naming: the .mcode carries the size-guessed name BG_ParseWeaponInfoSpecificFieldType.
@@ -34,7 +34,7 @@
 //
 // Unresolved symbols left address-shaped (referenced but not proven from this one
 // function's evidence, so not renamed here):
-//   cg_timeoutEndTime (0x30447fd0): the "timeout HUD end time (ms)"; a
+//   cgs.timeoutEndTime (0x30447fd0): the "timeout HUD end time (ms)"; a
 //     prior worker proved the timeout role but kept the address suffix pending full
 //     adjudication. Used here only as a `== 0` gate ("no HUD timeout active").
 
@@ -137,7 +137,7 @@ float CG_CalcFov(void)
                     }
                 }
                 /* 0x300400c5: only when no HUD timeout is active. */
-                if (cg_timeoutEndTime == 0) {
+                if (cgs.timeoutEndTime == 0) {
                     CG_StartFovFade(
                         coduo_int32_from_bits(
                             (uint32_t)now
@@ -152,9 +152,9 @@ float CG_CalcFov(void)
         commit_position:
             /* 0x300400f6: commit the current vehiclePosition; fade on a change.
              * The commit-path CG_StartFovFade call at 0x3004010b is NOT guarded
-             * by cg_timeoutEndTime -- 0x30447fd0 is never loaded between 0x300400f6
+             * by cgs.timeoutEndTime -- 0x30447fd0 is never loaded between 0x300400f6
              * and 0x30040119; only the driver do-fade block at 0x300400c5 checks
-             * it. A prior pass added a spurious `if (cg_timeoutEndTime == 0)` here,
+             * it. A prior pass added a spurious `if (cgs.timeoutEndTime == 0)` here,
              * suppressing the FOV fade on a vehicle-position change whenever a HUD
              * timeout was active. */
             if (cg_fovLastVehiclePosition != vehiclePosition) {
@@ -227,15 +227,15 @@ tail:
         if (cg_fovLastVehiclePosition > 0) {
             int32_t fadeStart = coduo_int32_from_bits(
                 (uint32_t)now - (uint32_t)FOV_FADE_BACKDATE_MS);
-            cg_fovFade.startTime = fadeStart;
+            cgs.scrFadeStartTime = fadeStart;
             int32_t fadeEnd = coduo_int32_from_bits(
                 (uint32_t)fadeStart + (uint32_t)FOV_FADE_QUICK_MS);
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
             qboolean expired = fadeEnd <= now;
-            cg_fovFade.startValue = 1.0f;
-            cg_fovFade.durationMs = FOV_FADE_QUICK_MS;
+            cgs.scrFadeAlpha = 1.0f;
+            cgs.scrFadeDuration = FOV_FADE_QUICK_MS;
             if (expired) {
-                cg_fovFade.currentValue = 1.0f;                /* 0x3044b6a0 */
+                cgs.scrFadeAlphaCurrent = 1.0f;                /* 0x3044b6a0 */
             }
             cg_fovTransitionTime = now;                        /* 0x30040234 */
             cg_fovLastVehiclePosition = 0;                     /* 0x3004023a */
@@ -249,15 +249,15 @@ tail:
             (uint32_t)now - (uint32_t)FOV_FADE_STALE_MS);
         if (transitionTime < staleThreshold) {
             int32_t fadeStart = coduo_int32_from_bits((uint32_t)now - 1u);
-            cg_fovFade.startTime = fadeStart;
+            cgs.scrFadeStartTime = fadeStart;
             int32_t fadeEnd = coduo_int32_from_bits(
                 (uint32_t)fadeStart + (uint32_t)FOV_FADE_SETTLE_MS);
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
             qboolean expired = fadeEnd <= now;
-            cg_fovFade.startValue = 0.0f;
-            cg_fovFade.durationMs = FOV_FADE_SETTLE_MS;
+            cgs.scrFadeAlpha = 0.0f;
+            cgs.scrFadeDuration = FOV_FADE_SETTLE_MS;
             if (expired) {
-                cg_fovFade.currentValue = 0.0f;                /* 0x30040279 */
+                cgs.scrFadeAlphaCurrent = 0.0f;                /* 0x30040279 */
             }
             cg_fovTransitionTime = -1;                         /* 0x30040283 */
         }

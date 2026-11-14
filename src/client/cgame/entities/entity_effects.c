@@ -26,7 +26,7 @@
  * 3001e815 JNZ 0x875                      != 0xffffff -> use raw lerpOrigin
  *
  * Offset-origin arm (solid == SOLID_BMODEL): build
- *   soundOrigin[k] = cent->lerpOrigin[k] + cg_inlineModelMidpoints[modelindex][k]
+ *   soundOrigin[k] = cent->lerpOrigin[k] + cgs.inlineModelMidpoints[modelindex][k]
  * with x87 float adds (FLD [ESI+0x208+4k]; FADD table[k]; FSTP slot), into the
  * three stack floats at [ESP+0x18/0x1c/0x20]. The channel object handed to
  * CG_PlaySoundAliasByName is &soundOrigin (LEA ECX,[ESP+0x1c]).
@@ -37,8 +37,8 @@
  * Both arms: an out-of-range cfgIndex is reported via the inlined CG_ConfigString
  * bounds check (JL cfgIndex<0 ; CMP 0x800 ; JL) and still falls through to the
  * lookup, exactly as CG_ConfigString does. Then:
- *   3001e898 MOV EAX,[EDI*4 + cg_gameState.stringOffsets]   offset = offsets[cfgIndex]
- *   3001e89f ADD EAX,cg_gameState.stringData                soundName = &stringData[offset]
+ *   3001e898 MOV EAX,[EDI*4 + cgs.gameState.stringOffsets]   offset = offsets[cfgIndex]
+ *   3001e89f ADD EAX,cgs.gameState.stringData                soundName = &stringData[offset]
  *   entityNum = cent->currentState.number ([ESI]) pushed; call CG_PlaySoundAliasByName
  *   (custom ABI: channelObj in ECX, soundName in EAX, entityNum on the stack).
  *
@@ -80,7 +80,7 @@ void CG_EntityEffects(centity_t *cent)
 
         if ((uint32_t)cent->currentState.solid == SOLID_BMODEL) {
             /* For a brush model, emit at lerpOrigin plus its registered midpoint. */
-            const vec_t *ofs = cg_inlineModelMidpoints[cent->currentState.itemIndex];
+            const vec_t *ofs = cgs.inlineModelMidpoints[cent->currentState.itemIndex];
             const vec_t *lerp = cent->lerpOrigin; /* cent+0x208, consumed here as origin */
             soundOrigin[0] = (float)((long double)lerp[0] + (long double)ofs[0]);
             soundOrigin[1] = (float)((long double)lerp[1] + (long double)ofs[1]);
@@ -98,7 +98,7 @@ void CG_EntityEffects(centity_t *cent)
             Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
         }
 
-        soundName = &cg_gameState.stringData[cg_gameState.stringOffsets[cfgIndex]];
+        soundName = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]];
         CG_PlaySoundAliasByName(cent->currentState.number, channelObj, soundName);
     }
 

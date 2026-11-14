@@ -7,7 +7,7 @@
 // Naming: the mechanical `.mcode` name `Bullet_Fire_Extended` (a size-guess from
 // game_mp_uo coverage, per its own name_note) is REJECTED — this function does no
 // bullet firing. Its body reads the hudStance*/hudFatigue* icon shaders
-// (cg_stanceHudShaders), latches the player's stance flags, builds three tables of
+// (cgs.media.stanceHudShaders), latches the player's stance flags, builds three tables of
 // the stance-change key hints ("+prone","goprone","toggleprone","gocrouch",... and
 // CGAME_STANCEHINT_JUMP/STAND/CROUCH/PRONE), resolves the key bound to each command,
 // and draws the hint text and stance/fatigue icons through the 2D-draw traps.
@@ -57,7 +57,7 @@ enum {
     STANCE_VIEW_OVERRIDE   = 0x400000u
 };
 
-/* cg_stanceHudShaders[] indices (see globals.h). */
+/* cgs.media.stanceHudShaders[] indices (see globals.h). */
 enum {
     HUD_SHADER_STANCE_STAND   = 0, /* 0x3044bb24: hudStanceStand */
     HUD_SHADER_STANCE_CROUCH  = 1, /* 0x3044bb28: hudStanceCrouch */
@@ -368,13 +368,13 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
         qhandle_t shader;
         const uint32_t f = cg_stanceHintFlags;
         if ((f & STANCE_FLAG_SPRINT) != 0u) {
-            shader = cg_stanceHudShaders[HUD_SHADER_STANCE_SPRINT];
+            shader = cgs.media.stanceHudShaders[HUD_SHADER_STANCE_SPRINT];
         } else if ((f & STANCE_FLAG_PRONE) != 0u) {
-            shader = cg_stanceHudShaders[HUD_SHADER_STANCE_PRONE];
+            shader = cgs.media.stanceHudShaders[HUD_SHADER_STANCE_PRONE];
         } else if ((f & STANCE_FLAG_CROUCH) != 0u) {
-            shader = cg_stanceHudShaders[HUD_SHADER_STANCE_CROUCH];
+            shader = cgs.media.stanceHudShaders[HUD_SHADER_STANCE_CROUCH];
         } else {
-            shader = cg_stanceHudShaders[HUD_SHADER_STANCE_STAND];
+            shader = cgs.media.stanceHudShaders[HUD_SHADER_STANCE_STAND];
         }
 
         /* 0x3002f661: drawColor[3] = colorVec[3]; set color, then draw the icon rect
@@ -382,10 +382,10 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
         drawColor[3] = colorVec[3];                              /* [ECX+0xc] */
         cgame_syscall(CG_R_SETCOLOR, drawColor);
         cgame_syscall(CG_R_DRAWSTRETCHPIC,
-                      CG_FloatBits(slideX * cgs_screenXScale),
-                      CG_FloatBits(iconRect->y * cgs_screenYScale),
-                      CG_FloatBits(iconRect->w * cgs_screenXScale),
-                      CG_FloatBits(iconRect->h * cgs_screenYScale),
+                      CG_FloatBits(slideX * cgs.screenXScale),
+                      CG_FloatBits(iconRect->y * cgs.screenYScale),
+                      CG_FloatBits(iconRect->w * cgs.screenXScale),
+                      CG_FloatBits(iconRect->h * cgs.screenYScale),
                       CG_FloatBits(0.0f),
                       CG_FloatBits(0.0f),
                       CG_FloatBits(1.0f),
@@ -398,13 +398,13 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
         qhandle_t shader;
         const uint32_t f = cg_stanceHintFlags;
         if ((f & STANCE_FLAG_SPRINT) != 0u) {
-            shader = cg_stanceHudShaders[HUD_SHADER_FATIGUE_SPRINT];
+            shader = cgs.media.stanceHudShaders[HUD_SHADER_FATIGUE_SPRINT];
         } else if ((f & STANCE_FLAG_PRONE) != 0u) {
-            shader = cg_stanceHudShaders[HUD_SHADER_FATIGUE_PRONE];
+            shader = cgs.media.stanceHudShaders[HUD_SHADER_FATIGUE_PRONE];
         } else if ((f & STANCE_FLAG_CROUCH) != 0u) {
-            shader = cg_stanceHudShaders[HUD_SHADER_FATIGUE_CROUCH];
+            shader = cgs.media.stanceHudShaders[HUD_SHADER_FATIGUE_CROUCH];
         } else {
-            shader = cg_stanceHudShaders[HUD_SHADER_FATIGUE_STAND];
+            shader = cgs.media.stanceHudShaders[HUD_SHADER_FATIGUE_STAND];
         }
 
         /* 0x3002f735: opaque-white color for the base icon. */
@@ -430,14 +430,14 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
              * (FLD [EDI+0xc]; FSUB tmp; FMUL yscale — positive), top texcoord
              * t1 = frac. x is the animated slide (slideX*screenXScale). */
             cgame_syscall(CG_R_DRAWSTRETCHPIC,
-                          CG_FloatBits(slideX * cgs_screenXScale),
+                          CG_FloatBits(slideX * cgs.screenXScale),
                           CG_FloatBits((float)(((long double)filledHeight +
                                                (long double)iconRect->y) *
-                                              (long double)cgs_screenYScale)),
-                          CG_FloatBits(iconRect->w * cgs_screenXScale),
+                                              (long double)cgs.screenYScale)),
+                          CG_FloatBits(iconRect->w * cgs.screenXScale),
                           CG_FloatBits((float)(((long double)iconRect->h -
                                                (long double)filledHeight) *
-                                              (long double)cgs_screenYScale)),
+                                              (long double)cgs.screenYScale)),
                           CG_FloatBits(0.0f),
                           CG_FloatBits(frac),
                           CG_FloatBits(1.0f),
@@ -451,10 +451,10 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
     if (coduo_int32_from_bits((uint32_t)cg_stanceHintChangeTime + 1000u) > now) {
         int32_t e = coduo_int32_from_bits(
             (uint32_t)cg_stanceHintChangeTime - (uint32_t)now + 1000u);
-        /* 0x3002f86a loads ds:0x3044bb34 = cg_stanceHudShaders[4] = hudStanceFlash
+        /* 0x3002f86a loads ds:0x3044bb34 = cgs.media.stanceHudShaders[4] = hudStanceFlash
          * (the countdown "flash" overlay), NOT index 5 (hudFatigueStand). A prior
          * pass used HUD_SHADER_FATIGUE_STAND (=5, ds:0x3044bb38) here. */
-        qhandle_t shader = cg_stanceHudShaders[HUD_SHADER_STANCE_FLASH];
+        qhandle_t shader = cgs.media.stanceHudShaders[HUD_SHADER_STANCE_FLASH];
 
         /* 0x3002f843..0x3002f85a: color alpha fades with the countdown =
          * e * (1/1000) * 0.8f. FILD; FMUL 0x3007bd94 (1/1000); FMUL 0x3007bdf0
@@ -467,10 +467,10 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
         cgame_syscall(CG_R_SETCOLOR, drawColor);
 
         cgame_syscall(CG_R_DRAWSTRETCHPIC,
-                      CG_FloatBits(slideX * cgs_screenXScale),
-                      CG_FloatBits(iconRect->y * cgs_screenYScale),
-                      CG_FloatBits(iconRect->w * cgs_screenXScale),
-                      CG_FloatBits(iconRect->h * cgs_screenYScale),
+                      CG_FloatBits(slideX * cgs.screenXScale),
+                      CG_FloatBits(iconRect->y * cgs.screenYScale),
+                      CG_FloatBits(iconRect->w * cgs.screenXScale),
+                      CG_FloatBits(iconRect->h * cgs.screenYScale),
                       CG_FloatBits(0.0f),
                       CG_FloatBits(0.0f),
                       CG_FloatBits(1.0f),

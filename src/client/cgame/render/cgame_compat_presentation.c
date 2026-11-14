@@ -174,10 +174,10 @@ float cgame_compat_hud_text_width_scale(void)
 {
     if (cgame_compat_resolved_hud_presentation() != CGAME_COMPAT_HUD_PRESENTATION_PROPORTIONAL_TEXT ||
         cgameCompatAspectMode.integer != CODUOMP_ASPECT_MODE_WIDESCREEN ||
-        cgs_glconfig.vidWidth <= 0 || cgs_glconfig.vidHeight <= 0)
+        cgs.glconfig.vidWidth <= 0 || cgs.glconfig.vidHeight <= 0)
         return 1.0f;
 
-    return ((float)cgs_glconfig.vidHeight / 480.0f) / ((float)cgs_glconfig.vidWidth / 640.0f);
+    return ((float)cgs.glconfig.vidHeight / 480.0f) / ((float)cgs.glconfig.vidWidth / 640.0f);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: publish the resolved stretch state to the engine,
@@ -240,38 +240,38 @@ void cgame_compat_tile_clear(void)
 void cgame_compat_configure_screen_scales(void)
 {
     const float stockXScale = (float)(
-        (long double)cgs_glconfig.vidWidth * (long double)(1.0f / 640.0f));
+        (long double)cgs.glconfig.vidWidth * (long double)(1.0f / 640.0f));
     const float stockYScale = (float)(
-        (long double)cgs_glconfig.vidHeight * (long double)(1.0f / 480.0f));
+        (long double)cgs.glconfig.vidHeight * (long double)(1.0f / 480.0f));
 
-    cgs_screenYScale = stockYScale;
+    cgs.screenYScale = stockYScale;
     if (cgame_compat_uses_classic_aspect() == qfalse &&
         cgame_compat_uses_stretched_hud() == qfalse &&
-        cgs_glconfig.vidWidth > 0 && cgs_glconfig.vidHeight > 0 &&
-        (int64_t)cgs_glconfig.vidWidth * 3 >
-            (int64_t)cgs_glconfig.vidHeight * 4) {
-        cgs_screenXScale = stockYScale;
+        cgs.glconfig.vidWidth > 0 && cgs.glconfig.vidHeight > 0 &&
+        (int64_t)cgs.glconfig.vidWidth * 3 >
+            (int64_t)cgs.glconfig.vidHeight * 4) {
+        cgs.screenXScale = stockYScale;
     } else {
-        cgs_screenXScale = stockXScale;
+        cgs.screenXScale = stockXScale;
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: open cgame menus mix two stock drawing interfaces:
- * pictures/fills pre-scale through cgs_screenXScale, while text remains in
+ * pictures/fills pre-scale through cgs.screenXScale, while text remains in
  * virtual coordinates until the renderer applies its 640x480 transform. Keep
  * the picture side on the same height-derived scale for the duration of one
  * open-menu composition. This is a single canvas projection for all stock and
  * mod menus; it does not classify menu names or individual assets. */
 float cgame_compat_begin_open_menu_canvas(void)
 {
-    const float previousXScale = cgs_screenXScale;
+    const float previousXScale = cgs.screenXScale;
 
     if (cgame_compat_uses_classic_aspect() == qfalse &&
         cgame_compat_uses_stretched_hud() == qfalse &&
-        cgs_glconfig.vidWidth > 0 && cgs_glconfig.vidHeight > 0 &&
-        (int64_t)cgs_glconfig.vidWidth * 3 >
-            (int64_t)cgs_glconfig.vidHeight * 4) {
-        cgs_screenXScale = cgs_screenYScale;
+        cgs.glconfig.vidWidth > 0 && cgs.glconfig.vidHeight > 0 &&
+        (int64_t)cgs.glconfig.vidWidth * 3 >
+            (int64_t)cgs.glconfig.vidHeight * 4) {
+        cgs.screenXScale = cgs.screenYScale;
     }
 
     return previousXScale;
@@ -280,7 +280,7 @@ float cgame_compat_begin_open_menu_canvas(void)
 /* NOT_FROM_ORIGINAL_SOURCE: close the temporary open-menu canvas projection. */
 void cgame_compat_end_open_menu_canvas(float previousXScale)
 {
-    cgs_screenXScale = previousXScale;
+    cgs.screenXScale = previousXScale;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: returns the width of one native-widescreen side
@@ -291,14 +291,14 @@ static float cgame_compat_virtual_side_width(void)
 {
     if (cgame_compat_uses_classic_aspect() != qfalse ||
         cgame_compat_uses_stretched_hud() != qfalse ||
-        cgs_glconfig.vidWidth <= 0 || cgs_glconfig.vidHeight <= 0 ||
-        (int64_t)cgs_glconfig.vidWidth * 3 <=
-            (int64_t)cgs_glconfig.vidHeight * 4) {
+        cgs.glconfig.vidWidth <= 0 || cgs.glconfig.vidHeight <= 0 ||
+        (int64_t)cgs.glconfig.vidWidth * 3 <=
+            (int64_t)cgs.glconfig.vidHeight * 4) {
         return 0.0f;
     }
 
-    return ((float)cgs_glconfig.vidWidth /
-                ((float)cgs_glconfig.vidHeight / 480.0f) -
+    return ((float)cgs.glconfig.vidWidth /
+                ((float)cgs.glconfig.vidHeight / 480.0f) -
             640.0f) * 0.5f;
 }
 
@@ -540,7 +540,7 @@ float cgame_compat_right_hud_virtual_offset(void)
  * isolates the physical-pixel exception at its draw boundary. */
 static float cgame_compat_physical_overlay_input_x(float x)
 {
-    return x - cgame_compat_virtual_side_width() * cgs_screenYScale;
+    return x - cgame_compat_virtual_side_width() * cgs.screenYScale;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: physical-pixel stretch-pic submission for weapon
@@ -564,8 +564,8 @@ void cgame_compat_fill_native_screen_effect(const float color[4])
     trap_R_SetColor(color);
     cgame_compat_draw_physical_stretch_pic(
         0.0f, 0.0f,
-        (float)cgs_glconfig.vidWidth, (float)cgs_glconfig.vidHeight,
-        0.0f, 0.0f, 0.0f, 1.0f, cgs_media_whiteShader);
+        (float)cgs.glconfig.vidWidth, (float)cgs.glconfig.vidHeight,
+        0.0f, 0.0f, 0.0f, 1.0f, cgs.media.whiteShader);
     trap_R_SetColor(NULL);
 }
 
@@ -599,7 +599,7 @@ void cgame_compat_expand_native_server_hud_shader(
 void cgame_compat_draw_optical_letterbox(float alpha)
 {
     const float sideWidth =
-        cgame_compat_virtual_side_width() * cgs_screenYScale;
+        cgame_compat_virtual_side_width() * cgs.screenYScale;
     vec4_t black = { 0.0f, 0.0f, 0.0f, alpha };
     vec4_t white = { 1.0f, 1.0f, 1.0f, alpha };
 
@@ -608,12 +608,12 @@ void cgame_compat_draw_optical_letterbox(float alpha)
 
     trap_R_SetColor(black);
     cgame_compat_draw_physical_stretch_pic(
-        0.0f, 0.0f, sideWidth, (float)cgs_glconfig.vidHeight,
-        0.0f, 0.0f, 0.0f, 0.0f, cgs_media_whiteShader);
+        0.0f, 0.0f, sideWidth, (float)cgs.glconfig.vidHeight,
+        0.0f, 0.0f, 0.0f, 0.0f, cgs.media.whiteShader);
     cgame_compat_draw_physical_stretch_pic(
-        (float)cgs_glconfig.vidWidth - sideWidth, 0.0f,
-        sideWidth, (float)cgs_glconfig.vidHeight,
-        0.0f, 0.0f, 0.0f, 0.0f, cgs_media_whiteShader);
+        (float)cgs.glconfig.vidWidth - sideWidth, 0.0f,
+        sideWidth, (float)cgs.glconfig.vidHeight,
+        0.0f, 0.0f, 0.0f, 0.0f, cgs.media.whiteShader);
     trap_R_SetColor(white);
 }
 
@@ -627,12 +627,12 @@ void cgame_compat_draw_optical_letterbox(float alpha)
 long double cgame_compat_optical_canvas_right(long double stockViewRight)
 {
     const float sideWidth =
-        cgame_compat_virtual_side_width() * cgs_screenYScale;
+        cgame_compat_virtual_side_width() * cgs.screenYScale;
 
     if (sideWidth <= 0.0f)
         return stockViewRight;
 
-    return (long double)cgs_glconfig.vidWidth - (long double)sideWidth;
+    return (long double)cgs.glconfig.vidWidth - (long double)sideWidth;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: clip one stock optical-overlay primitive to the
@@ -644,9 +644,9 @@ void cgame_compat_draw_letterboxed_optical_pic(
     float s1, float t1, float s2, float t2, int32_t shaderHandle)
 {
     const float sideWidth =
-        cgame_compat_virtual_side_width() * cgs_screenYScale;
+        cgame_compat_virtual_side_width() * cgs.screenYScale;
     const float safeLeft = sideWidth;
-    const float safeRight = (float)cgs_glconfig.vidWidth - sideWidth;
+    const float safeRight = (float)cgs.glconfig.vidWidth - sideWidth;
     const float originalLeft = x;
     const float originalRight = x + width;
     const float originalS1 = s1;

@@ -69,8 +69,8 @@ CGAME_EXPORT intptr_t CGAME_ABI_CDECL vmMain(
     case CGVM_MOUSE_EVENT: {
         /* 0x3002b001..0x3002b015: both source words are loaded before either
          * destination write; the high word is loaded/stored first. */
-        int32_t cursorY = cgs_cursorY;
-        int32_t cursorX = cgs_cursorX;
+        int32_t cursorY = cgs.cursorY;
+        int32_t cursorX = cgs.cursorX;
         g_uiDCInstance.cursory = cursorY;
         g_uiDCInstance.cursorx = cursorX;
         break;
@@ -86,7 +86,7 @@ CGAME_EXPORT intptr_t CGAME_ABI_CDECL vmMain(
         if ((uint32_t)modelIndex >= (uint32_t)CS_MODELS_COUNT) {
             return 0;
         }
-        return (intptr_t)cg_gameModels[modelIndex];
+        return (intptr_t)cgs.gameModels[modelIndex];
     }
 
     case CGVM_DOBJ_CALC_POSE:

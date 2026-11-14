@@ -75,7 +75,7 @@ float CG_DrawSnapshot(float y)
     const char *s;
     int w;
 
-    int32_t commandSequence = cgs_serverCommandSequence;
+    int32_t commandSequence = cgs.serverCommandSequence;
     int32_t snapshotNumber = cg.latestSnapshotNum;
     snapshot_t *snapshot = cg.snap;
     int32_t serverTime = snapshot->serverTime;

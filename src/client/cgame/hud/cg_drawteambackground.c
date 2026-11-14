@@ -80,13 +80,13 @@ void CG_DrawTeamBackground(int32_t team, float x, float y, float width, float he
     /* Preserve the retail evaluation order: height, width, y, then x. Each
      * x87 product is rounded once by its FSTP float argument slot. */
     float scaledHeight = (float)(
-        (long double)cgs_screenYScale * (long double)height);
+        (long double)cgs.screenYScale * (long double)height);
     float scaledWidth = (float)(
-        (long double)cgs_screenXScale * (long double)width);
+        (long double)cgs.screenXScale * (long double)width);
     float scaledY = (float)(
-        (long double)cgs_screenYScale * (long double)y);
+        (long double)cgs.screenYScale * (long double)y);
     float scaledX = (float)(
-        (long double)cgs_screenXScale * (long double)x);
+        (long double)cgs.screenXScale * (long double)x);
 
     trap_R_DrawStretchPic(CG_FloatBits(scaledX),
                           CG_FloatBits(scaledY),
@@ -96,7 +96,7 @@ void CG_DrawTeamBackground(int32_t team, float x, float y, float width, float he
                           CG_FloatBits(0.0f),
                           CG_FloatBits(1.0f),
                           CG_FloatBits(1.0f),
-                          cgs_media_hudColorBar);
+                          cgs.media.hudColorBar);
 
     trap_R_SetColor((const float *)0);
 }

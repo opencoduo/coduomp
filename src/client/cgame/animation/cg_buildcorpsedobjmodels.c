@@ -17,7 +17,7 @@
 //
 // ABI (proven from the caller CG_AddPlayerCorpseEntity, 0x300346c0 / 0x30034830):
 // register-argument client ABI.
-//   EBX = info        -- &cg_corpseInfo[modelPartIndex-0x40]
+//   EBX = info        -- &cgs.corpseInfo[modelPartIndex-0x40]
 //                        (the 0x4d0 clientInfo_t table entry)
 //   EDX = dobjHandle  -- the DObj handle from CG_DOBJ_GET_HANDLE (trap 0xa5)
 //   arg0 (stack) = renderEntity  -- cent->corpseModelInfo (cent+0xf4)

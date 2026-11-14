@@ -25,44 +25,44 @@
 //
 // Instruction evidence (every behavior-affecting statement):
 //
-//   3002ddf0  MOV EAX,[0x30440a40]              ; EAX = cg_gameState.stringOffsets[CS_VOTE_TIME]
-//   3002ddf5  LEA ECX,[EAX + 0x30442a00]        ; ECX = &cg_gameState.stringData[off]
+//   3002ddf0  MOV EAX,[0x30440a40]              ; EAX = cgs.gameState.stringOffsets[CS_VOTE_TIME]
+//   3002ddf5  LEA ECX,[EAX + 0x30442a00]        ; ECX = &cgs.gameState.stringData[off]
 //   3002ddfb  PUSH ECX
 //   3002ddfc  CALL 0x3005b6ce                   ; EAX = Q_atoi(configString)
 //   3002de01  ADD ESP,4                         ; caller-clean 1 arg
 //   3002de04  TEST EAX,EAX
-//   3002de06  MOV [0x30447ca0],EAX              ; cg_voteTime = parsed time
+//   3002de06  MOV [0x30447ca0],EAX              ; cgs.voteTime = parsed time
 //   3002de0b  JZ 0x3002de26                     ; if 0, skip the milliseconds add
 //   3002de0d  PUSH 6                            ; trap id 6 (engine milliseconds)
 //   3002de0f  CALL [0x30085e9c]                 ; EAX = cgame_syscall(6)
-//   3002de15  MOV ECX,[0x30447ca0]              ; ECX = cg_voteTime
+//   3002de15  MOV ECX,[0x30447ca0]              ; ECX = cgs.voteTime
 //   3002de1b  ADD ESP,4                         ; caller-clean the id
 //   3002de1e  ADD ECX,EAX                       ; voteTime += milliseconds
 //   3002de20  MOV [0x30447ca0],ECX              ; store absolute end time
-//   3002de26  MOV EDX,[0x30440a48]              ; EDX = cg_gameState.stringOffsets[CS_VOTE_YES]
-//   3002de2c  LEA EAX,[EDX + 0x30442a00]        ; EAX = &cg_gameState.stringData[off]
+//   3002de26  MOV EDX,[0x30440a48]              ; EDX = cgs.gameState.stringOffsets[CS_VOTE_YES]
+//   3002de2c  LEA EAX,[EDX + 0x30442a00]        ; EAX = &cgs.gameState.stringData[off]
 //   3002de32  PUSH EAX                          ; (arg not cleaned until the ADD ESP,0x20 below)
 //   3002de33  CALL 0x3005b6ce                   ; EAX = Q_atoi(voteYes cs)
-//   3002de38  MOV ECX,[0x30440a4c]              ; ECX = cg_gameState.stringOffsets[CS_VOTE_NO]
-//   3002de3e  LEA EDX,[ECX + 0x30442a00]        ; EDX = &cg_gameState.stringData[off]
+//   3002de38  MOV ECX,[0x30440a4c]              ; ECX = cgs.gameState.stringOffsets[CS_VOTE_NO]
+//   3002de3e  LEA EDX,[ECX + 0x30442a00]        ; EDX = &cgs.gameState.stringData[off]
 //   3002de44  PUSH EDX                          ; (arg not cleaned until the ADD ESP,0x20 below)
-//   3002de45  MOV [0x30447ca4],EAX              ; cg_voteYes = parsed tally
+//   3002de45  MOV [0x30447ca4],EAX              ; cgs.voteYes = parsed tally
 //   3002de4a  CALL 0x3005b6ce                   ; EAX = Q_atoi(voteNo cs)
-//   3002de4f  MOV [0x30447ca8],EAX              ; cg_voteNo = parsed tally
-//   3002de54  MOV EAX,[0x30440a44]              ; EAX = cg_gameState.stringOffsets[CS_VOTE_STRING]
-//   3002de59  LEA EAX,[EAX + 0x30442a00]        ; EAX = &cg_gameState.stringData[off]
+//   3002de4f  MOV [0x30447ca8],EAX              ; cgs.voteNo = parsed tally
+//   3002de54  MOV EAX,[0x30440a44]              ; EAX = cgs.gameState.stringOffsets[CS_VOTE_STRING]
+//   3002de59  LEA EAX,[EAX + 0x30442a00]        ; EAX = &cgs.gameState.stringData[off]
 //   3002de5f  PUSH 0x300779cc                   ; "vote string" format literal
 //   3002de64  PUSH EAX                          ; source config string
 //   3002de65  PUSH 0x39                         ; trap id 0x39 (CS text format)
 //   3002de67  CALL [0x30085e9c]                 ; EAX = cgame_syscall(0x39, src, fmt)
 //   3002de6d  PUSH 0xff                         ; strncpy count = 255
 //   3002de72  PUSH EAX                          ; strncpy src = formatted text
-//   3002de73  PUSH 0x30447cb0                   ; strncpy dst = cg_voteString
-//   3002de78  CALL 0x3005be00                   ; strncpy(cg_voteString, txt, 255)
+//   3002de73  PUSH 0x30447cb0                   ; strncpy dst = cgs.voteString
+//   3002de78  CALL 0x3005be00                   ; strncpy(cgs.voteString, txt, 255)
 //   3002de7d  ADD ESP,0x20                      ; caller-clean 8 dwords deferred here:
 //                                               ;   2 pending Q_atoi args (0x3002de32,
 //                                               ;   0x3002de44) + 3 trap + 3 strncpy
-//   3002de80  MOV byte [0x30447daf],0           ; cg_voteString[255] = '\0'
+//   3002de80  MOV byte [0x30447daf],0           ; cgs.voteString[255] = '\0'
 //   3002de87  RET
 //
 // Stack note: the two middle Q_atoi calls do NOT clean their pushed arg
@@ -82,30 +82,30 @@
 void CG_BuildVoteHudStrings(void)
 {
     /* Vote-time config string parsed to an integer time via Q_atoi. */
-    cg_voteTime = coduo_crt_atoi(&cg_gameState.stringData[cg_gameState.stringOffsets[CS_VOTE_TIME]]);
-    if (cg_voteTime != 0) {
+    cgs.voteTime = coduo_crt_atoi(&cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_VOTE_TIME]]);
+    if (cgs.voteTime != 0) {
         /* Non-zero vote: convert the relative time into an absolute end time by
          * adding the current engine milliseconds. (Unlike the timeout builder,
          * there is no separate "active" store here — the voteModified flag at
          * 0x30447cac is set by the dispatcher, not by this batch builder.) */
-        cg_voteTime = coduo_int32_from_bits(
-            (uint32_t)cg_voteTime +
+        cgs.voteTime = coduo_int32_from_bits(
+            (uint32_t)cgs.voteTime +
             (uint32_t)cgame_syscall(CG_MILLISECONDS));
     }
 
     /* Vote-yes / vote-no tallies, each Q_atoi of its config string. */
-    cg_voteYes = coduo_crt_atoi(&cg_gameState.stringData[cg_gameState.stringOffsets[CS_VOTE_YES]]);
-    cg_voteNo = coduo_crt_atoi(&cg_gameState.stringData[cg_gameState.stringOffsets[CS_VOTE_NO]]);
+    cgs.voteYes = coduo_crt_atoi(&cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_VOTE_YES]]);
+    cgs.voteNo = coduo_crt_atoi(&cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_VOTE_NO]]);
 
     /* Format the vote-text config string through the engine, copy at most 255
      * bytes, then force the final byte of the 256-byte buffer to NUL. */
     {
         char *formatted = (char *)(intptr_t)cgame_syscall(
             CG_SE_LOCALIZE_MESSAGE,
-            &cg_gameState.stringData[cg_gameState.stringOffsets[CS_VOTE_STRING]],
+            &cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_VOTE_STRING]],
             "vote string");
-        strncpy(cg_voteString, formatted, sizeof(cg_voteString) - 1);
+        strncpy(cgs.voteString, formatted, sizeof(cgs.voteString) - 1);
     }
 
-    cg_voteString[sizeof(cg_voteString) - 1] = '\0';
+    cgs.voteString[sizeof(cgs.voteString) - 1] = '\0';
 }

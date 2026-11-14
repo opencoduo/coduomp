@@ -112,11 +112,11 @@ void CG_EmitTrap54DrawScaled(int modeFlag, int adjustFlag, const vec_t *color,
      * ROUNDED to float (FST 0x3001cea0 / FLD 0x3001ceaa / FMULP ST2). */
     if (!useRawCoordinates) {
         long double invX =
-            (long double)1.0f / (long double)cgs_screenXScale;
+            (long double)1.0f / (long double)cgs.screenXScale;
         x = (float)((long double)x * invX);             /* FSTP 0x3001ce90 */
         {
             long double invY =
-                (long double)1.0f / (long double)cgs_screenYScale;
+                (long double)1.0f / (long double)cgs.screenYScale;
             float invYRounded = (float)invY;               /* FST 0x3001cea0  */
             sum   = sum * invY;                            /* 0x3001cea4      */
             widthRaw = (long double)width * invX;

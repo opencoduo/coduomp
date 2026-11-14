@@ -10,7 +10,7 @@
  * CG_DrawBlueScore (0x300315e0) — HUD-stat display member of the CG_R_TEXT_PAINT
  * emitter family (the 0x30031.. trap-54 / HUD-emit cluster). It is the byte-for-byte
  * structural twin of CG_DrawRedScore (0x30031510); the only differences are
- * (a) it renders the +0xe0 parallel HUD-stat integer cg_hudStat6Value
+ * (a) it renders the +0xe0 parallel HUD-stat integer cgs.scores2
  * instead of the +0xdc sibling, and (b) the compiler wrapped it in an MSVC /GS
  * stack-cookie prologue/epilogue (the 0x30031510 twin has none). It renders the
  * current stat value into a short text buffer, runs the trap-52 keyed helper on it,
@@ -35,7 +35,7 @@
  * source statements, so they are omitted from the body below.
  *
  * Body (matches the 0x30031510 twin exactly except for the stat slot):
- *   1. statValue = cg_hudStat6Value.  If it holds the -9999 "unset"
+ *   1. statValue = cgs.scores2.  If it holds the -9999 "unset"
  *      sentinel (CMP EAX,0xffffd8f1), format "-" into the 16-byte display buffer;
  *      otherwise format "%i" of statValue. The formatter is Com_sprintf with dest in
  *      EDI (a 16-byte stack buffer, LEA EDI,[ESP+0x18]) and size in ESI (MOV ESI,0x10):
@@ -62,7 +62,7 @@
  * HUD-stat display emitter that formats one integer and dispatches cgame trap 54
  * through *0x30085e9c, the direct twin of CG_DrawRedScore (0x30031510). The
  * match was a pure 0xcc size collision with no behavioral basis (the contract forbids
- * size-based naming). The globals.h note on cg_hudStat6Value already documents
+ * size-based naming). The globals.h note on cgs.scores2 already documents
  * "the display code at 0x300315f1 prints '-' when it holds the sentinel and otherwise
  * formats the value" — that is this function. Retail UO ui_mp/menudef.h assigns
  * owner-draw id 27 the exact name CG_BLUE_SCORE, and the same-module macOS binary
@@ -80,7 +80,7 @@ void CG_DrawBlueScore(rectDef_t *obj /* EBX */,
     char displayString[CG_HUDSTAT_STRING_SIZE];
 
     /* MOV EAX,[0x304480e0] ; CMP EAX,0xffffd8f1 (== -9999). Signed sentinel gate. */
-    int32_t statValue = cg_hudStat6Value;
+    int32_t statValue = cgs.scores2;
 
     if (statValue == CG_SCORE_VALUE_UNSET) {
         /* JNZ not taken: PUSH "-" ; Com_sprintf(buf, 16, "-"). */

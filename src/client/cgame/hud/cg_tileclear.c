@@ -28,9 +28,9 @@
 //   cg.refdef.y      = [0x30487a7c]  render rect y      (ESI)
 //   cg.refdef.width  = [0x30487a80]  render rect width  (ECX)
 //   cg.refdef.height = [0x30487a84]  render rect height (EDI)
-//   cgs_glconfig.vidWidth  = [0x30447a88]  backbuffer width  (EBX)
-//   cgs_glconfig.vidHeight = [0x30447a8c]  backbuffer height (EBP)
-//   cgs_media_backTileShader = [0x3044b6f0] tiling shader handle (reloaded into
+//   cgs.glconfig.vidWidth  = [0x30447a88]  backbuffer width  (EBX)
+//   cgs.glconfig.vidHeight = [0x30447a8c]  backbuffer height (EBP)
+//   cgs.media.backTileShader = [0x3044b6f0] tiling shader handle (reloaded into
 //                                           EAX before each CG_TileClearBox call).
 //
 // FULL-SCREEN GUARD (0x3001d16e..0x3001d198): the code draws unless ALL of
@@ -61,8 +61,8 @@ void CG_TileClear(void)
      * exactly this order before testing the captured x. */
     int32_t rx = coduo_int32_from_bits((uint32_t)cg.refdef.x);
     int32_t rw = coduo_int32_from_bits((uint32_t)cg.refdef.width);
-    int32_t vidWidth  = cgs_glconfig.vidWidth;
-    int32_t vidHeight = cgs_glconfig.vidHeight;
+    int32_t vidWidth  = cgs.glconfig.vidWidth;
+    int32_t vidHeight = cgs.glconfig.vidHeight;
     int32_t ry = coduo_int32_from_bits((uint32_t)cg.refdef.y);
     int32_t rh = coduo_int32_from_bits((uint32_t)cg.refdef.height);
 
@@ -76,13 +76,13 @@ void CG_TileClear(void)
     int32_t edgeXR = coduo_int32_from_bits((uint32_t)rx + (uint32_t)rw - 1u);
     int32_t edgeYB = coduo_int32_from_bits((uint32_t)ry + (uint32_t)rh - 1u);
 
-    int32_t hShader = (int32_t)cgs_media_backTileShader;
+    int32_t hShader = (int32_t)cgs.media.backTileShader;
 
     // CALL1 (0x3001d1b5): top strip. args (arg0..arg3) = (0, 0, vidWidth, ry).
     CG_TileClearBox(hShader, 0, 0, vidWidth, ry);
 
     // CALL2 (0x3001d1c6): bottom strip. args = (0, edgeYB, vidWidth, vidHeight-edgeYB).
-    hShader = (int32_t)cgs_media_backTileShader;
+    hShader = (int32_t)cgs.media.backTileShader;
     CG_TileClearBox(hShader, 0, edgeYB, vidWidth,
                     coduo_int32_from_bits((uint32_t)vidHeight -
                                      (uint32_t)edgeYB));
@@ -92,7 +92,7 @@ void CG_TileClear(void)
     //  as (edgeYB - ry) + 1 = rh.)
     {
         int32_t leftX = rx;
-        hShader = (int32_t)cgs_media_backTileShader;
+        hShader = (int32_t)cgs.media.backTileShader;
         int32_t leftHeight = coduo_int32_from_bits(
             (uint32_t)edgeYB - (uint32_t)ry + 1u);
         CG_TileClearBox(hShader, 0, ry, leftX, leftHeight);
@@ -102,7 +102,7 @@ void CG_TileClear(void)
         //  arg2 = vidWidth - edgeXR via SUB EBX,EAX.)
         int32_t rightWidth = coduo_int32_from_bits(
             (uint32_t)vidWidth - (uint32_t)edgeXR);
-        hShader = (int32_t)cgs_media_backTileShader;
+        hShader = (int32_t)cgs.media.backTileShader;
         CG_TileClearBox(hShader, edgeXR, ry, rightWidth, leftHeight);
     }
 }

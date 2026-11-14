@@ -25,16 +25,6 @@ _Static_assert(sizeof(cgame_compat_flame_sprite_load_state) ==
                    sizeof(cg_flameSpriteState),
                "flame sprite load-state template must cover every word");
 
-/* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of CG_Init's original
- * monolithic cgs_t clear. The recovered globals are independent native objects,
- * so crossing from cg_gameState into adjacent linker symbols is not valid C. */
-void cgame_compat_reset_recovered_cgs_state(void)
-{
-#define CG_ZERO_ORIGINAL_OBJECT(object_) memset(&(object_), 0, sizeof(object_))
-#include "recovered_initializers/cg_init_cgs_reset.inc"
-#undef CG_ZERO_ORIGINAL_OBJECT
-}
-
 /* NOT_FROM_ORIGINAL_SOURCE: retail reaches dllEntry through a freshly mapped
  * PE image. Native loaders are allowed to retain a closed image, so dllEntry
  * explicitly restores the behavior-bearing load state that CG_Init does not
@@ -54,7 +44,7 @@ void cgame_compat_reset_module_load_state(void)
         bgAnimParseSectionStrings
     };
 
-    cgame_compat_reset_recovered_cgs_state();
+    memset(&cgs, 0, sizeof(cgs));
     memset(&cg, 0, sizeof(cg));
 
 #define CG_ZERO_LOAD_OBJECT(object_) memset(&(object_), 0, sizeof(object_))
@@ -1620,7 +1610,7 @@ int32_t bg_ammoClipSizes[MAX_AMMO_TYPES];
 int32_t cg_statsFrameTimes[32] = {0};
 /* Source: uo_cgame_mp_x86.dll 0x300a84b8 (.data); refs=2 width=4; first=0x3001a800.
  * Resolved: last engine-milliseconds tick at which CG_ScreenFade (0x3001a7c0)
- * advanced the cg_fovFade screen-fade animator. Read at 0x3001a800, written at
+ * advanced the cgs.scrFade screen-fade animator. Read at 0x3001a800, written at
  * 0x3001a887; deltaMs = trap_Milliseconds() - cg_screenFadeLastMs gates the fade
  * step. The mechanical owner=vectosignedangles was a rejected size-guess mislabel.
  * Example: 3001a800   8b 15 b8 84 0a 30            MOV EDX,dword ptr [0x300a84b8] | 3001a887   89 0d b8 84 0a 30            MOV dword ptr [0x300a84b8],ECX
@@ -2422,7 +2412,7 @@ cgWeaponInfo_t cg_weaponInfos[MAX_WEAPONS];
  */
 
 /* 0x30422054..0x3042205b are g_uiDCInstance.cursorx/cursory. CGVM_MOUSE_EVENT
- * copies cgs_cursorX/cgs_cursorY into those fields. */
+ * copies cgs.cursorX/cgs.cursorY into those fields. */
 /* 0x30422064..0x3044028b are owned by g_uiDCInstance fields; no separate storage. */
 /* Source: uo_cgame_mp_x86.dll 0x3044034c (.data); refs=21 width=4; first=0x30022686; owner=vectordistance2d.
  * Example: 30022686   8b 15 4c 03 44 30            MOV EDX,dword ptr [0x3044034c] | 3002ec6b   a1 4c 03 44 30               MOV EAX,[0x3044034c] | 3002edbb   a1 4c 03 44 30               MOV EAX,[0x3044034c]
@@ -2439,10 +2429,10 @@ cgWeaponInfo_t cg_weaponInfos[MAX_WEAPONS];
  * copies 0xe00 eight-byte pairs plus one final dword: exactly 0x7004 bytes.
  * Windows consumers place stringData at +0x2000, proving the complete layout in
  * gameState_t and the exact +0x7000 dataCount field. */
-gameState_t cg_gameState = { { 0 }, { 0 }, 0 };
+/* 0x30440a00..0x3044f180: the client static state object (globals.h cgs_t). */
+cgs_t cgs;
 /* Source: uo_cgame_mp_x86.dll 0x30447a04 (.data): cgs.glconfig, filled by
  * CG_Init's trap 0x4e. vidWidth/vidHeight are at original +0x84/+0x88. */
-glconfig_t cgs_glconfig = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447aa4 (.data); refs=96; owner=pm_cmdscale label is wrong.
  * cgs.screenXScale (float). Written in the cgs-init path at 0x3002e016 as
  * (float)glconfig.vidWidth * (1.0f/640.0f) [FILD [0x30447a88]; FMUL
@@ -2451,7 +2441,6 @@ glconfig_t cgs_glconfig = { 0 };
  * CG_DrawTurretTagQuad at 0x3001ccf0). Zero-initialized .data (BSS tail).
  * The 1/640 factor is proven from the writer's .rdata constant 0x3007c3f4.
  */
-float cgs_screenXScale = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x30447aa8 (.data); refs=96; owner=pm_cmdscale label is wrong.
  * cgs.screenYScale (float). Written in the cgs-init path at 0x3002e028 as
  * (float)glconfig.vidHeight * (1.0f/480.0f) [FILD [0x30447a8c]; FMUL
@@ -2460,21 +2449,18 @@ float cgs_screenXScale = 0.0f;
  * CG_DrawTurretTagQuad at 0x3001ccf0). Zero-initialized .data (BSS tail).
  * The 1/480 factor is proven from the writer's .rdata constant 0x3007c3f0.
  */
-float cgs_screenYScale = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x30447ab0 (.data); refs=5 width=4; first=0x30018021.
  * cgs.serverCommandSequence — see globals.h. Read as the "cmd:%i" value by
  * CG_DrawSnapshot (0x30018021); written in the cgame init/config path (0x3002dfbb).
  * Example: 30018021   a1 b0 7a 44 30               MOV EAX,[0x30447ab0] | 3002dfbb   a3 b0 7a 44 30               MOV [0x30447ab0],EAX | 3003b476   a1 b0 7a 44 30               MOV EAX,[0x30447ab0]
  */
-int32_t cgs_serverCommandSequence = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447ab4 (.data): cg.processedSnapshotNum — the
  * snapshot number cgame has consumed up through (see globals.h). Signed. Retyped from
  * the mechanical uint32_t (owner=g_runframe was the first-touching function).
  * Example: 3002dfb5   89 15 b4 7a 44 30            MOV dword ptr [0x30447ab4],EDX | 3003d220   a1 b4 7a 44 30               MOV EAX,[0x30447ab4] | 3003d247   a1 b4 7a 44 30               MOV EAX,[0x30447ab4]
  */
-int32_t cg_processedSnapshotNum = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447ab8 (.data); refs=5 width=4; first=0x30018bd0.
- * cgs_localServer — the cgame "config values already registered"
+ * cgs.localServer — the cgame "config values already registered"
  * once-guard. Set nonzero in the cgame config/init path (0x3002b20d, from a trap
  * return value used as a sentinel handle), then read as `if (flag != 0) return;`
  * by every config-value setter to make the registration idempotent:
@@ -2483,7 +2469,6 @@ int32_t cg_processedSnapshotNum = 0;
  * owner=cmd_veh_fireturret label is a wrong first-touch guess and is rejected.
  * Example: 30018bd0   a1 b8 7a 44 30               MOV EAX,[0x30447ab8] | 3002b20d   a3 b8 7a 44 30               MOV [0x30447ab8],EAX | 300383c7   a1 b8 7a 44 30               MOV EAX,[0x30447ab8]
  */
-int32_t cgs_localServer = 0;
 /* cgs serverinfo mirror cluster (see globals.h for full evidence). Filled by
  * CG_ParseServerinfo (0x30038380) from config string 0 via Info_ValueForKey,
  * then read by many cgame consumers. Contiguous: gametype[32], hostname[256],
@@ -2492,164 +2477,129 @@ int32_t cgs_localServer = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447abc (.data). cgs.gametype (g_gametype
  * value, Q_strncpyz size 0x20). Written by CG_ParseServerinfo 0x300383bd; read
  * by 0x3002d5ef/0x30031c40/0x30036361. */
-char cgs_gametype[32] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447adc (.data). cgs.hostname (sv_hostname
  * value, Q_strncpyz size 0x100). Written by CG_ParseServerinfo 0x300383a1; read
  * by 0x30036757/0x300367cd/0x3003682e. */
-char cgs_hostname[256] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447bdc (.data). cgs.maxclients
  * (atoi(sv_maxclients)). Written by CG_ParseServerinfo 0x300383fd; read as int
  * by 0x30026344 (CMP) and 0x300327f1 (MOV EBP). */
-int32_t cgs_maxclients = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447be0 (.data). cgs.mapname ("maps/mp/%s.bsp"
  * from serverinfo mapname, Com_sprintf size 0x40). Written by CG_ParseServerinfo
  * 0x30038412; read by 0x3002e0f7..0x3002e1f8 and 0x30036420. */
-char cgs_mapname[MAX_QPATH] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447c20..0x30447ca0 (.data).
  * cgs red/blue team-name buffers.  They occupy the two 64-byte fields between
  * mapname and the vote state; this build never directly references either field. */
-char cgs_teamNames[2][64] = { { 0 } };
 /* cgame vote HUD display cluster (see globals.h for full evidence). Rebuilt in
  * batch by CG_BuildVoteHudStrings (0x3002ddf0), per-field by the config-string
  * dispatcher (0x30038e70 cases 0x10/0x11/0x12/0x13), drawn by 0x3001b7d0. */
 /* Source: uo_cgame_mp_x86.dll 0x30447ca0 (.data); refs=10 width=4; first=0x3001b814. */
-int32_t cg_voteTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447ca4 (.data); refs=5; first=0x3001bae1.
  * CG_PlayFxOnTag's indexed instruction uses this numerical displacement only
- * because MSVC folded the effect-id ASCII bias into the cg_effectDefs address;
+ * because MSVC folded the effect-id ASCII bias into the cgs.effectDefs address;
  * it does not access the vote object. */
-int32_t cg_voteYes = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447ca8 (.data); refs=4; first=0x3001badb. */
-int32_t cg_voteNo = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447cac (.data); refs=5 width=4; first=0x3001ba0e.
  * cgs.voteModified flag (set by dispatcher 0x30039003, tested/cleared by drawer). */
-qboolean cg_voteModified = qfalse;
 /* Source: uo_cgame_mp_x86.dll 0x30447cb0..0x30447daf (.data); refs=5;
  * cgs.voteString[256]. The two byte stores at +255 explicitly terminate the
  * preceding strncpy(...,255); there is no consumer proving a separate flag. */
-char cg_voteString[256] = { 0 };
 /* The standard two-team vote block: four parallel two-int arrays followed by
  * two 256-byte vote strings.  No instruction in this build references the block,
- * but its field sizes exactly fill the interval before cg_timeoutEndTime. */
+ * but its field sizes exactly fill the interval before cgs.timeoutEndTime. */
 /* Source: uo_cgame_mp_x86.dll 0x30447db0..0x30447db8 (.data). */
-int32_t cg_teamVoteTime[2] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447db8..0x30447dc0 (.data). */
-int32_t cg_teamVoteYes[2] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447dc0..0x30447dc8 (.data). */
-int32_t cg_teamVoteNo[2] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447dc8..0x30447dd0 (.data). */
-qboolean cg_teamVoteModified[2] = { qfalse };
 /* Source: uo_cgame_mp_x86.dll 0x30447dd0..0x30447fd0 (.data). */
-char cg_teamVoteString[2][256] = { { 0 } };
 /* Source: uo_cgame_mp_x86.dll 0x30447fd0 (.data); refs=11 width=4; first=0x3001bbd3; owner=pm_reloadclip.
  * Example: 3001bbd3   a1 d0 7f 44 30               MOV EAX,[0x30447fd0] | 3001bc08   8b 0d d0 7f 44 30            MOV ECX,dword ptr [0x30447fd0] | 3002dea3   c7 05 d0 7f 44 30 00 00 00 00 MOV dword ptr [0x30447fd0],0x0
  */
-int32_t cg_timeoutEndTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447fd4 (.data); refs=4 width=4; first=0x3001bc28; owner=pm_reloadclip.
  * Example: 3001bc28   8b 0d d4 7f 44 30            MOV ECX,dword ptr [0x30447fd4] | 3002de97   c7 05 d4 7f 44 30 00 00 00 00 MOV dword ptr [0x30447fd4],0x0 | 3002decd   c7 05 d4 7f 44 30 01 00 00 00 MOV dword ptr [0x30447fd4],0x1
  */
-int32_t cg_timeoutActive = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447fd8 (.data); refs=3 width=imm; first=0x3001bc31; owner=pm_reloadclip.
  * Example: 3001bc31   68 d8 7f 44 30               PUSH 0x30447fd8 | 3002df0d   68 d8 7f 44 30               PUSH 0x30447fd8 | 30039137   68 d8 7f 44 30               PUSH 0x30447fd8
  * The stores at 0x3002df1a/0x30039144 write the final terminator byte of the
  * same 256-byte string, not a separately consumed dirty flag. */
-char cg_timeoutString[256] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x304480d8 (.data): first signed HUD-stat sibling,
  * initialized from config string 14 by Q_atoi. */
-int32_t cg_hudStat14Value = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304480dc (.data); refs=4 width=4; first=0x30031521.
- * cg_hudStat5Value — middle sibling of the parallel HUD-stat int array
+ * cgs.scores1 — middle sibling of the parallel HUD-stat int array
  * d8/dc/e0 (see globals.h). Signed, compared against the sentinel -9999 by its
  * display emitter CG_DrawRedScore (0x30031521); mechanical
  * owner=menuparse_itemdef label rejected. Zero-initialized .data.
  * Example: 30031521   a1 dc 80 44 30               MOV EAX,[0x304480dc] | 30031b60   a1 dc 80 44 30               MOV EAX,[0x304480dc] | 3003885d   a3 dc 80 44 30               MOV [0x304480dc],EAX
  */
-int32_t cg_hudStat5Value = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304480e0 (.data); refs=4 width=4; first=0x300315f1.
- * cg_hudStat6Value — atoi-parsed system-info HUD integer stat (see globals.h).
+ * cgs.scores2 — atoi-parsed system-info HUD integer stat (see globals.h).
  * Zero-initialized; the mechanical owner=script_orbit label is rejected (HUD state).
  * Example: 300315f1 MOV EAX,[0x304480e0] | 30031bd0 MOV EAX,[0x304480e0] | 3003887b MOV [0x304480e0],EAX
  */
-int32_t cg_hudStat6Value = 0;
 /* Source: uo_cgame_mp_x86.dll 0x304480e4..0x304484e3 (.data).
- * cg_gameModels[256] — registered handles for the CS_MODELS block. The graphics
+ * cgs.gameModels[256] — registered handles for the CS_MODELS block. The graphics
  * registration loop at 0x3002c6fd starts with config string 0x196 and destination
  * 0x304480e8, proving that it fills elements 1..255 and leaves element 0 empty.
  * vmMain command 10 and four entity render paths index the same base directly as
  * [index*4 + 0x304480e4]. The previous split scalar at 0x304480e4 plus an array at
  * 0x304480e8 was therefore one element late. */
-qhandle_t cg_gameModels[CS_MODELS_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x304484e4..0x30448624 (.data); the cgame effect-handle
- * table cg_effectDefs[80] (see globals.h). Consumers index cg_effectDefs[id] for
+ * table cgs.effectDefs[80] (see globals.h). Consumers index cgs.effectDefs[id] for
  * 0 < id < 80 (0x300164f1, 0x30021b17, 0x3002272f); the registration loop at
- * 0x3002c760 writes engine effect handles into it starting at &cg_effectDefs[1]
+ * 0x3002c760 writes engine effect handles into it starting at &cgs.effectDefs[1]
  * (0x304484e8). Zero-initialized storage; filled at runtime by the registration
  * pass. Supersedes the mechanical g_data_bg_indexforstring_304484e4 and the
  * spuriously split element-[1] symbol g_data_pm_updateviewangles_304484e8.
  */
-uint32_t cg_effectDefs[80];
 /* Source: uo_cgame_mp_x86.dll 0x30448624 (.data); 124-byte shellshock_t.
- * cg_consoleShellShock: the manual "cg_shellshock" console-command parameter
+ * cgs.shellshocks[0]: the manual "cg_shellshock" console-command parameter
  * block (declared in client_recovered.h). Consumers: CG_ShellShock_f
  * (0x3001755f fills it via CG_SetShellShockParams), scene reader 0x30042160
  * (0x30042508 uses it as the active manual shellshock), and 0x3003921c.
  * The mechanical owner=concatargs label was a wrong size-guess name for
  * 0x300174b0. Zero-initialized .data. */
-shellshock_t cg_consoleShellShock;
 /* Source: uo_cgame_mp_x86.dll 0x304486a0 (.data); refs=1 width=imm; first=0x3002c7af; owner=pm_updateviewangles.
  * Example: 3002c7af   be a0 86 44 30               MOV ESI,0x304486a0
  */
-shellshock_t cg_shellShocks[15];
 /* Source: uo_cgame_mp_x86.dll 0x30448de4 (.data); refs=2 width=4; first=0x3002c641; owner=pm_updateviewangles.
  * Example: 3002c641   a3 e4 8d 44 30               MOV [0x30448de4],EAX | 3002c6b0   a1 e4 8d 44 30               MOV EAX,[0x30448de4]
  */
-int32_t cg_numInlineModels = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30448de8..0x304495e7 (.data); base of an
  * MAX_SUBMODELS-row int32 array indexed
  * by currentState.modelindex. Renamed from the mechanical g_data_matrixmultiply43_30448de8
  * (owner label = the rejected size-guess name of CG_Mover at 0x3001f120; the export
- * captured only the first dword). This is cg_inlineModelHandles[], the registered
+ * captured only the first dword). This is cgs.inlineDrawModel[], the registered
  * handle table for "*N" inline/brush models (see globals.h). Writers/readers:
  * 3001f22e MOV ECX,[EAX*4+0x30448de8] (CG_Mover read) | 3001f388 MOV EAX,[EDX*4+0x30448de8]
  * | 3002c67b MOV [EBP*4+0x30448de8],EAX (registration store).
  * The next proven datum begins at 0x304495e8, so the complete 0x800-byte
  * interval is one 512-entry table. */
-int32_t cg_inlineModelHandles[MAX_SUBMODELS];
 /* Source: uo_cgame_mp_x86.dll 0x304495e8..0x3044ade8 (.data).
  * cgs.inlineModelMidpoints[MAX_SUBMODELS]. CG_RegisterGraphics starts its loop at
  * model 1, hence the immediate 0x304495f4 == &array[1], advances by 0xc per model,
- * and is bounded by cg_numInlineModels.  CG_EntityEffects indexes the same base
+ * and is bounded by cgs.numInlineModels.  CG_EntityEffects indexes the same base
  * at 0x304495e8 with modelindex * 0xc.  The exact interval is 512 vec3_t entries. */
-vec3_t cg_inlineModelMidpoints[MAX_SUBMODELS];
 /* Source: uo_cgame_mp_x86.dll 0x3044ade8 (.data); refs=3; owner=reached_binarymover.
  * cgs.teamChatMsgs — team-chat scroll ring, TEAMCHAT_HEIGHT lines of
  * TEAMCHAT_LINE_BYTES (271 = stride 0x10f). Written by CG_AddToTeamChat
  * (0x30039390); read by the team-info drawer (0x30018770). Mechanically captured
  * as one uint32_t; the 0x10f stride over an 8-entry mod ring proves the array. */
-char teamChatMsgs[TEAMCHAT_HEIGHT][TEAMCHAT_LINE_BYTES] = { { 0 } };
 /* Source: uo_cgame_mp_x86.dll 0x3044b660 (.data); refs=4 width=4; owner=reached_binarymover.
  * cgs.teamChatMsgTimes[TEAMCHAT_HEIGHT] — cg.time stamp per ring line, indexed
- * [teamChatPos % chatHeight]. */
-int teamChatMsgTimes[TEAMCHAT_HEIGHT] = { 0 };
+ * [cgs.teamChatPos % chatHeight]. */
 /* Source: uo_cgame_mp_x86.dll 0x3044b680 (.data); refs=11 width=4; owner=reached_binarymover.
  * cgs.teamChatPos — monotonic ring write cursor (indexed modulo chatHeight). */
-int teamChatPos = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b684 (.data); refs=6 width=4; owner=reached_binarymover.
- * cgs.teamChatLastPos — oldest visible ring line; trails teamChatPos by <=chatHeight. */
-int teamChatLastPos = 0;
+ * cgs.teamChatLastPos — oldest visible ring line; trails cgs.teamChatPos by <=chatHeight. */
 /* The cgs cursor coordinates are copied into g_uiDCInstance.cursorx/cursory by
  * vmMain's CGVM_MOUSE_EVENT command. Their placement immediately after the
  * cgs.teamChat* fields identifies them as the trailing cursor state in cgs. */
 /* Source: uo_cgame_mp_x86.dll 0x3044b688 (.data). */
-int32_t cgs_cursorX = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b68c (.data). */
-int32_t cgs_cursorY = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b69c..0x3044b6a8 (.data); the FOV-zoom fade
  * animator (see cgFovFade_t in globals.h). The mechanical export split it into
  * four uint32 g_data_vectosignedangles_* scalars (wrong first-touch owner);
  * superseded here as one 16-byte struct. Writers: CG_StartFovFade (0x3001ab50),
  * CG_CalcFov (0x3003ffc0). Reader/evaluator: 0x3001a7c0. Zero-initialized. */
-cgFovFade_t cg_fovFade = { 0.0f, 0.0f, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044b6ac (.data); refs=10 width=4; first=0x30018cfa.
  * (owner=cmd_veh_fireturret label is wrong.)
  * cgs.media hudSoftLine shader handle. Registered at 0x3002dfcc as
@@ -2659,92 +2609,76 @@ cgFovFade_t cg_fovFade = { 0.0f, 0.0f, 0, 0 };
  * family: CG_FillRect (0x3001c4e0) and the line drawers at 0x3001c8e0/0x3001c980/
  * 0x3001ca20. Zero-initialized .data (BSS tail); the engine fills it at asset
  * registration. */
-qhandle_t cgs_media_whiteShader = 0;       /* 0x3044b6ac */
-qhandle_t cgs_media_hudSoftLineShader = 0; /* 0x3044b6b0 */
-qhandle_t cgs_media_hudSoftLineHShader = 0;/* 0x3044b6b4 */
+/* 0x3044b6ac */
+/* 0x3044b6b0 */
+/* 0x3044b6b4 */
 /* Source: uo_cgame_mp_x86.dll 0x3044b6b8 (.data); refs=1 width=4; first=0x3002c4d6; owner=pm_updateviewangles.
  * Example: 3002c4d6   a3 b8 b6 44 30               MOV [0x3044b6b8],EAX
  */
-qhandle_t cgs_media_hudAxisIcon = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6bc (.data); refs=1 width=4; first=0x3002c4c5; owner=pm_updateviewangles.
  * Example: 3002c4c5   a3 bc b6 44 30               MOV [0x3044b6bc],EAX
  */
-qhandle_t cgs_media_hudAlliedIcon = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6c0 (.data); refs=3 width=4; first=0x30017e23.
  * cgs.media hudColorBar shader handle (owner=cg_initvote label is wrong). Registered
  * at 0x3002c4b4 with the qhandle_t returned by the "hudColorBar" shader lookup
  * (string 0x30078048). Consumed by CG_DrawTeamBackground (0x30017e23) and 0x3001890c.
  * Example: 30017e23 MOV EAX,[0x3044b6c0] | 3001890c MOV ECX,[0x3044b6c0] | 3002c4b4 MOV [0x3044b6c0],EAX
  */
-qhandle_t cgs_media_hudColorBar = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6c8 (.data); refs=2 width=4; first=0x3002c567.
- * cg_railCoreShader — qhandle_t of the "railCore" shader. Written once by the
+ * cgs.media.railCoreShader — qhandle_t of the "railCore" shader. Written once by the
  * cgame media registration (0x3002c567: EAX = trap_R_RegisterShader("railCore", 2)),
  * read by the rail-trail segment builder (0x30043107 -> refEntity.spriteShaderHandle).
  * Name resolved from the registered shader string; supersedes owner=pm_updateviewangles.
  */
-qhandle_t cg_railCoreShader = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6cc (.data); refs=3 width=4; first=0x3002c54d; owner=pm_updateviewangles.
  * Example: 3002c54d   a3 cc b6 44 30               MOV [0x3044b6cc],EAX | 3003a02f   8b 0d cc b6 44 30            MOV ECX,dword ptr [0x3044b6cc] | 3003a0bf   a1 cc b6 44 30               MOV EAX,[0x3044b6cc]
  */
-/* cgs_voiceChatIcon: "headiconVoiceChat" shader handle (owner label above is the
+/* cgs.media.voiceChatIcon: "headiconVoiceChat" shader handle (owner label above is the
  * mechanical first-touch and is incorrect). See globals.h. */
 /* Source: uo_cgame_mp_x86.dll 0x3044b6cc. */
-uint32_t cgs_voiceChatIcon = (uint32_t)0x00000000u;
-/* cgs_talkBalloonIcon: "headiconTalkBalloon" shader handle (owner label above is
+/* cgs.media.balloonShader: "headiconTalkBalloon" shader handle (owner label above is
  * the mechanical first-touch and is incorrect). See globals.h.
  * Source: uo_cgame_mp_x86.dll 0x3044b6d0 (.data); refs=2 width=4; first=0x3002c55d.
  * Example: 3002c55d   a3 d0 b6 44 30               MOV [0x3044b6d0],EAX | 30032c0b   a1 d0 b6 44 30               MOV EAX,[0x3044b6d0]
  */
-qhandle_t cgs_talkBalloonIcon = (qhandle_t)0;
-/* cgs_disconnectedIcon: "headiconDisconnected" shader handle (owner label above is
+/* cgs.media.connectionShader: "headiconDisconnected" shader handle (owner label above is
  * the mechanical first-touch and is incorrect). See globals.h.
  * Source: uo_cgame_mp_x86.dll 0x3044b6d4 (.data); refs=2 width=4; first=0x3002bb25.
  * Example: 3002bb25   a3 d4 b6 44 30               MOV [0x3044b6d4],EAX | 30032ba8   a1 d4 b6 44 30               MOV EAX,[0x3044b6d4]
  */
-qhandle_t cgs_disconnectedIcon = (qhandle_t)0;
-/* cgs_youInKillCamIcon: "headiconYouInKillCam" shader handle (owner label above is
+/* cgs.media.youInKillCamIcon: "headiconYouInKillCam" shader handle (owner label above is
  * the mechanical first-touch and is incorrect). See globals.h.
  * Source: uo_cgame_mp_x86.dll 0x3044b6d8 (.data); refs=2 width=4; first=0x3002bb36.
  * Example: 3002bb36   a3 d8 b6 44 30               MOV [0x3044b6d8],EAX | 30032b7f   8b 15 d8 b6 44 30            MOV EDX,dword ptr [0x3044b6d8]
  */
-qhandle_t cgs_youInKillCamIcon = (qhandle_t)0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6dc (.data); refs=1 width=4; first=0x3002bbee; owner=pm_updateviewangles.
  * Example: 3002bbee   a3 dc b6 44 30               MOV [0x3044b6dc],EAX
  */
-qhandle_t cgs_media_selectShader = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6e4 (.data); refs=3 width=4; first=0x3002bbdd; owner=pm_updateviewangles.
  * Example: 3002bbdd   a3 e4 b6 44 30               MOV [0x3044b6e4],EAX | 30048706   8b 0d e4 b6 44 30            MOV ECX,dword ptr [0x3044b6e4] | 30048870   a1 e4 b6 44 30               MOV EAX,[0x3044b6e4]
  */
-qhandle_t cgs_media_tracerShader = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6e8 (.data); refs=1 width=4; first=0x3002bb03; owner=pm_updateviewangles.
  * Example: 3002bb03   a3 e8 b6 44 30               MOV [0x3044b6e8],EAX
  */
-qhandle_t cgs_media_lagometerShader = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6ec (.data); refs=2 width=4; first=0x30018be9; owner=cmd_veh_fireturret.
  * Example: 30018be9   a1 ec b6 44 30               MOV EAX,[0x3044b6ec] | 3002bb14   a3 ec b6 44 30               MOV [0x3044b6ec],EAX
  */
-qhandle_t cgs_lagometerShader = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6f0 (.data); refs=5 width=4; first=0x3001d1a8; owner=initweaponinfo.
  * Example: 3001d1a8   a1 f0 b6 44 30               MOV EAX,[0x3044b6f0] | 3001d1ba   a1 f0 b6 44 30               MOV EAX,[0x3044b6f0] | 3001d1cf   a1 f0 b6 44 30               MOV EAX,[0x3044b6f0]
  */
-qhandle_t cgs_media_backTileShader = 0; /* 0x3044b6f0; resolved from CG_TileClear (0x3001d160): registered via CG_RegisterShader (0x3003db80) at 0x3002c481, read 5x by CG_TileClear as the background-tile shader handle. */
+/* 0x3044b6f0; resolved from CG_TileClear (0x3001d160): registered via CG_RegisterShader (0x3003db80) at 0x3002c481, read 5x by CG_TileClear as the background-tile shader handle. */
 /* Source: uo_cgame_mp_x86.dll 0x3044b6f4 (.data); refs=2 width=4; first=0x3002c492; owner=pm_updateviewangles.
  * Example: 3002c492   a3 f4 b6 44 30               MOV [0x3044b6f4],EAX | 30046cc9   8b 15 f4 b6 44 30            MOV EDX,dword ptr [0x3044b6f4]
  */
-qhandle_t cgs_media_hudNoWeaponIcon = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6f8..0x3044b720 (.data).
  * CG_DrawCursorhint indexes this same shared cursor-hint range; the eight
  * registered shader stores prove elements 2..9 and elements 0..1 remain zero. */
-qhandle_t cgs_media_usableHintShaders[CURSOR_HINT_BUILTIN_ICON_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044b720 (.data); refs=3 width=4; first=0x3002bc8a; owner=pm_updateviewangles.
  * Example: 3002bc8a   a3 20 b7 44 30               MOV [0x3044b720],EAX | 300446d7   89 04 9d 20 b7 44 30         MOV dword ptr [EBX*0x4 + 0x3044b720],EAX | 300446e6   89 0c 9d 20 b7 44 30         MOV dword ptr [EBX*0x4 + 0x3044b720],ECX
  */
-qhandle_t cg_weaponHudIcons[MAX_WEAPONS] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044b920 (.data); refs=2 width=4; first=0x3004473b; owner=bg_checkpronevalid.
  * Example: 3004473b   89 04 9d 20 b9 44 30         MOV dword ptr [EBX*0x4 + 0x3044b920],EAX | 3004474a   89 14 9d 20 b9 44 30         MOV dword ptr [EBX*0x4 + 0x3044b920],EDX
  */
-qhandle_t cg_weaponAmmoIcons[MAX_WEAPONS] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb24..0x3044bb47 (.data); nine consecutive
  * 4-byte qhandle_t slots. Consolidated from the mechanical
  * g_data_pm_updateviewangles_3044bb{24,28,2c,30,34,38,3c,40,44} (that owner label
@@ -2754,11 +2688,9 @@ qhandle_t cg_weaponAmmoIcons[MAX_WEAPONS] = { 0 };
  *   [4]=hudStanceFlash   [5]=hudFatigueStand [6]=hudFatigueCrouch
  *   [7]=hudFatigueProne  [8]=hudFatigueSprint
  * Read as indexed handles by CG_DrawPlayerStance (0x3002f63b..0x3002f8db). */
-qhandle_t cg_stanceHudShaders[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb48 (.data); refs=1 width=4; first=0x3002bd2b; owner=pm_updateviewangles.
  * Example: 3002bd2b   c7 05 48 bb 44 30 00 00 00 00 MOV dword ptr [0x3044bb48],0x0
  */
-qhandle_t cg_hudObjectiveReserved = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044bb4c..0x3044bb57 (.data); three consecutive
  * 4-byte qhandle_t slots (0x3044bb4c/0x50/0x54). Consolidated from the mechanical
  * g_data_pm_updateviewangles_3044bb4c/50/54 placeholders (owner label was a
@@ -2769,18 +2701,15 @@ qhandle_t cg_hudObjectiveReserved = 0;
  *   3002bd52 MOV [0x3044bb50],EAX  (= RegisterShader("hudObjectiveUp"))
  *   3002bd63 MOV [0x3044bb54],EAX  (= RegisterShader("hudObjectiveDown"))
  */
-qhandle_t cg_objectiveShaders[3] = { 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb58 (.data); refs=2 width=4; first=0x30016b9d; owner=cg_asset_parse.
  * Example: 30016b9d   8b 14 b5 58 bb 44 30         MOV EDX,dword ptr [ESI*0x4 + 0x3044bb58] | 3002bd77   a3 58 bb 44 30               MOV [0x3044bb58],EAX
  */
-qhandle_t cg_compassFriendlyShaders[2] = { 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb5c (.data); refs=2 width=4; first=0x30016b80; owner=cg_asset_parse.
  * Example: 30016b80   8b 15 5c bb 44 30            MOV EDX,dword ptr [0x3044bb5c] | 3002bd88   a3 5c bb 44 30               MOV [0x3044bb5c],EAX
  */
 /* Source: uo_cgame_mp_x86.dll 0x3044bb60 (.data); refs=2 width=4; first=0x30017193; owner=cg_drawcompasstanks.
  * Example: 30017193   8b 0d 60 bb 44 30            MOV ECX,dword ptr [0x3044bb60] | 3002bd92   a3 60 bb 44 30               MOV [0x3044bb60],EAX
  */
-qhandle_t cg_compassTankShaders[3] = { 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb64 (.data); refs=2 width=4; first=0x300171c7; owner=cg_drawcompasstanks.
  * Example: 300171c7   a1 64 bb 44 30               MOV EAX,[0x3044bb64] | 3002bdaa   a3 64 bb 44 30               MOV [0x3044bb64],EAX
  */
@@ -2790,45 +2719,37 @@ qhandle_t cg_compassTankShaders[3] = { 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb6c (.data); refs=2 width=4; first=0x3001aac9; owner=cg_ejectweaponbrass.
  * Example: 3001aac9   8b 0d 6c bb 44 30            MOV ECX,dword ptr [0x3044bb6c] | 3002bdc5   a3 6c bb 44 30               MOV [0x3044bb6c],EAX
  */
-qhandle_t cg_hitDirectionShader = 0; /* 0x3044bb6c; "hudHitDirection" 2D shader handle. See globals.h. */
+/* 0x3044bb6c; "hudHitDirection" 2D shader handle. See globals.h. */
 /* Source: uo_cgame_mp_x86.dll 0x3044bb70 (.data); first=0x30017cfb.
- * cg_numberShaders[11] — HUD bitmap-number shader handles ('0'..'9', then '-');
+ * cgs.media.numberShaders[11] — HUD bitmap-number shader handles ('0'..'9', then '-');
  * registered by the loop at 0x3002bad1 and read by the digit drawer 0x30031300.
  * See globals.h. The mechanical export captured only element 0; superseded as the
  * full qhandle_t[11] array. owner=pm_cmdscale (a first-toucher) rejected.
  * Example: 3002badf   89 86 70 bb 44 30            MOV dword ptr [ESI + 0x3044bb70],EAX | 3003146f   8b 0c b5 70 bb 44 30         MOV ECX,dword ptr [ESI*0x4 + 0x3044bb70]
  */
-qhandle_t cg_numberShaders[11] = {0};
 /* Source: uo_cgame_mp_x86.dll 0x3044bb9c (.data); refs=2 width=4; first=0x3002c5e4; owner=pm_updateviewangles.
  * Example: 3002c5e4   a3 9c bb 44 30               MOV [0x3044bb9c],EAX | 30032d55   8b 15 9c bb 44 30            MOV EDX,dword ptr [0x3044bb9c]
  */
-qhandle_t cgs_media_markShadowShader = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044bba0 (.data); refs=1 width=4; first=0x3002c4a3; owner=pm_updateviewangles.
  * Example: 3002c4a3   a3 a0 bb 44 30               MOV [0x3044bba0],EAX
  */
-qhandle_t cgs_media_flareShader = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044bba4 (.data); refs=2 width=4; first=0x3002c5fd; owner=pm_updateviewangles.
  * Example: 3002c5fd   a3 a4 bb 44 30               MOV [0x3044bba4],EAX | 30032f3e   a1 a4 bb 44 30               MOV EAX,[0x3044bba4]
  */
-qhandle_t cgs_media_wakeMarkShader = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044bba8 (.data); refs=1 width=4; first=0x3002c503; owner=pm_updateviewangles.
  * Example: 3002c503   a3 a8 bb 44 30               MOV [0x3044bba8],EAX
  */
-qhandle_t cgs_media_headiconAlliesFlag = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbac (.data); refs=1 width=4; first=0x3002c4e7; owner=pm_updateviewangles.
  * Example: 3002c4e7   a3 ac bb 44 30               MOV [0x3044bbac],EAX
  */
-qhandle_t cgs_media_headiconAxisFlag = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbb0 (.data); refs=1 width=4; first=0x3002b615; owner=playercmd_finishplayerdamage.
  * Example: 3002b615   a3 b0 bb 44 30               MOV [0x3044bbb0],EAX
  */
-const char *cg_soundPlayerGib = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbb4 (.data); refs=1 width=4; first=0x3002b62a; owner=playercmd_finishplayerdamage.
  * Example: 3002b62a   a3 b4 bb 44 30               MOV [0x3044bbb4],EAX
  */
-const char *cg_soundPlayerGibBounce = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbb8 (.data); refs=3 width=4; first=0x30022eab.
- * cg_soundOutOfAmmo: the registered "player_out_of_ammo" local-sound identifier.
+ * cgs.media.soundOutOfAmmo: the registered "player_out_of_ammo" local-sound identifier.
  * The cgame sound-registration pass (0x3002b560) registers "player_out_of_ammo"
  * (string 0x30078794) via engine syscall 0xc3 and stores the returned handle here:
  * the store MOV [0x3044bbb8],EAX at 0x3002b654 captures the result of the syscall
@@ -2838,280 +2759,215 @@ const char *cg_soundPlayerGibBounce = NULL;
  * function, not the identity) to const char * to match CG_PlaySoundAliasByName.
  * Example: 30034a8a   a1 b8 bb 44 30               MOV EAX,[0x3044bbb8]
  */
-const char *cg_soundOutOfAmmo = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbbc (.data); refs=2 width=4; first=0x30022a4f; owner=cmd_callvote_f.
  * Example: 30022a4f   8b 0d bc bb 44 30            MOV ECX,dword ptr [0x3044bbbc] | 3002b67e   a3 bc bb 44 30               MOV [0x3044bbbc],EAX
  */
-const char *cg_soundLandDamage = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbc0 (.data); refs=1 width=4; first=0x300234bc; owner=cmd_callvote_f.
  * Example: 300234bc   a1 c0 bb 44 30               MOV EAX,[0x3044bbc0]
  */
-const char *cg_soundDeath = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbc4 (.data); refs=1 width=4; first=0x3002318f; owner=cmd_callvote_f.
  * Example: 3002318f   8b 0d c4 bb 44 30            MOV ECX,dword ptr [0x3044bbc4]
  */
-const char *cg_soundPlayerTeleportIn = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbc8 (.data); refs=1 width=4; first=0x300231a9; owner=cmd_callvote_f.
  * Example: 300231a9   a1 c8 bb 44 30               MOV EAX,[0x3044bbc8]
  */
-const char *cg_soundPlayerTeleportOut = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbcc (.data); refs=1 width=4; first=0x300231ce; owner=cmd_callvote_f.
  * Example: 300231ce   8b 15 cc bb 44 30            MOV EDX,dword ptr [0x3044bbcc]
  */
-const char *cg_soundItemRespawn = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbd0 (.data); refs=4 width=4; first=0x3001ba2b; owner=cg_drawtracer.
  * Example: 3001ba2b   a1 d0 bb 44 30               MOV EAX,[0x3044bbd0] | 3002b669   a3 d0 bb 44 30               MOV [0x3044bbd0],EAX | 3003ade6   8b 15 d0 bb 44 30            MOV EDX,dword ptr [0x3044bbd0]
  */
-const char *cgs_media_playerTalkSound = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044bbd4 (.data); refs=2 width=4; first=0x30023257; owner=cmd_callvote_f.
  * Example: 30023257   8b 04 85 d4 bb 44 30         MOV EAX,dword ptr [EAX*0x4 + 0x3044bbd4] | 3002b7a0   bf d4 bb 44 30               MOV EDI,0x3044bbd4
  */
-const char *cg_grenadeBounceSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044bc30 (.data); refs=2 width=4; first=0x30023417; owner=cmd_callvote_f.
  * Example: 30023417   8b 04 bd 30 bc 44 30         MOV EAX,dword ptr [EDI*0x4 + 0x3044bc30] | 3002b7b4   bf 30 bc 44 30               MOV EDI,0x3044bc30
  */
-const char *cg_grenadeExplodeSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044bc8c..0x3044bce8 (.data).
  * One dormant 23-surface handle bank in the contiguous media layout. */
-const char *cg_unusedSurfaceSoundSet0[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044bce8 (.data); refs=1 width=imm; first=0x3002b7c3; owner=playercmd_finishplayerdamage.
  * Example: 3002b7c3   bf e8 bc 44 30               MOV EDI,0x3044bce8
  */
-const char *cg_rocketExplodeSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044bd44..0x3044bda0 (.data).
  * One dormant 23-surface handle bank in the contiguous media layout. */
-const char *cg_unusedSurfaceSoundSet1[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044bda0 (.data); refs=1 width=imm; first=0x3002b7e1; owner=playercmd_finishplayerdamage.
  * Example: 3002b7e1   bf a0 bd 44 30               MOV EDI,0x3044bda0
  */
-const char *cg_artilleryExplodeSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044bdfc (.data); refs=1 width=imm; first=0x3002b7d2; owner=playercmd_finishplayerdamage.
  * Example: 3002b7d2   bf fc bd 44 30               MOV EDI,0x3044bdfc
  */
-const char *cg_mortarExplodeSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044be58 (.data); refs=1 width=imm; first=0x3002b7f0; owner=playercmd_finishplayerdamage.
  * Example: 3002b7f0   bf 58 be 44 30               MOV EDI,0x3044be58
  */
-const char *cg_tankExplodeSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044beb4..0x3044bf10 (.data).
  * A 23-surface handle bank. CG_EntityEvent indexes it through the compiler's
  * base-minus-four form [event*4 + 0x3044bf0c] for event values 0x46..0x5c. */
-const char *cg_eventSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044bf10 (.data); refs=3 width=4; first=0x3002b7ff; owner=playercmd_finishplayerdamage.
  * Example: 3002b7ff   bf 10 bf 44 30               MOV EDI,0x3044bf10 | 30048f11   8b 04 95 10 bf 44 30         MOV EAX,dword ptr [EDX*0x4 + 0x3044bf10] | 3004906b   8b 04 b5 10 bf 44 30         MOV EAX,dword ptr [ESI*0x4 + 0x3044bf10]
  */
-const char *cg_bulletSmallSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044bf6c (.data); refs=3 width=4; first=0x3002b80e; owner=playercmd_finishplayerdamage.
  * Example: 3002b80e   bf 6c bf 44 30               MOV EDI,0x3044bf6c | 30048f04   8b 04 95 6c bf 44 30         MOV EAX,dword ptr [EDX*0x4 + 0x3044bf6c] | 30049074   8b 04 b5 6c bf 44 30         MOV EAX,dword ptr [ESI*0x4 + 0x3044bf6c]
  */
-const char *cg_bulletLargeSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044bfc8 (.data); refs=1 width=imm; first=0x3002b81d; owner=playercmd_finishplayerdamage.
  * Example: 3002b81d   bf c8 bf 44 30               MOV EDI,0x3044bfc8
  */
-const char *cg_stepSprintSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044c024 (.data); refs=1 width=imm; first=0x3002b82c; owner=playercmd_finishplayerdamage.
  * Example: 3002b82c   bf 24 c0 44 30               MOV EDI,0x3044c024
  */
-const char *cg_stepRunSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044c080 (.data); refs=1 width=imm; first=0x3002b83b; owner=playercmd_finishplayerdamage.
  * Example: 3002b83b   bf 80 c0 44 30               MOV EDI,0x3044c080
  */
-const char *cg_stepWalkSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044c0dc (.data); refs=1 width=imm; first=0x3002b84a; owner=playercmd_finishplayerdamage.
  * Example: 3002b84a   bf dc c0 44 30               MOV EDI,0x3044c0dc
  */
-const char *cg_stepProneSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044c138 (.data); refs=1 width=imm; first=0x3002b859; owner=playercmd_finishplayerdamage.
  * Example: 3002b859   bf 38 c1 44 30               MOV EDI,0x3044c138
  */
-const char *cg_landSurfaceSounds[23];
 /* Source: uo_cgame_mp_x86.dll 0x3044c194 (.data); refs=2 width=4; first=0x300232fa; owner=cmd_callvote_f.
  * Example: 300232fa   8b 04 b5 94 c1 44 30         MOV EAX,dword ptr [ESI*0x4 + 0x3044c194] | 3002b86a   89 35 94 c1 44 30            MOV dword ptr [0x3044c194],ESI
  */
-const char *cg_shellFlashSounds[8];
 /* Source: uo_cgame_mp_x86.dll 0x3044c1b4 (.data); refs=2 width=4; first=0x3002332f; owner=cmd_callvote_f.
  * Example: 3002332f   8b 04 b5 b4 c1 44 30         MOV EAX,dword ptr [ESI*0x4 + 0x3044c1b4] | 3002b8b0   89 35 b4 c1 44 30            MOV dword ptr [0x3044c1b4],ESI
  */
-const char *cg_barrageIncomingSounds[8];
 /* Source: uo_cgame_mp_x86.dll 0x3044c1d4 (.data); refs=2 width=4; first=0x30022910; owner=cmd_callvote_f.
  * Example: 30022910   a1 d4 c1 44 30               MOV EAX,[0x3044c1d4] | 3002b8ff   a3 d4 c1 44 30               MOV [0x3044c1d4],EAX
  */
-const char *cg_soundGearRattleSprint = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c1d8 (.data); refs=3 width=4; first=0x300228c4; owner=cmd_callvote_f.
  * Example: 300228c4   a1 d8 c1 44 30               MOV EAX,[0x3044c1d8] | 300229bc   a1 d8 c1 44 30               MOV EAX,[0x3044c1d8] | 3002b914   a3 d8 c1 44 30               MOV [0x3044c1d8],EAX
  */
-const char *cg_soundGearRattleRun = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c1dc (.data); refs=2 width=4; first=0x3002295c; owner=cmd_callvote_f.
  * Example: 3002295c   a1 dc c1 44 30               MOV EAX,[0x3044c1dc] | 3002b929   a3 dc c1 44 30               MOV [0x3044c1dc],EAX
  */
-const char *cg_soundGearRattleWalk = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c1e0 (.data); refs=2 width=4; first=0x30022b09; owner=cmd_callvote_f.
  * Example: 30022b09   8b 0d e0 c1 44 30            MOV ECX,dword ptr [0x3044c1e0] | 3002b93e   a3 e0 c1 44 30               MOV [0x3044c1e0],EAX
  */
-const char *cg_soundMovementFoliage = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c1e4 (.data); refs=2 width=4; first=0x3002b953; owner=playercmd_finishplayerdamage.
  * Example: 3002b953   a3 e4 c1 44 30               MOV [0x3044c1e4],EAX | 30048203   a1 e4 c1 44 30               MOV EAX,[0x3044c1e4]
  */
-const char *cg_soundWhizby = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c1e8 (.data); refs=2 width=4; first=0x3002312e; owner=cmd_callvote_f.
  * Example: 3002312e   8b 15 e8 c1 44 30            MOV EDX,dword ptr [0x3044c1e8] | 3002b9d4   a3 e8 c1 44 30               MOV [0x3044c1e8],EAX
  */
-const char *cg_soundMeleeSwingLarge = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c1ec (.data); refs=2 width=4; first=0x30023115; owner=cmd_callvote_f.
  * Example: 30023115   a1 ec c1 44 30               MOV EAX,[0x3044c1ec] | 3002b9e9   a3 ec c1 44 30               MOV [0x3044c1ec],EAX
  */
-const char *cg_soundMeleeSwingSmall = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c1f0 (.data); refs=2 width=4; first=0x30023157; owner=cmd_callvote_f.
  * Example: 30023157   8b 0d f0 c1 44 30            MOV ECX,dword ptr [0x3044c1f0] | 3002b9fe   a3 f0 c1 44 30               MOV [0x3044c1f0],EAX
  */
-const char *cg_soundMeleeHit = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c1f4 (.data); refs=2 width=4; first=0x30022b3c; owner=cmd_callvote_f.
  * Example: 30022b3c   8b 15 f4 c1 44 30            MOV EDX,dword ptr [0x3044c1f4] | 3002b968   a3 f4 c1 44 30               MOV [0x3044c1f4],EAX
  */
-const char *cg_soundFatigueBreath = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c1f8 (.data); refs=2 width=4; first=0x30022b23; owner=cmd_callvote_f.
  * Example: 30022b23   a1 f8 c1 44 30               MOV EAX,[0x3044c1f8] | 3002b980   a3 f8 c1 44 30               MOV [0x3044c1f8],EAX
  */
-const char *cg_soundSprintBreathLast = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c1fc (.data); refs=2 width=4; first=0x30023298; owner=cmd_callvote_f.
  * Example: 30023298   a1 fc c1 44 30               MOV EAX,[0x3044c1fc] | 3002b995   a3 fc c1 44 30               MOV [0x3044c1fc],EAX
  */
-const char *cg_soundUsGrenadeLever = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c200 (.data); refs=2 width=4; first=0x3002324a; owner=cmd_callvote_f.
  * Example: 3002324a   a1 00 c2 44 30               MOV EAX,[0x3044c200] | 3002b7aa   a3 00 c2 44 30               MOV [0x3044c200],EAX
  */
-const char *cg_soundSatchelBounce = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c204 (.data); refs=2 width=4; first=0x300232d6; owner=cmd_callvote_f.
  * Example: 300232d6   a1 04 c2 44 30               MOV EAX,[0x3044c204] | 3002b9aa   a3 04 c2 44 30               MOV [0x3044c204],EAX
  */
-const char *cg_soundMgOverheat = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c208 (.data); refs=2 width=4; first=0x300232c1; owner=cmd_callvote_f.
  * Example: 300232c1   a1 08 c2 44 30               MOV EAX,[0x3044c208] | 3002b9bf   a3 08 c2 44 30               MOV [0x3044c208],EAX
  */
-const char *cg_soundMgOverheatVehicle = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c20c (.data); refs=2 width=4; first=0x3002ba13; owner=playercmd_finishplayerdamage.
  * Example: 3002ba13   a3 0c c2 44 30               MOV [0x3044c20c],EAX | 3003ada8   8b 0d 0c c2 44 30            MOV ECX,dword ptr [0x3044c20c]
  */
-const char *cg_soundGameMessage = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c210 (.data); refs=1 width=4; first=0x3002ba2b; owner=playercmd_finishplayerdamage.
  * Example: 3002ba2b   a3 10 c2 44 30               MOV [0x3044c210],EAX
  */
-const char *cg_soundObjectiveComplete = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c214 (.data); refs=1 width=4; first=0x3002b5be; owner=playercmd_finishplayerdamage.
  * Example: 3002b5be   a3 14 c2 44 30               MOV [0x3044c214],EAX
  */
-const char *cg_soundMpAnnounceGTwoMinutes = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c218 (.data); refs=1 width=4; first=0x3002b5d3; owner=playercmd_finishplayerdamage.
  * Example: 3002b5d3   a3 18 c2 44 30               MOV [0x3044c218],EAX
  */
-const char *cg_soundMpAnnounceATwoMinutes = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c21c (.data); refs=1 width=4; first=0x3002b5eb; owner=playercmd_finishplayerdamage.
  * Example: 3002b5eb   a3 1c c2 44 30               MOV [0x3044c21c],EAX
  */
-const char *cg_soundMpAnnounceGThirtySeconds = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c220 (.data); refs=1 width=4; first=0x3002b600; owner=playercmd_finishplayerdamage.
  * Example: 3002b600   a3 20 c2 44 30               MOV [0x3044c220],EAX
  */
-const char *cg_soundMpAnnounceAThirtySeconds = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c224 (.data); refs=2 width=4; first=0x30022cff; owner=cmd_callvote_f.
  * Example: 30022cff   8b 0d 24 c2 44 30            MOV ECX,dword ptr [0x3044c224] | 3002b696   a3 24 c2 44 30               MOV [0x3044c224],EAX
  */
-const char *cg_soundPlayerWaterIn = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c228 (.data); refs=2 width=4; first=0x30022d19; owner=cmd_callvote_f.
  * Example: 30022d19   a1 28 c2 44 30               MOV EAX,[0x3044c228] | 3002b6ab   a3 28 c2 44 30               MOV [0x3044c228],EAX
  */
-const char *cg_soundPlayerWaterOut = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c22c (.data); refs=1 width=4; first=0x3002b714; owner=playercmd_finishplayerdamage.
  * Example: 3002b714   a3 2c c2 44 30               MOV [0x3044c22c],EAX
  */
-const char *cg_soundDebrisBounce = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c230 (.data); refs=2 width=4; first=0x3001a150; owner=veh_playercollision.
  * Example: 3001a150   8b 14 bd 30 c2 44 30         MOV EDX,dword ptr [EDI*0x4 + 0x3044c230] | 3002b6c0   a3 30 c2 44 30               MOV [0x3044c230],EAX
  */
-const char *cg_soundGrenadePulse[4];
 /* Source: uo_cgame_mp_x86.dll 0x3044c240 (.data); refs=1 width=4; first=0x3002ba3b; owner=playercmd_finishplayerdamage.
  * Example: 3002ba3b   a3 40 c2 44 30               MOV [0x3044c240],EAX
  */
-const char *cg_soundSpotlightSpark = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c244 (.data); refs=3 width=4; first=0x30029546; owner=cg_updateflamethrowersounds.
  * Example: 30029546   a1 44 c2 44 30               MOV EAX,[0x3044c244] | 3002955a   a1 44 c2 44 30               MOV EAX,[0x3044c244] | 3002b741   a3 44 c2 44 30               MOV [0x3044c244],EAX
- * RESOLVED cg_flameFireSound: alias-name pointer stored from cgame_syscall(0xc3,
+ * RESOLVED cgs.media.flameFireSound: alias-name pointer stored from cgame_syscall(0xc3,
  * "flamethrower_fire") at 0x3002b741.
  */
-const char *cg_flameFireSound = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c24c (.data); refs=2 width=4; first=0x3002522c; owner=cg_addflamechunks.
- * cg_flameStartSound: flame start-sound qhandle (writer 0x3002b756; consumed by
+ * cgs.media.flameStartSound: flame start-sound qhandle (writer 0x3002b756; consumed by
  * CG_EmitPlayerFlameChunks 0x3002522c). RESOLVED (role) on consume. */
-const char *cg_flameStartSound = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c250 (.data); refs=2 width=4; first=0x300294d2; owner=cg_updateflamethrowersounds.
  * Example: 300294d2   8b 15 50 c2 44 30            MOV EDX,dword ptr [0x3044c250] | 3002b76b   a3 50 c2 44 30               MOV [0x3044c250],EAX
- * RESOLVED cg_flameStreamSound: alias-name pointer stored from cgame_syscall(0xc3,
+ * RESOLVED cgs.media.flameStreamSound: alias-name pointer stored from cgame_syscall(0xc3,
  * "flamethrower_stream") at 0x3002b76b.
  */
-const char *cg_flameStreamSound = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c258 (.data); refs=3 width=4; first=0x30029645; owner=cg_updateflamethrowersounds.
  * Example: 30029645   8b 0d 58 c2 44 30            MOV ECX,dword ptr [0x3044c258] | 300296e8   8b 0d 58 c2 44 30            MOV ECX,dword ptr [0x3044c258] | 3002b795   a3 58 c2 44 30               MOV [0x3044c258],EAX
- * RESOLVED cg_flameCooldownSound: alias-name pointer stored from cgame_syscall(0xc3,
+ * RESOLVED cgs.media.flameCooldownSound: alias-name pointer stored from cgame_syscall(0xc3,
  * "flamethrower_cooldown") at 0x3002b795.
  */
-const char *cg_flameCooldownSound = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c25c (.data); refs=1 width=4; first=0x3002b780; owner=playercmd_finishplayerdamage.
  * Example: 3002b780   a3 5c c2 44 30               MOV [0x3044c25c],EAX
  */
-const char *cg_soundPlayerBoneBounce = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c260 (.data); refs=1 width=4; first=0x3002b729; owner=playercmd_finishplayerdamage.
  * Example: 3002b729   a3 60 c2 44 30               MOV [0x3044c260],EAX
  */
-const char *cg_soundDebrisHitPlayer = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c264 (.data); refs=2 width=4; first=0x300231e8; owner=cmd_callvote_f.
  * Example: 300231e8   8b 0d 64 c2 44 30            MOV ECX,dword ptr [0x3044c264] | 3002b63f   a3 64 c2 44 30               MOV [0x3044c264],EAX
  */
-const char *cg_soundFlameBarrelBounce = NULL;
 /* Source: uo_cgame_mp_x86.dll 0x3044c268 (.data); refs=1 width=4; first=0x3002bffe; owner=pm_updateviewangles.
  * Example: 3002bffe   a3 68 c2 44 30               MOV [0x3044c268],EAX
  */
-qhandle_t cgs_media_checkboxClear = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044c26c (.data); refs=1 width=4; first=0x3002c232; owner=pm_updateviewangles.
  * Example: 3002c232   a3 6c c2 44 30               MOV [0x3044c26c],EAX
  */
-qhandle_t cgs_media_checkboxChecked = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044c270 (.data); refs=1 width=4; first=0x3002c470; owner=pm_updateviewangles.
  * Example: 3002c470   a3 70 c2 44 30               MOV [0x3044c270],EAX
  * Resolved from the binary (fixes a mechanical name-address collision that had labeled this
- * cgs_media_backTileShader): at 0x3002c459 the media-init (CG_RegisterGraphics 0x3002ba50)
+ * cgs.media.backTileShader): at 0x3002c459 the media-init (CG_RegisterGraphics 0x3002ba50)
  * pushes the string "ui/assets/checkbox_fail" (0x30078080) with trap id 0x59 and stores the
  * trap return here (0x3002c470). So 0x3044c270 is the checkbox-fail UI material handle. The
- * real cgs_media_backTileShader is 0x3044b6f0 (registered from "gfx/2d/backtile" @0x30078070
+ * real cgs.media.backTileShader is 0x3044b6f0 (registered from "gfx/2d/backtile" @0x30078070
  * via CG_RegisterShader, read by CG_TileClear). Binary-adjudicated. */
-qhandle_t cgs_media_checkboxFail = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044c274 (.data); one contiguous array spanning
  * 0x3044c274..0x3044cab4 (== 0x3044c274 + 22*24*4). RESOLVED as
- * cg_impactEffects[CG_IMPACT_EFFECT_TYPES][CG_IMPACT_SURFACE_TYPES], superseding the
+ * cgs.media.impactEffects[CG_IMPACT_EFFECT_TYPES][CG_IMPACT_SURFACE_TYPES], superseding the
  * mechanical export which split this single array into 22 `g_trypushingentity`
  * scalars plus three overlapping `[0x400]` tables (0x3044c6f4/754/7b4) and one
- * interior `cmd_callvote_f` symbol (0x3044c7b0 == &cg_impactEffects[13][23]). The
+ * interior `cmd_callvote_f` symbol (0x3044c7b0 == &cgs.media.impactEffects[13][23]). The
  * mislabeled `g_trypushingentity` owner is FUN_3001dfb0's rejected size-guess name;
  * its real name is CG_RegisterImpactEffects, which fills each of the 22 rows with 24
  * surface handles (row bases pushed at 0x3001e09b..0x3001e182, each 0x60 apart).
  * Read flat as [row][weapon + surface*24] by CG_EntityEvent (0x30022810) and by the
  * weapon renderer at 0x30048f21/0x30048f27. Zero-initialized. */
-qhandle_t cg_impactEffects[CG_IMPACT_EFFECT_TYPES][CG_IMPACT_SURFACE_TYPES];
 /* Source: uo_cgame_mp_x86.dll 0x3044cab4 (.data); refs=2 width=4; first=0x3002c836; owner=pm_updateviewangles.
  * Example: 3002c836   a3 b4 ca 44 30               MOV [0x3044cab4],EAX | 30048f3c   8b 3d b4 ca 44 30            MOV EDI,dword ptr [0x3044cab4]
  */
-qhandle_t cgs_media_fleshImpactEffect = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044cab8 (.data); refs=1 width=4; first=0x30027a7f; owner=bg_finditem.
  * Example: 30027a7f   a3 b8 ca 44 30               MOV [0x3044cab8],EAX
- * Retyped/renamed cg_flameSmokeEffect (effect handle for smoke_flamethrower.efx). */
-qhandle_t cg_flameSmokeEffect = 0;
+ * Retyped/renamed cgs.media.flameSmokeEffect (effect handle for smoke_flamethrower.efx). */
 /* Source: uo_cgame_mp_x86.dll 0x3044cabc (.data); refs=1 width=4; first=0x30027a94; owner=bg_finditem.
  * Example: 30027a94   a3 bc ca 44 30               MOV [0x3044cabc],EAX
- * Retyped/renamed cg_flameSmokeEffectLarge (handle for smoke_flamethrower_lg.efx). */
-qhandle_t cg_flameSmokeEffectLarge = 0;
+ * Retyped/renamed cgs.media.flameSmokeEffectLarge (handle for smoke_flamethrower_lg.efx). */
 /* Source: uo_cgame_mp_x86.dll 0x3044cac0 (.data); refs=2 width=4; first=0x30021251; owner=bg_animparseanimscript.
  * Example: 30021251   8b 04 9d c0 ca 44 30         MOV EAX,dword ptr [EBX*0x4 + 0x3044cac0] | 300212df   8b 14 9d c0 ca 44 30         MOV EDX,dword ptr [EBX*0x4 + 0x3044cac0]
  */
-qhandle_t cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044cac4 (.data); refs=1 width=4; first=0x3002c860; owner=pm_updateviewangles.
  * Example: 3002c860   a3 c4 ca 44 30               MOV [0x3044cac4],EAX
  */
@@ -3151,13 +3007,10 @@ qhandle_t cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044caf4 (.data); refs=5 width=4; first=0x3001b8ac; owner=cg_drawtracer.
  * Example: 3001b8ac   a1 f4 ca 44 30               MOV EAX,[0x3044caf4] | 3001b949   a1 f4 ca 44 30               MOV EAX,[0x3044caf4] | 3001b96f   8b 0d f4 ca 44 30            MOV ECX,dword ptr [0x3044caf4]
  */
-int32_t cg_complaintClientNum = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044caf8 (.data); refs=5 width=4; first=0x3001b7e8; owner=cg_drawtracer.
  * Example: 3001b7e8   a1 f8 ca 44 30               MOV EAX,[0x3044caf8] | 3001b8a0   39 0d f8 ca 44 30            CMP dword ptr [0x3044caf8],ECX | 30039553   89 35 f8 ca 44 30            MOV dword ptr [0x3044caf8],ESI
  */
-int32_t cg_complaintEndTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044cafc (.data): random startup value in [-1,1). */
-float cg_initialRandomValue = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3044cb00 (.data); base of a 0x4d0-stride
  * clientInfo_t table indexed by (corpse entity number - 0x40). All three
  * mechanical refs use this base identically after `SUB idx,0x40; IMUL idx,idx,0x4d0`:
@@ -3168,7 +3021,6 @@ float cg_initialRandomValue = 0.0f;
  * Eight retail records are proven by the +0x4c4 field walk and the next
  * independent datum after the array. Coordinated mod builds may configure a
  * larger shared PLAYER_CLONE_COUNT for both game and cgame. */
-clientInfo_t cg_corpseInfo[PLAYER_CLONE_COUNT];
 /* Source: uo_cgame_mp_x86.dll 0x3044f18c (.data); the renderer-stats HUD detail
  * level read by CG_DrawFPS (>1 gates the detailed lines) and by an adjacent
  * unreconstructed reader at 0x3001874f. owner=cg_drawweapreticle was a rejected
@@ -4563,22 +4415,8 @@ struct localEntity_s *cg_freeLocalEntities = 0;
  * self-links both at runtime. Unifies the mechanically-split symbols that were at
  * 0x30537da0 (was g_data_..._30537da0) and 0x30537da4 (was g_data_..._30537da4). */
 localEntity_t cg_activeLocalEntities;
-/* Source: uo_cgame_mp_x86.dll 0x30537ea0 (.data); refs=2 width=4; first=0x30018c9e; owner=cmd_veh_fireturret.
- * Example: 30018c9e   db 04 8d a0 7e 53 30         FILD dword ptr [ECX*0x4 + 0x30537ea0] | 300421ee   89 04 95 a0 7e 53 30         MOV dword ptr [EDX*0x4 + 0x30537ea0],EAX
- */
-int32_t cg_lagometerFrameSamples[LAG_SAMPLES] = { 0 };
-/* Source: uo_cgame_mp_x86.dll 0x305380a0 (.data); refs=3 width=4; first=0x30018c92; owner=cmd_veh_fireturret.
- * Example: 30018c92   8b 0d a0 80 53 30            MOV ECX,dword ptr [0x305380a0] | 300421df   8b 15 a0 80 53 30            MOV EDX,dword ptr [0x305380a0] | 300421f5   ff 05 a0 80 53 30            INC dword ptr [0x305380a0]
- */
-int32_t cg_lagometerFrameCount = 0;
-/* Source: uo_cgame_mp_x86.dll 0x305380a4 (.data): cg_lagometer — the network-lag graph
- * ring (see lagometer_t in globals.h). The three former mechanical symbols were three
- * fields of this one object: snapshotFlags at 0x305380a4, snapshotSamples at 0x305382a4
- * (+0x200), snapshotCount at 0x305384a4 (+0x400). Retyped/unified from the three
- * uint32_t symbols (owner=vector4scale was the first-touching function, not the identity).
- * Example: 30018a4c   c7 04 85 a4 82 53 30 ff ff ff ff MOV dword ptr [EAX*0x4 + 0x305382a4],0xffffffff | 30018a57   ff 05 a4 84 53 30            INC dword ptr [0x305384a4] | 30018e28   f6 04 8d a4 80 53 30 01      TEST byte ptr [ECX*0x4 + 0x305380a4],0x1
- */
-lagometer_t cg_lagometer = { 0 };
+/* Source: uo_cgame_mp_x86.dll 0x30537ea0 (.data): lagometer (see lagometer_t in globals.h). */
+lagometer_t lagometer = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x305384c0 (.data); refs=3 width=4; first=0x30030f3c.
  * RESOLVED: cg_hudEmitClientTable[] — index->clientNum table (see globals.h). Sized to
  * the 8-dword span before the next distinct symbol at 0x305384e0; exact extent unproven.
@@ -5117,7 +4955,7 @@ vmCvar_t cg_crosshairDynamic_vmCvar;
 vmCvar_t cg_brass_vmCvar;
 /* Source: uo_cgame_mp_x86.dll 0x30412ec0 (.data); cg_cvarTable[47] "cg_marks". */
 vmCvar_t cg_marks_vmCvar;
-/* Source: uo_cgame_mp_x86.dll 0x30458de0 (.data); cg_cvarTable[48] "cg_lagometer". */
+/* Source: uo_cgame_mp_x86.dll 0x30458de0 (.data); cg_cvarTable[48] "lagometer". */
 vmCvar_t cg_lagometer_vmCvar;
 /* Source: uo_cgame_mp_x86.dll 0x30451460 (.data); cg_cvarTable[49] "cg_railTrailTime_vmCvar.integer". */
 vmCvar_t cg_railTrailTime_vmCvar;

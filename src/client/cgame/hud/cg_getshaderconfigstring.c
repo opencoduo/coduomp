@@ -23,7 +23,7 @@
  * Config-string mapping (proven): the shader index is validated to 0 < index <
  * CS_SHADERS_COUNT(256), then the config-string index is CS_SHADERS(1653) + index
  * (0x3002fd1c LEA ESI,[EAX + 0x675]). The string is
- *     cg_gameState.stringData[cg_gameState.stringOffsets[cfgIndex]]
+ *     cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]]
  * (0x3002fd3c MOV ECX,[ESI*4 + 0x30440a00]  = stringOffsets[cfgIndex];
  *  0x3002fd43 ADD ECX,0x30442a00            = &stringData[offset]).
  *
@@ -78,7 +78,7 @@ qboolean CG_GetShaderConfigString(int index, char *dest, int size)
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS)
         Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
 
-    cs = &cg_gameState.stringData[cg_gameState.stringOffsets[cfgIndex]];
+    cs = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]];
 
     /* Empty config string: nothing to copy. */
     if (cs[0] == '\0')

@@ -359,7 +359,7 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                      * field_14 is ALWAYS cleared (0x3002655e) whatever the
                                      * sub-outcome. */
                                     if (chunk->damageFrameStamp == 0 &&
-                                        (int32_t)cg_flameDamageTrace.entityNum >= cgs_maxclients &&
+                                        (int32_t)cg_flameDamageTrace.entityNum >= cgs.maxclients &&
                                         (cg_flameDamageTrace.surfaceFlags & FLAME_SURF_KIND_MASK)
                                             != FLAME_SURF_KIND_1300 &&
                                         (cg_flameDamageTrace.surfaceFlags & FLAME_SURF_KIND_MASK)

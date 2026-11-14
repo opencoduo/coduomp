@@ -9,7 +9,7 @@
 /*
  * CG_DrawRedScore (0x30031510) — HUD-stat display member of the CG_R_TEXT_PAINT
  * emitter family (the 0x30031.. trap-54 / HUD-emit cluster). It renders the current
- * value of one parallel HUD-stat integer (cg_hudStat5Value, the middle
+ * value of one parallel HUD-stat integer (cgs.scores1, the middle
  * sibling of the d8/dc/e0 array) into a short text buffer, runs the trap-52 keyed
  * helper, and then issues one cgame trap 54 (CG_R_TEXT_PAINT) draw whose two leading
  * float coordinates it computes from the caller's object (obj) plus the trap-52
@@ -27,7 +27,7 @@
  *   cdecl.)
  *
  * Body:
- *   1. statValue = cg_hudStat5Value.  If it holds the -9999 "unset"
+ *   1. statValue = cgs.scores1.  If it holds the -9999 "unset"
  *      sentinel (CMP EAX,0xffffd8f1), format "-" into the 16-byte display buffer;
  *      otherwise format "%i" of statValue. The formatter is Com_sprintf with dest in
  *      EDI (a 16-byte stack buffer) and size in ESI (16), so:
@@ -68,7 +68,7 @@ void CG_DrawRedScore(rectDef_t *obj /* EBX */,
     char displayString[CG_HUDSTAT_STRING_SIZE];
 
     /* MOV EAX,[0x304480dc] ; CMP EAX,0xffffd8f1 (== -9999). Signed sentinel gate. */
-    int32_t statValue = cg_hudStat5Value;
+    int32_t statValue = cgs.scores1;
 
     if (statValue == CG_SCORE_VALUE_UNSET) {
         /* JNZ not taken: PUSH "-" ; Com_sprintf(buf, 16, "-"). */

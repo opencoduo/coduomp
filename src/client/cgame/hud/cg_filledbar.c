@@ -23,7 +23,7 @@
 // 0x284) is REJECTED: this function computes no muzzle point. It draws a 2D bar via
 // the CG_FillRect (0x3001c4e0 = trap_R_SetColor + trap_R_DrawStretchPic + reset)
 // helper, and the two globals it/its helper touch are already resolved
-// (cg_hudAlpha_vmCvar.value at 0x304583c8; cgs_media_whiteShader used only inside
+// (cg_hudAlpha_vmCvar.value at 0x304583c8; cgs.media.whiteShader used only inside
 // CG_FillRect). The name CG_FilledBar comes from the same-module PPC bank and the
 // proven behavior.
 //

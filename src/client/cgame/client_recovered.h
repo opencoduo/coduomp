@@ -241,11 +241,10 @@ const char *CG_GetTranslatedLocationString(int32_t locationIndex);
  */
 void CG_CalcAdsViewOffset(const vec3_t pos);
 /*
- * cgFovFade_t and cg_fovFade are defined in globals.h (included above) so that the
- * global's typed storage lives with the rest of the recovered data inventory.
+ * The cgs.scrFade* fields are members of cgs_t (globals.h, included above).
  *
  * CG_StartFovFade (0x3001ab50) — reconstructed (see functions/FUN_3001ab50_3001ab81.c).
- * Begins a cg_fovFade animation: startTime = ECX, durationMs = EAX, and
+ * Begins a cgs.scrFade animation: startTime = ECX, durationMs = EAX, and
  * startValue = (stack arg) / 255.0f; if (startTime + durationMs) <= cg.time the
  * fade is already finished so currentValue is snapped to startValue. Nonstandard
  * convention: startTime in ECX, durationMs in EAX, the 0..255 numerator on the
@@ -255,7 +254,7 @@ void CG_CalcAdsViewOffset(const vec3_t pos);
  */
 void CG_StartFovFade(int32_t startTime, int32_t durationMs, int32_t numerator255);
 /*
- * CG_ScreenFade (0x3001a7c0) — advance the cg_fovFade timed alpha animator by real
+ * CG_ScreenFade (0x3001a7c0) — advance the cgs.scrFade timed alpha animator by real
  * elapsed time, then draw a fullscreen black quad at the resulting alpha. Called
  * once per frame (no arguments). While the fade is still scheduled
  * (startTime + durationMs >= cg.time) and the current alpha has not yet reached the
@@ -281,7 +280,7 @@ void CG_ScreenFade(void);
  * forces 90 degrees in game mode 5 (cg.predictedPlayerState.pmType), and — when the local player's
  * entityStateFlags bit EF_IN_VEHICLE is set (a vehicle/turret view) —
  * blends the FOV toward the current weapon's adsZoomFov by the predicted ADS
- * fraction and maintains the FOV-zoom transition trackers and cg_fovFade animator.
+ * fraction and maintains the FOV-zoom transition trackers and cgs.scrFade animator.
  * Returns cg_zoomedFovConst degrees when the flags select the zoom/scope pair
  * (ENTITY_STATE_FLAG bits 0x6000), else the computed FOV. Takes no source-level
  * arguments (the caller's `push esi` is a saved register, not a parameter). The
@@ -296,8 +295,8 @@ float CG_CalcFov(void);
  * team-chat scroll ring, word-wrapping at TEAMCHAT_WIDTH and re-emitting the
  * active "^x" color code at the start of each wrapped continuation line. Takes
  * the source string in ECX (register/__fastcall-style first arg); no stack args
- * (RET without imm). Writes teamChatMsgs/teamChatMsgTimes/teamChatPos/
- * teamChatLastPos in globals.h. */
+ * (RET without imm). Writes cgs.teamChatMsgs/cgs.teamChatMsgTimes/cgs.teamChatPos/
+ * cgs.teamLastChatPos in globals.h. */
 void CG_AddToTeamChat(const char *str);
 
 /*
@@ -313,7 +312,7 @@ typedef struct cgVoiceChatMsg_s {
                                    *       cg_entities[]). */
     const char *soundName;        /* +0x4: sound alias to play (CG_PlaySoundAliasByName). */
     int32_t     icon;             /* +0x8: head-icon shader handle to display for the
-                                   *       speaker (compared to cgs_voiceChatIcon). */
+                                   *       speaker (compared to cgs.media.voiceChatIcon). */
     int32_t     voiceOnly;        /* +0xc: when nonzero, suppress the printed/team-chat
                                    *       text (voice-only message). */
     char        token[150]; /* +0x10: the raw voice-chat token, Q_strncpyz'd in
@@ -592,10 +591,10 @@ char *Q_CleanStr(char *string);
 /*
  * CG_ParseServerinfo (0x30038380) — parse the serverinfo config string
  * (config string 0) and cache its fields in the cgs serverinfo mirror. Copies
- * sv_hostname -> cgs_hostname (256) and g_gametype -> cgs_gametype (32) via
+ * sv_hostname -> cgs.hostname (256) and g_gametype -> cgs.gametype (32) via
  * Info_ValueForKey + Q_strncpyz, forces the g_gametype cvar (trap_Cvar_Set)
- * on first init only (guarded by cgs_localServer), stores
- * atoi(sv_maxclients) in cgs_maxclients, and builds cgs_mapname as
+ * on first init only (guarded by cgs.localServer), stores
+ * atoi(sv_maxclients) in cgs.maxclients, and builds cgs.mapname as
  * "maps/mp/<mapname>.bsp" (Com_sprintf, 64). Name from same-module PPC cgame_mp
  * CG_ParseServerinfo and the proven serverinfo-field behavior; the mechanical
  * size-guess PM_Weapon_AddFiringAimSpreadScale is rejected. */
@@ -605,7 +604,7 @@ void CG_ParseServerinfo(void);
  * config-values guard. Walks the 184-entry cg_cvarTable (0x300851f0) calling
  * trap_Cvar_Register(entry.vmCvar, entry.cvarName, entry.defaultString,
  * entry.cvarFlags) for each; then reads the "sv_running" cvar string into a local
- * buffer, stores Q_atoi(sv_running) into cgs_localServer (used elsewhere
+ * buffer, stores Q_atoi(sv_running) into cgs.localServer (used elsewhere
  * as the once-guard, e.g. CG_ParseServerinfo forces g_gametype only on first init),
  * and forces cl_stance="0", cl_run="1", cg_objectiveText="" via trap_Cvar_Set.
  * Broad-corpus cgame name; the .mcode size-guess CG_PlaySoundAliasByName is rejected
@@ -664,7 +663,7 @@ void CG_ConfigString11Modified(void);
 /*
  * CG_ConfigString (0x3002c990) — return the config string for a gameState index.
  * Proven from machine code: bounds-checks index into [0, 2048), then returns
- * &cg_gameState.stringData[cg_gameState.stringOffsets[index]] (table at 0x30440a00,
+ * &cgs.gameState.stringData[cgs.gameState.stringOffsets[index]] (table at 0x30440a00,
  * data base 0x30442a00). The index arrives on the stack ([ESP+8] after the callee
  * pushes ESI); an out-of-range index is reported via Com_ErrorMessage before the
  * (unbounded) lookup still proceeds. Provisional caller-observed decl — superseded
@@ -708,7 +707,7 @@ void CG_RegisterConfigStringMenu(int index);
  * cfgIndex = index + CS_LOCALIZED_STRINGS (0x575), reports an out-of-range cfgIndex via
  * Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex) (the shared inlined
  * CG_ConfigString bounds check), then resolves
- * &cg_gameState.stringData[cg_gameState.stringOffsets[cfgIndex]] and returns
+ * &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]] and returns
  * CG_TranslateMessage(str, "hudelem string") — the config-string localize/text-format service
  * with the "hudelem string" diagnostic label. Sole caller is the hud-element
  * string-building dispatcher 0x30029c00 (stores the result as the element's display
@@ -719,7 +718,7 @@ const char *CG_SafeTranslateHudElemString(int index);
 /*
  * CG_RegisterItems (0x30044b90) — register the visuals for every item present on
  * the current map. Reads the CS_ITEMS config string (inlined
- * &cg_gameState.stringData[cg_gameState.stringOffsets[CS_ITEMS]]) into a local
+ * &cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_ITEMS]]) into a local
  * buffer, then walks item indices 1..133 (the fixed compare bound is 0x86 = 134):
  * the config string is a hex-packed bitfield, 4 item bits per character, so item i
  * lives in nibble (i >> 2), bit (i & 3). The hex char is decoded to 0..15
@@ -793,7 +792,7 @@ void CG_RefreshWeaponInfosForConfigString(const char *configString);
 
 /*
  * CG_SetConfigValues (0x30038430) — register the config-value cvars from the
- * gameState string table, once. Guarded by cgs_localServer: returns
+ * gameState string table, once. Guarded by cgs.localServer: returns
  * immediately if config values are already registered. Otherwise it walks the
  * CS_CONFIGVALUE_COUNT (128) name/value config-string pairs — value config string
  * CS_CONFIGVALUE_VALUES + i, name config string CS_CONFIGVALUE_NAMES + i — and for
@@ -887,7 +886,7 @@ void CG_LocalSound_f(void);
  * for each owned weapon index 1..bg_numWeapons, sums 1000 * cg.snap->ps.ammo[
  * bg_weaponInfos[i]->ammoIndex]; if that running total reaches 5000 it clears the
  * warning state (cg.lowAmmoWarning = 0) and returns. Otherwise, if the warning state
- * was 0 it plays cg_soundOutOfAmmo via CG_PlaySoundAliasByName, then sets the state to
+ * was 0 it plays cgs.media.soundOutOfAmmo via CG_PlaySoundAliasByName, then sets the state to
  * 1 (some ammo left) or 2 (no ammo). Takes no arguments; called from the per-frame
  * predicted-player-update path (0x30035014, 0x3003cbf6). Name is the same-module
  * cgame_mp.dll PPC symbol CG_OutOfAmmoChange, corroborated by the "player_out_of_ammo"
@@ -976,7 +975,7 @@ void CG_SendFlameDamageCommand(int32_t clientNum, int32_t painId);
  * machine code (see the C artifact): the shader index arrives in EAX and the dest
  * buffer / buffer size are the two stack args (custom register-arg ABI). It
  * validates 0 < index < 256, forms the config-string index CS_SHADERS + index,
- * and reads the string via cg_gameState.stringData[cg_gameState.stringOffsets[cfg]].
+ * and reads the string via cgs.gameState.stringData[cgs.gameState.stringOffsets[cfg]].
  * Returns qfalse for an empty string or one that does not fit in `size`.
  * Role name (exact CoD symbol unproven); adjudicate if a config-string-copy name
  * surfaces in the server bank. */
@@ -986,12 +985,12 @@ qboolean CG_GetShaderConfigString(int index, char *dest, int size);
  * CG_GetObjectiveShaderForDir (0x3002fd90) — resolve the HUD objective/compass
  * icon shader handle for a direction slot. dir (register arg ECX, 0/1/2) selects
  * both the direction-suffix string {"","_up","_down"} and, in the no-override
- * path, the preregistered cg_objectiveShaders[dir]. shaderIndex (single stack
+ * path, the preregistered cgs.media.objectiveShaders[dir]. shaderIndex (single stack
  * arg) is a shader config-string index: when nonzero, the name is fetched via
  * CG_GetShaderConfigString, its extension is stripped at the first '.', the
  * direction suffix is appended, and the result is registered on the fly with
  * trap(CG_R_REGISTERSHADER, name, 5); when zero (or on any lookup failure) the
- * function returns the preregistered cg_objectiveShaders[dir] instead. Returns
+ * function returns the preregistered cgs.media.objectiveShaders[dir] instead. Returns
  * the qhandle_t. Role name from proven behavior; the .mcode size-guess
  * "G_GetHintStringIndex" is rejected (that is a server bool(int*,const char*)
  * hint-index lookup, an unrelated signature and subsystem). Provisional
@@ -1715,7 +1714,7 @@ void CG_InitLocalEntities(void);
  *     le->lifeRate = 1.0f / cg_railTrailTime_vmCvar.integer;
  *   - le->refEntity.reType = RT_RAIL_CORE; identity axis (axis[i][i]=1);
  *     refEntity.origin = start; refEntity.oldorigin = end;
- *     refEntity.spriteShaderHandle = cg_railCoreShader;
+ *     refEntity.spriteShaderHandle = cgs.media.railCoreShader;
  *     refEntity.shaderTime = cg.time / 1000.0f;
  *   - le->color = { colorRGB[0], colorRGB[1], colorRGB[2], 1.0f } (alpha forced 1).
  *
@@ -2189,7 +2188,7 @@ void CG_HudEmitIconOrValue(qhandle_t hIcon, const rectDef_t *rect,
  * Draws one per-client integer into `rect` either as a single icon shader stretched
  * over the whole rect (hIcon != 0: trap_R_SetColor(color); CG_DrawPic; reset color) or,
  * when no icon is supplied, as a left-to-right run of bitmap digit glyphs from
- * cg_numberShaders[] — one trap_R_DrawStretchPic per character, advancing by
+ * cgs.media.numberShaders[] — one trap_R_DrawStretchPic per character, advancing by
  * Q_rint(charScale*20) with glyph height Q_rint(charScale*32), clamped to 3 glyphs and
  * value range [-99, 999]. The displayed integer is
  * cg.snap->ps.stats[STAT_HEALTH] when the
@@ -2219,9 +2218,9 @@ int CG_DrawFieldWidth(int width, int value, int charWidth);
  * CG_DrawField (0x30017bc0) — the DRAW counterpart of CG_DrawFieldWidth
  * (its immediate neighbor 0x30017aa0). Clamps `value` to what fits in `width` digits
  * (width itself clamped 1..5; width < 1 returns 0), formats it as "%i", then blits each
- * character left-to-right as one bitmap glyph from cg_numberShaders[] via
+ * character left-to-right as one bitmap glyph from cgs.media.numberShaders[] via
  * trap_R_DrawStretchPic (cgame trap 0x49 == CG_R_DRAWSTRETCHPIC), scaling every coord
- * by cgs_screenXScale/cgs_screenYScale. `justify`==0 right/center-adjusts the start pen
+ * by cgs.screenXScale/cgs.screenYScale. `justify`==0 right/center-adjusts the start pen
  * (pen -= 2 + glyphs*charWidth); `drawGlyphs`==0 lays out without emitting pics. Returns
  * the justify-adjusted starting X pen. Non-default ABI proven from the body: width in
  * ECX, then seven cdecl stack words (x, y, value, charWidth, charHeight, drawGlyphs,
@@ -2246,9 +2245,9 @@ enum { CG_SCORE_VALUE_UNSET = -9999 };
  * shape as CG_DrawPlayerBarHealthTitle: reads bits(obj->x) and bits(obj->y) (both raw dwords),
  * forwards three caller words, a string buffer, two zero words, then a fourth caller
  * word in the final slot. It differs by (a) gating on the system-info HUD stat
- * cg_hudStat6Value: when that stat equals its -9999 sentinel the whole emit is
+ * cgs.scores2: when that stat equals its -9999 sentinel the whole emit is
  * skipped and the function returns; and (b) deriving the string argument from
- * va("%2i", cg_hudStat6Value) rather than a translated/static buffer. Emits
+ * va("%2i", cgs.scores2) rather than a translated/static buffer. Emits
  * cgame_syscall(CG_R_TEXT_PAINT, word0, word4, arg0, arg1, arg2, va("%2i", stat), 0, 0, arg3).
  * The .mcode size-matched "PitchToQuaternion" guess is REJECTED (no quaternion math,
  * no x87 here; it is a trap-54 emitter).
@@ -2325,8 +2324,8 @@ void CG_DrawSelectedPlayerLocation(rectDef_t *obj,
  * cgame_syscall(CG_R_TEXT_PAINT, bits((obj->w+obj->x)-(float)trap52), bits(obj->h+obj->y),
  * arg0, arg1, arg2, buf, 0, 0, arg3). The object arrives in EBX (register); four cdecl
  * stack words follow. The two are structural twins differing only in the score slot
- * they read — CG_DrawRedScore reads cg_hudStat5Value and CG_DrawBlueScore reads
- * cg_hudStat6Value (and the blue-score variant additionally carries an MSVC /GS
+ * they read — CG_DrawRedScore reads cgs.scores1 and CG_DrawBlueScore reads
+ * cgs.scores2 (and the blue-score variant additionally carries an MSVC /GS
  * stack-cookie prologue/epilogue). The .mcode size-matched guesses (MenuParse_itemDef /
  * Script_Orbit) are REJECTED — neither parses menus nor does camera math; both are trap-54
  * score emitters.
@@ -2340,9 +2339,9 @@ void CG_DrawBlueScore(rectDef_t *obj,
  * forwards the parsed serverinfo gametype string. Reads bits(obj->x) (raw dword) and the
  * float sum obj->h + obj->y exactly like the area-chat trio, but takes FOUR cdecl
  * stack words (arg3 lands in the trailing slot, like the Translated/Formatted siblings)
- * and pushes the shared cgs_gametype[] serverinfo mirror (0x30447abc) as the string
+ * and pushes the shared cgs.gametype[] serverinfo mirror (0x30447abc) as the string
  * slot. Emits cgame_syscall(CG_R_TEXT_PAINT, bits(obj->x), <bits of obj->h + obj->y>,
- * arg0, arg1, arg2, cgs_gametype, 0, 0, arg3). Object arrives in EAX (register); four
+ * arg0, arg1, arg2, cgs.gametype, 0, 0, arg3). Object arrives in EAX (register); four
  * cdecl stack words follow (plain RET, caller-cleaned). The .mcode size-matched
  * "script_method_scriptbuiltin_getattachsize" guess is REJECTED — no script/attach
  * work; it is a fixed trap-54 argument vector. The mechanical owner label on 0x30447abc
@@ -2358,7 +2357,7 @@ void CG_DrawGameType(rectDef_t *obj,
  * ABI only; superseded by this callee's own .mcode reconstruction). A config-string
  * accessor: it adds a fixed reserved base of 53 to the passed index, range-clamps the
  * result to [0, 2048) (indices outside collapse to slot 0), then returns
- * &cg_gameState.stringData[cg_gameState.stringOffsets[index + 53]], falling back to the
+ * &cgs.gameState.stringData[cgs.gameState.stringOffsets[index + 53]], falling back to the
  * literal "CGAME_UNKNOWN" when the resolved string is empty. Named by its proven
  * behavior and the nearby hint strings ("CGAME_UNKNOWN"/"KEY_USE"/"Hint String");
  * exact source symbol unresolved. Arg arrives in EAX (register), result in EAX.
@@ -2382,7 +2381,7 @@ qboolean CG_ConsoleCommand(void);
  * BG_LoadAnimTreeInstances (0x30005c40) — create a per-entity anim-tree instance
  * from the loaded master "multiplayer" tree for every element of
  * cg_playerAnimTrees[64] and the eight local records at
- * cg_corpseInfo[i].animTree. Named by role; the .mcode's
+ * cgs.corpseInfo[i].animTree. Named by role; the .mcode's
  * size-matched "script_method_hudelem_destroy" guess is rejected.
  * The declaration and complete common body are owned by bg_animation.h.
  */
@@ -2475,7 +2474,7 @@ snapshot_t *CG_ReadNextSnapshot(void);
 
 /*
  * CG_AddLagometerSnapshotInfo (0x30018a40) — record one snapshot in the lagometer
- * snapshot ring cg_lagometer. When `snap` is NULL it stores a dropped-snapshot marker
+ * snapshot ring lagometer. When `snap` is NULL it stores a dropped-snapshot marker
  * (snapshotSamples[snapshotCount & (LAG_SAMPLES-1)] = -1) and bumps snapshotCount;
  * otherwise it stores snap->ping (snap+0x4) into snapshotSamples and snap->snapFlags
  * (snap+0x0) into snapshotFlags at that index, then bumps snapshotCount. Field access
@@ -2900,7 +2899,7 @@ void CG_DrawScreenFadeOverlay(void); /* 0x3001a7c0: cg.time-driven fade overlay,
 void CG_DrawDamageDirectionIndicators(void);  /* 0x3001a980: draw the fading damage-direction arrow ring (src/client/cgame/hud/cg_drawdamagedirectionindicators.c). Supersedes the provisional caller-observed name CG_DrawScreenBlend: the body proves damage arrows, not a color-vector screen blend. */
 qboolean CG_DrawIntermission(void);  /* 0x3001bd20: forces the scoreboard on for the intermission screen — cgame_syscall(CG_MAP_RESTART_RESET_RENDERER), latches cg.scoreFadeTime=cg.time, sets cg.showScores=qtrue, then TAIL-CALLs CG_DrawScoreboard (its qboolean is this function's return). src/client/cgame/hud/cg_drawintermission.c */
 void CG_DrawSpectatorHud(void);      /* 0x3001a610: spectator-mode HUD block */
-void CG_DrawTeamInfo(void);          /* 0x30018770: draw the team-chat scroll ring (up to cg_chatHeight_vmCvar.integer lines of teamChatMsgs[], each with a dim hudColorBar background bar and the ^N-colored text, fading out over the cg_chatTime_vmCvar.integer window). src/client/cgame/hud/cg_drawteaminfo.c. Supersedes the size-guess names Reached_BinaryMover and the caller-observed CG_DrawWarmup. */
+void CG_DrawTeamInfo(void);          /* 0x30018770: draw the team-chat scroll ring (up to cg_chatHeight_vmCvar.integer lines of cgs.teamChatMsgs[], each with a dim hudColorBar background bar and the ^N-colored text, fading out over the cg_chatTime_vmCvar.integer window). src/client/cgame/hud/cg_drawteaminfo.c. Supersedes the size-guess names Reached_BinaryMover and the caller-observed CG_DrawWarmup. */
 void CG_DrawCrosshair(void);         /* 0x30019cf0: crosshair and weapon-reticle renderer */
 void CG_DrawVote(void);              /* 0x3001b7d0: complaint/vote HUD */
 void CG_VoiceMenuTimeout(void);      /* 0x3001ab00: close voiceMenu after 2500 ms */
@@ -3526,62 +3525,11 @@ void Com_PrintMessage(const char *format, ...);
 int CG_ShellShockLoad(const char *name);
 
 /*
- * shellshock_t (124 bytes) — the resolved parameter block for a screen/blur/
- * sound "shellshock" post-effect. Proven a 124-byte object three ways: the
- * console-command trigger CG_ShellShock_f (0x300174b0) treats 0x30448624 as the
- * base of one such block; the scene reader (0x30042160) indexes a table of these
- * with element stride 0x7c (`base + index*0x7c`); and the resolver
- * CG_SetShellShockParams (0x3003ba10) writes fields at offsets up to +0x78, with
- * the next distinct .data global sitting exactly at 0x30448624 + 0x7c.
- *
- * The leading blur fields and the sound block through +0x64 are decoded by
- * CG_ShellShockCalcVibrate and CG_UpdateShellShockSound. The mouse-input tail
- * (offsets +0x68 .. +0x78) is decoded directly by the resolver:
- * enable, fade time, sensitivity scale, maximum pitch speed, and maximum yaw
- * speed. The camera update (0x3003c230) uses many earlier float fields
- * (+0x34 .. +0x64); the blur update (0x3003c630) reads a separate object. Those are
- * not decoded here — only the fields a reconstructed consumer proves are named; the
- * remaining bytes stay reserved. */
-typedef struct shellshock_s {
-    int32_t blurDivisor;        /* +0x00: screen-blur ramp divisor */
-    float   blurRate;           /* +0x04: screen-blur phase rate */
-    float   blurScale;          /* +0x08: screen-blur displacement scale */
-    int32_t screenBlendFadeTime;/* +0x0c: screen-blend fade time, ms */
-    int32_t screenBlendTime;    /* +0x10: screen-blend hold time, ms */
-    qboolean soundEnabled;      /* +0x14: nonzero => apply sound/reverb effects */
-    int32_t soundFadeInTime;    /* +0x18: sound fade-in time, ms */
-    int32_t soundFadeOutTime;   /* +0x1c: sound fade-out time, ms */
-    float   soundWetLevel;      /* +0x20: room/reverb wet level */
-    char    soundRoomType[16];  /* +0x24: room-type name */
-    float   soundVolume[SND_ALIAS_CHANNEL_COUNT]; /* +0x34..+0x5b */
-    int32_t soundModEndDelay;   /* +0x5c: modifier end delay, ms */
-    int32_t soundLoopFadeTime;  /* +0x60: loop crossfade time, ms */
-    int32_t soundLoopEndDelay;  /* +0x64: loop end delay, ms */
-    qboolean mouseEnabled;      /* +0x68: cg_shock_mouse != 0 */
-    int32_t mouseFadeTime;      /* +0x6c: mouse attenuation fade time, ms */
-    float   mouseSensitivityScale; /* +0x70 */
-    float   mouseMaxPitchSpeed; /* +0x74 */
-    float   mouseMaxYawSpeed;   /* +0x78 */
-} shellshock_t;
-_Static_assert(sizeof(shellshock_t) == 0x7c,
-               "shellshock_t is 124 bytes (0x30448624 .. 0x304486a0)");
-_Static_assert(offsetof(shellshock_t, mouseEnabled) == 0x68, "shellshock_t.mouseEnabled @ +0x68");
-_Static_assert(offsetof(shellshock_t, mouseFadeTime) == 0x6c, "shellshock_t.mouseFadeTime @ +0x6c");
-_Static_assert(offsetof(shellshock_t, mouseSensitivityScale) == 0x70, "shellshock_t.mouseSensitivityScale @ +0x70");
-_Static_assert(offsetof(shellshock_t, mouseMaxPitchSpeed) == 0x74, "shellshock_t.mouseMaxPitchSpeed @ +0x74");
-_Static_assert(offsetof(shellshock_t, mouseMaxYawSpeed) == 0x78, "shellshock_t.mouseMaxYawSpeed @ +0x78");
-_Static_assert(offsetof(shellshock_t, soundEnabled) == 0x14, "shellshock_t.soundEnabled @ +0x14");
-_Static_assert(offsetof(shellshock_t, soundRoomType) == 0x24, "shellshock_t.soundRoomType @ +0x24");
-_Static_assert(offsetof(shellshock_t, soundVolume) == 0x34, "shellshock_t.soundVolume @ +0x34");
-_Static_assert(offsetof(shellshock_t, soundLoopEndDelay) == 0x64, "shellshock_t.soundLoopEndDelay @ +0x64");
-
-/*
- * cg_consoleShellShock (0x30448624, .data) — the single shellshock_t parameter
+ * cgs.shellshocks[0] (0x30448624, .data) — the single shellshock_t parameter
  * block filled by the "cg_shellshock" console command CG_ShellShock_f
  * (0x300174b0) via CG_SetShellShockParams, then handed to the scene reader
- * (0x30042160) as the active manual shellshock. Storage lives in globals.c.
+ * (0x30042160) as the active manual shellshock. Storage: globals.h cgs_t.
  * Supersedes the mechanical g_data_concatargs_30448624 (wrong owner/type). */
-extern shellshock_t cg_consoleShellShock;
 
 /*
  * CG_SetShellShockParams (0x3003ba10) — resolve the loaded cg_shock_* cvars into
@@ -3597,15 +3545,13 @@ extern shellshock_t cg_consoleShellShock;
 void CG_SetShellShockParams(shellshock_t *out);
 
 /*
- * cg_shellShocks[15] (0x304486a0, .data) — config-string indices 1..15. The
+ * cgs.shellshocks[1..15] (0x304486a0, .data) — config-string indices 1..15. The
  * registration loop derives an index of 1 on its first pass and continues while
- * index < 16, advancing the destination by 0x7c each time; index zero uses the
- * separate cg_consoleShellShock block.
- * for the CS_SHELLSHOCKS config-string block (stride 0x7c). Filled by CG_RegisterGraphics
- * (0x3002ba50) via CG_ShellShockLoad + CG_SetShellShockParams. Declared here (not in
- * globals.h) because shellshock_t is completed in this header; storage in globals.c.
+ * index < 16, advancing the destination by 0x7c each time; index zero is the
+ * console block cgs.shellshocks[0]. Filled for the CS_SHELLSHOCKS config-string
+ * block (stride 0x7c) by CG_RegisterGraphics (0x3002ba50) via CG_ShellShockLoad +
+ * CG_SetShellShockParams. Storage: globals.h cgs_t.
  */
-extern shellshock_t cg_shellShocks[15];
 
 /*
  * CG_RegisterGraphics (0x3002ba50) — precache the cgame render/effect media for a
@@ -3698,7 +3644,7 @@ double atof(const char *s);
  * effect config string. Register-argument ABI (self in EAX, self->fxId in ECX, but
  * the dispatcher passes fxId separately so it is a plain second parameter). Reads
  * config string CS_FX + fxId, whose first two bytes are decimal digits
- * selecting cg_effectDefs[(str[0]-'0')*10 + str[1]-'0']. Windows folds the 528-entry
+ * selecting cgs.effectDefs[(str[0]-'0')*10 + str[1]-'0']. Windows folds the 528-entry
  * ASCII bias into its indexed-load displacement; the Mac body performs both
  * subtractions explicitly. The remaining bytes (str + 2) are the tag name. Resolves the tag
  * on self->objId via CG_RESOLVE_TAG; on success plays that handle at
@@ -3722,7 +3668,7 @@ void CG_PlayFxOnTag(centity_t *self, int fxId);
  *
  * For each alias index it forms cfgIndex = CS_SOUNDS + index (0x295), reuses
  * CG_ConfigString's inlined [0, MAX_CONFIGSTRINGS) bounds check + Com_ErrorMessage
- * ("CG_ConfigString: bad index: %i") + &cg_gameState.stringData[offsets[cfgIndex]]
+ * ("CG_ConfigString: bad index: %i") + &cgs.gameState.stringData[offsets[cfgIndex]]
  * lookup, then registers that name via cgame_syscall(CG_COM_PICK_SOUND_ALIAS, name,
  * &self->origin) -> handle. If BOTH handles are non-zero it lerps the sound phase
  * between loopSoundPhaseOld (+0x6c) and loopSoundPhaseNew (+0x160) by
@@ -3764,7 +3710,7 @@ void CG_EjectWeaponBrass(entityState_t *self, int eventId);
  * ambient effects: its looping sound and its dynamic light. Argument in EAX
  * (cent, a centity_t). If currentState.clientSound is nonzero it
  * emits a looping sound named by config string (clientSound + CS_SOUNDS): the
- * sound is placed at lerpOrigin + cg_inlineModelMidpoints[modelindex] when
+ * sound is placed at lerpOrigin + cgs.inlineModelMidpoints[modelindex] when
  * currentState.solid == SOLID_BMODEL,
  * otherwise at the raw lerpOrigin, and is started via CG_PlaySoundAliasByName with the
  * entity number (currentState.number). If currentState.constantLight is nonzero it
@@ -3786,7 +3732,7 @@ void CG_EntityEffects(centity_t *cent);
 
 /*
  * CG_PlayFx (0x30022720) — play the effect selected by self->fxId at self->origin.
- * Validates 0 < fxId < 80, looks up the engine handle cg_effectDefs[fxId], and
+ * Validates 0 < fxId < 80, looks up the engine handle cgs.effectDefs[fxId], and
  * fires it through the play trap: with a direction (CG_PLAY_EFFECT_ORIENTED) when
  * `dir` is non-NULL, otherwise at the origin only (CG_PLAY_EFFECT_ORIGIN). An
  * out-of-range fxId prints the "invalid effect id" diagnostic and does nothing.
@@ -3802,7 +3748,7 @@ void CG_PlayFx(centity_t *self, const vec_t *dir);
  * by a continuously-animated spin angle. Reads the global spin angle
  * cg.refdefViewAngles[1] and builds a Z-axis rotation matrix from it via
  * YawVectors; the effect origin is cg.refdef.vieworg + 256*forward. Fires
- * cg_effectDefs[effectId] through CG_PLAY_EFFECT_ON_TAG (trap 0xe9) with that
+ * cgs.effectDefs[effectId] through CG_PLAY_EFFECT_ON_TAG (trap 0xe9) with that
  * origin, the 3x3 orientation, and a trailing 0. Role name (exact CoD symbol
  * unproven); the .mcode's size-matched "BG_IndexForString" guess is rejected --
  * this does no token/string lookup, it emits an oriented effect. See its own
@@ -3970,7 +3916,7 @@ int32_t CG_RegisterEffectDefSurfaces(const effectDef_t *defs,
                                      qhandle_t *handles);
 
 /* CG_IMPACT_EFFECT_TYPES (22) and CG_IMPACT_SURFACE_TYPES (24) — the dimensions of
- * the shared cg_impactEffects[22][24] handle table — are defined in globals.h
+ * the shared cgs.media.impactEffects[22][24] handle table — are defined in globals.h
  * (next to that array), which is included above. */
 
 /*
@@ -4535,7 +4481,7 @@ qboolean CG_DObjGetSpecialTagWorldMatrix(struct DObj_s *self,
                                          const char *tagName,
                                          DObjSkelMat *out);
 
-/* cg_corpseInfo (0x3044cb00) — per-corpse client animation/info table,
+/* cgs.corpseInfo (0x3044cb00) — per-corpse client animation/info table,
  * stride 0x4d0 (clientInfo_t), indexed by (corpse entity number - 0x40). Three
  * consumers use this base identically (0x30021e0a, CG_AddPlayerCorpseEntity at
  * 0x30034708, and 0x3003c8e6): each does `SUB idx,0x40; IMUL idx,idx,0x4d0; ADD
@@ -4548,7 +4494,6 @@ qboolean CG_DObjGetSpecialTagWorldMatrix(struct DObj_s *self,
  * path. The shared PLAYER_CLONE_ENTITYNUM_BASE follows MAX_CLIENTS, while
  * PLAYER_CLONE_COUNT retains the retail count and lets coordinated
  * client/server mods configure a larger pool. */
-extern clientInfo_t cg_corpseInfo[PLAYER_CLONE_COUNT];
 
 /*
  * centity_t.corpseModelInfo is a second entityState_t stored at cent+0xf4, not
@@ -4599,7 +4544,7 @@ qhandle_t CG_RegisterModel(const char *name, int category);
  * CG_BuildCorpseDObjModels (0x300058f0) — (re)build the DObj model set for a corpse
  * model-part and commit it to the engine. Register-argument client ABI proven from
  * the caller CG_AddPlayerCorpseEntity (0x300346c0 / 0x30034830):
- *   EBX = &cg_corpseInfo[modelPartIndex-0x40],
+ *   EBX = &cgs.corpseInfo[modelPartIndex-0x40],
  *   EDX = the DObj handle from CG_DOBJ_GET_HANDLE (trap 0xa5),
  *   stack arg0 = renderEntity (cent->corpseModelInfo, cent+0xf4),
  *   stack arg1 = &generationOut (cent+0x284): a byte the function writes the record's
@@ -5758,7 +5703,7 @@ void CG_CheckPreEvents(centity_t *cent);
  * per-entity state record. Both stride-0x4d0 tables that function targets carry
  * this identical block at +0x3e0: bgs.clientinfo[] (player entities; the field
  * names here match clientInfo_t.leanAmount/leanFraction/viewPitch/viewYaw/
- * +0x3f0 viewRoll) and cg_corpseInfo[] (player-corpse entities). The
+ * +0x3f0 viewRoll) and cgs.corpseInfo[] (player-corpse entities). The
  * .mcode computes ONE base pointer (EAX) then stores these five dwords at fixed
  * offsets regardless of which table, so the two paths share this overlay. Field
  * roles proven only as raw dword copies out of the centity by this function; exact
@@ -5794,7 +5739,7 @@ _Static_assert(offsetof(cgLerpAngleBlock_t, viewRoll) == 0x10,
  *   - otherwise: BG_EvaluateTrajectory(&currentState.pos, cg.time, lerpOrigin)
  *     and BG_EvaluateTrajectory(&currentState.apos, cg.time, lerpAngles);
  *     then for eType ET_PLAYER(1) write bgs.clientinfo[otherEntityNum(+0x94)],
- *     for ET_PLAYER_CORPSE(2) write cg_corpseInfo[number(+0x0)-0x40], the
+ *     for ET_PLAYER_CORPSE(2) write cgs.corpseInfo[number(+0x0)-0x40], the
  *     shared cgLerpAngleBlock_t at +0x3e0 (also zeroing lerpAngles[0] and
  *     currentState +0x21c). Finally, unless the entity is cg.predictedPlayerEntity,
  *     mover-lag-adjust lerpOrigin via CG_AdjustPositionForMover using the entity's
@@ -5904,7 +5849,7 @@ void CG_SetupWeaponLightingOrigin(centity_t *ent, refEntity_t *re);
  * (plain RET): CG_General defers the cleanup, folding these two args' 8 bytes into the
  * `ADD ESP,0x10` after the following trap 0xa5 call (0x3001e47e), rather than issuing an
  * `ADD ESP,8` right after the CALL at 0x3001e469. From CG_General the first stack arg is
- * cent->eType and the second is cg_gameModels[cent->modelIndex]. Internally it queries the DObj handle
+ * cent->eType and the second is cgs.gameModels[cent->modelIndex]. Internally it queries the DObj handle
  * (CG_DOBJ_GET_HANDLE), wraps the model (CG_DOBJ_WRAP_MODEL), compares/releases the
  * previously registered DObj-info in the per-entity tables cg.dObjInfoKeys /
  * cg.dObjInfoHandles (0x30487af8/0x30488af4, indexed by entityNum), builds the DObj
@@ -5939,7 +5884,7 @@ void CG_General(centity_t *cent /* EBX */);
  * mover refEntity_t: axis = AnglesToAxis(cent->lerpAngles), origin ==
  * oldorigin == cent->lerpOrigin, renderfx = RF_NOSHADOW. When
  * cent->solid == SOLID_BMODEL it draws a static
- * inline/brush model (reType 0, hModel = cg_inlineModelHandles[modelindex]);
+ * inline/brush model (reType 0, hModel = cgs.inlineDrawModel[modelindex]);
  * otherwise a DObj-animated model (RT_MODEL, dobjHandle from
  * cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum), owner = cent). Early-outs on the
  * eFlags 0x80 no-draw bit, and on a missing DObj handle. /GS-protected frame.
@@ -6082,7 +6027,7 @@ void CG_AddCEntity(centity_t *cent);
  * laserEffectStarted, evaluate nextState.pos and nextState.apos at cg.time into
  * lerpOrigin/lerpAngles, then dispatch on nextState.eType — ET_PLAYER reseeds
  * the client's clientInfo_t view angles and calls CG_ResetPlayerEntity;
- * ET_PLAYER_CORPSE copies the client's anim-state row into cg_corpseInfo[]
+ * ET_PLAYER_CORPSE copies the client's anim-state row into cgs.corpseInfo[]
  * (with an optional DObj clone via CG_XANIM_CLONE_ANIM_TREE); other types just seed the event
  * latches. One caller-cleaned int32 stack arg (the centity), void return. Called by the
  * snapshot-transition driver at 0x3003d020. The .mcode size-guess "CG_PlayerShadow" is

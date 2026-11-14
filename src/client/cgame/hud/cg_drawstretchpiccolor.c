@@ -70,10 +70,10 @@ void CG_DrawStretchPicColor(const rectDef_t *rect, qhandle_t hShader,
      * trap_R_SetColor. Keep that callback boundary and the x/y/w/h store order
      * explicit; evaluating these expressions after the trap changes the retail
      * operation order. */
-    const float realX = cgs_screenXScale * rect->x;
-    const float realY = cgs_screenYScale * rect->y;
-    const float realW = cgs_screenXScale * rect->w;
-    const float realH = cgs_screenYScale * rect->h;
+    const float realX = cgs.screenXScale * rect->x;
+    const float realY = cgs.screenYScale * rect->y;
+    const float realW = cgs.screenXScale * rect->w;
+    const float realH = cgs.screenYScale * rect->h;
 
     trap_R_SetColor(color);
 

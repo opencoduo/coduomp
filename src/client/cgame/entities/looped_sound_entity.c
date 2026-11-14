@@ -30,7 +30,7 @@
  *    CG_ConfigString; it inlines the identical body): if cfgIndex is outside
  *    [0, MAX_CONFIGSTRINGS) it reports Com_ErrorMessage("CG_ConfigString: bad index:
  *    %i", cfgIndex) (string @0x30077d90) and STILL proceeds, then reads
- *    name = &cg_gameState.stringData[cg_gameState.stringOffsets[cfgIndex]]. The alias
+ *    name = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]]. The alias
  *    name is registered with the engine via cgame_syscall(CG_COM_PICK_SOUND_ALIAS, name,
  *    &self->lerpOrigin) -> handle (CG_COM_PICK_SOUND_ALIAS == 0xc4, the name->handle sound registrar;
  *    &self->lerpOrigin is the +0x208 vec3 the trap receives as its second argument).
@@ -107,9 +107,9 @@ void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS)
         Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
     stringOffset = cgame_compat_read_target_i32_index(
-        cg_gameState.stringOffsets, cfgIndex);
+        cgs.gameState.stringOffsets, cfgIndex);
     soundName = (const char *)(
-        (uintptr_t)(const void *)cg_gameState.stringData +
+        (uintptr_t)(const void *)cgs.gameState.stringData +
         (uintptr_t)(intptr_t)stringOffset);
     alias1 = trap_Com_PickSoundAlias(soundName, self->lerpOrigin);
 
@@ -120,9 +120,9 @@ void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS)
         Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
     stringOffset = cgame_compat_read_target_i32_index(
-        cg_gameState.stringOffsets, cfgIndex);
+        cgs.gameState.stringOffsets, cfgIndex);
     soundName = (const char *)(
-        (uintptr_t)(const void *)cg_gameState.stringData +
+        (uintptr_t)(const void *)cgs.gameState.stringData +
         (uintptr_t)(intptr_t)stringOffset);
     alias2 = trap_Com_PickSoundAlias(soundName, self->lerpOrigin);
 

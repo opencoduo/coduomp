@@ -25,7 +25,7 @@
 //     trap_Argv(1, ...), converts it to seconds with atof, rounds
 //     (seconds * 1000) to an integer millisecond duration, resolves the loaded
 //     cg_shock_* cvars into the manual shellshock parameter block
-//     cg_consoleShellShock (CG_SetShellShockParams), and arms the effect by
+//     cgs.shellshocks[0] (CG_SetShellShockParams), and arms the effect by
 //     recording the current cg.time as cg.shellShockStartTime and the rounded
 //     duration as cg.shellShockDuration. The scene reader (0x30042160) then plays
 //     the manual shellshock from these three globals.
@@ -100,7 +100,7 @@ void CG_ShellShock_f(void)
 
     /* 0x3001755f..0x30017564: resolve the loaded cg_shock_* cvars into the
      * manual shellshock parameter block (destination passed in ESI). */
-    CG_SetShellShockParams(&cg_consoleShellShock);
+    CG_SetShellShockParams(&cgs.shellshocks[0]);
 
     /* 0x30017569..0x30017577: arm the manual shellshock for the scene reader:
      * record the current game time as the start and the rounded duration. */

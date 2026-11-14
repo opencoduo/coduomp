@@ -30,7 +30,7 @@
 //   300346ef MOV EAX,[B]                ; modelInfo.number
 //   300346f1 LEA EBX,[EAX-0x40]         ; index = modelPartIndex - 0x40
 //   300346f4 IMUL EBX,EBX,0x4d0         ; * sizeof(clientInfo_t)
-//   30034708 ADD EBX,0x3044cb00         ; EBX = &cg_corpseInfo[index]
+//   30034708 ADD EBX,0x3044cb00         ; EBX = &cgs.corpseInfo[index]
 //   300346fa ADD ECX,0x284             ; ECX = &cent->corpseTagState (cent+0x284)
 //   3003470{0,1,2,3} PUSH ECX,ESI,EAX,0xa5
 //   3003470e CALL *cgame_syscall        ; trap(0xa5, modelPartIndex) -> dobjHandle
@@ -85,7 +85,7 @@
 #include <string.h>
 
 /* Layout guards proving the offsets/stride this function relies on (4-byte i386
- * pointer width). cg_corpseInfo stride 0x4d0 matches IMUL ...,0x4d0.
+ * pointer width). cgs.corpseInfo stride 0x4d0 matches IMUL ...,0x4d0.
  * The refEntity / centity offsets are asserted next to their definitions in
  * client_recovered.h; here we only assert the ones this file dereferences by name. */
 #if UINTPTR_MAX == 0xFFFFFFFFu
@@ -102,7 +102,7 @@ _Static_assert(offsetof(entityState_t, eFlags) == 0x08, "eFlags +0x08");
 _Static_assert(offsetof(entityState_t, fTorsoHeight) == 0xe8,
                "fTorsoHeight +0xe8");
 
-/* cg_corpseInfo (0x3044cb00, 0x4d0-stride table indexed by
+/* cgs.corpseInfo (0x3044cb00, 0x4d0-stride table indexed by
  * entity number - 0x40) is declared in client_recovered.h; storage in globals.c.
  *
  * CG_UpdateCorpseModelPartState / CG_UpdateCorpseModelPartState below is the
@@ -149,7 +149,7 @@ void CG_AddPlayerCorpseEntity(centity_t *cent)
                   modelPartIndex);
         return;
     }
-    clientInfo_t *corpseInfo = &cg_corpseInfo[corpseIndex];
+    clientInfo_t *corpseInfo = &cgs.corpseInfo[corpseIndex];
 
     /* First DObj handle query; its result and the two sub-objects drive the
      * model-part state (re)bind. trap(0xa5, modelPartIndex) -> handle. */

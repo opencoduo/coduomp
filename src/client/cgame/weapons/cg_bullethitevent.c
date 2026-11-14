@@ -41,13 +41,13 @@
 // Globals:
 //   0x30134cd8 bg_weaponInfos[]                — the weaponInfo_t* array; [weaponIndex] gives
 //                                                the firing weapon record.
-//   0x3044bf10 cg_bulletSmallSurfaceSounds[23]/0x3044bf6c cg_bulletLargeSurfaceSounds[23]
+//   0x3044bf10 cgs.media.bulletSmallSurfaceSounds[23]/0x3044bf6c cgs.media.bulletLargeSurfaceSounds[23]
 //                                              — per-surface bullet impact sound handles.
-//   0x3044c274 cg_impactEffects[22][24]        — per-(effectType,surface) impact effect
+//   0x3044c274 cgs.media.impactEffects[22][24]        — per-(effectType,surface) impact effect
 //                                                handles; the primary effect is read from
 //                                                row `fxRow` and the secondary from row
 //                                                `fxRow + 6` (base 0x3044c4b4 == +6 rows).
-//   0x3044cab4 cgs_media_fleshImpactEffect     — the no-blood flesh impact effect.
+//   0x3044cab4 cgs.media.fleshImpactEffect     — the no-blood flesh impact effect.
 //   0x3052ec8c cg_blood_vmCvar.integer                        — cg_blood_vmCvar.integer cvar mirror (0 == blood off).
 //   0x3048c6e0 cg_entities[] (centity_t, stride 0x288); the head resolves the
 //              linked vehicle entity through this typed base.
@@ -86,12 +86,12 @@
 #define CG_FIRE_MODE_MASK 0x7
 
 #define CG_BULLET_SURFACE_SOUND_COUNT \
-    (sizeof(cg_bulletSmallSurfaceSounds) / \
-     sizeof(cg_bulletSmallSurfaceSounds[0]))
+    (sizeof(cgs.media.bulletSmallSurfaceSounds) / \
+     sizeof(cgs.media.bulletSmallSurfaceSounds[0]))
 
 _Static_assert(CG_BULLET_SURFACE_SOUND_COUNT ==
-                   sizeof(cg_bulletLargeSurfaceSounds) /
-                       sizeof(cg_bulletLargeSurfaceSounds[0]),
+                   sizeof(cgs.media.bulletLargeSurfaceSounds) /
+                       sizeof(cgs.media.bulletLargeSurfaceSounds[0]),
                "bullet surface sound rows differ in size");
 _Static_assert(CG_BULLET_SURFACE_SOUND_COUNT <=
                    CG_IMPACT_SURFACE_TYPES,
@@ -164,28 +164,28 @@ void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
 
     const char *bulletSound;
     if (fxRow == 1 || fxRow == 0) {
-        bulletSound = cg_bulletSmallSurfaceSounds[surfaceType];
+        bulletSound = cgs.media.bulletSmallSurfaceSounds[surfaceType];
     } else {
-        bulletSound = cg_bulletLargeSurfaceSounds[surfaceType];
+        bulletSound = cgs.media.bulletLargeSurfaceSounds[surfaceType];
     }
 
-    /* 30048f18..30048f27: flat index = surfaceType + fxRow*24 into cg_impactEffects.
+    /* 30048f18..30048f27: flat index = surfaceType + fxRow*24 into cgs.media.impactEffects.
      * The primary effect is that entry; the secondary (blood/debris) effect is the same
-     * column six rows further on (base 0x3044c4b4 == &cg_impactEffects[0][0] + 6*24). */
+     * column six rows further on (base 0x3044c4b4 == &cgs.media.impactEffects[0][0] + 6*24). */
     int32_t flatIndex = coduo_int32_from_bits(
         (uint32_t)fxRow * (uint32_t)CG_IMPACT_SURFACE_TYPES +
         (uint32_t)surfaceType);
     qhandle_t primaryEffect = (qhandle_t)cgame_compat_read_target_i32_index(
-        &cg_impactEffects[0][0], flatIndex);
+        &cgs.media.impactEffects[0][0], flatIndex);
     qhandle_t secondaryEffect = (qhandle_t)cgame_compat_read_target_i32_index(
-        &cg_impactEffects[0][0],
+        &cgs.media.impactEffects[0][0],
         coduo_int32_from_bits((uint32_t)flatIndex +
                          6u * CG_IMPACT_SURFACE_TYPES));
 
     /* 30048f2d..30048f42: with blood disabled, a flesh hit (surface 7) uses the no-blood
      * flesh impact effect and drops the secondary blood effect. */
     if (cg_blood_vmCvar.integer == 0 && surfaceType == 7) {
-        primaryEffect = cgs_media_fleshImpactEffect;
+        primaryEffect = cgs.media.fleshImpactEffect;
         secondaryEffect = 0;
     }
 

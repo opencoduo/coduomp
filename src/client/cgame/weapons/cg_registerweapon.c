@@ -242,7 +242,7 @@ void CG_RegisterWeapon(int weaponIndex)
                               (intptr_t)"0");
             }
 
-            serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
+            serverInfo = &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]];
             mapName = Info_ValueForKey(serverInfo, "mapname");
             if (mapName != NULL && mapName[0] != '\0') {
                 levelShot = trap_R_RegisterShaderNoMip(
@@ -253,10 +253,10 @@ void CG_RegisterWeapon(int weaponIndex)
             }
 
             cgame_syscall(CG_R_SETCOLOR, 0);
-            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs_screenXScale),
-                                  CG_FloatBits(0.0f * cgs_screenYScale),
-                                  CG_FloatBits(640.0f * cgs_screenXScale),
-                                  CG_FloatBits(480.0f * cgs_screenYScale),
+            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs.screenXScale),
+                                  CG_FloatBits(0.0f * cgs.screenYScale),
+                                  CG_FloatBits(640.0f * cgs.screenXScale),
+                                  CG_FloatBits(480.0f * cgs.screenYScale),
                                   CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                   CG_FloatBits(1.0f), CG_FloatBits(1.0f),
                                   levelShot);
@@ -322,7 +322,7 @@ void CG_RegisterWeapon(int weaponIndex)
                               (intptr_t)"0");
             }
 
-            serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
+            serverInfo = &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]];
             mapName = Info_ValueForKey(serverInfo, "mapname");
             if (mapName != NULL && mapName[0] != '\0') {
                 levelShot = trap_R_RegisterShaderNoMip(
@@ -333,10 +333,10 @@ void CG_RegisterWeapon(int weaponIndex)
             }
 
             cgame_syscall(CG_R_SETCOLOR, 0);
-            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs_screenXScale),
-                                  CG_FloatBits(0.0f * cgs_screenYScale),
-                                  CG_FloatBits(640.0f * cgs_screenXScale),
-                                  CG_FloatBits(480.0f * cgs_screenYScale),
+            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs.screenXScale),
+                                  CG_FloatBits(0.0f * cgs.screenYScale),
+                                  CG_FloatBits(640.0f * cgs.screenXScale),
+                                  CG_FloatBits(480.0f * cgs.screenYScale),
                                   CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                   CG_FloatBits(1.0f), CG_FloatBits(1.0f),
                                   levelShot);
@@ -393,7 +393,7 @@ void CG_RegisterWeapon(int weaponIndex)
                               (intptr_t)"0");
             }
 
-            serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
+            serverInfo = &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]];
             mapName = Info_ValueForKey(serverInfo, "mapname");
             if (mapName != NULL && mapName[0] != '\0') {
                 levelShot = trap_R_RegisterShaderNoMip(
@@ -404,10 +404,10 @@ void CG_RegisterWeapon(int weaponIndex)
             }
 
             cgame_syscall(CG_R_SETCOLOR, 0);
-            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs_screenXScale),
-                                  CG_FloatBits(0.0f * cgs_screenYScale),
-                                  CG_FloatBits(640.0f * cgs_screenXScale),
-                                  CG_FloatBits(480.0f * cgs_screenYScale),
+            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs.screenXScale),
+                                  CG_FloatBits(0.0f * cgs.screenYScale),
+                                  CG_FloatBits(640.0f * cgs.screenXScale),
+                                  CG_FloatBits(480.0f * cgs.screenYScale),
                                   CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                   CG_FloatBits(1.0f), CG_FloatBits(1.0f),
                                   levelShot);
@@ -523,10 +523,10 @@ void CG_RegisterWeapon(int weaponIndex)
     if (weapon->hudIcon[0] != '\0') {
         weaponInfo->hudIconShader = CG_RegisterMaterial(
             weapon->hudIcon, CG_REGISTER_WEAPON_SHADER_SORT);
-        cg_weaponHudIcons[weaponIndex] = (qhandle_t)weaponInfo->hudIconShader;
+        cgs.media.weaponHudIcons[weaponIndex] = (qhandle_t)weaponInfo->hudIconShader;
     } else {
-        cg_weaponHudIcons[weaponIndex] =
-            cgs_media_usableHintShaders[CURSOR_HINT_ACTIVATE];
+        cgs.media.weaponHudIcons[weaponIndex] =
+            cgs.media.usableHintShaders[CURSOR_HINT_ACTIVATE];
     }
     if (weapon->killIcon[0] != '\0') {
         (void)CG_RegisterMaterial(weapon->killIcon,
@@ -539,10 +539,10 @@ void CG_RegisterWeapon(int weaponIndex)
     if (weapon->ammoIcon[0] != '\0') {
         weaponInfo->ammoIconShader = CG_RegisterMaterial(
             weapon->ammoIcon, CG_REGISTER_WEAPON_SHADER_SORT);
-        cg_weaponAmmoIcons[weaponIndex] = (qhandle_t)weaponInfo->ammoIconShader;
+        cgs.media.weaponAmmoIcons[weaponIndex] = (qhandle_t)weaponInfo->ammoIconShader;
     } else {
-        cg_weaponAmmoIcons[weaponIndex] =
-            cgs_media_usableHintShaders[CURSOR_HINT_ACTIVATE];
+        cgs.media.weaponAmmoIcons[weaponIndex] =
+            cgs.media.usableHintShaders[CURSOR_HINT_ACTIVATE];
     }
 
     {
