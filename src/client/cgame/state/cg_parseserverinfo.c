@@ -13,19 +13,19 @@
 // behavior + call graph.
 //
 // Machine-code shape:
-//   - 0x30038382/0x30038389: ESI = &cg_gameState.stringData[
-//       cg_gameState.stringOffsets[0]] — config string 0 (the serverinfo string).
+//   - 0x30038382/0x30038389: ESI = &cgs.gameState.stringData[
+//       cgs.gameState.stringOffsets[0]] — config string 0 (the serverinfo string).
 //     ([0x30440a00] loads offsets[0]; LEA adds the 0x30442a00 data base.) ESI is
 //     then the `info` (ECX) register-arg for every Info_ValueForKey call.
-//   - 0x30038394..0x300383ab: Q_strncpyz(cgs_hostname, Info_ValueForKey(info,
+//   - 0x30038394..0x300383ab: Q_strncpyz(cgs.hostname, Info_ValueForKey(info,
 //       "sv_hostname"), 0x100).  (Info_ValueForKey: info in ECX, key in EBX.)
-//   - 0x300383ae..0x300383c4: Q_strncpyz(cgs_gametype, Info_ValueForKey(info,
+//   - 0x300383ae..0x300383c4: Q_strncpyz(cgs.gametype, Info_ValueForKey(info,
 //       "g_gametype"), 0x20).
-//   - 0x300383c7..0x300383e1: run-once — if cgs_localServer == 0,
-//       trap_Cvar_Set("g_gametype", cgs_gametype) via cgame_syscall id 9.
-//   - 0x300383e4..0x300383fd: cgs_maxclients =
+//   - 0x300383c7..0x300383e1: run-once — if cgs.localServer == 0,
+//       trap_Cvar_Set("g_gametype", cgs.gametype) via cgame_syscall id 9.
+//   - 0x300383e4..0x300383fd: cgs.maxclients =
 //       Q_atoi(Info_ValueForKey(info, "sv_maxclients")).
-//   - 0x300383f6..0x3003841c: Com_sprintf(cgs_mapname, 0x40, "maps/mp/%s.bsp",
+//   - 0x300383f6..0x3003841c: Com_sprintf(cgs.mapname, 0x40, "maps/mp/%s.bsp",
 //       Info_ValueForKey(info, "mapname")).  (Com_sprintf: dest in EDI, size in
 //       ESI, format+varargs on the caller-cleaned stack.)
 //
@@ -42,25 +42,25 @@ void CG_ParseServerinfo(void)
 {
     /* 0x30038382/0x30038389: config string 0 = serverinfo. */
     const char *info =
-        &cg_gameState.stringData[cg_gameState.stringOffsets[CS_SERVERINFO]];
+        &cgs.gameState.stringData[cgs.gameState.stringOffsets[CS_SERVERINFO]];
 
     /* 0x30038394..0x300383ab */
-    Q_strncpyz(cgs_hostname, Info_ValueForKey(info, sv_hostnameInfoKey),
-               sizeof(cgs_hostname));
+    Q_strncpyz(cgs.hostname, Info_ValueForKey(info, sv_hostnameInfoKey),
+               sizeof(cgs.hostname));
 
     /* 0x300383ae..0x300383c4 */
-    Q_strncpyz(cgs_gametype, Info_ValueForKey(info, g_gametypeInfoKey),
-               sizeof(cgs_gametype));
+    Q_strncpyz(cgs.gametype, Info_ValueForKey(info, g_gametypeInfoKey),
+               sizeof(cgs.gametype));
 
     /* 0x300383c7..0x300383e1: only force the cvar on first parse. */
-    if (cgs_localServer == 0) {
-        trap_Cvar_Set(g_gametypeInfoKey, cgs_gametype);
+    if (cgs.localServer == 0) {
+        trap_Cvar_Set(g_gametypeInfoKey, cgs.gametype);
     }
 
     /* 0x300383e4..0x300383fd */
-    cgs_maxclients = coduo_crt_atoi(Info_ValueForKey(info, sv_maxClientsInfoKey));
+    cgs.maxclients = coduo_crt_atoi(Info_ValueForKey(info, sv_maxClientsInfoKey));
 
     /* 0x300383f6..0x3003841c */
-    Com_sprintf(cgs_mapname, sizeof(cgs_mapname), mpMapBspPathFormat,
+    Com_sprintf(cgs.mapname, sizeof(cgs.mapname), mpMapBspPathFormat,
                Info_ValueForKey(info, mapNameInfoKey));
 }

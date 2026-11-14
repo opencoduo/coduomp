@@ -233,11 +233,11 @@ void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
              (long double)blip->origin[2]) *
             (long double)TANK_COMPASS_ANGLE2SHORT) & 0xffffu;
         float rotation = (float)(int32_t)packedRotation * TANK_COMPASS_SHORT2ANGLE;
-        qhandle_t shader = cg_compassTankShaders[0];
+        qhandle_t shader = cgs.media.compassTankShaders[0];
         if (blip->kindOrExpireTime == 1) {
-            shader = cg_compassTankShaders[1];
+            shader = cgs.media.compassTankShaders[1];
         } else if (blip->kindOrExpireTime == 5) {
-            shader = cg_compassTankShaders[2];
+            shader = cgs.media.compassTankShaders[2];
         }
 
         /* 0x30017156/0x3001715e/0x30017173 hardcode green only after the

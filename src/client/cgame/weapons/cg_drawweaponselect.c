@@ -107,7 +107,7 @@ void CG_DrawWeaponSelect(void)
          * hint (jump straight to the 2px gutter tail at 0x3004733e). */
         if (cgWeaponInfo->hudIconShader == 0) {
             x -= 32.0f;
-            CG_DrawPic(x, 8.0f, 32.0f, 32.0f, cgs_media_hudNoWeaponIcon);
+            CG_DrawPic(x, 8.0f, 32.0f, 32.0f, cgs.media.hudNoWeaponIcon);
             *scale = 0.0f;
             x -= 2.0f;
             continue;
@@ -315,7 +315,7 @@ void CG_DrawWeaponSelect(void)
                     }
 
                     /* 0x3004711a..0x300471ab: raw trap 0x49 stretch-pic with
-                     * pre-scaled pixel coords (cgs_screenXScale/YScale) and
+                     * pre-scaled pixel coords (cgs.screenXScale/YScale) and
                      * the full texture window (s1=0,t1=0,s2=1,t2=1); shader
                      * from the alt weapon's cgWeaponInfo (+0x144) with NO
                      * no-icon fallback. The icon is centered on the slot
@@ -325,14 +325,14 @@ void CG_DrawWeaponSelect(void)
                         CG_FloatBits((float)(
                             ((long double)x + (long double)iconHalfBack -
                              drawWidthRaw * 0.5L) *
-                            (long double)cgs_screenXScale)),
+                            (long double)cgs.screenXScale)),
                         CG_FloatBits((float)(
-                            yRaw * (long double)cgs_screenYScale)),
+                            yRaw * (long double)cgs.screenYScale)),
                         CG_FloatBits((float)(
-                            drawWidthRaw * (long double)cgs_screenXScale)),
+                            drawWidthRaw * (long double)cgs.screenXScale)),
                         CG_FloatBits((float)(
                             (long double)drawHeight *
-                            (long double)cgs_screenYScale)),
+                            (long double)cgs.screenYScale)),
                         CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                         CG_FloatBits(1.0f), CG_FloatBits(1.0f),
                         (intptr_t)altCgInfo->hudIconShader);

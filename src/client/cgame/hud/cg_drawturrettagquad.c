@@ -15,7 +15,7 @@
 //     multiplies in that order to preserve the exact single-precision result.
 //   * FSINCOS the radian angle -> {sin, cos}.
 //   * Screen-scale the rotation basis and the center by the cgs screen-scale
-//     globals (cgs_screenXScale @0x30447aa4, cgs_screenYScale @0x30447aa8). NOTE:
+//     globals (cgs.screenXScale @0x30447aa4, cgs.screenYScale @0x30447aa8). NOTE:
 //     this binary computes screenXScale = vidWidth/480 and screenYScale =
 //     vidHeight/640 (swapped from stock CoD/Q3 X/640, Y/480 — see globals.c/.h);
 //     the code here simply consumes them and does not care which is which.
@@ -35,7 +35,7 @@
 // parameter rather than a calling-convention attribute (no build target requires
 // the attribute; see WORKFLOW.md).
 
-#include "client/cgame/globals.h"          /* cgs_screenXScale / cgs_screenYScale, cgame_syscall */
+#include "client/cgame/globals.h"          /* cgs.screenXScale / cgs.screenYScale, cgame_syscall */
 #include "client/cgame/client_recovered.h" /* CG_R_DRAW_ROTATED_QUAD, CG_DrawTurretTagQuad decl */
 #include "compat/coduo_native_x87.h"
 
@@ -66,7 +66,7 @@ void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y,
     coduo_x87_sincosf(angleRad, &s, &c);
 
     /* Screen-scaled rotation basis (0x3001cd2c..0x3001cd56).
-     *   xs = cgs_screenXScale, ys = cgs_screenYScale.
+     *   xs = cgs.screenXScale, ys = cgs.screenYScale.
      *   S = xs*sin, C = xs*cos   (the persistent x87 ST1/ST2 pair through the block)
      *   ysSin = ys*sin  -> local [ESP+0x1c]
      *   ysCos = ys*cos  -> local [ESP+0x20]
@@ -79,13 +79,13 @@ void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y,
      * does not perform.
      */
     long double C =
-        (long double)cgs_screenXScale * (long double)c;
+        (long double)cgs.screenXScale * (long double)c;
     long double S =
-        (long double)cgs_screenXScale * (long double)s;
+        (long double)cgs.screenXScale * (long double)s;
     float ysSin = (float)(
-        (long double)cgs_screenYScale * (long double)s);
+        (long double)cgs.screenYScale * (long double)s);
     float ysCos = (float)(
-        (long double)cgs_screenYScale * (long double)c);
+        (long double)cgs.screenYScale * (long double)c);
 
     /* Scaled center offsets (0x3001cd5a..0x3001cd6e):
      *   tx = xs * x   (arg0, [ESP+0x48]; stays as x87 ST0 across the vertex block,
@@ -93,9 +93,9 @@ void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y,
      *   ty = ys * y   (arg1, [ESP+0x4c]; rounded by FSTP 0x3001cd6e to [ESP+0x10])
      */
     long double tx =
-        (long double)cgs_screenXScale * (long double)x;
+        (long double)cgs.screenXScale * (long double)x;
     float ty = (float)(
-        (long double)cgs_screenYScale * (long double)y);
+        (long double)cgs.screenYScale * (long double)y);
 
     /* Four output vertices. For corner i (matrix pair m[2i], m[2i+1]):
      *   vert.x = C*m[2i]     + tx - S*m[2i+1]        (FLD C; FMUL m; FADD tx; FLD S; FMUL m1; FSUBP)

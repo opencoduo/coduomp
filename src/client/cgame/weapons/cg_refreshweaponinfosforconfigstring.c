@@ -24,7 +24,7 @@
  * own reconstruction.
  *
  * Argument passing: the sole caller (0x3003cf96) computes the config string as
- *   EBX = &cg_gameState.stringData[gameState.stringOffsets[csIndex]]
+ *   EBX = &cgs.gameState.stringData[gameState.stringOffsets[csIndex]]
  * (a CG_ConfigString result, csIndex clamped to [0,0x800)) and then
  * `CALL 0x30044a10` with no stack argument — so the string arrives in EBX
  * (register-passed). EBX is never modified inside this function; it is copied to

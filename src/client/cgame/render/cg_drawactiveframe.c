@@ -52,11 +52,11 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
             cg.oldTime = serverTime;
         }
 
-        cg_lagometerFrameSamples[cg_lagometerFrameCount & (LAG_SAMPLES - 1)] =
+        lagometer.frameSamples[lagometer.frameCount & (LAG_SAMPLES - 1)] =
             coduo_int32_from_bits((uint32_t)serverTime -
                              (uint32_t)cg.latestSnapshotTime);
-        cg_lagometerFrameCount = coduo_int32_from_bits(
-            (uint32_t)cg_lagometerFrameCount + 1u);
+        lagometer.frameCount = coduo_int32_from_bits(
+            (uint32_t)lagometer.frameCount + 1u);
     }
     cg_effectFrameTime = (uint32_t)cg.frametime;
 
@@ -124,11 +124,11 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
      * console shellshock; positive indices select the registered array with the
      * console block occupying conceptual slot zero. */
     if (cg.snap->ps.motionState.shellshock.index == 0) {
-        shellshockParams = &cg_consoleShellShock;
+        shellshockParams = &cgs.shellshocks[0];
         shellshockStartTime = cg.shellShockStartTime;
         shellshockDuration = cg.shellShockDuration;
     } else {
-        shellshockParams = &cg_shellShocks[cg.snap->ps.motionState.shellshock.index - 1];
+        shellshockParams = &cgs.shellshocks[cg.snap->ps.motionState.shellshock.index];
         shellshockStartTime = cg.snap->ps.motionState.shellshock.time;
         shellshockDuration = cg.snap->ps.motionState.shellshock.duration;
     }

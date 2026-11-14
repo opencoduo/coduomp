@@ -40,7 +40,7 @@ enum {
 
 void CG_DrawLagometer(void)
 {
-    if (cg_lagometer_vmCvar.integer != qfalse && cgs_localServer == 0) {
+    if (cg_lagometer_vmCvar.integer != qfalse && cgs.localServer == 0) {
         float ax;
         float ay;
         float aw;
@@ -52,20 +52,20 @@ void CG_DrawLagometer(void)
         int32_t currentColorState = -1;
 
         trap_R_SetColor(NULL);
-        qhandle_t lagometerShader = cgs_lagometerShader;
+        qhandle_t lagometerShader = cgs.media.lagometerShader;
         CG_DrawPic(LAGOMETER_X, LAGOMETER_Y,
                    LAGOMETER_WIDTH, LAGOMETER_HEIGHT,
                    lagometerShader);
 
         /* 0x30018c08..0x30018c4c read the four screen scales only after the
          * set-color and background-picture calls have returned. */
-        ax = (float)((long double)cgs_screenXScale *
+        ax = (float)((long double)cgs.screenXScale *
                      (long double)LAGOMETER_X);
-        ay = (float)((long double)cgs_screenYScale *
+        ay = (float)((long double)cgs.screenYScale *
                      (long double)LAGOMETER_Y);
-        aw = (float)((long double)cgs_screenXScale *
+        aw = (float)((long double)cgs.screenXScale *
                      (long double)LAGOMETER_WIDTH);
-        ah = (float)((long double)cgs_screenYScale *
+        ah = (float)((long double)cgs.screenYScale *
                      (long double)LAGOMETER_HEIGHT);
 
         /* 0x30018c5a is FST (keep), not FSTP: `range` is stored rounded and then
@@ -89,11 +89,11 @@ void CG_DrawLagometer(void)
             if (!(aFloat < aw)) {
                 break;
             }
-            uint32_t indexBits = (uint32_t)cg_lagometerFrameCount -
+            uint32_t indexBits = (uint32_t)lagometer.frameCount -
                                  (uint32_t)a - 1u;
             int32_t index = (int32_t)(indexBits & (uint32_t)(LAG_SAMPLES - 1));
             long double valueRaw =
-                (long double)cg_lagometerFrameSamples[index] *
+                (long double)lagometer.frameSamples[index] *
                 (long double)vscale;
             float value = (float)valueRaw;
 
@@ -117,7 +117,7 @@ void CG_DrawLagometer(void)
                                       CG_FloatBits(value),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
-                                      cgs_media_whiteShader);
+                                      cgs.media.whiteShader);
             } else if (value < 0.0f) {
                 value = -value;
                 if (currentColorState != LAG_COLOR_STATE_FRAME_NEGATIVE) {
@@ -138,7 +138,7 @@ void CG_DrawLagometer(void)
                                       CG_FloatBits(value),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
-                                      cgs_media_whiteShader);
+                                      cgs.media.whiteShader);
             }
             a = coduo_int32_from_bits((uint32_t)a + 1u);
         }
@@ -160,16 +160,16 @@ void CG_DrawLagometer(void)
             if (!(aFloat < aw)) {
                 break;
             }
-            uint32_t indexBits = (uint32_t)cg_lagometer.snapshotCount -
+            uint32_t indexBits = (uint32_t)lagometer.snapshotCount -
                                  (uint32_t)a - 1u;
             int32_t index = (int32_t)(indexBits & (uint32_t)(LAG_SAMPLES - 1));
             long double valueRaw =
-                (long double)cg_lagometer.snapshotSamples[index];
+                (long double)lagometer.snapshotSamples[index];
             float value = (float)valueRaw;
 
             if (valueRaw > 0.0L) {
                 int32_t wantedColorState =
-                    ((cg_lagometer.snapshotFlags[index].bytes[0] &
+                    ((lagometer.snapshotFlags[index].bytes[0] &
                       LAG_SNAPSHOT_DELAYED) != 0)
                         ? LAG_COLOR_STATE_SNAPSHOT_DELAYED
                         : LAG_COLOR_STATE_SNAPSHOT_GOOD;
@@ -201,7 +201,7 @@ void CG_DrawLagometer(void)
                                       CG_FloatBits(drawnHeight),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
-                                      cgs_media_whiteShader);
+                                      cgs.media.whiteShader);
             } else if (value < 0.0f) {
                 if (currentColorState != LAG_COLOR_STATE_SNAPSHOT_DROPPED) {
                     currentColorState = LAG_COLOR_STATE_SNAPSHOT_DROPPED;
@@ -220,7 +220,7 @@ void CG_DrawLagometer(void)
                                       CG_FloatBits(range),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
-                                      cgs_media_whiteShader);
+                                      cgs.media.whiteShader);
             }
             a = coduo_int32_from_bits((uint32_t)a + 1u);
         }

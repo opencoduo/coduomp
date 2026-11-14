@@ -7,7 +7,7 @@
 #define CG_FOV_FADE_BYTE_SCALE 0.0039215689f
 
 /*
- * CG_StartFovFade — seed the cg_fovFade timed alpha animator (cgFovFade_t at
+ * CG_StartFovFade — seed the cgs.scrFade timed alpha animator (cgFovFade_t at
  * 0x3044b69c) for a new screen fade, then decide whether the fade is already
  * finished.
  *
@@ -21,14 +21,14 @@
  *
  * Body (0x3001ab50..0x3001ab81), per instruction:
  *   FILD  dword [ESP+4]           ; load numerator255 as an integer onto ST(0)
- *   MOV   [0x3044b6a4],ECX        ; cg_fovFade.startTime  = startTime
+ *   MOV   [0x3044b6a4],ECX        ; cgs.scrFadeStartTime  = startTime
  *   ADD   ECX,EAX                 ; ECX = startTime + durationMs  (fade end time)
- *   MOV   [0x3044b6a8],EAX        ; cg_fovFade.durationMs = durationMs
+ *   MOV   [0x3044b6a8],EAX        ; cgs.scrFadeDuration = durationMs
  *   FMUL  float [0x3007be24]      ; ST(0) = numerator255 * (1/255)   [0x3007be24
  *                                 ;   = 0x3b808081 = 0.00392157f = 1.0f/255.0f]
  *   MOV   EAX,[0x304831b0]        ; EAX = cg.time (cg.time global, ms)
  *   CMP   ECX,EAX                 ; compare endTime vs cg.time
- *   FSTP  float [0x3044b69c]      ; cg_fovFade.startValue = numerator255 / 255.0f
+ *   FSTP  float [0x3044b69c]      ; cgs.scrFadeAlpha = numerator255 / 255.0f
  *   JG    0x3001ab80             ; if endTime >  cg.time the fade is still pending
  *                                 ;   -> leave currentValue untouched, return
  *   MOV   EAX,[0x3044b69c]        ; else (endTime <= cg.time: schedule already
@@ -51,15 +51,15 @@ void CG_StartFovFade(int32_t startTime, int32_t durationMs, int32_t numerator255
     /* The numerator's FILD occurs first and remains live while the integer state
      * is published. ADD is target-dword wrapping and precedes durationMs' store. */
     long double startValueRaw = (long double)numerator255;
-    cg_fovFade.startTime = startTime;
+    cgs.scrFadeStartTime = startTime;
     int32_t endTime = coduo_int32_from_bits(
         (uint32_t)startTime + (uint32_t)durationMs);
-    cg_fovFade.durationMs = durationMs;
+    cgs.scrFadeDuration = durationMs;
     startValueRaw *= (long double)CG_FOV_FADE_BYTE_SCALE;
     int32_t now = cg.time;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     qboolean expired = endTime <= now;
-    cg_fovFade.startValue = (float)startValueRaw;
+    cgs.scrFadeAlpha = (float)startValueRaw;
 
     /* CMP (startTime+durationMs), cg.time / JG: if the fade's end time is still in
      * the future the fade is pending and currentValue keeps its prior value; only
@@ -67,7 +67,7 @@ void CG_StartFovFade(int32_t startTime, int32_t durationMs, int32_t numerator255
      * snapped in immediately. */
     if (expired) {
         uint32_t startValueBits = (uint32_t)CG_FloatBits(
-            cg_fovFade.startValue);
-        cg_fovFade.currentValue = CG_FloatFromBits(startValueBits);
+            cgs.scrFadeAlpha);
+        cgs.scrFadeAlphaCurrent = CG_FloatFromBits(startValueBits);
     }
 }

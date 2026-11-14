@@ -267,11 +267,11 @@ void CG_DrawCrosshair(void)
                      * kept exact, no (float) casts. */
                     float y = (float)(
                         ((long double)cg.refdef.height - (long double)sizeForY) * 0.5f +
-                        (long double)cgs_screenYScale * (long double)projected[1] +
+                        (long double)cgs.screenYScale * (long double)projected[1] +
                         (long double)cg.refdef.y);
                     float x = (float)(
                         ((long double)cg.refdef.width - (long double)sizeForX) * 0.5f +
-                        (long double)cgs_screenXScale * (long double)projected[0] +
+                        (long double)cgs.screenXScale * (long double)projected[0] +
                         (long double)cg.refdef.x);
 
                     // 0x3001a09b CALL 0x3003e0f0.
@@ -307,11 +307,11 @@ void CG_DrawCrosshair(void)
     // shader handle itself is NOT checked; handle 0 is passed through).
     if (weapon->reticleCenter[0] != '\0') {
         // 0x3001a0e8..0x3001a106: projected point scaled to real pixels.
-        long double screenXScaleRaw = (long double)cgs_screenXScale;
+        long double screenXScaleRaw = (long double)cgs.screenXScale;
         int32_t weaponType = weapon->weaponType;
         float projX = (float)(screenXScaleRaw *
                               (long double)projected[0]);
-        float projY = (float)((long double)cgs_screenYScale *
+        float projY = (float)((long double)cgs.screenYScale *
                               (long double)projected[1]);
         // 0x3001a10a/0x3001a110: FILD reticleCenterSize.
         float centerSize = (float)(long double)weapon->reticleCenterSize;
@@ -334,7 +334,7 @@ void CG_DrawCrosshair(void)
                 if (previousRemainder < remainder &&
                     (uint32_t)seconds < 4u) {
                 // 0x3001a150..0x3001a158: alias table indexed by whole seconds.
-                    CG_PlayClientSoundAliasByName(cg_soundGrenadePulse[seconds]);
+                    CG_PlayClientSoundAliasByName(cgs.media.soundGrenadePulse[seconds]);
                 // 0x3001a15d: the machine refetches grenadeTimeLeft after
                 // the call (register refill; the sound trap cannot change it),
                 // matching the re-reads below.
@@ -504,7 +504,7 @@ void CG_DrawCrosshair(void)
              * refdef x/y FIADD'd -- integers exact, no (float) casts. */
             yRaw = spreadYRaw * (long double)dir[i][1];
             yRaw += (long double)projected[1];
-            yRaw *= (long double)cgs_screenYScale;
+            yRaw *= (long double)cgs.screenYScale;
             yRaw += (long double)sideSizeForY * (long double)align[i][1];
             yRaw += (long double)nudge[i][1];
             yRaw -= (long double)sideSizeForY * (long double)dir[i][1] *
@@ -515,7 +515,7 @@ void CG_DrawCrosshair(void)
 
             xRaw = (long double)spreadX * (long double)dir[i][0];
             xRaw += (long double)projected[0];
-            xRaw *= (long double)cgs_screenXScale;
+            xRaw *= (long double)cgs.screenXScale;
             xRaw += (long double)sideSizeForX * (long double)align[i][0];
             xRaw += (long double)nudge[i][0];
             xRaw -= (long double)sideSizeForX * (long double)dir[i][0] *

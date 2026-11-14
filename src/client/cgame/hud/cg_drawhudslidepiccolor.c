@@ -75,20 +75,20 @@ void CG_DrawHudSlidePicColor(const rectDef_t *rect, qhandle_t hShader,
      * 345.0 (0x3007be94), 160.0 (0x3007be90), 1.0 (0x3007bce0). */
     const float x = (float)(((((long double)rect->x - (-25.0L)) *
                               (long double)cg_hudCompassSize_vmCvar.value) -
-                             25.0L) * (long double)cgs_screenXScale);
+                             25.0L) * (long double)cgs.screenXScale);
     const long double yAnchor =
         (((long double)rect->y - 345.0L) *
          (long double)cg_hudCompassSize_vmCvar.value) + 345.0L;
     const long double ySlide =
         ((long double)cg_hudCompassSize_vmCvar.value - 1.0L) * 160.0L;
     const float y = (float)((yAnchor - ySlide) *
-                            (long double)cgs_screenYScale);
+                            (long double)cgs.screenYScale);
     const float w = (float)((long double)cg_hudCompassSize_vmCvar.value *
                             (long double)rect->w *
-                            (long double)cgs_screenXScale);
+                            (long double)cgs.screenXScale);
     const float h = (float)((long double)cg_hudCompassSize_vmCvar.value *
                             (long double)rect->h *
-                            (long double)cgs_screenYScale);
+                            (long double)cgs.screenYScale);
 
     trap_R_SetColor(color);
 

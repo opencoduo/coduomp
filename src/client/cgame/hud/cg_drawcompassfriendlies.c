@@ -270,10 +270,10 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
         }
         cgame_syscall(CG_R_SETCOLOR, (intptr_t)drawColor);
         if (pulse != 0) {
-            CG_DrawPic(x, y, quadSize, quadSize, cg_compassFriendlyShaders[1]);
+            CG_DrawPic(x, y, quadSize, quadSize, cgs.media.compassFriendlyShaders[1]);
         } else {
             CG_DrawRotatedPic(x, y, quadSize, quadSize, rotation,
-                              cg_compassFriendlyShaders[0]);
+                              cgs.media.compassFriendlyShaders[0]);
         }
     }
 

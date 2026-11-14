@@ -24,8 +24,8 @@
 //   cg.nextSnap            [0x30459164]  snapshot_t* : ps.pmType at +0x10
 //   cg_viewSizeCvar        [0x3052eec0]  vmCvar_t      : .integer at +0xc
 //   cg_letterbox_vmCvar.integer   [0x304567ac]  qboolean gate : scale height to 85%
-//   cgs_glconfig.vidWidth  [0x30447a88]  backbuffer width
-//   cgs_glconfig.vidHeight [0x30447a8c]  backbuffer height
+//   cgs.glconfig.vidWidth  [0x30447a88]  backbuffer width
+//   cgs.glconfig.vidHeight [0x30447a8c]  backbuffer height
 //   cg.refdef.x/Y/Width/Height [0x30487a78..0x30487a84]  output rectangle
 //
 // INTERMISSION GATE (0x3003f511..0x3003f526): reads cg.nextSnap, then
@@ -104,8 +104,8 @@ void CG_CalcVrect(void)
     }
 
     {
-        int32_t vidWidth  = cgs_glconfig.vidWidth;
-        int32_t vidHeight = cgs_glconfig.vidHeight;
+        int32_t vidWidth  = cgs.glconfig.vidWidth;
+        int32_t vidHeight = cgs.glconfig.vidHeight;
         /* size percentage of the backbuffer, forced to an even pixel count. */
         int32_t width  = (vidWidth  * widthSize  / 100) & ~1;
         int32_t height = (vidHeight * heightSize / 100) & ~1;

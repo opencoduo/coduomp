@@ -27,7 +27,7 @@
 //
 // The two 23-entry handle tables are registered once by
 // CG_RegisterSurfaceTypeSounds(table, "bullet_small"/"bullet_large") at 0x3002b7ff /
-// 0x3002b80e: cg_bulletSmallSurfaceSounds / cg_bulletLargeSurfaceSounds, each holding
+// 0x3002b80e: cgs.media.bulletSmallSurfaceSounds / cgs.media.bulletLargeSurfaceSounds, each holding
 // one canonical sound-alias name per surface type. The sibling reader at 0x30048f00
 // selects between the exact same two tables and forwards the same 0x3fe channel id to
 // CG_PlaySoundAliasByName.
@@ -38,9 +38,9 @@
 //   30049066 PUSH ESI
 //   30049067 MOV ESI,ECX              ; ESI = poseType (surface index)
 //   30049069 JNZ 0x30049074           ; not 179 -> use the "large" pool
-//   3004906b MOV EAX,[ESI*4+cg_bulletSmallSurfaceSounds] ; small-bullet impact handle
+//   3004906b MOV EAX,[ESI*4+cgs.media.bulletSmallSurfaceSounds] ; small-bullet impact handle
 //   30049072 JMP 0x3004907b
-//   30049074 MOV EAX,[ESI*4+cg_bulletLargeSurfaceSounds] ; large-bullet impact handle
+//   30049074 MOV EAX,[ESI*4+cgs.media.bulletLargeSurfaceSounds] ; large-bullet impact handle
 //   3004907b PUSH 0x3fe               ; entityNum arg for CG_PlaySoundAliasByName (1022)
 //   30049080 MOV ECX,EBX              ; channelObj = &cent->lerpOrigin
 //   30049082 CALL 0x3002ca80          ; CG_PlaySoundAliasByName(channelObj, handle, 0x3fe)
@@ -72,13 +72,13 @@
 
 enum {
     CG_MODEL_EVENT_SURFACE_SOUND_COUNT =
-        sizeof(cg_bulletSmallSurfaceSounds) /
-        sizeof(cg_bulletSmallSurfaceSounds[0])
+        sizeof(cgs.media.bulletSmallSurfaceSounds) /
+        sizeof(cgs.media.bulletSmallSurfaceSounds[0])
 };
 
 _Static_assert(CG_MODEL_EVENT_SURFACE_SOUND_COUNT ==
-                   sizeof(cg_bulletLargeSurfaceSounds) /
-                       sizeof(cg_bulletLargeSurfaceSounds[0]),
+                   sizeof(cgs.media.bulletLargeSurfaceSounds) /
+                       sizeof(cgs.media.bulletLargeSurfaceSounds[0]),
                "model-event bullet sound rows differ in size");
 
 void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIndex,
@@ -108,9 +108,9 @@ void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIn
      * small-bullet impact sound for this surface type; any other id (180) plays the
      * large-bullet one. */
     if (event == 179) {
-        impactSound = cg_bulletSmallSurfaceSounds[poseType];
+        impactSound = cgs.media.bulletSmallSurfaceSounds[poseType];
     } else {
-        impactSound = cg_bulletLargeSurfaceSounds[poseType];
+        impactSound = cgs.media.bulletLargeSurfaceSounds[poseType];
     }
 
     /* 0x3004907b..0x30049082: play the impact sound on the entity's weapon-angles

@@ -4,7 +4,7 @@
 // CG_AddToTeamChat(const char *str)
 //
 // Appends one team-chat message to the team-chat scroll ring
-// (globals.h: teamChatMsgs / teamChatMsgTimes / teamChatPos / teamChatLastPos),
+// (globals.h: cgs.teamChatMsgs / cgs.teamChatMsgTimes / cgs.teamChatPos / cgs.teamLastChatPos),
 // stripping/normalizing Quake3 "^x" color codes and word-wrapping long lines at
 // TEAMCHAT_WIDTH. When a line wraps, the active color code is re-emitted at the
 // start of the continuation line so the color carries across.
@@ -25,7 +25,7 @@
 //  - chatHeight clamp: cg_chatHeight_vmCvar.integer capped to TEAMCHAT_HEIGHT (CMP ..,8 /
 //    JL); if <=0 (signed JLE) the ring is flushed and the function returns.
 //  - cg_chatTime_vmCvar.integer <=0 (signed JLE) also flushes the ring and returns.
-//  - ring index is (teamChatPos % chatHeight) via CDQ/IDIV (signed), line stride
+//  - ring index is (cgs.teamChatPos % chatHeight) via CDQ/IDIV (signed), line stride
 //    TEAMCHAT_LINE_BYTES (IMUL ..,0x10f).
 //  - wrap trigger is len > TEAMCHAT_WIDTH-1 (CMP EBP,0x59 / JLE), i.e. len >= 90.
 //  - color-string test: str[0]=='^' && str[1]!=0 && str[1]!='^' &&
@@ -59,23 +59,23 @@ void CG_AddToTeamChat(const char *str)
         chatHeight = TEAMCHAT_HEIGHT;
     } else if (chatHeight <= 0) {
         /* CMP ESI,EDI(0) / JLE 0x300394e4 */
-        teamChatLastPos = 0;
-        teamChatPos = 0;
+        cgs.teamLastChatPos = 0;
+        cgs.teamChatPos = 0;
         return;
     }
 
     if (cg_chatTime_vmCvar.integer <= 0) {
         /* JLE 0x300394e4 */
-        teamChatLastPos = 0;
-        teamChatPos = 0;
+        cgs.teamLastChatPos = 0;
+        cgs.teamChatPos = 0;
         return;
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (teamChatPos < 0 || teamChatLastPos < 0 ||
-        teamChatLastPos > teamChatPos) {
-        teamChatPos = 0;
-        teamChatLastPos = 0;
+    if (cgs.teamChatPos < 0 || cgs.teamLastChatPos < 0 ||
+        cgs.teamLastChatPos > cgs.teamChatPos) {
+        cgs.teamChatPos = 0;
+        cgs.teamLastChatPos = 0;
     }
 
     len = 0;                         /* EBP */
@@ -83,7 +83,7 @@ void CG_AddToTeamChat(const char *str)
     firstColor = -1;                 /* OR EBX,0xffffffff -> MOV [ESP+0x14],EBX */
     ls = (char *)0;                  /* XOR EDI,EDI */
 
-    p = teamChatMsgs[teamChatPos % chatHeight];
+    p = cgs.teamChatMsgs[cgs.teamChatPos % chatHeight];
     *p = '\0';                       /* MOV byte [EDX],0x0 */
 
     /* CMP byte [ECX],0x0 / JZ finalize: empty input still writes an empty line. */
@@ -99,25 +99,25 @@ void CG_AddToTeamChat(const char *str)
             }
             *p = '\0';               /* terminate the closed line */
 
-            teamChatMsgTimes[teamChatPos % chatHeight] = cg.time;
-            if (teamChatPos == INT32_MAX) {
-                int32_t retainedRows = teamChatPos - teamChatLastPos;
+            cgs.teamChatMsgTimes[cgs.teamChatPos % chatHeight] = cg.time;
+            if (cgs.teamChatPos == INT32_MAX) {
+                int32_t retainedRows = cgs.teamChatPos - cgs.teamLastChatPos;
                 if (retainedRows < chatHeight) {
                     retainedRows++;
                 } else {
                     retainedRows = chatHeight;
                 }
-                teamChatPos = chatHeight + (int32_t)(((uint32_t)INT32_MAX + 1u) %
+                cgs.teamChatPos = chatHeight + (int32_t)(((uint32_t)INT32_MAX + 1u) %
                                                      (uint32_t)chatHeight);
-                teamChatLastPos = teamChatPos - retainedRows;
+                cgs.teamLastChatPos = cgs.teamChatPos - retainedRows;
             } else {
-                teamChatPos++;
+                cgs.teamChatPos++;
             }
 
             /* Open the next ring line and re-emit the active color so it carries
              * across the wrap: "^<firstColor>^<lastColor>". firstColor is BL of
              * the latched value (0xff-low when no color was seen yet). */
-            p = teamChatMsgs[teamChatPos % chatHeight];
+            p = cgs.teamChatMsgs[cgs.teamChatPos % chatHeight];
             *p++ = Q_COLOR_ESCAPE;
             *p++ = (char)firstColor;
             *p++ = Q_COLOR_ESCAPE;
@@ -154,25 +154,25 @@ void CG_AddToTeamChat(const char *str)
 
     /* Finalize the last line (0x300394a4). */
     *p = '\0';
-    teamChatMsgTimes[teamChatPos % chatHeight] = cg.time;
+    cgs.teamChatMsgTimes[cgs.teamChatPos % chatHeight] = cg.time;
 
-    if (teamChatPos == INT32_MAX) {
-        int32_t retainedRows = teamChatPos - teamChatLastPos;
+    if (cgs.teamChatPos == INT32_MAX) {
+        int32_t retainedRows = cgs.teamChatPos - cgs.teamLastChatPos;
         if (retainedRows < chatHeight) {
             retainedRows++;
         } else {
             retainedRows = chatHeight;
         }
-        teamChatPos = chatHeight + (int32_t)(((uint32_t)INT32_MAX + 1u) %
+        cgs.teamChatPos = chatHeight + (int32_t)(((uint32_t)INT32_MAX + 1u) %
                                              (uint32_t)chatHeight);
-        teamChatLastPos = teamChatPos - retainedRows;
+        cgs.teamLastChatPos = cgs.teamChatPos - retainedRows;
     } else {
-        teamChatPos++;
+        cgs.teamChatPos++;
     }
-    if (coduo_int32_from_bits((uint32_t)teamChatPos -
-                         (uint32_t)teamChatLastPos) > chatHeight) {
-        /* CMP EDX,ESI / JLE skips; else teamChatLastPos = teamChatPos - chatHeight */
-        teamChatLastPos = coduo_int32_from_bits((uint32_t)teamChatPos -
+    if (coduo_int32_from_bits((uint32_t)cgs.teamChatPos -
+                         (uint32_t)cgs.teamLastChatPos) > chatHeight) {
+        /* CMP EDX,ESI / JLE skips; else cgs.teamLastChatPos = cgs.teamChatPos - chatHeight */
+        cgs.teamLastChatPos = coduo_int32_from_bits((uint32_t)cgs.teamChatPos -
                                            (uint32_t)chatHeight);
     }
 }

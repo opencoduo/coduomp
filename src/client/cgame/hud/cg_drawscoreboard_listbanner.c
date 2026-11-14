@@ -118,10 +118,10 @@ void CG_DrawScoreboard_ListBanner(float fade)
     CG_DrawInformation(0);
     blackShader = (qhandle_t)cgame_syscall(CG_R_REGISTERSHADER,
                                            (intptr_t)"black", 5);
-    trap_R_DrawStretchPic(CG_FloatBits(120.0f * cgs_screenXScale),
-                          CG_FloatBits(22.0f * cgs_screenYScale),
-                          CG_FloatBits(400.0f * cgs_screenXScale),
-                          CG_FloatBits(430.0f * cgs_screenYScale),
+    trap_R_DrawStretchPic(CG_FloatBits(120.0f * cgs.screenXScale),
+                          CG_FloatBits(22.0f * cgs.screenYScale),
+                          CG_FloatBits(400.0f * cgs.screenXScale),
+                          CG_FloatBits(430.0f * cgs.screenYScale),
                           CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                           CG_FloatBits(1.0f), CG_FloatBits(1.0f),
                           blackShader);
@@ -134,10 +134,10 @@ void CG_DrawScoreboard_ListBanner(float fade)
                                            (intptr_t)"white", 5);
     for (i = 0; i < 6; i++) {
         trap_R_DrawStretchPic(
-            CG_FloatBits(cg_scoreboardBannerBars[i][0] * cgs_screenXScale),
-            CG_FloatBits(cg_scoreboardBannerBars[i][1] * cgs_screenYScale),
-            CG_FloatBits(cg_scoreboardBannerBars[i][2] * cgs_screenXScale),
-            CG_FloatBits(cg_scoreboardBannerBars[i][3] * cgs_screenYScale),
+            CG_FloatBits(cg_scoreboardBannerBars[i][0] * cgs.screenXScale),
+            CG_FloatBits(cg_scoreboardBannerBars[i][1] * cgs.screenYScale),
+            CG_FloatBits(cg_scoreboardBannerBars[i][2] * cgs.screenXScale),
+            CG_FloatBits(cg_scoreboardBannerBars[i][3] * cgs.screenYScale),
             CG_FloatBits(0.0f), CG_FloatBits(0.0f),
             CG_FloatBits(1.0f), CG_FloatBits(1.0f),
             whiteShader);
@@ -157,7 +157,7 @@ void CG_DrawScoreboard_ListBanner(float fade)
      * 0x30036666 FILD; 0x3003666f FSUBR 511.0f) with no float store, so it stays exact
      * in 80-bit -- do NOT re-add a (float) cast, which would round the integer. */
     gametypeToken = (const char *)(intptr_t)cgame_syscall(CG_UI_GET_GAMETYPE_DISPLAY_NAME,
-                                    (intptr_t)cgs_gametype);
+                                    (intptr_t)cgs.gametype);
     gametypeText = (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE,
                                     (intptr_t)gametypeToken,
                                     (intptr_t)"scoreboard gametype display");
@@ -179,7 +179,7 @@ void CG_DrawScoreboard_ListBanner(float fade)
 
     /* --- extract the base map name from cgs.mapname ("maps/mp/<name>.bsp"). */
     for (i = 0; ; i++) {
-        char c = cgs_mapname[i];
+        char c = cgs.mapname[i];
         mapName[i] = c;
         if (c == '\0')
             break;
@@ -290,7 +290,7 @@ void CG_DrawScoreboard_ListBanner(float fade)
         CG_R_TEXT_WIDTH, (intptr_t)serverAddr, 0,
         CG_FloatBits(0.2f), 0));
     textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_R_TEXT_WIDTH, (intptr_t)cgs_hostname, 0,
+        CG_R_TEXT_WIDTH, (intptr_t)cgs.hostname, 0,
         CG_FloatBits(0.2f), 0));
     combinedWidth = coduo_int32_from_bits(
         (uint32_t)textWidth + (uint32_t)labelWidth +
@@ -304,7 +304,7 @@ void CG_DrawScoreboard_ListBanner(float fade)
                 CG_R_TEXT_WIDTH, (intptr_t)serverAddr, 0,
                 CG_FloatBits(scale), 0));
             textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(
-                CG_R_TEXT_WIDTH, (intptr_t)cgs_hostname, 0,
+                CG_R_TEXT_WIDTH, (intptr_t)cgs.hostname, 0,
                 CG_FloatBits(scale), 0));
             combinedWidth = coduo_int32_from_bits(
                 (uint32_t)textWidth + (uint32_t)labelWidth +
@@ -326,7 +326,7 @@ void CG_DrawScoreboard_ListBanner(float fade)
                   0,
                   CG_FloatBits(scale),
                   (intptr_t)color,
-                  (intptr_t)cgs_hostname,
+                  (intptr_t)cgs.hostname,
                   0, 0, 3);
     textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(
         CG_R_TEXT_WIDTH, (intptr_t)serverAddr, 0, CG_FloatBits(scale), 0));

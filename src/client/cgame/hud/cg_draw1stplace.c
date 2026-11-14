@@ -89,7 +89,7 @@ void CG_Draw1stPlace(rectDef_t *obj,
      * array d8/dc/e0, resolved to its proven role name at the canonical definition
      * (globals.h). FILD elsewhere (0x3003184f) proves the signed read.
      */
-    int32_t formattedValue = cg_hudStat5Value;
+    int32_t formattedValue = cgs.scores1;
 
     /* CMP EAX,0xffffd8f1 (== -9999): the sentinel gates the whole emit. */
     if (formattedValue == CG_SCORE_VALUE_UNSET)

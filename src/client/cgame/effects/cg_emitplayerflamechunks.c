@@ -1098,11 +1098,11 @@ region_c_terminalChunk:
         int32_t owner2 = cent->currentState.number;   /* 0x30025229 */
 
         info->emitAccumTime = 0;    /* +0x58; 0x30025222 */
-        /* CG_PlaySoundAliasByName(&emitOrigin, cg_flameStartSound, owner)
+        /* CG_PlaySoundAliasByName(&emitOrigin, cgs.media.flameStartSound, owner)
          * (0x30025231 LEA ECX,[ESP+0x3c]; EAX=[0x3044c24c]; PUSH owner). The
          * channel object is a local scratch at [ESP+0x3c]; soundName is the
          * .data pointer at 0x3044c24c (a config-string handle; role unresolved). */
-        CG_PlaySoundAliasByName(owner2, &emitOrigin, cg_flameStartSound);
+        CG_PlaySoundAliasByName(owner2, &emitOrigin, cgs.media.flameStartSound);
 
         /* info->emitCounter++ ; info->soundPathFlag = arg3 (0x3002523a..0x3002525f) */
         info->emitCounter = coduo_int32_from_bits(

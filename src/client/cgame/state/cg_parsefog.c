@@ -12,8 +12,8 @@
  */
 void CG_ParseFog(void)
 {
-    char *cursor = &cg_gameState.stringData[
-        cg_gameState.stringOffsets[CS_FOGVARS]];
+    char *cursor = &cgs.gameState.stringData[
+        cgs.gameState.stringOffsets[CS_FOGVARS]];
     float values[6];
     char *token;
 

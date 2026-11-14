@@ -6,7 +6,7 @@
 // Source RVA: 0x30031c40
 const char *CG_GameTypeString(void)
 {
-    return cgs_gametype;
+    return cgs.gametype;
 }
 
 // Source RVA: 0x30004d50

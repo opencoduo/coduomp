@@ -74,7 +74,7 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
                   modelIndex);
         return;
     }
-    qhandle_t modelHandle = cg_gameModels[modelIndex];
+    qhandle_t modelHandle = cgs.gameModels[modelIndex];
     int32_t eType = cent->currentState.eType;
     int32_t entityNum = cent->currentState.number;
     CG_RefreshEntityDObjAnimTree(entityNum, eType, modelHandle);

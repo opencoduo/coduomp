@@ -19,8 +19,8 @@
 //   (fallthrough) error:
 //     PUSH ESI; PUSH 0x30077d90; CALL 0x3002b300; ADD ESP,8   ; caller-cleaned
 //   lookup:
-//     MOV  EAX,[ESI*4 + 0x30440a00]   ; EAX = cg_gameState.stringOffsets[index]
-//     ADD  EAX,0x30442a00             ; EAX = cg_gameState.stringData + offset
+//     MOV  EAX,[ESI*4 + 0x30440a00]   ; EAX = cgs.gameState.stringOffsets[index]
+//     ADD  EAX,0x30442a00             ; EAX = cgs.gameState.stringData + offset
 //   POP  ESI; RET                     ; cdecl, caller-cleaned (no RET imm)
 //
 // Note the bounds check only *reports* an out-of-range index via
@@ -28,8 +28,8 @@
 // the ADD/MOV are reached on every path. This matches the original Q3/CoD
 // CG_ConfigString, which relies on Com_Error to not return.
 //
-// 0x30440a00 = cg_gameState.stringOffsets[2048] (int32 byte-offsets),
-// 0x30442a00 = cg_gameState.stringData (packed string heap); their 0x2000-byte
+// 0x30440a00 = cgs.gameState.stringOffsets[2048] (int32 byte-offsets),
+// 0x30442a00 = cgs.gameState.stringData (packed string heap); their 0x2000-byte
 // separation proves MAX_CONFIGSTRINGS == 2048. The layout and dimensions come
 // from the shared game_state_types.h boundary included by globals.h; the
 // function declarations remain in client_recovered.h.
@@ -47,5 +47,5 @@ const char *CG_ConfigString(int index)
     }
 
     // MOV EAX,[ESI*4 + 0x30440a00] ; ADD EAX,0x30442a00
-    return &cg_gameState.stringData[cg_gameState.stringOffsets[index]];
+    return &cgs.gameState.stringData[cgs.gameState.stringOffsets[index]];
 }

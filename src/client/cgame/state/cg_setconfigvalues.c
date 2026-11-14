@@ -11,16 +11,16 @@
 // that proven behavior; exact CoD symbol unproven.
 //
 // Machine-code shape:
-//   - 0x30038430  guard: MOV EAX,[cgs_localServer]; TEST; JNZ ret.
+//   - 0x30038430  guard: MOV EAX,[cgs.localServer]; TEST; JNZ ret.
 //   - EDI is the value config-string index, initialized to 0x115 (277 =
 //     CS_CONFIGVALUE_VALUES) and incremented each iteration.
-//   - EBX is a walk cursor initialized to &cg_gameState.stringOffsets[277]
+//   - EBX is a walk cursor initialized to &cgs.gameState.stringOffsets[277]
 //     (0x30440e54) and stepped by 4 (one int32 offset slot) each iteration, so
-//     [EBX]      == cg_gameState.stringOffsets[EDI]        (value cfg offset)
-//     [EBX-0x200]== cg_gameState.stringOffsets[EDI-0x80]   (name  cfg offset)
+//     [EBX]      == cgs.gameState.stringOffsets[EDI]        (value cfg offset)
+//     [EBX-0x200]== cgs.gameState.stringOffsets[EDI-0x80]   (name  cfg offset)
 //     (0x200/4 == 0x80 == 128 == CS_CONFIGVALUE_VALUES - CS_CONFIGVALUE_NAMES).
 //   - Each config-string pointer is formed as
-//     &cg_gameState.stringData[cg_gameState.stringOffsets[cfg]] (data base
+//     &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfg]] (data base
 //     0x30442a00), which is the inlined CG_ConfigString body, including its
 //     out-of-range Com_ErrorMessage("CG_ConfigString: bad index: %i", cfg)
 //     (bounds [0,0x800); the error is emitted but execution falls through).
@@ -38,7 +38,7 @@ void CG_SetConfigValues(void)
     int valueIndex;
 
     /* 0x30038430: run-once guard. */
-    if (cgs_localServer != 0) {
+    if (cgs.localServer != 0) {
         return;
     }
 
@@ -58,7 +58,7 @@ void CG_SetConfigValues(void)
         if (nameIndex < 0 || nameIndex >= MAX_CONFIGSTRINGS) {
             Com_ErrorMessage(cg_configStringBadIndexFmt, nameIndex);
         }
-        name = &cg_gameState.stringData[cg_gameState.stringOffsets[nameIndex]];
+        name = &cgs.gameState.stringData[cgs.gameState.stringOffsets[nameIndex]];
 
         /* 0x3003846e: stop at the first empty config-value name. */
         if (name[0] == '\0') {
@@ -69,7 +69,7 @@ void CG_SetConfigValues(void)
         if (valueIndex < 0 || valueIndex >= MAX_CONFIGSTRINGS) {
             Com_ErrorMessage(cg_configStringBadIndexFmt, valueIndex);
         }
-        value = &cg_gameState.stringData[cg_gameState.stringOffsets[valueIndex]];
+        value = &cgs.gameState.stringData[cgs.gameState.stringOffsets[valueIndex]];
 
         /* 0x30038496: cgame_syscall(9, name, value) == trap_Cvar_Set(name,value). */
         cgame_syscall(CG_CVAR_SET, name, value);

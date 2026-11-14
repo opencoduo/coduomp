@@ -47,7 +47,7 @@ void CG_RegisterImpactEffects(void)
     char fileList[CG_IMPACT_FX_DIR_LISTBUF];
 
     /* The 22 (effectTypeName, handle-row) pairs, in source-declaration order. Each
-     * handle row is &cg_impactEffects[row][0]; the compiler emitted these as the row
+     * handle row is &cgs.media.impactEffects[row][0]; the compiler emitted these as the row
      * base addresses (0x3044c274 + row*0x60) stored at ESP+0x84..0xd8 (final-loop
      * ESP+0x70), paired with the effect-type name strings at ESP+0x2c..0x80
      * (final-loop ESP+0x18). The final registration loop walks these in order. */
@@ -64,14 +64,14 @@ void CG_RegisterImpactEffects(void)
     /* The machine code constructs these row-base pointers directly in the
      * stack frame; it does not keep a static row-number lookup table. */
     qhandle_t *const effectHandleRows[CG_IMPACT_EFFECT_TYPES] = {
-        cg_impactEffects[1],  cg_impactEffects[7],  cg_impactEffects[2],
-        cg_impactEffects[8],  cg_impactEffects[0],  cg_impactEffects[6],
-        cg_impactEffects[3],  cg_impactEffects[9],  cg_impactEffects[4],
-        cg_impactEffects[10], cg_impactEffects[5],  cg_impactEffects[11],
-        cg_impactEffects[13], cg_impactEffects[14], cg_impactEffects[15],
-        cg_impactEffects[16], cg_impactEffects[17], cg_impactEffects[18],
-        cg_impactEffects[19], cg_impactEffects[20], cg_impactEffects[12],
-        cg_impactEffects[21]
+        cgs.media.impactEffects[1],  cgs.media.impactEffects[7],  cgs.media.impactEffects[2],
+        cgs.media.impactEffects[8],  cgs.media.impactEffects[0],  cgs.media.impactEffects[6],
+        cgs.media.impactEffects[3],  cgs.media.impactEffects[9],  cgs.media.impactEffects[4],
+        cgs.media.impactEffects[10], cgs.media.impactEffects[5],  cgs.media.impactEffects[11],
+        cgs.media.impactEffects[13], cgs.media.impactEffects[14], cgs.media.impactEffects[15],
+        cgs.media.impactEffects[16], cgs.media.impactEffects[17], cgs.media.impactEffects[18],
+        cgs.media.impactEffects[19], cgs.media.impactEffects[20], cgs.media.impactEffects[12],
+        cgs.media.impactEffects[21]
     };
 
     int numFiles;

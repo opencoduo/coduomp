@@ -16,7 +16,7 @@
 // are the cg.activeSnapshots[2] double buffer; 0x30447ab4 (owner=g_runframe) is
 // cg.processedSnapshotNum; 0x30459158 is cg.latestSnapshotNum; the ring at
 // 0x305380a4/0x305382a4/0x305384a4 (owner=vector4scale) is the lagometer snapshot
-// ring cg_lagometer. All resolved by machine-code producer/consumer evidence and
+// ring lagometer. All resolved by machine-code producer/consumer evidence and
 // renamed at their globals.h/globals.c definitions.
 //
 // ABI: standard cdecl, caller-cleaned. ESI is callee-saved (PUSH ESI / POP ESI);
@@ -37,7 +37,7 @@ enum { CG_SNAPSHOT_RANGE_WARN = 1000 };
 snapshot_t *CG_ReadNextSnapshot(void)
 {
     /* 0x3003d220 / 0x3003d225: snapshot the two counters into locals. */
-    int32_t processed = cg_processedSnapshotNum;      /* [0x30447ab4] */
+    int32_t processed = cgs.processedSnapshotNum;      /* [0x30447ab4] */
     int32_t latest = cg.latestSnapshotNum;            /* [0x30459158] */
 
     /* 0x3003d22b..0x3003d24c: warn if the engine has run far ahead of us.
@@ -50,7 +50,7 @@ snapshot_t *CG_ReadNextSnapshot(void)
                          latest, processed);
         /* 0x3003d241/0x3003d247: reload both counters after the call. */
         latest = cg.latestSnapshotNum;
-        processed = cg_processedSnapshotNum;
+        processed = cgs.processedSnapshotNum;
     }
 
     /* 0x3003d24f/0x3003d252: if we have already processed everything the engine has,
@@ -65,7 +65,7 @@ snapshot_t *CG_ReadNextSnapshot(void)
 
         /* 0x3003d276/0x3003d27b: ++processedSnapshotNum, written back to the global. */
         processed = coduo_int32_from_bits((uint32_t)processed + 1u);
-        cg_processedSnapshotNum = processed;
+        cgs.processedSnapshotNum = processed;
 
         /* 0x3003d277..0x3003d286: trap_GetSnapshot(processedSnapshotNum, dest).
          * Three dwords pushed (id, number, dest), caller-cleaned (ADD ESP,0xc). */
@@ -176,18 +176,18 @@ snapshot_t *CG_ReadNextSnapshot(void)
 
         /* 0x3003d28d..0x3003d2ba: the read failed (snapshot dropped). This is the
          * NULL branch of CG_AddLagometerSnapshotInfo inlined:
-         *   cg_lagometer.snapshotSamples[snapshotCount & 0x7f] = -1;
-         *   ++cg_lagometer.snapshotCount;
+         *   lagometer.snapshotSamples[snapshotCount & 0x7f] = -1;
+         *   ++lagometer.snapshotCount;
          * Then reload processed/latest and continue the loop while processed < latest
          * (JL 0x3003d260). The index mask is LAG_SAMPLES-1 (128-entry ring). */
-        int32_t snapshotCount = cg_lagometer.snapshotCount; /* 0x3003d28d */
+        int32_t snapshotCount = lagometer.snapshotCount; /* 0x3003d28d */
         latest = cg.latestSnapshotNum;                    /* 0x3003d292 reload */
-        cg_lagometer.snapshotSamples[
+        lagometer.snapshotSamples[
             (uint32_t)snapshotCount & (uint32_t)(LAG_SAMPLES - 1)] = -1;
         int32_t nextSnapshotCount = coduo_int32_from_bits(
-            (uint32_t)cg_lagometer.snapshotCount + 1u);    /* 0x3003d2a6/0x3003d2b1 */
-        processed = cg_processedSnapshotNum;              /* 0x3003d2ac reload */
-        cg_lagometer.snapshotCount = nextSnapshotCount;    /* 0x3003d2b4 store */
+            (uint32_t)lagometer.snapshotCount + 1u);    /* 0x3003d2a6/0x3003d2b1 */
+        processed = cgs.processedSnapshotNum;              /* 0x3003d2ac reload */
+        lagometer.snapshotCount = nextSnapshotCount;    /* 0x3003d2b4 store */
     }
 
     /* 0x3003d2bc: XOR EAX,EAX ; RET — no next snapshot available. */

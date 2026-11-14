@@ -153,5 +153,5 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle)
      * ECX=&emitPoint (channelObj), EAX=whizby handle (0x3044c1e4), pushed arg=0x3fe
      * (entity/loop number). The returned started-sound number is discarded. */
     CG_PlaySoundAliasByName(CG_WHIZBY_ENTITYNUM_WORLD,
-                            emitPoint, cg_soundWhizby);
+                            emitPoint, cgs.media.soundWhizby);
 }

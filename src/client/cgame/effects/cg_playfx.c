@@ -11,7 +11,7 @@
 // randomization. Its out-of-range diagnostic string
 //   "ERROR: CG_PlayFx called with invalid effect id %i\n"  (0x30077150)
 // names it directly, and its body is the effect-play tail shared with the culling
-// variant at 0x30021a30 (same cg_effectDefs table, same 0xe7/0xe8 play traps, same
+// variant at 0x30021a30 (same cgs.effectDefs table, same 0xe7/0xe8 play traps, same
 // error string).
 //
 // Register-argument ABI (proven at the call sites in 0x30022810): the effect
@@ -26,7 +26,7 @@
 //   30022728 JLE  0x30022763         -> if (fxId <= 0) goto invalid  (signed)
 //   3002272a CMP  EAX,0x50
 //   3002272d JGE  0x30022763         -> if (fxId >= 80) goto invalid (signed)
-//   3002272f MOV  EAX,[EAX*4+table]  -> handle = cg_effectDefs[fxId]
+//   3002272f MOV  EAX,[EAX*4+table]  -> handle = cgs.effectDefs[fxId]
 //   30022736 ADD  EDX,0x208          -> origin = &self->lerpOrigin
 //   3002273c TEST ECX,ECX
 //   3002273e JZ   0x30022752         -> if (dir == NULL) origin-only path
@@ -45,7 +45,7 @@ void CG_PlayFx(centity_t *self, const vec_t *dir)
         return;
     }
 
-    uint32_t handle = cg_effectDefs[fxId];
+    uint32_t handle = cgs.effectDefs[fxId];
 
     if (dir != NULL) {
         cgame_syscall(CG_PLAY_EFFECT_ORIENTED,

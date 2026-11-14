@@ -11,10 +11,10 @@
 //
 // Behavior (all proven against the .mcode instruction stream):
 //   * Scale the four screen args by the cgs screen-scale globals, alternating X/Y:
-//       X0 = cgs_screenXScale * x   ([0x30447aa4], [ESP+0x48])
-//       Y1 = cgs_screenYScale * y   ([0x30447aa8], [ESP+0x4c])
-//       X2 = cgs_screenXScale * w   ([0x30447aa4], [ESP+0x50])
-//       Y3 = cgs_screenYScale * h   ([0x30447aa8], [ESP+0x54])
+//       X0 = cgs.screenXScale * x   ([0x30447aa4], [ESP+0x48])
+//       Y1 = cgs.screenYScale * y   ([0x30447aa8], [ESP+0x4c])
+//       X2 = cgs.screenXScale * w   ([0x30447aa4], [ESP+0x50])
+//       Y3 = cgs.screenYScale * h   ([0x30447aa8], [ESP+0x54])
 //     (this binary defines screenXScale = vidWidth/480, screenYScale = vidHeight/640,
 //      swapped vs stock CoD/Q3 — see globals.h; this code just consumes them.)
 //   * Convert `angle` (degrees, [ESP+0x58]) to radians as two separate single-
@@ -45,7 +45,7 @@
 // 0x30031d2e (six PUSHes). The function cleans its own frame + syscall pushes
 // (ADD ESP,0x54) and does a bare RET; void return.
 
-#include "client/cgame/globals.h"          /* cgs_screenXScale/YScale, cgame_syscall, cg_rotatedPicShaderParams */
+#include "client/cgame/globals.h"          /* cgs.screenXScale/YScale, cgame_syscall, cg_rotatedPicShaderParams */
 #include "client/cgame/client_recovered.h" /* CG_R_DRAW_ROTATED_QUAD, CG_DrawRotatedPic decl */
 
 #include "compat/coduo_native_x87.h"
@@ -61,10 +61,10 @@
 void CG_DrawRotatedPic(float x, float y, float w, float h, float angle, int32_t hShader)
 {
     /* Screen-scaled top-left (X0,Y1) and dimensions (X2,Y3). */
-    float X0 = cgs_screenXScale * x;
-    float Y1 = cgs_screenYScale * y;
-    float X2 = cgs_screenXScale * w;
-    float Y3 = cgs_screenYScale * h;
+    float X0 = cgs.screenXScale * x;
+    float Y1 = cgs.screenYScale * y;
+    float X2 = cgs.screenXScale * w;
+    float Y3 = cgs.screenYScale * h;
 
     /* angle (degrees) -> radians, split as the machine code does. */
     float angleRad = (float)(

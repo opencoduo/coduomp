@@ -36,7 +36,7 @@
 //   No return; bare RET after the frame teardown (ADD ESP,0x1c).
 //
 // COORDINATES: every draw is in virtual-640x480 space rescaled to the physical
-// framebuffer by cgs_screenXScale (x/width) and cgs_screenYScale (y/height), the
+// framebuffer by cgs.screenXScale (x/width) and cgs.screenYScale (y/height), the
 // standard CG_AdjustFrom640 rescale that trap_R_DrawStretchPic expects. CG_DrawPic
 // (0x3001caa0) performs that same rescale internally, so the arrow/key glyphs pass
 // their virtual coordinates directly. Every coordinate is single-precision x87 math
@@ -122,13 +122,13 @@ void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY,
         (long double)CG_SB_SCROLL_WINDOW_HEIGHT - (long double)topY -
         (long double)CG_SB_SCROLL_TOP_INSET;
     trap_R_DrawStretchPic(
-        CG_FloatBits((float)((long double)cgs_screenXScale *
+        CG_FloatBits((float)((long double)cgs.screenXScale *
                              (long double)CG_SB_SCROLL_TRACK_X)),
-        CG_FloatBits((float)((long double)cgs_screenYScale *
+        CG_FloatBits((float)((long double)cgs.screenYScale *
                              (long double)topY)),
-        CG_FloatBits((float)((long double)cgs_screenXScale *
+        CG_FloatBits((float)((long double)cgs.screenXScale *
                              (long double)CG_SB_SCROLL_TRACK_WIDTH)),
-        CG_FloatBits((float)((long double)cgs_screenYScale * trackHeight)),
+        CG_FloatBits((float)((long double)cgs.screenYScale * trackHeight)),
         CG_FloatBits(0.0f), CG_FloatBits(0.0f),
         CG_FloatBits(1.0f), CG_FloatBits(1.0f),
         (int32_t)blackShader);
@@ -183,13 +183,13 @@ void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY,
     trap_R_SetColor(drawColor);
 
     trap_R_DrawStretchPic(
-        CG_FloatBits((float)((long double)cgs_screenXScale *
+        CG_FloatBits((float)((long double)cgs.screenXScale *
                              (long double)CG_SB_SCROLL_THUMB_X)),
-        CG_FloatBits((float)((long double)cgs_screenYScale *
+        CG_FloatBits((float)((long double)cgs.screenYScale *
                              (long double)thumbY)),
-        CG_FloatBits((float)((long double)cgs_screenXScale *
+        CG_FloatBits((float)((long double)cgs.screenXScale *
                              (long double)CG_SB_SCROLL_THUMB_WIDTH)),
-        CG_FloatBits((float)((long double)cgs_screenYScale *
+        CG_FloatBits((float)((long double)cgs.screenYScale *
                              (long double)thumbHeight)),
         CG_FloatBits(0.0f), CG_FloatBits(0.0f),
         CG_FloatBits(1.0f), CG_FloatBits(1.0f),

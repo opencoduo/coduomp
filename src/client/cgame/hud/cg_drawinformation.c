@@ -69,7 +69,7 @@ void CG_DrawInformation(qboolean force)
     /* 0x3002a635..0x3002a63c resolves config string zero before the force
      * branch; the forced path does not consume it, but the target performs the
      * load unconditionally. */
-    serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
+    serverInfo = &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]];
 
     if (force != qfalse) {
         trap_Cvar_VariableStringBuffer("cl_serverloadmap", mapBuffer,
@@ -109,10 +109,10 @@ void CG_DrawInformation(qboolean force)
         trap_R_SetColor(NULL);
     }
 
-    trap_R_DrawStretchPic(CG_FloatBits(cgs_screenXScale * 0.0f),
-                          CG_FloatBits(cgs_screenYScale * 0.0f),
-                          CG_FloatBits(cgs_screenXScale * 640.0f),
-                          CG_FloatBits(cgs_screenYScale * 480.0f),
+    trap_R_DrawStretchPic(CG_FloatBits(cgs.screenXScale * 0.0f),
+                          CG_FloatBits(cgs.screenYScale * 0.0f),
+                          CG_FloatBits(cgs.screenXScale * 640.0f),
+                          CG_FloatBits(cgs.screenYScale * 480.0f),
                           CG_FloatBits(0.0f),
                           CG_FloatBits(0.0f),
                           CG_FloatBits(1.0f),

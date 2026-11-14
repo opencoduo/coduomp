@@ -36,9 +36,9 @@
 //              Com_sprintf(buf, 64, "flameSmoke%i", EBX + 1);
 //              cg_flameSmokeMaterials[EBX] = CG_RegisterMaterial(buf, 4).
 //   0x30027a65 PUSH "fx/smoke/smoke_flamethrower.efx"; PUSH 0xe2; CALL [cgame_syscall]
-//              -> cg_flameSmokeEffect      = cgame_syscall(CG_FX_REGISTER_EFFECT, name).
+//              -> cgs.media.flameSmokeEffect      = cgame_syscall(CG_FX_REGISTER_EFFECT, name).
 //   0x30027a75 PUSH "fx/smoke/smoke_flamethrower_lg.efx"; PUSH 0xe2; CALL syscall
-//              -> cg_flameSmokeEffectLarge = cgame_syscall(CG_FX_REGISTER_EFFECT, name).
+//              -> cgs.media.flameSmokeEffectLarge = cgame_syscall(CG_FX_REGISTER_EFFECT, name).
 //   0x30027a99 MOV [cg_flameInitStateReset], 0.
 //   0x30027aa4 CALL __security_check_cookie; RET.
 //
@@ -81,9 +81,9 @@ void CG_InitFlameChunks(void)
 
     /* 0x30027a65 / 0x30027a75: register the two flamethrower smoke effects.
      * Args pushed name then 0xe2, so the id is 0xe2 and the payload is the name. */
-    cg_flameSmokeEffect = coduo_int32_from_bits((uint32_t)cgame_syscall(
+    cgs.media.flameSmokeEffect = coduo_int32_from_bits((uint32_t)cgame_syscall(
         CG_FX_REGISTER_EFFECT, "fx/smoke/smoke_flamethrower.efx"));
-    cg_flameSmokeEffectLarge = coduo_int32_from_bits((uint32_t)cgame_syscall(
+    cgs.media.flameSmokeEffectLarge = coduo_int32_from_bits((uint32_t)cgame_syscall(
         CG_FX_REGISTER_EFFECT, "fx/smoke/smoke_flamethrower_lg.efx"));
 
     /* 0x30027a99: MOV dword ptr [0x300851e0],0 — flame-subsystem dword reset to 0 as

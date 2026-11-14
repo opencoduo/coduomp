@@ -157,7 +157,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
 
     // 0x300303e0: dispatch selector + validity-table gate. The original indexes
     // one physically contiguous qhandle_t band beginning at 0x3044b6f8:
-    // selector -1 is cgs_media_hudNoWeaponIcon, 0..9 are fixed hint shaders,
+    // selector -1 is cgs.media.hudNoWeaponIcon, 0..9 are fixed hint shaders,
     // 10..137 are weapon HUD icons, and 138..265 are weapon ammo icons.
     int32_t kind = cg.usableHintKind;                 // [0x3048ae08]
     qhandle_t hintShader = 0;
@@ -170,16 +170,16 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
      * retain the original local-state mapping too; selector 266 reads the
      * original zero padding after the band. */
     if (kind == -1) {
-        hintShader = cgs_media_hudNoWeaponIcon;
+        hintShader = cgs.media.hudNoWeaponIcon;
     } else if (kind >= CURSOR_HINT_OFF &&
                kind < CURSOR_HINT_BUILTIN_ICON_COUNT) {
-        hintShader = cgs_media_usableHintShaders[kind];
+        hintShader = cgs.media.usableHintShaders[kind];
     } else if (kind >= CURSOR_HINT_WEAPON_BASE &&
                kind < CURSOR_HINT_WEAPON_BASE + MAX_WEAPONS) {
-        hintShader = cg_weaponHudIcons[kind - CURSOR_HINT_WEAPON_BASE];
+        hintShader = cgs.media.weaponHudIcons[kind - CURSOR_HINT_WEAPON_BASE];
     } else if (kind >= CURSOR_HINT_WEAPON_BASE + MAX_WEAPONS &&
                kind < CURSOR_HINT_WEAPON_BASE + 2 * MAX_WEAPONS) {
-        hintShader = cg_weaponAmmoIcons[
+        hintShader = cgs.media.weaponAmmoIcons[
             kind - (CURSOR_HINT_WEAPON_BASE + MAX_WEAPONS)];
     }
 

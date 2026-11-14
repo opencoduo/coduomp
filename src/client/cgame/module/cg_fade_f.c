@@ -31,14 +31,14 @@ void CG_Fade_f(void)
     trap_Argv(5, g_textScratchBuffer, MAX_STRING_CHARS);
     seconds = coduo_crt_atoi(g_textScratchBuffer);
 
-    cg_fovFade.startValue = (float)(
+    cgs.scrFadeAlpha = (float)(
         (long double)alpha * (long double)CG_FADE_BYTE_SCALE);
-    cg_fovFade.durationMs =
+    cgs.scrFadeDuration =
         (int32_t)((uint32_t)seconds * (uint32_t)CG_MILLISECONDS_PER_SECOND);
-    cg_fovFade.startTime = cg.time;
+    cgs.scrFadeStartTime = cg.time;
     int32_t endTime = coduo_int32_from_bits(
-        (uint32_t)cg_fovFade.startTime + (uint32_t)cg_fovFade.durationMs);
-    if (endTime <= cg_fovFade.startTime) {
-        cg_fovFade.currentValue = cg_fovFade.startValue;
+        (uint32_t)cgs.scrFadeStartTime + (uint32_t)cgs.scrFadeDuration);
+    if (endTime <= cgs.scrFadeStartTime) {
+        cgs.scrFadeAlphaCurrent = cgs.scrFadeAlpha;
     }
 }

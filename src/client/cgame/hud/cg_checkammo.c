@@ -6,7 +6,7 @@
 // persistent state so the sound fires only on the transition into the low state.
 //
 // Name evidence: the sound it plays is the registered "player_out_of_ammo" handle
-// (cg_soundOutOfAmmo, 0x3044bbb8 — see globals.c: the registration pass 0x3002b560
+// (cgs.media.soundOutOfAmmo, 0x3044bbb8 — see globals.c: the registration pass 0x3002b560
 // stores syscall-0xc3("player_out_of_ammo") there). The Mac cgame symbol table has
 // CG_CheckAmmo for this per-frame warning check; the separate CG_OutOfAmmoChange is
 // already recovered at 0x300475f0. The mechanical size-guess "QuatEigenTrace" is
@@ -80,7 +80,7 @@ void CG_CheckAmmo(void)
      * client number. */
     if (cg.lowAmmoWarning == 0) {
         CG_PlaySoundAliasByName(snap->ps.psClientNum, &snap->ps.psOrigin,
-                                cg_soundOutOfAmmo);
+                                cgs.media.soundOutOfAmmo);
     }
 
     /* Record the warned state: 2 when completely out of ammo, 1 otherwise. */

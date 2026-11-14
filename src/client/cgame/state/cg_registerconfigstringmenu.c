@@ -29,10 +29,10 @@
 //   300387a0  PUSH 0x30077d90              ;   "CG_ConfigString: bad index: %i"
 //   300387a5  CALL 0x3002b300              ;   Com_ErrorMessage (caller-cleaned)
 //   300387aa  ADD ESP,0x8
-//   300387ad  MOV ESI,[ESI*4 + 0x30440a00] ; ESI = cg_gameState.stringOffsets[index]
-//   300387b4  ADD ESI,0x30442a00           ; ESI = &cg_gameState.stringData[offset]
+//   300387ad  MOV ESI,[ESI*4 + 0x30440a00] ; ESI = cgs.gameState.stringOffsets[index]
+//   300387b4  ADD ESI,0x30442a00           ; ESI = &cgs.gameState.stringData[offset]
 //   300387ba  CMP byte ptr [ESI],0x0 / JZ  ; empty string -> skip registration
-//   300387bf  PUSH ESI                     ; name = &cg_gameState.stringData[offset]
+//   300387bf  PUSH ESI                     ; name = &cgs.gameState.stringData[offset]
 //   300387c0  PUSH 0x7b                    ; trap id 0x7b = CG_R_REGISTERMENU
 //   300387c2  CALL [0x30085e9c]            ; cgame_syscall(0x7b, name) -> int ok
 //   300387c8  ADD ESP,0x8                  ; clean 2 dwords (id + name)
@@ -68,7 +68,7 @@ void CG_RegisterConfigStringMenu(int index)
     }
 
     /* 0x300387ad/0x300387b4: config string N = &stringData[offsets[N]]. */
-    name = &cg_gameState.stringData[cg_gameState.stringOffsets[index]];
+    name = &cgs.gameState.stringData[cgs.gameState.stringOffsets[index]];
 
     /* 0x300387ba: only register a non-empty name. */
     if (name[0] != '\0') {

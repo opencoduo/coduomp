@@ -7,7 +7,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30018770_30018a0a.mcode
 //
 // CG_DrawTeamInfo: draw the team-chat scroll ring at the top-left of the HUD.
-// Each still-visible ring line (teamChatMsgs[]) is drawn as a dim, fading
+// Each still-visible ring line (cgs.teamChatMsgs[]) is drawn as a dim, fading
 // full-width hudColorBar background strip with the wrapped chat text over it.
 // This is the id-Tech CG_DrawTeamInfo, drawn every visible frame by
 // CG_Draw2D (0x3001bfe0, calls at 0x3001c047 and 0x3001c074).
@@ -16,10 +16,10 @@
 // game_mp.dll (server mover) function (win size 0x29a ~= 0x29c) and is REJECTED:
 // this is a cgame 2D HUD drawer, not a server mover. The prior caller-observed
 // name CG_DrawWarmup is likewise wrong. The identity is proven by the exclusive
-// team-chat state it touches: cg_chatHeight_vmCvar.integer (clamp), teamChatPos /
-// teamChatLastPos (the scroll ring cursors), teamChatMsgTimes[] (per-line
+// team-chat state it touches: cg_chatHeight_vmCvar.integer (clamp), cgs.teamChatPos /
+// cgs.teamLastChatPos (the scroll ring cursors), cgs.teamChatMsgTimes[] (per-line
 // timestamps), cg_chatTime_vmCvar.integer / cg_chatTime_vmCvar.value (the fade window),
-// teamChatMsgs[] (the 8x271-byte line ring), and the cgs.media hudColorBar
+// cgs.teamChatMsgs[] (the 8x271-byte line ring), and the cgs.media hudColorBar
 // shader (0x3044b6c0) used for the background strip.
 //
 // Constants (dumped via objdump -s -j .rdata):
@@ -38,7 +38,7 @@
 //   plus CG_R_DRAWSTRETCHPIC via trap_R_DrawStretchPic (0x3003e0f0) for the strip.
 //
 // Every screen coordinate is scaled from the 480x640 virtual space to real
-// pixels via cgs_screenXScale / cgs_screenYScale, exactly like CG_DrawPic.
+// pixels via cgs.screenXScale / cgs.screenYScale, exactly like CG_DrawPic.
 //
 // The dense per-line ESP-relative stack shuffling was resolved by tracking the
 // frame pointer through the loop body; the slot roles below are base-relative
@@ -56,31 +56,31 @@ void CG_DrawTeamInfo(void)
         return;
     }
 
-    int32_t lastPos = teamChatLastPos;       /* 0x3001878c ECX = [0x3044b684] */
-    int32_t pos = teamChatPos;               /* 0x30018793 EDI = [0x3044b680] */
+    int32_t lastPos = cgs.teamLastChatPos;       /* 0x3001878c ECX = [0x3044b684] */
+    int32_t pos = cgs.teamChatPos;               /* 0x30018793 EDI = [0x3044b680] */
     if (lastPos == pos) {                     /* 0x30018799..0x3001879b: ring empty */
         return;
     }
 
     // 0x300187a1..0x300187c0: scroll the oldest still-visible line out once it has
-    // aged past the visible window. teamChatMsgTimes is indexed by (cursor mod
+    // aged past the visible window. cgs.teamChatMsgTimes is indexed by (cursor mod
     // chatHeight); cg_chatTime_vmCvar.integer is the integer visible-window (ms).
     if ((int32_t)((uint32_t)cg.time -
-                  (uint32_t)teamChatMsgTimes[lastPos % chatHeight]) >
+                  (uint32_t)cgs.teamChatMsgTimes[lastPos % chatHeight]) >
         cg_chatTime_vmCvar.integer) {
         lastPos = coduo_int32_from_bits(
             (uint32_t)lastPos + 1u);          /* 0x300187bf INC ECX */
-        teamChatLastPos = lastPos;            /* 0x300187c0 store [0x3044b684] */
+        cgs.teamLastChatPos = lastPos;            /* 0x300187c0 store [0x3044b684] */
     }
 
-    // 0x300187c6..0x300187c9: draw newest-first, from teamChatPos-1 down to
-    // teamChatLastPos (id-Tech's `for (i = pos-1; i >= lastPos; i--)`).
+    // 0x300187c6..0x300187c9: draw newest-first, from cgs.teamChatPos-1 down to
+    // cgs.teamLastChatPos (id-Tech's `for (i = pos-1; i >= lastPos; i--)`).
     int32_t i = coduo_int32_from_bits((uint32_t)pos - 1u);
     while (i >= lastPos) {
         int32_t ringIndex = i % chatHeight;   /* 0x300187d0..0x300187d3 */
 
         // 0x300187d5..0x30018827: per-line fade.
-        //   age  = cg.time - teamChatMsgTimes[ringIndex]      (ms this line has shown)
+        //   age  = cg.time - cgs.teamChatMsgTimes[ringIndex]      (ms this line has shown)
         //   left = cg_chatTime_vmCvar.value - age                  (fade budget remaining)
         // While left is still large (> 200 ms) the line is fully opaque (alpha = 1).
         // Once left drops below the 200 ms knee, alpha ramps as left * 0.005f
@@ -93,7 +93,7 @@ void CG_DrawTeamInfo(void)
         // 0x3001881c runs on the UNROUNDED product while the float copy in
         // [ESP+0xc] is what the later 0.6f multiply reloads (FLD 0x300188d4).
         int32_t age = (int32_t)(
-            (uint32_t)cg.time - (uint32_t)teamChatMsgTimes[ringIndex]);
+            (uint32_t)cg.time - (uint32_t)cgs.teamChatMsgTimes[ringIndex]);
         /* 0x300187e5 FILD age; 0x300187e9 FSUBR cg_chatTime -- age is loaded straight
          * into the FSUBR with no FSTP DWORD, so the implicit int->float conversion
          * stays exact; no (float) cast (it would round age under -std=c11, and age is
@@ -117,7 +117,7 @@ void CG_DrawTeamInfo(void)
         // the line begins with a "^N" color escape (N a digit '0'..'9', and not
         // "^^"), trap 0x5f writes a complete RGBA vec4. The following FLD/FLD/FXCH chain
         // restores the ordinary r,g order before the component multiplies.
-        char *line = teamChatMsgs[ringIndex]; /* 0x3001882d..0x30018839 (stride 0x10f) */
+        char *line = cgs.teamChatMsgs[ringIndex]; /* 0x3001882d..0x30018839 (stride 0x10f) */
         vec4_t lineColor = { 1.0f, 1.0f, 1.0f, 1.0f };
         if (line != NULL) {
             int8_t colorCode = (int8_t)line[1];
@@ -135,7 +135,7 @@ void CG_DrawTeamInfo(void)
         //   yBar   = 10*fromTop + 84   (rows are 10px tall, stacked downward)
         //   width  = R_TextWidth(line) + 24   (text width plus padding, virtual px)
         int32_t fromTop = coduo_int32_from_bits(
-            (uint32_t)i - (uint32_t)teamChatPos);             /* 0x30018895..0x30018897 */
+            (uint32_t)i - (uint32_t)cgs.teamChatPos);             /* 0x30018895..0x30018897 */
         int32_t yBar = coduo_int32_from_bits(
             (uint32_t)fromTop * 10u + 84u);                   /* 0x3001889f/0x300188b5 LEA */
         float barColor[4];                                    /* base+0x28..0x34, RGBA */
@@ -159,13 +159,13 @@ void CG_DrawTeamInfo(void)
         // trap_R_DrawStretchPic(hudColorBar) with texcoords (0,0)-(1,1). All four
         // rect coords are screen-scaled: x = 0, y = yBar*sys, w = width*sxs,
         // h = 10.0*sys.
-        qhandle_t hudColorBar = cgs_media_hudColorBar;        /* 0x3001890c [0x3044b6c0] */
-        float barH = (float)((long double)cgs_screenYScale * 10.0L); /* 0x30018912..18 */
-        float barW = (float)((long double)cgs_screenXScale *
+        qhandle_t hudColorBar = cgs.media.hudColorBar;        /* 0x3001890c [0x3044b6c0] */
+        float barH = (float)((long double)cgs.screenYScale * 10.0L); /* 0x30018912..18 */
+        float barW = (float)((long double)cgs.screenXScale *
                              (long double)barWidth);           /* 0x30018937..3d */
-        float barY = (float)((long double)cgs_screenYScale *
+        float barY = (float)((long double)cgs.screenYScale *
                              (long double)(float)yBar);        /* 0x30018945..4b */
-        float barX = (float)((long double)cgs_screenXScale * 0.0L); /* 0x30018953..59 */
+        float barX = (float)((long double)cgs.screenXScale * 0.0L); /* 0x30018953..59 */
         trap_R_DrawStretchPic(CG_FloatBits(barX), CG_FloatBits(barY),
                               CG_FloatBits(barW), CG_FloatBits(barH),
                               0, 0,                            /* s1=0, t1=0 */
@@ -178,7 +178,7 @@ void CG_DrawTeamInfo(void)
         // text scale, a whiteColor vec3 {1,1,1}, the line pointer, two zero words,
         // and mode 3.
         int32_t fromTopText = coduo_int32_from_bits(
-            (uint32_t)i - (uint32_t)teamChatPos);             /* 0x3001896d..0x30018973 */
+            (uint32_t)i - (uint32_t)cgs.teamChatPos);             /* 0x3001896d..0x30018973 */
         int32_t yText = coduo_int32_from_bits(
             (uint32_t)fromTopText * 10u + 93u);               /* 0x30018977..0x30018984 */
         vec4_t whiteColor = { 1.0f, 1.0f, 1.0f, alpha };
@@ -196,7 +196,7 @@ void CG_DrawTeamInfo(void)
         /* 0x300189e4 reloads the shared cursor after the two renderer calls.
          * The expired-line fast path above jumps past this reload and keeps
          * the cursor value already live in ECX. */
-        lastPos = teamChatLastPos;
+        lastPos = cgs.teamLastChatPos;
         i = coduo_int32_from_bits((uint32_t)i - 1u);
     }
 

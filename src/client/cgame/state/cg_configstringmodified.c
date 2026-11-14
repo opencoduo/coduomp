@@ -28,12 +28,12 @@ void CG_ConfigStringModified(void)
 
     trap_Argv(1, g_textScratchBuffer, (int32_t)sizeof(g_textScratchBuffer));
     index = coduo_crt_atoi(g_textScratchBuffer);
-    cgame_syscall(CG_GET_GAME_STATE, (intptr_t)cg_gameState.stringOffsets);
+    cgame_syscall(CG_GET_GAME_STATE, (intptr_t)cgs.gameState.stringOffsets);
 
     if (index < 0 || index >= MAX_CONFIGSTRINGS) {
         Com_ErrorMessage("CG_ConfigString: bad index: %i", index);
     }
-    value = &cg_gameState.stringData[cg_gameState.stringOffsets[index]];
+    value = &cgs.gameState.stringData[cgs.gameState.stringOffsets[index]];
 
     if (index == CS_ITEMS) {
         CG_RegisterItems();
@@ -45,53 +45,53 @@ void CG_ConfigStringModified(void)
                index < CS_CONFIGVALUE_VALUES + CS_CONFIGVALUE_COUNT) {
         CG_SetConfigValues();
     } else if (index == CS_TEAM_SCORE_AXIS) {
-        cg_hudStat5Value = coduo_crt_atoi(value);
+        cgs.scores1 = coduo_crt_atoi(value);
     } else if (index == CS_TEAM_SCORE_ALLIES) {
-        cg_hudStat6Value = coduo_crt_atoi(value);
+        cgs.scores2 = coduo_crt_atoi(value);
     } else if (index == CS_HUD_STAT_14) {
-        cg_hudStat14Value = coduo_crt_atoi(value);
+        cgs.levelStartTime = coduo_crt_atoi(value);
     } else if (index == CS_VOTE_TIME) {
-        cg_voteTime = coduo_crt_atoi(value);
-        if (cg_voteTime != 0) {
-            cg_voteTime = coduo_int32_from_bits(
-                (uint32_t)cg_voteTime +
+        cgs.voteTime = coduo_crt_atoi(value);
+        if (cgs.voteTime != 0) {
+            cgs.voteTime = coduo_int32_from_bits(
+                (uint32_t)cgs.voteTime +
                 (uint32_t)cgame_syscall(CG_MILLISECONDS));
         }
-        cg_voteModified = qtrue;
+        cgs.voteModified = qtrue;
     } else if (index == CS_VOTE_YES) {
-        cg_voteYes = coduo_crt_atoi(value);
-        cg_voteModified = qtrue;
+        cgs.voteYes = coduo_crt_atoi(value);
+        cgs.voteModified = qtrue;
     } else if (index == CS_VOTE_NO) {
-        cg_voteNo = coduo_crt_atoi(value);
-        cg_voteModified = qtrue;
+        cgs.voteNo = coduo_crt_atoi(value);
+        cgs.voteModified = qtrue;
     } else if (index == CS_VOTE_STRING) {
         /* Localized directly through CG_SE_LOCALIZE_MESSAGE (push 0x39 at 0x3003908e), with
          * no CG_TranslateMessage key-binding substitution. */
         const char *display = (const char *)(intptr_t)cgame_syscall(
             CG_SE_LOCALIZE_MESSAGE, (intptr_t)value, (intptr_t)"vote string");
-        strncpy(cg_voteString, display, CG_HUD_TEXT_CAPACITY);
-        cg_voteString[CG_HUD_TEXT_CAPACITY] = '\0';
+        strncpy(cgs.voteString, display, CG_HUD_TEXT_CAPACITY);
+        cgs.voteString[CG_HUD_TEXT_CAPACITY] = '\0';
     } else if (index == CS_TIMEOUT_TIME) {
-        cg_timeoutEndTime = coduo_crt_atoi(value);
-        if (cg_timeoutEndTime != 0) {
-            cg_timeoutEndTime = coduo_int32_from_bits(
-                (uint32_t)cg_timeoutEndTime +
+        cgs.timeoutEndTime = coduo_crt_atoi(value);
+        if (cgs.timeoutEndTime != 0) {
+            cgs.timeoutEndTime = coduo_int32_from_bits(
+                (uint32_t)cgs.timeoutEndTime +
                 (uint32_t)cgame_syscall(CG_MILLISECONDS));
         }
-        cg_timeoutActive = 0;
+        cgs.timeoutActive = 0;
     } else if (index == CS_TIMEOUT_STRING) {
         /* Localized directly through CG_SE_LOCALIZE_MESSAGE (push 0x39 at 0x30039126), with
          * no CG_TranslateMessage key-binding substitution. */
         const char *display = (const char *)(intptr_t)cgame_syscall(
             CG_SE_LOCALIZE_MESSAGE, (intptr_t)value, (intptr_t)"timeout string");
-        strncpy(cg_timeoutString, display, CG_HUD_TEXT_CAPACITY);
-        cg_timeoutString[CG_HUD_TEXT_CAPACITY] = '\0';
+        strncpy(cgs.timeoutString, display, CG_HUD_TEXT_CAPACITY);
+        cgs.timeoutString[CG_HUD_TEXT_CAPACITY] = '\0';
     } else if (index == CS_FOGVARS) {
         CG_ParseFog();
     } else if (index >= CS_MODELS && index < CS_SOUNDS) {
-        cg_gameModels[index - CS_MODELS] = CG_RegisterModel(value, 7);
+        cgs.gameModels[index - CS_MODELS] = CG_RegisterModel(value, 7);
     } else if (index >= CS_EFFECTS && index < CS_FX) {
-        cg_effectDefs[index - CS_EFFECTS] =
+        cgs.effectDefs[index - CS_EFFECTS] =
             (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)value);
     } else if (index >= CS_SHELLSHOCKS &&
                index < CS_SHELLSHOCKS + CS_SHELLSHOCKS_COUNT) {
@@ -101,8 +101,8 @@ void CG_ConfigStringModified(void)
             return;
         }
         params = index == CS_SHELLSHOCKS
-                     ? &cg_consoleShellShock
-                     : &cg_shellShocks[index - CS_SHELLSHOCKS - 1];
+                     ? &cgs.shellshocks[0]
+                     : &cgs.shellshocks[index - CS_SHELLSHOCKS];
         CG_SetShellShockParams(params);
     } else if (index >= CS_SCRIPTMENUS &&
                index < CS_SCRIPTMENUS + CS_SCRIPTMENUS_COUNT) {

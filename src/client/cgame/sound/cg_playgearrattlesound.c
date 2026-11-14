@@ -8,11 +8,11 @@ int32_t CG_PlayGearRattleSound(int32_t entityNum, qboolean sprinting,
 {
     const char *soundName;
     if (sprinting) {
-        soundName = cg_soundGearRattleSprint;
+        soundName = cgs.media.soundGearRattleSprint;
     } else if (running) {
-        soundName = cg_soundGearRattleRun;
+        soundName = cgs.media.soundGearRattleRun;
     } else {
-        soundName = cg_soundGearRattleWalk;
+        soundName = cgs.media.soundGearRattleWalk;
     }
     return CG_PlaySoundAliasByName(
         entityNum, &cg_entities[entityNum].currentState.pos.trBase, soundName);

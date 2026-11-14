@@ -49,11 +49,11 @@ void CG_DrawStretchPic(float x, float y, float width, float height,
                        float s1, float t1, float s2, float t2,
                        qhandle_t hShader)
 {
-    float scaledHeight = (float)((long double)cgs_screenYScale *
+    float scaledHeight = (float)((long double)cgs.screenYScale *
                                  (long double)height);
-    float scaledX = (float)((long double)cgs_screenXScale * (long double)x);
-    float scaledY = (float)((long double)cgs_screenYScale * (long double)y);
-    float scaledWidth = (float)((long double)cgs_screenXScale *
+    float scaledX = (float)((long double)cgs.screenXScale * (long double)x);
+    float scaledY = (float)((long double)cgs.screenYScale * (long double)y);
+    float scaledWidth = (float)((long double)cgs.screenXScale *
                                 (long double)width);
 
     trap_R_DrawStretchPic(CG_FloatBits(scaledX),

@@ -12,9 +12,9 @@
  * 0x30038eff, 0x30039590 each issue the asset-reset trap 0xd7 immediately before).
  *
  * Config-string source (proven): the info string is
- *   cs = &cg_gameState.stringData[cg_gameState.stringOffsets[3]]
- * i.e. CG_ConfigString(3). cg_gameState.stringData (0x30442a00) is the cgame
- * gameState_t string heap; cg_gameState.stringOffsets[3] (0x30440a0c) is element 3
+ *   cs = &cgs.gameState.stringData[cgs.gameState.stringOffsets[3]]
+ * i.e. CG_ConfigString(3). cgs.gameState.stringData (0x30442a00) is the cgame
+ * gameState_t string heap; cgs.gameState.stringOffsets[3] (0x30440a0c) is element 3
  * of the stringOffsets[2048] array based at 0x30440a00 (base + 0x2000). The i386 code
  * loads MOV ESI,[0x30440a0c] then LEA ESI,[ESI + 0x30442a00].
  *
@@ -64,7 +64,7 @@
 void CG_ConfigString3Modified(void)
 {
     /* CG_ConfigString(3): the info string at gameState.stringOffsets[3]. */
-    const char *cs = &cg_gameState.stringData[cg_gameState.stringOffsets[3]];
+    const char *cs = &cgs.gameState.stringData[cgs.gameState.stringOffsets[3]];
 
     /* Key "n": the asset name. Register it and take the returned engine handle. */
     snd_alias_t *alias = trap_Com_PickSoundAlias(Info_ValueForKey(cs, "n"),

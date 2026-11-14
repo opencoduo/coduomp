@@ -15,18 +15,18 @@
 // exactly like the EmitA/B/C twins, but it takes FOUR caller stack words instead of
 // three (the fourth, arg3, lands in the syscall's trailing slot, matching the
 // Translated/Formatted siblings) and forwards the shared serverinfo gametype string
-// cgs_gametype (0x30447abc) as the string argument.
+// cgs.gametype (0x30447abc) as the string argument.
 //
 // Resulting call (arg order = reverse of push order):
 //   cgame_syscall(54, bits(obj->x), <float sum bits>, arg0, arg1, arg2,
-//                 cgs_gametype, 0, 0, arg3)
+//                 cgs.gametype, 0, 0, arg3)
 //
 // Name adjudication: the .mcode header's size-matched
 // "script_method_scriptbuiltin_getattachsize" guess is REJECTED (size 0x59 matched
 // 0x59). The body does no script/getattach work: it derives a float sum from a
 // register-passed object and forwards a fixed 10-slot argument vector to cgame trap
 // 54. The same mechanical first-touch owner label is already documented as rejected
-// on the 0x30447abc datum (cgs_gametype) in globals.h. The exact original CoD symbol
+// on the 0x30447abc datum (cgs.gametype) in globals.h. The exact original CoD symbol
 // and the engine service behind trap 54 are unproven (no cgame syscall-id table is
 // recovered — matching how CG_R_TEXT_WIDTH/54/... are treated in client_recovered.h).
 // Same-module macOS symbols resolve this source function as CG_DrawGameType and its
@@ -57,7 +57,7 @@
 //   30031c7a MOV  ECX,[S+0x8]     ECX = 0
 //   30031c7e PUSH ECX            -> zero word
 //   30031c7f MOV  ECX,[S+0x10]    ECX = arg0     (esp=S-0xc, [esp+0x1c]=[S+0x10])
-//   30031c83 PUSH 0x30447abc     -> cgs_gametype (string slot)
+//   30031c83 PUSH 0x30447abc     -> cgs.gametype (string slot)
 //   30031c88 MOV  [S+0x8],EDX     scratch = bits(obj->x)  (esp=S-0x10, [esp+0x18]=[S+8])
 //   30031c8c MOV  EDX,[S+0x18]    EDX = arg2     ([esp+0x28]=[S+0x18])
 //   30031c90 PUSH EDX            -> arg2
@@ -96,7 +96,7 @@ void CG_DrawGameType(rectDef_t *obj /* EAX */,
                   arg0,
                   arg1,
                   arg2,
-                  (intptr_t)cgs_gametype,
+                  (intptr_t)cgs.gametype,
                   0,
                   0,
                   arg3);

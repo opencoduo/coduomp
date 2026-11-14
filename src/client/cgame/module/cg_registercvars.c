@@ -19,7 +19,7 @@
 //      (handle, name, default, flags).
 //   2. Read the current "sv_running" cvar string into a 0x400 stack buffer via
 //      trap_Cvar_VariableStringBuffer (id 0xb), then Q_atoi it and store the result
-//      into cgs_localServer (0x30447ab8) — the once-guard other config
+//      into cgs.localServer (0x30447ab8) — the once-guard other config
 //      setters read (e.g. CG_ParseServerinfo forces g_gametype only on first init).
 //      "sv_running" is nonzero exactly when a local server is up, so this seeds the
 //      guard from the local-server flag. (0x3005b6ce is a JMP thunk to Q_atoi's body
@@ -64,9 +64,9 @@ void CG_RegisterCvars(void)
     char svRunning[MAX_STRING_CHARS];
     trap_Cvar_VariableStringBuffer("sv_running", svRunning, (int32_t)sizeof(svRunning));
 
-    // 3002b1fc..3002b20d: cgs_localServer = Q_atoi(sv_running string).
+    // 3002b1fc..3002b20d: cgs.localServer = Q_atoi(sv_running string).
     // Nonzero when a local server is running; used as the config-values once-guard.
-    cgs_localServer = coduo_crt_atoi(svRunning);
+    cgs.localServer = coduo_crt_atoi(svRunning);
 
     // 3002b201..3002b236: force three per-connection cvars to fixed values.
     trap_Cvar_Set("cl_stance", "0");        // 3002b201..3002b212

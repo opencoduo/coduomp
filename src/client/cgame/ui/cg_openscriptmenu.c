@@ -31,7 +31,7 @@
 //   - cfgIndex = index + CS_SCRIPTMENUS (LEA EDI,[ESI+0x535]); shared inlined
 //     CG_ConfigString bounds check reports Com_ErrorMessage(cg_configStringBadIndexFmt,
 //     cfgIndex) when out of [0, MAX_CONFIGSTRINGS) and proceeds regardless.
-//   - menuName = &cg_gameState.stringData[cg_gameState.stringOffsets[cfgIndex]].
+//   - menuName = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]].
 //   - If menuName is empty (first byte 0): not-loaded path (0x3003a62d):
 //     Com_Printf("Server tried to open a non-loaded script menu index: %i\n", index)
 //     then trap(CG_SEND_CONSOLE_COMMAND, va("cmd mr %i bad\n", index)); return.
@@ -88,7 +88,7 @@ void CG_OpenScriptMenu(void)
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS) {
         Com_ErrorMessage(cg_configStringBadIndexFmt, cfgIndex);
     }
-    menuName = &cg_gameState.stringData[cg_gameState.stringOffsets[cfgIndex]];
+    menuName = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]];
 
     // 0x3003a628..0x3003a664: empty config string == menu not loaded on this client.
     if (menuName[0] == '\0') {

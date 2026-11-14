@@ -23,11 +23,11 @@
  *     {"", "_up", "_down"} at [ESP+0x4/0x8/0xc]
  *     (0x30074a0c = "", 0x300798a0 = "_up", 0x30079898 = "_down").
  *   - If shaderIndex == 0 (0x3002fda0 TEST/JZ), return the preregistered
- *     cg_objectiveShaders[dir] (0x3002fe50 MOV EAX,[ESI*4 + 0x3044bb4c]).
+ *     cgs.media.objectiveShaders[dir] (0x3002fe50 MOV EAX,[ESI*4 + 0x3044bb4c]).
  *   - Otherwise fetch the shader-index config-string name into a 64-byte stack
  *     buffer via CG_GetShaderConfigString(shaderIndex, name, 64)
  *     (0x3002fdc7 PUSH 0x40 / PUSH &name / CALL 0x3002fd10). On a false return,
- *     fall through to the cg_objectiveShaders[dir] path (0x3002fdd4 JZ else).
+ *     fall through to the cgs.media.objectiveShaders[dir] path (0x3002fdd4 JZ else).
  *   - Truncate the name at the first '.' (0x3002fde2 CMP AL,0x2e) — strip the
  *     file extension.
  *   - Append the direction suffix (0x3002fe1f REP MOVSD / 0x3002fe28 REP MOVSB =
@@ -49,16 +49,16 @@
  *
  * Instruction map (key points):
  *   3002fd9c MOV EAX,[ESP+0x54]          shaderIndex
- *   3002fda0 TEST EAX,EAX ; JZ else      if (shaderIndex == 0) -> cg_objectiveShaders[dir]
+ *   3002fda0 TEST EAX,EAX ; JZ else      if (shaderIndex == 0) -> cgs.media.objectiveShaders[dir]
  *   3002fda3 MOV ESI,ECX                 dir
  *   3002fdc7 PUSH 0x40 ; PUSH &name ; CALL 0x3002fd10   CG_GetShaderConfigString
- *   3002fdd2 TEST EAX,EAX ; JZ else      if (!ok) -> cg_objectiveShaders[dir]
+ *   3002fdd2 TEST EAX,EAX ; JZ else      if (!ok) -> cgs.media.objectiveShaders[dir]
  *   3002fde2 loop: CMP AL,'.' / JZ ; ... truncate name at first '.'
  *   3002fdf0 EAX = suffixTable[dir] ; *cut = 0
  *   3002fe00.. strlen(suffix) ; strlen(name) ; REP MOVS = strcat(name, suffix)
  *   3002fe26 PUSH 0 ; CALL 0x3002a530     CG_DrawInformation(qfalse)
  *   3002fe36 PUSH 0x59 ; PUSH &name ; PUSH 5 ; CALL *cgame_syscall  register shader
- *   3002fe50 else: EAX = cg_objectiveShaders[dir]
+ *   3002fe50 else: EAX = cgs.media.objectiveShaders[dir]
  */
 
 #define CG_OBJECTIVE_LONGEST_SUFFIX "_down"
@@ -100,7 +100,7 @@ qhandle_t CG_GetObjectiveShaderForDir(int dir, int shaderIndex)
         if (baseLength + suffixLength >= MAX_QPATH) {
             Com_Printf(
                 "WARNING: rejected overlong objective shader name\n");
-            return cg_objectiveShaders[dir];
+            return cgs.media.objectiveShaders[dir];
         }
         coduo_client_crt_strcpy(name + baseLength, dirSuffix[dir]);
 
@@ -112,5 +112,5 @@ qhandle_t CG_GetObjectiveShaderForDir(int dir, int shaderIndex)
 
     /* No per-shader override, or the lookup failed: use the preregistered
      * objective icon handle for this direction. */
-    return cg_objectiveShaders[dir];
+    return cgs.media.objectiveShaders[dir];
 }

@@ -10,17 +10,17 @@
 // the object's two leading raw dwords, three caller words, a string argument, two
 // zero words, and a fourth caller word (the same 10-slot argument vector shape as
 // CG_DrawPlayerBarHealthTitle at 0x3002fca0). It differs in two proven ways:
-//   1) It is gated on the system-info HUD stat cg_hudStat6Value. When that
+//   1) It is gated on the system-info HUD stat cgs.scores2. When that
 //      stat holds its "unset" sentinel -9999 (0xffffd8f1), the whole emit is skipped
 //      and the function returns without calling the syscall.
-//   2) The string argument is produced by va("%2i", cg_hudStat6Value) rather
+//   2) The string argument is produced by va("%2i", cgs.scores2) rather
 //      than from a translated or static buffer.
 //
 // Emitted call (proven by the push trace below):
 //   cgame_syscall(CG_R_TEXT_PAINT,
 //                 bits(obj->x), bits(obj->y),          // ESI[0], ESI[4], raw dwords
 //                 arg0, arg1, arg2,                // three forwarded caller words
-//                 va("%2i", cg_hudStat6Value),  // string buffer
+//                 va("%2i", cgs.scores2),  // string buffer
 //                 0, 0,                            // two zero words
 //                 arg3);                           // fourth caller word (final slot)
 //
@@ -31,7 +31,7 @@
 // case CG_2NDPLACE, and the macOS owner-draw jump table names its target
 // CG_Draw2ndPlace. `va` is a caller-observed provisional decl (callee 0x3004e8a0,
 // a q_shared-style sprintf-into-ring-buffer); superseded when 0x3004e8a0 is
-// reconstructed from its own .mcode. cg_hudStat6Value is an atoi-parsed HUD
+// reconstructed from its own .mcode. cgs.scores2 is an atoi-parsed HUD
 // stat (see globals.h); the mechanical owner=script_orbit label is rejected.
 //
 // Register-argument ABI: the object pointer arrives in ESI (read via MOV EDX,[ESI+4]
@@ -44,7 +44,7 @@
 // Instruction map (frame base E = ESP after `SUB ESP,0x10`; incoming stack args at
 // arg0=E+0x14, arg1=E+0x18, arg2=E+0x1c, arg3=E+0x20; the compiler spills through
 // E+0x4/E+0x8/E+0xc scratch slots, and E+0x0 = 0 for the zero words):
-//   30031bd0 MOV  EAX,[0x304480e0]   EAX = cg_hudStat6Value
+//   30031bd0 MOV  EAX,[0x304480e0]   EAX = cgs.scores2
 //   30031bd8 CMP  EAX,0xffffd8f1     compare against sentinel -9999
 //   30031bdd JZ   0x30031c38         if sentinel -> skip emit, return
 //   30031bdf PUSH EAX                va arg: the stat value
@@ -61,10 +61,10 @@ void CG_Draw2ndPlace(rectDef_t *obj,
                      intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
 {
     /* -9999 (0xffffd8f1) is the "score unset" sentinel; when set, nothing is emitted. */
-    if (cg_hudStat6Value == CG_SCORE_VALUE_UNSET)
+    if (cgs.scores2 == CG_SCORE_VALUE_UNSET)
         return;
 
-    const char *statString = va("%2i", cg_hudStat6Value);
+    const char *statString = va("%2i", cgs.scores2);
 
     cgame_syscall(CG_R_TEXT_PAINT,
                   CG_FloatBits(obj->x), CG_FloatBits(obj->y),

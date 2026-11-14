@@ -44,7 +44,7 @@
 //   2. 0x3001ecb8: MOV AL,[EBX+8]; TEST AL,AL; JS -> low byte of cent->currentState.eFlags
 //      has bit 7 set (EF_NODRAW = 0x80) -> skip everything and return.
 //   3. 0x3001ecc5: CG_RefreshEntityDObjAnimTree(cent->currentState.eType,
-//      cg_gameModels[cent->currentState.modelIndex]) with ESI = cent->currentState.number
+//      cgs.gameModels[cent->currentState.modelIndex]) with ESI = cent->currentState.number
 //      (register arg). Caller-cleaned (plain RET); its two pushed args' 8 bytes
 //      are folded into the ADD ESP,0x10 after the following trap-0xa5 call.
 //   4. 0x3001ece1: handle = cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number)
@@ -95,7 +95,7 @@ void CG_AddCEntity_ET11(centity_t *cent /* EBX */)
                   modelIndex);
         return;
     }
-    qhandle_t modelHandle = cg_gameModels[modelIndex];
+    qhandle_t modelHandle = cgs.gameModels[modelIndex];
     int32_t eType = cent->currentState.eType;
     int32_t entityNum = cent->currentState.number;
     CG_RefreshEntityDObjAnimTree(entityNum, eType, modelHandle);

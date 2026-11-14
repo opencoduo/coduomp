@@ -41,7 +41,7 @@ void CG_ServerCommand(void)
         CG_GameMessage(CG_TranslateMessage(CG_Argv(1), "game message"));
         return;
     case 'g':   /* 0x3003ada8 */
-        CG_PlayClientSoundAliasByName(cg_soundGameMessage);
+        CG_PlayClientSoundAliasByName(cgs.media.soundGameMessage);
         CG_BoldGameMessage(CG_TranslateMessage(CG_Argv(1), "bold game message"));
         return;
     case 'h':   /* 0x3003adc1 */
@@ -52,7 +52,7 @@ void CG_ServerCommand(void)
         text = (const char *)(intptr_t)cgame_syscall(
             CG_SE_LOCALIZE_MESSAGE, (intptr_t)CG_Argv(1),
             (intptr_t)"chat message");
-        CG_PlayClientSoundAliasByName(cgs_media_playerTalkSound);
+        CG_PlayClientSoundAliasByName(cgs.media.talkSound);
         /* 0x3003adfa..0x3003ae11: strncpy(name, text, 0x95); name[0x95] = 0. */
         Q_strncpyz(name, text, (int32_t)sizeof(name));
         Q_StripControl0x19(name);
@@ -64,7 +64,7 @@ void CG_ServerCommand(void)
         text = (const char *)(intptr_t)cgame_syscall(
             CG_SE_LOCALIZE_MESSAGE, (intptr_t)CG_Argv(1),
             (intptr_t)"team chat message");
-        CG_PlayClientSoundAliasByName(cgs_media_playerTalkSound);
+        CG_PlayClientSoundAliasByName(cgs.media.talkSound);
         /* 0x3003ae76..0x3003ae8d: strncpy(name, text, 0x95); name[0x95] = 0. */
         Q_strncpyz(name, text, (int32_t)sizeof(name));
         Q_StripControl0x19(name);
@@ -85,11 +85,11 @@ void CG_ServerCommand(void)
             return;
         }
 
-        cg_complaintEndTime = coduo_int32_from_bits((uint32_t)cg.time + 20000u);
-        cg_complaintClientNum = value;
+        cgs.complaintEndTime = coduo_int32_from_bits((uint32_t)cg.time + 20000u);
+        cgs.complaintClientNum = value;
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        if (cg_complaintClientNum < 0) {
-            cg_complaintEndTime = coduo_int32_from_bits((uint32_t)cg.time + 10000u);
+        if (cgs.complaintClientNum < 0) {
+            cgs.complaintEndTime = coduo_int32_from_bits((uint32_t)cg.time + 10000u);
         }
         return;
     case 'n': CG_MapRestart(qtrue); return;   /* 0x3003af79 */

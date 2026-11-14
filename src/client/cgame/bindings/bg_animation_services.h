@@ -12,7 +12,7 @@ static inline void bg_compat_load_additional_anim_tree_instances(
     XAnim *masterTree)
 {
     for (int32_t i = 0; i < PLAYER_CLONE_COUNT; ++i) {
-        cg_corpseInfo[i].animTree = trap_XAnimCreateTree(masterTree);
+        cgs.corpseInfo[i].animTree = trap_XAnimCreateTree(masterTree);
     }
 }
 

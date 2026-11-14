@@ -100,12 +100,12 @@ qhandle_t CG_RegisterModel(const char *name, int category)
 
         /*
          * Resolve the map name from config string 0 (CS_SERVERINFO):
-         *   info = &cg_gameState.stringData[cg_gameState.stringOffsets[0]]
+         *   info = &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]]
          *   mapName = Info_ValueForKey(info, "mapname")   (ECX=info, EBX=key)
          * If present and non-empty, register "levelshots/<map>.tga"; otherwise
          * fall back to "menu/art/unknownmap".
          */
-        serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]]; /* 0x3003d9ca..0x3003d9d2 */
+        serverInfo = &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]]; /* 0x3003d9ca..0x3003d9d2 */
         mapName = Info_ValueForKey(serverInfo, "mapname");                  /* 0x3003d9dd CALL Info_ValueForKey */
 
         levelShotShader = 0;
@@ -132,10 +132,10 @@ qhandle_t CG_RegisterModel(const char *name, int category)
          * trap_R_DrawStretchPic forwards its slots as raw 32-bit float words.
          */
         {
-            float h = cgs_screenYScale * 480.0f;       /* 0x3003da38 FMUL 480.0 (0x3007c148) */
-            float w = cgs_screenXScale * 640.0f;       /* 0x3003da5d FMUL 640.0 (0x3007bf34) */
-            float y = cgs_screenYScale * 0.0f;         /* 0x3003da6d FMUL 0.0 (0x3007bcec) */
-            float x = cgs_screenXScale * 0.0f;         /* 0x3003da7d FMUL 0.0 (0x3007bcec) */
+            float h = cgs.screenYScale * 480.0f;       /* 0x3003da38 FMUL 480.0 (0x3007c148) */
+            float w = cgs.screenXScale * 640.0f;       /* 0x3003da5d FMUL 640.0 (0x3007bf34) */
+            float y = cgs.screenYScale * 0.0f;         /* 0x3003da6d FMUL 0.0 (0x3007bcec) */
+            float x = cgs.screenXScale * 0.0f;         /* 0x3003da7d FMUL 0.0 (0x3007bcec) */
             trap_R_DrawStretchPic(CG_FloatBits(x), CG_FloatBits(y),
                                   CG_FloatBits(w), CG_FloatBits(h),
                                   CG_FloatBits(0.0f), CG_FloatBits(0.0f),   /* s1, t1 = 0,0 */

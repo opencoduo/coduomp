@@ -89,11 +89,11 @@ qhandle_t CG_RegisterMaterial(const char *name, int param)
         }
 
         /* Resolve the map name from config string 0 (CS_SERVERINFO):
-         *   info = &cg_gameState.stringData[cg_gameState.stringOffsets[0]]
+         *   info = &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]]
          *   mapName = Info_ValueForKey(info, "mapname")   (ECX=info, EBX=key). */
         {
             const char *serverInfo =
-                &cg_gameState.stringData[cg_gameState.stringOffsets[0]]; /* 0x3003dc0a..0x3003dc12 */
+                &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]]; /* 0x3003dc0a..0x3003dc12 */
             mapName = Info_ValueForKey(serverInfo, "mapname");         /* 0x3003dc1d CALL Info_ValueForKey */
 
             levelShotShader = 0;
@@ -122,10 +122,10 @@ qhandle_t CG_RegisterMaterial(const char *name, int param)
          *   w = screenXScale * 640, h = screenYScale * 480,   s/t = (0,0)-(1,1).
          * The stretch-pic args carry the float bit patterns as 32-bit words. */
         {
-            float x = cgs_screenXScale * 0.0f;             /* 0x3003dcbd FMUL 0.0 (0x3007bcec) */
-            float y = cgs_screenYScale * 0.0f;             /* 0x3003dcad FMUL 0.0 (0x3007bcec) */
-            float w = cgs_screenXScale * 640.0f;           /* 0x3003dc9d FMUL 640.0 (0x3007bf34) */
-            float h = cgs_screenYScale * 480.0f;           /* 0x3003dc78 FMUL 480.0 (0x3007c148) */
+            float x = cgs.screenXScale * 0.0f;             /* 0x3003dcbd FMUL 0.0 (0x3007bcec) */
+            float y = cgs.screenYScale * 0.0f;             /* 0x3003dcad FMUL 0.0 (0x3007bcec) */
+            float w = cgs.screenXScale * 640.0f;           /* 0x3003dc9d FMUL 640.0 (0x3007bf34) */
+            float h = cgs.screenYScale * 480.0f;           /* 0x3003dc78 FMUL 480.0 (0x3007c148) */
             uint32_t xb, yb, wb, hb, one, zero;
             float f1 = 1.0f, f0 = 0.0f;
             memcpy(&xb, &x, 4);

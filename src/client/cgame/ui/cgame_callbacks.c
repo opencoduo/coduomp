@@ -74,8 +74,8 @@ qboolean CG_OwnerDrawVisible(int32_t flags) /* 0x300318d0 */
 int32_t CG_ClientNumFromName(const char *name) /* 0x300327f0 */
 {
     enum { CG_CLIENT_NAME_COMPARE_LIMIT = 99999 };
-    /* 0x300327f1 snapshots cgs_maxclients once in EBP for the whole loop. */
-    const int32_t maxclients = cgs_maxclients;
+    /* 0x300327f1 snapshots cgs.maxclients once in EBP for the whole loop. */
+    const int32_t maxclients = cgs.maxclients;
 
     for (int32_t i = 0; i < maxclients; ++i) {
         /* The retail loop trusts the serverinfo-derived maxclients contract and

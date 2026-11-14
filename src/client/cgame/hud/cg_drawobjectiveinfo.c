@@ -189,7 +189,7 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx,
         }
 
         serverInfo =
-            &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
+            &cgs.gameState.stringData[cgs.gameState.stringOffsets[0]];
         mapName = Info_ValueForKey(serverInfo, "mapname");
         if (mapName != NULL && mapName[0] != '\0') {
             levelshotShader = trap_R_RegisterShaderNoMip(
@@ -204,10 +204,10 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx,
         }
 
         trap_R_SetColor(NULL);
-        trap_R_DrawStretchPic(CG_FloatBits(cgs_screenXScale * 0.0f),
-                              CG_FloatBits(cgs_screenYScale * 0.0f),
-                              CG_FloatBits(cgs_screenXScale * 640.0f),
-                              CG_FloatBits(cgs_screenYScale * 480.0f),
+        trap_R_DrawStretchPic(CG_FloatBits(cgs.screenXScale * 0.0f),
+                              CG_FloatBits(cgs.screenYScale * 0.0f),
+                              CG_FloatBits(cgs.screenXScale * 640.0f),
+                              CG_FloatBits(cgs.screenYScale * 480.0f),
                               CG_FloatBits(0.0f),
                               CG_FloatBits(0.0f),
                               CG_FloatBits(1.0f),

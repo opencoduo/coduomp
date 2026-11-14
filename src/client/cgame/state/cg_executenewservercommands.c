@@ -62,14 +62,14 @@ void CG_ExecuteNewServerCommands(int32_t latestSequence)
 
     /* 0x3003b476..0x3003b4a2: drain every command newer than the one already
      * executed, up to latestSequence. The gate and the loop test are both signed. */
-    while (cgs_serverCommandSequence < latestSequence) {
+    while (cgs.serverCommandSequence < latestSequence) {
         /* 0x3003b480/0x3003b484: advance and commit the sequence BEFORE fetching. */
-        cgs_serverCommandSequence = coduo_int32_from_bits(
-            (uint32_t)cgs_serverCommandSequence + 1u);
+        cgs.serverCommandSequence = coduo_int32_from_bits(
+            (uint32_t)cgs.serverCommandSequence + 1u);
 
         /* 0x3003b489: fetch this reliable command into the engine's argv buffer;
          * nonzero means the command is present and ready to dispatch. */
-        if (cgame_syscall(CG_GET_SERVER_COMMAND, cgs_serverCommandSequence)) {
+        if (cgame_syscall(CG_GET_SERVER_COMMAND, cgs.serverCommandSequence)) {
             /* 0x3003b496: dispatch the fetched command. */
             CG_ServerCommand();
         }

@@ -51,15 +51,15 @@ void CG_UpdateFlameTime(void)
 
 void CG_AddLagometerFrameInfo(void) /* 0x30018a10 */
 {
-    cg_lagometerFrameSamples[cg_lagometerFrameCount & (LAG_SAMPLES - 1)] =
+    lagometer.frameSamples[lagometer.frameCount & (LAG_SAMPLES - 1)] =
         coduo_int32_from_bits((uint32_t)cg.time -
                          (uint32_t)cg.latestSnapshotTime);
-    cg_lagometerFrameCount =
-        coduo_int32_from_bits((uint32_t)cg_lagometerFrameCount + 1u);
+    lagometer.frameCount =
+        coduo_int32_from_bits((uint32_t)lagometer.frameCount + 1u);
 }
 
 void CG_AdjustFrom640(float *x, float *y) /* 0x3001c4c0 */
 {
-    *x *= cgs_screenXScale;
-    *y *= cgs_screenYScale;
+    *x *= cgs.screenXScale;
+    *y *= cgs.screenYScale;
 }

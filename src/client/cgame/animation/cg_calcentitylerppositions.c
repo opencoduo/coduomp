@@ -46,7 +46,7 @@
 //        lerpAngles = eval(&currentState.apos, cg.time)
 //   - 0x30021de5: on currentState.eType(+0x4): ET_PLAYER(1) selects
 //     bgs.clientinfo[otherEntityNum(+0x94)]; ET_PLAYER_CORPSE(2) selects
-//     cg_corpseInfo[number(+0x0) - 0x40]; any other eType skips the block
+//     cgs.corpseInfo[number(+0x0) - 0x40]; any other eType skips the block
 //     write. Both stride-0x4d0 tables carry the shared cgLerpAngleBlock_t at +0x3e0.
 //   - 0x30021e18..0x30021e4f: write the block { leanAmount=leanValue,
 //     viewPitch=lerpAngles[0], viewYaw=lerpAngles[1],
@@ -120,7 +120,7 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
         clientInfo_t *clientInfo = &bgs.clientinfo[clientNum];
         block = (cgLerpAngleBlock_t *)(void *)&clientInfo->leanAmount;
     } else if (state->currentState.eType == ET_PLAYER_CORPSE) {
-        /* 0x30021e07: cg_corpseInfo[number - 0x40] (stride 0x4d0). */
+        /* 0x30021e07: cgs.corpseInfo[number - 0x40] (stride 0x4d0). */
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         uint32_t corpseIndex =
             (uint32_t)state->currentState.number -
@@ -133,7 +133,7 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
             return;
         }
         block = (cgLerpAngleBlock_t *)(void *)
-            &cg_corpseInfo[corpseIndex].leanAmount;
+            &cgs.corpseInfo[corpseIndex].leanAmount;
     }
 
     if (block != NULL) {
