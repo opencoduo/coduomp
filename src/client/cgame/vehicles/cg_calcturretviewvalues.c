@@ -56,7 +56,8 @@ void CG_CalcTurretViewValues(void)
     DObjSkelMat tagPlayerMatrix;
     if (!CG_DObjGetWorldTagMatrix(dobj, "tag_player", cent,
                                          &tagPlayerMatrix)) {
-        Com_Error(ERR_FATAL, cg_turretMissingTagPlayerError);
+        /* 0x300415d6: PUSH 1 (ERR_DROP) before Com_Error 0x3002b3d0. */
+        Com_Error(ERR_DROP, cg_turretMissingTagPlayerError);
     }
 
     CG_CalcEntityLerpPositions(cent);

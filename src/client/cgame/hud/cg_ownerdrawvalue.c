@@ -11,8 +11,8 @@ enum cgOwnerDrawValueId {
     CG_ODV_LOCAL_HUD_VALUE = 4,
     CG_ODV_AMMO = 5,
     CG_PLAYER_SCORE = 21, /* Exact retail uo/menudef.h name; reads score at 0x30031824. */
-    CG_ODV_HUD_STAT_DC = 27,
-    CG_ODV_HUD_STAT_E0 = 28,
+    CG_ODV_HUD_STAT_E0 = 27, /* id 27 reads cgs.scores2 (0x304480e0) at 0x30031856. */
+    CG_ODV_HUD_STAT_DC = 28, /* id 28 reads cgs.scores1 (0x304480dc) at 0x3003184f. */
     CG_ODV_ITERATED_HUD_VALUE = 41,
     CG_ODV_CLIP = 70
 };
