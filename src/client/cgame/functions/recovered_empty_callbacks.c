@@ -41,9 +41,9 @@ void UnresolvedFunction_3002ea20(void) {}
 // Source RVA: 0x3002ea80
 void UnresolvedFunction_3002ea80(void) {}
 // Source RVA: 0x30031700
-void UnresolvedFunction_30031700(void) {}
+void CG_DrawAreaHoldable(void) {}
 // Source RVA: 0x30031710
-void UnresolvedFunction_30031710(void) {}
+void CG_DrawAreaWeapons(void) {}
 // Source RVA: 0x30032750
 void UnresolvedFunction_30032750(void) {}
 // Source RVA: 0x30032760
