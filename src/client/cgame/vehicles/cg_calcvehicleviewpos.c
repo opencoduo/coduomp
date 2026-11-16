@@ -450,7 +450,10 @@ void CG_CalcVehicleViewPos(void)
                                       (long double)primaryMat.origin[0]);
             displacement[1] = (float)(candidate[1] -
                                       (long double)primaryMat.origin[1]);
-            displacement[2] = (float)(candidate[2] -
+            /* Lane 2 starts from the binary32 candidate: 0x3004103d/0x30041088
+             * store it with FST DWORD [esp+0x10c] and 0x300410c3 reloads that
+             * slot, while lanes 0 and 1 subtract the x87 register values. */
+            displacement[2] = (float)((long double)(float)candidate[2] -
                                       (long double)primaryMat.origin[2]);
 
             long double displacementLength = coduomp_crt_sqrtl(
