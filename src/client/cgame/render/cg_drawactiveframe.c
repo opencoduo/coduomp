@@ -40,7 +40,7 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
 
     cg.demoPlayback = demoPlayback;
     cg.time = serverTime;
-    cg_effectTime = (uint32_t)serverTime;
+    cg_effectTime = serverTime;
     cg.lockedViewFace = lockedViewFace;
     cg.lockedViewSize = lockedViewSize;
 
@@ -58,7 +58,7 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
         lagometer.frameCount = coduo_int32_from_bits(
             (uint32_t)lagometer.frameCount + 1u);
     }
-    cg_effectFrameTime = (uint32_t)cg.frametime;
+    cg_effectFrameTime = cg.frametime;
 
     /* 0x30042209..0x30042225: all 184 table entries, handle field only. */
     for (i = 0; i < CG_CVAR_TABLE_COUNT; ++i) {

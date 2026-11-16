@@ -20,7 +20,7 @@ static inline void bg_compat_load_additional_anim_tree_instances(
  * the shared original BG angle routines. */
 static inline int32_t bg_compat_animation_frame_time(void)
 {
-    return coduo_int32_from_bits(cg_effectFrameTime);
+    return cg_effectFrameTime;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: retain the cgame-only controller diagnostic cvar
@@ -32,7 +32,7 @@ static inline int32_t bg_compat_controller_debug_value(void)
 
 static inline int32_t bg_compat_controller_debug_time(void)
 {
-    return coduo_int32_from_bits(cg_effectTime);
+    return cg_effectTime;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: normalize cgame's DObj-handle trap boundary to
@@ -85,7 +85,7 @@ static inline float bg_compat_animation_swing_speed(void)
  * the animation-slot runtime. */
 static inline int32_t bg_compat_animation_time(void)
 {
-    return coduo_int32_from_bits(cg_effectTime);
+    return cg_effectTime;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: expose the cgame-owned animation sampling clock. */

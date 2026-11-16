@@ -193,8 +193,8 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
 
     // 0x30030406: fade the hint color. EDX=startMsec, ECX=totalMsec.
     vec_t *fadeColor = CG_FadeColor(
-        coduo_int32_from_bits((uint32_t)cg.overlayFadeStartTime),
-        coduo_int32_from_bits((uint32_t)cg.overlayFadeDuration));
+        cg.overlayFadeStartTime,
+        cg.overlayFadeDuration);
     if (fadeColor == (vec_t *)0) {
         // 0x30030422: fully faded -> reset draw color, clear the latch, stop.
         cgame_syscall(CG_R_SETCOLOR, (uint32_t)0);
@@ -229,7 +229,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
             // fractional milliseconds of the pickup timer (0x3048ae0c reused as a
             // signed ms value % 1000), scaled by 1/100.
             int32_t rem =
-                coduo_int32_from_bits((uint32_t)cg.overlayFadeStartTime) % 1000;
+                cg.overlayFadeStartTime % 1000;
             pulseScale = (float)((long double)rem *
                                  (long double)HINT_MS_TO_FRAC);
         } else {

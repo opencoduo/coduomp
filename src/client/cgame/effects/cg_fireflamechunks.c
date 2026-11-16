@@ -111,7 +111,7 @@ void CG_AddFlameChunks(void)
         /* FILD m32 is signed: preserve the target's Win32 clock value before
          * widening it to the double argument passed to floor. */
         double timeD = (double)cg.time;
-        cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(floor(timeD + timeD));
+        cg_flameTime = coduo_fp_to_i32_extended(floor(timeD + timeD));
     }
 
     /* 0x30027d42..0x30027da1: register (first call) or refresh the r_fullscreen /
@@ -161,7 +161,7 @@ void CG_AddFlameChunks(void)
 
             {
                 /* 0x30027e14: dtmp = (double)cg_flameTime. */
-                double flameTimeD = (double)coduo_int32_from_bits(cg_flameTime);
+                double flameTimeD = (double)cg_flameTime;
 
                 /* 0x30027e1e..0x30027e2a: if (flameTimeD > field_50) the chunk has
                  * expired past its end time -> free/expire tail at 0x300290b0. */
@@ -273,7 +273,7 @@ void CG_AddFlameChunks(void)
                          * flameTimeD comparison.  TEST AH,5; JP exits for greater,
                          * equal, and unordered. */
                         {
-                            double ftD = (double)coduo_int32_from_bits(cg_flameTime); /* 0x30027f59 refresh */
+                            double ftD = (double)cg_flameTime; /* 0x30027f59 refresh */
                             if (!(cur->lifeStartTime < ftD)) {
                                 goto inner_final_tail;  /* 0x30029069 */
                             }
@@ -414,7 +414,7 @@ void CG_AddFlameChunks(void)
                                          * JP skips when >=). Both those skips fall to the turbulence
                                          * below. */
                                         if (cur->boneHandle == 0             /* 0x300281ca TEST [+0x40] */
-                                            && ((double)coduo_int32_from_bits(cg_flameTime) + 1300.0)
+                                            && ((double)cg_flameTime + 1300.0)
                                                    < cur->endTime) {        /* 0x300281eb FCOMP field_50 */
                                             vec3_t computeOut;                /* [E0+0x54] */
                                             vec3_t hit;                       /* [E0+0x78] */
@@ -439,7 +439,7 @@ void CG_AddFlameChunks(void)
                                              * the trace neither hit (+0x2f byte) nor was blocked
                                              * (fraction==1.0f) -> clamp field_50 up to cg_flameTime. */
                                             if (traceOut.startsolid == 0 && traceOut.fraction == 1.0f) {
-                                                cur->endTime = (double)coduo_int32_from_bits(cg_flameTime); /* 0x300282ac */
+                                                cur->endTime = (double)cg_flameTime; /* 0x300282ac */
                                             }
                                         }
 
@@ -930,7 +930,7 @@ finalize_child:
                              * for the step-advance dispatch. child->lifeFraction recomputed from
                              * the current flame time. (ebx is restored to the parent here.) */
                             {
-                                int32_t ft = coduo_int32_from_bits(cg_flameTime); /* 0x30028ef0 */
+                                int32_t ft = cg_flameTime; /* 0x30028ef0 */
                                 child->lifeFraction = (float)(((double)ft - child->spawnTime)
                                                           / (child->endTime - child->spawnTime));
                                 CG_AdvanceFlameChunkSize(child, ft);        /* 0x30028f18, EAX=child */
@@ -1023,7 +1023,7 @@ finalize_child:
                  *   the LATCHED next pointer rather than re-reading cur->next, so no
                  *   re-read is done here; `next` already holds it. EBP=0; EDI=1. */
                 {
-                    int32_t ft = coduo_int32_from_bits(cg_flameTime);       /* 0x30029069 FILD/MOV */
+                    int32_t ft = cg_flameTime;       /* 0x30029069 FILD/MOV */
                     cur->lifeFraction = (float)(((double)ft - cur->spawnTime)
                                             / (cur->endTime - cur->spawnTime));
                     CG_AdvanceFlameChunkSize(cur, ft);                  /* 0x30029091, EAX=cur */
@@ -1056,7 +1056,7 @@ finalize_child:
     /* 0x300290cf..0x300290ed: clear the once-per-frame flame-damage flag if the
      * local owner's flame-damage window has lapsed. */
     if (cg_flameInfo[cg.snap->ps.psClientNum].activeUntil
-        < coduo_int32_from_bits(cg_flameTime)) {
+        < cg_flameTime) {
         cg_flameDamageTakenThisFrame = 0;
     }
 
@@ -1093,7 +1093,7 @@ finalize_child:
 
     /* 0x30029166..0x30029190: arm the owner's flame-damage window if past. */
     {
-        int32_t nowTime = coduo_int32_from_bits(cg_flameTime);
+        int32_t nowTime = cg_flameTime;
         int32_t *armed = &cg_flameInfo[cg.snap->ps.psClientNum].activeUntil;
         if (*armed < nowTime) {
             *armed = coduo_int32_from_bits((uint32_t)nowTime + 100u);

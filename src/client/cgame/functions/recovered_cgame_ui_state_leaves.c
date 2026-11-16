@@ -45,7 +45,7 @@ void CG_UpdateFlameTime(void)
 {
     /* FILD signed cg.time; FADD ST0,ST0; floor; _ftol2. The helper preserves
      * the target's signed-64 conversion and low-dword return for every input. */
-    cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(
+    cg_flameTime = coduo_fp_to_i32_extended(
         floor((double)cg.time * 2.0));
 }
 

@@ -375,8 +375,7 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                              * used by block A above. */
                                             cgFlameInfo_t *damageInfo =
                                                 &cg_flameInfo[chunk->ownerInfoIndex];
-                                            int32_t flameClock =
-                                                coduo_int32_from_bits(cg_flameTime);
+                                            int32_t flameClock = cg_flameTime;
                                             int32_t lastStamp =
                                                 damageInfo->lastFlameStamp; /* [ESP+0x58] */
                                             int doSpawn = 0;
@@ -403,8 +402,7 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                                 flameChunk_t *child;
                                                 float spawnA;
 
-                                                damageInfo->lastFlameStamp =
-                                                    coduo_int32_from_bits(cg_flameTime);
+                                                damageInfo->lastFlameStamp = cg_flameTime;
                                                 damageInfo->lastFlamePos[0] = chunk->worldPos[0];
                                                 damageInfo->lastFlamePos[1] = chunk->worldPos[1];
                                                 damageInfo->lastFlamePos[2] = chunk->worldPos[2];
@@ -422,8 +420,7 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                                      * unbroken to a single FSTP. double locals
                                                      * would insert roundings the DLL lacks. */
                                                     long double r0, r1, r3;
-                                                    child->spawnTime = (double)
-                                                        coduo_int32_from_bits(cg_flameTime);
+                                                    child->spawnTime = (double)cg_flameTime;
 
                                                     /* end time field_50 = field_48 + r0 +
                                                      *   2000*(1 + 0.5*(1 - |normal[2]|)),
@@ -486,15 +483,14 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                                         r3 * ((long double)child->endTime -
                                                               (long double)child->spawnTime) *
                                                             (long double)child->lifeRate +
-                                                        (long double)coduo_int32_from_bits(cg_flameTime));
+                                                        (long double)cg_flameTime);
                                                 }
                                             }
                                         }
 
                                         chunk->ownerSentinel = 0; /* 0x3002655e */
                                     }
-                                    chunk->damageFrameStamp =
-                                        coduo_int32_from_bits(cg_flameTime); /* 0x30026565 */
+                                    chunk->damageFrameStamp = cg_flameTime; /* 0x30026565 */
                                 }
                             }
                         }

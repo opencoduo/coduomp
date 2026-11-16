@@ -1634,8 +1634,9 @@ extern cgFlameSoundLoop_t cg_flameSoundLoops[1024];
 /* 0x300ab718 .data refs=46 — cg_flameTime: the flame subsystem per-frame time base
  * (round(2*cg.time)); written by the flame update path and read via FILD as an int
  * timestamp. RESOLVED from CG_AddFlameToScene (0x300272b0) / CG_UpdateFlamethrowerSounds
- * (0x30029210); the mechanical owner=cg_playadsanim was a first-toucher label. */
-extern uint32_t cg_flameTime;
+ * (0x30029210); the mechanical owner=cg_playadsanim was a first-toucher label.
+ * Signed: every use is FILD/FIADD m32 or a JL/JG/JGE compare. */
+extern int32_t cg_flameTime;
 /* 0x300ab71c/720/724 .data — cg_flameSpriteUp: the flame billboard's UP basis vec3.
  * ROLE-RESOLVED (name provisional) from CG_AddFlameSpriteToScene (0x300268e0): when
  * the flame is the local player's first-person flame the function derives view angles
@@ -2116,8 +2117,9 @@ extern int32_t cg_hudSpinPrevTime;
  * CG_UpdateCompPointerOrientation (0x3001d6d0) advanced the compass reference-yaw spring. The
  * updater integrates over dt = cg.time - this, then stores cg.time back here. It is the
  * compass twin of cg_hudSpinPrevTime (0x30134ce0, adjacent). refs=3, owned solely by
- * 0x3001d6d0; the owner=veh_checkpushclients label is a wrong size-match name. int ms. */
-extern uint32_t cg_compassSpinPrevTime;
+ * 0x3001d6d0; the owner=veh_checkpushclients label is a wrong size-match name. int ms;
+ * the prev > cg.time test is a signed JG (0x3001d708). */
+extern int32_t cg_compassSpinPrevTime;
 /* 0x30134ce8 .data refs=4 width=4 first=0x30025571 owner=hudelem_destroyall.
  * RESOLVED to the flame-chunk pool base (see globals.c and CG_ClearFlameChunks
  * at 0x30025570): the allocator CG_InitFlameChunks (0x300279d0) requests a
@@ -4520,11 +4522,12 @@ typedef struct cg_s {
      * size-match mislabel) rejected; named by proven role, exact CoD name unproven. */
     cursorHint_t usableHintKind;
     /* 0x3048ae0c: CG_FadeColor start time (startMsec); latched from cg.time by
-     * CG_CheckForCursorHints (0x3001a5b0), consumed by the drawer FUN_300303a0. */
-    uint32_t overlayFadeStartTime;
+     * CG_CheckForCursorHints (0x3001a5b0), consumed by the drawer FUN_300303a0.
+     * Signed: its % 1000 is CDQ+IDIV (0x300304a1). */
+    int32_t overlayFadeStartTime;
     /* 0x3048ae10: CG_FadeColor duration (totalMsec); latched from the fade-duration
      * constant 0x3052fc4c by CG_CheckForCursorHints, consumed by the same drawer. */
-    uint32_t overlayFadeDuration;
+    int32_t overlayFadeDuration;
     /* 0x3048ae14: cg.usableHintColorByte — a latched 0..255 color/alpha byte for the
      * usable-entity hint. Latched from cg.snap.field_5d4 by CG_CheckForCursorHints; the
      * drawer CG_DrawCursorhint gates the optional CG_FilledBar overlay on it being
@@ -4545,11 +4548,12 @@ typedef struct cg_s {
     /* 0x3048ae24 .data — cg.damageFeedbackTime: cg.time latched at the top of
      * CG_DamageFeedback (0x30034acc) on every hit. Write-only in this DLL; a "time of
      * last damage feedback" latch. Renamed from the size-match owner label. */
-    uint32_t damageFeedbackTime;
+    int32_t damageFeedbackTime;
     /* 0x3048ae28 .data: function-private persistent state (a static local in the
      * original) holding a cg.time timestamp; the only referencing function reads it
-     * and clears it to 0 (0x3001ab00). Named by role; exact source name unproven. */
-    uint32_t voiceMenuStartTime;
+     * and clears it to 0 (0x3001ab00). Named by role; exact source name unproven.
+     * Signed: the elapsed test is a JLE (0x3001ab11). */
+    int32_t voiceMenuStartTime;
     int32_t field_31cec[3]; /* 0x3048ae2c: unresolved */
     /* 0x3048ae38 .data width=4: the weapon index most recently passed to
      * CG_SetSelectedWeapon (0x30022660); that routine unconditionally records the
@@ -5481,8 +5485,9 @@ extern int32_t cg_hudEmitCount; /* 0x305385e0 */
  * snapshot's serverTime here alongside cg.time; effect/trajectory code FILDs it
  * (0x30004da0 loads it as an integer -> float in several effect computations) and
  * subtracts it for elapsed-time math. Provisional role name (bg_evaluatetrajectory
- * owner label is the mechanical first-toucher, not the subsystem). */
-extern uint32_t cg_effectTime;
+ * owner label is the mechanical first-toucher, not the subsystem). Signed: FILD
+ * m32, JLE/JGE compares, and CDQ+IDIV (0x30003cc3). */
+extern int32_t cg_effectTime;
 /* 0x3053a034 .data: cg_effectAnimTime -- a third effect-subsystem time value (ms),
  * sibling of cg_effectTime (0x3053a030) and cg_effectFrameTime (0x3053a038). All
  * three are seeded to the same value by the effect reset at 0x3002df81..df8b; this
@@ -5504,7 +5509,7 @@ extern int32_t cg_effectAnimTime;
  * g_data_bg_setupsharedammoindexes_3053a038 (owner label was the first toucher).
  * Provisional role name -- an int ms time value scaled per frame; the exact source
  * symbol (absolute effect time vs. a delta) is unresolved. */
-extern uint32_t cg_effectFrameTime;
+extern int32_t cg_effectFrameTime;
 /* 0x3053a040 .data: the WEAPON animation-condition value table
  * (bgAnimConditionTypes[0].values). A fixed 128-entry bg_indexed_string_t array
  * occupying exactly [0x3053a040, 0x3053a440) = 0x400 bytes (the next distinct

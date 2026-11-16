@@ -88,7 +88,7 @@ void CG_ProcessSnapshots(void)
 
                 /* 3003d342..3003d34f: seed the client time bases from its serverTime. */
                 cg.time = snap->serverTime;
-                cg_effectTime = (uint32_t)snap->serverTime;
+                cg_effectTime = snap->serverTime;
                 cg.oldTime = snap->serverTime;
 
                 /* 3003d354..3003d370: clear cg_entities[i]+0x1e8. */
@@ -179,7 +179,7 @@ void CG_ProcessSnapshots(void)
         /* 3003d456..3003d458: JNS -> skip when cg.time >= cg.snap.serverTime. */
         if (coduo_int32_from_bits((uint32_t)cg.time - (uint32_t)snapServerTime) < 0) {
             cg.time = snapServerTime;
-            cg_effectTime = (uint32_t)snapServerTime;
+            cg_effectTime = snapServerTime;
         }
     }
     /* 3003d466..3003d46a: POP ESI; ADD ESP,8; RET. */

@@ -44,7 +44,7 @@ void CG_SetInitialSnapshot(snapshot_t *snap)
     /* serverTime = snap->serverTime; then mirror into the time bases. */
     serverTime = snap->serverTime;
     cg.time = serverTime;
-    cg_effectTime = (uint32_t)serverTime;
+    cg_effectTime = serverTime;
     cg.oldTime = serverTime;
 
     /* 0x3048c8c8 is cg_entities[0]+0x1e8. The loop walks that field with the

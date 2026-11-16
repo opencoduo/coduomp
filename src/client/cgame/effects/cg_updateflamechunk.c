@@ -133,7 +133,7 @@ void CG_UpdateFlameChunk(flameChunk_t *f /* EAX */, float dt /* stack */)
     //   stays at register precision — a double local would insert a rounding
     //   the DLL does not perform.
     long double elapsed =
-        (long double)coduo_int32_from_bits(cg_flameTime) -
+        (long double)cg_flameTime -
         (long double)f->spawnTime;
 
     if ((double)f->birthTime > elapsed) {
