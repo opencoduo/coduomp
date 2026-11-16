@@ -15,7 +15,7 @@ void CG_AdjustFrom640Rect(float *x, float *y, float *w, float *h)
 void CG_FreeMarkPoly(markPoly_t *mark) /* 0x3002e450 */
 {
     if (mark->prevMark == 0)
-        Com_ErrorMessage("CG_FreeLocalEntity: not active");
+        CG_Error("CG_FreeLocalEntity: not active");
 
     mark->prevMark->nextMark = mark->nextMark;
     mark->nextMark->prevMark = mark->prevMark;

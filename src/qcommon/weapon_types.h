@@ -278,7 +278,7 @@ typedef struct weaponInfo_s {
                                * first byte is non-zero (gate at 0x30043c9f), enters the
                                * ADS-overlay/reticle registration + loading-screen path. Adopted
                                * from server weaponInfo_s::reticleSide (+0x10c). NOTE: server
-                               * names +0x108 "reticleCenter"; CG_DrawWeaponIcon3D consumes the
+                               * names +0x108 "reticleCenter"; CG_DrawTurretCrossHair consumes the
                                * registered center-reticle material from the matching cgame slot. */
     int32_t reticleCenterSize; /* +0x110 */
     int32_t reticleSideSize;   /* +0x114 */
@@ -468,16 +468,16 @@ typedef struct weaponInfo_s {
                                * player aims down the sight. Matches server
                                * weaponInfo_s::adsZoomFov (+0x274). */
     float adsZoomInFrac;      /* +0x278, weapon key "adsZoomInFrac": fraction of the full ADS
-                               * lerp spent easing INTO the zoomed overlay. CG_CalcAdsOverlayFrac
+                               * lerp spent easing INTO the zoomed overlay. CG_GetWeapReticleZoom
                                * (0x30019520) maps adsFraction through this while the player is
                                * zooming in. Matches server weaponInfo_s::adsZoomInFrac (+0x278). */
     float adsZoomOutFrac;     /* +0x27c, weapon key "adsZoomOutFrac": fraction of the full ADS
                                * lerp spent easing OUT of the zoomed overlay. Used by
-                               * CG_CalcAdsOverlayFrac when the player is zooming out. Matches
+                               * CG_GetWeapReticleZoom when the player is zooming out. Matches
                                * server weaponInfo_s::adsZoomOutFrac (+0x27c). */
     const char *adsOverlayShader; /* +0x280, weapon key "adsOverlayShader": name of the ADS
                                * scope/overlay shader, or "" when the weapon has none.
-                               * CG_CalcAdsOverlayFrac tests adsOverlayShader[0] != 0 as the
+                               * CG_GetWeapReticleZoom tests adsOverlayShader[0] != 0 as the
                                * "this weapon has an ADS overlay" gate. Matches server
                                * weaponInfo_s::adsOverlayShader (+0x280). */
     int32_t adsOverlayReticle; /* +0x284, weapon key "adsOverlayReticle": overlay-reticle enum

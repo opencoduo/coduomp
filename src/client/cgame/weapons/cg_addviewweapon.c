@@ -40,7 +40,7 @@ void CG_AddViewWeapon(void)
     if (cg_drawGun_vmCvar.integer != CG_DRAW_GUN_ALWAYS) {
         float overlayFrac;
         if (cg_drawGun_vmCvar.integer == CG_DRAW_GUN_HIDDEN ||
-            CG_CalcAdsOverlayFrac(&overlayFrac)) {
+            CG_GetWeapReticleZoom(&overlayFrac)) {
             drawViewWeapon = qfalse;
         }
     }
@@ -153,7 +153,7 @@ void CG_AddViewWeapon(void)
     if ((ps->playerStateFlags & CG_VIEW_WEAPON_PULLBACK_FLAG) != 0 &&
         weapon->weaponClass == WEAPCLASS_LMG) {
         viewOriginOffset = CG_VIEW_WEAPON_PULLBACK_DISTANCE;
-        CG_PerturbCamera(viewOriginOffset);
+        CG_OffsetLMG(viewOriginOffset);
     }
 
     hand.axis[0][0] = weaponAxis[0][0];

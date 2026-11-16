@@ -31,7 +31,7 @@ void CG_ConfigStringModified(void)
     cgame_syscall(CG_GET_GAME_STATE, (intptr_t)cgs.gameState.stringOffsets);
 
     if (index < 0 || index >= MAX_CONFIGSTRINGS) {
-        Com_ErrorMessage("CG_ConfigString: bad index: %i", index);
+        CG_Error("CG_ConfigString: bad index: %i", index);
     }
     value = &cgs.gameState.stringData[cgs.gameState.stringOffsets[index]];
 

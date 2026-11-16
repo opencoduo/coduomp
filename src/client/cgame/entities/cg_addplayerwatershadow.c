@@ -4,7 +4,7 @@
 #include "client/cgame/client_recovered.h"
 
 /*
- * CG_AddPlayerWaterShadow (0x30032da0) — draw the flat "water-line" shadow decal on
+ * CG_PlayerSplash (0x30032da0) — draw the flat "water-line" shadow decal on
  * the water surface underneath a player/vehicle entity that is standing in water.
  *
  * The .mcode-assigned name "MatrixMultiplyEquals" is REJECTED: it is a pure win/PPC
@@ -78,7 +78,7 @@
  * shared define; the SOLID bit (0x1) has no corpus define yet, so it is spelled out. */
 #define CG_WATER_SHADOW_CONTENTS_SOLID 0x00000001u
 
-void CG_AddPlayerWaterShadow(centity_t *cent)
+void CG_PlayerSplash(centity_t *cent)
 {
     vec3_t     probeBelow;   /* origin, 24u down: must be in water   */
     vec3_t     probeAbove;   /* origin, 32u up:   must be in air      */

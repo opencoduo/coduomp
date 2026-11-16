@@ -25,9 +25,9 @@
 //   30038791  MOV ESI,EAX                  ; ESI = index (register arg)
 //   30038793  TEST ESI,ESI / JL            ; signed: index < 0  -> error
 //   30038797  CMP ESI,0x800 / JL           ; index >= MAX_CONFIGSTRINGS -> error
-//   3003879f  PUSH ESI                     ;   Com_ErrorMessage(fmt, index)
+//   3003879f  PUSH ESI                     ;   CG_Error(fmt, index)
 //   300387a0  PUSH 0x30077d90              ;   "CG_ConfigString: bad index: %i"
-//   300387a5  CALL 0x3002b300              ;   Com_ErrorMessage (caller-cleaned)
+//   300387a5  CALL 0x3002b300              ;   CG_Error (caller-cleaned)
 //   300387aa  ADD ESP,0x8
 //   300387ad  MOV ESI,[ESI*4 + 0x30440a00] ; ESI = cgs.gameState.stringOffsets[index]
 //   300387b4  ADD ESI,0x30442a00           ; ESI = &cgs.gameState.stringData[offset]
@@ -39,19 +39,19 @@
 //   300387cb  TEST EAX,EAX / JNZ           ; nonzero -> loaded ok, done
 //   300387cf  PUSH ESI                     ; name
 //   300387d0  PUSH 0x3007a340              ; "Could not load script menu file '%s'\n"
-//   300387d5  CALL 0x3002b300              ; Com_ErrorMessage (caller-cleaned)
+//   300387d5  CALL 0x3002b300              ; CG_Error (caller-cleaned)
 //   300387da  ADD ESP,0x8
 //   300387dd  POP ESI / RET
 //
 // The bounds check mirrors the inlined CG_ConfigString one exactly: on an
 // out-of-range index it prints "CG_ConfigString: bad index: %i" via
-// Com_ErrorMessage and then FALLS THROUGH to the (now unbounded) offset lookup —
+// CG_Error and then FALLS THROUGH to the (now unbounded) offset lookup —
 // preserved here as written (apparent original behavior, not a reconstruction fix).
 // The trap's int return is used only to decide whether to report a load failure;
 // the function returns void.
 //
 // ABI (i386, not source-level): index is a register arg in EAX (custom fastcall-
-// style). Com_ErrorMessage and cgame_syscall are variadic/caller-cleaned.
+// style). CG_Error and cgame_syscall are variadic/caller-cleaned.
 
 #include "client/cgame/globals.h"
 #include "client/cgame/client_recovered.h"
@@ -63,7 +63,7 @@ void CG_PrecacheScriptMenu(int index)
     /* 0x30038793..0x3003879d: reject a negative or >= MAX_CONFIGSTRINGS index. */
     if (index < 0 || index >= MAX_CONFIGSTRINGS) {
         /* 0x300387a5: shared inlined CG_ConfigString bad-index diagnostic. */
-        Com_ErrorMessage(cg_configStringBadIndexFmt, index);
+        CG_Error(cg_configStringBadIndexFmt, index);
         /* Falls through to the lookup with the still-bad index (as in the DLL). */
     }
 
@@ -75,7 +75,7 @@ void CG_PrecacheScriptMenu(int index)
         /* 0x300387c2: cgame_syscall(CG_R_REGISTERMENU, name) -> nonzero on success.
          * 0x300387cb..0x300387d5: on a zero (failed) return, report the failure. */
         if (cgame_syscall(CG_R_REGISTERMENU, name) == 0) {
-            Com_ErrorMessage(cg_couldNotLoadScriptMenuFmt, name);
+            CG_Error(cg_couldNotLoadScriptMenuFmt, name);
         }
     }
 }

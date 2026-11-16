@@ -626,7 +626,7 @@ const char cg_scriptNumVarsDebugFormat[16] = "num vars:    %d";
  * NUL-terminated .rdata string, not a dword: the mechanical export truncated it
  * to its first dword ("Bad " = 0x20646142). Restored to the real string, proven
  * by its consumer CG_AddCEntity (0x30022170) which pushes it as the
- * Com_ErrorMessage("Bad entity type: %i\n", eType) format for an out-of-range
+ * CG_Error("Bad entity type: %i\n", eType) format for an out-of-range
  * currentState.eType. Bytes verified: 42 61 64 20 65 6e 74 69 74 79 20 74 79 70
  * 65 3a 20 25 69 0a 00 ("Bad entity type: %i\n"). */
 const char cg_badEntityTypeErrorFormat[21] = "Bad entity type: %i\n";
@@ -2694,7 +2694,7 @@ cgs_t cgs;
  * 4-byte qhandle_t slots (0x3044bb4c/0x50/0x54). Consolidated from the mechanical
  * g_data_pm_updateviewangles_3044bb4c/50/54 placeholders (owner label was a
  * size-guess and wrong). Written by objective-asset setup at 0x3002bd41/bd52/bd63 via
- * trap_R_RegisterShader(name,5); read as an array by CG_GetObjectiveShaderForDir
+ * trap_R_RegisterShader(name,5); read as an array by CG_ObjectiveIcon
  * (0x3002fe50 MOV EAX,[ESI*4 + 0x3044bb4c]).
  *   3002bd41 MOV [0x3044bb4c],EAX  (= RegisterShader("hudObjective"))
  *   3002bd52 MOV [0x3044bb50],EAX  (= RegisterShader("hudObjectiveUp"))
@@ -3050,7 +3050,7 @@ cgs_t cgs;
 
 /* Source: uo_cgame_mp_x86.dll 0x3044fa8c (.data); refs=3 width=4; first=0x30019ba3.
  * cg_drawCrosshair_vmCvar.integer: externally-set (cvar-integer) HUD/3D-view draw-enable
- * gate read by CG_DrawWeaponIcon3D (0x30019ba3) and two sibling view draws; see
+ * gate read by CG_DrawTurretCrossHair (0x30019ba3) and two sibling view draws; see
  * globals.h. Mechanical owner=pm_viewheighttablelerp was a first-touch mislabel. */
 
 /* Source: uo_cgame_mp_x86.dll 0x3044fba8 (.data); refs=1 width=4; first=0x3003020f; owner=clientendframe.
@@ -3201,7 +3201,7 @@ vmCvar_t pmove_msec = {0};
 vmCvar_t cg_objectiveText;
 /* Source: uo_cgame_mp_x86.dll 0x30452428 (.data); refs=4 width=4; first=0x30019c21.
  * cg_crosshairAlpha_vmCvar.value: externally-set view/HUD fade or blend fraction,
- * gated < 0.01f by CG_DrawWeaponIcon3D and scaled by sibling view draws; see
+ * gated < 0.01f by CG_DrawTurretCrossHair and scaled by sibling view draws; see
  * globals.h. Mechanical owner=pm_viewheighttablelerp was a first-touch mislabel. */
 
 /* Source: uo_cgame_mp_x86.dll 0x30452548 (.data); refs=10 width=4; first=0x30016a2c; owner=cg_asset_parse.
@@ -3577,7 +3577,7 @@ cg_t cg;
 /* Source: uo_cgame_mp_x86.dll 0x30487954 (.data); refs=5 width=4; first=0x30019560.
  * RESOLVED: cg.weaponPosition.adsZoomingIn — qboolean written each frame at 0x30045521/0x30045533
  * (1 when adsFraction rose above cg.weaponPosition.prevAdsFraction this frame, else 0) and read by
- * CG_CalcAdsOverlayFrac (0x30019520) to select adsZoomInFrac vs adsZoomOutFrac.
+ * CG_GetWeapReticleZoom (0x30019520) to select adsZoomInFrac vs adsZoomOutFrac.
  * The owner=sp_trigger_mount_no_brush label was a wrong size-based auto-name.
  * Example: 30019560   a1 54 79 48 30               MOV EAX,[0x30487954] | 30045521   a3 54 79 48 30               MOV [0x30487954],EAX
  */
@@ -3609,7 +3609,7 @@ cg_t cg;
  * bg_weaponInfos[cg.predictedPlayerState.currentWeapon] (0x30034d64 loads the
  * bg_weaponInfos table, indexes by currentWeapon at 0x3048329c, stores the pointer
  * here). Read across cgame view/HUD code via typed field access, e.g.
- * CG_CalcAdsOverlayFrac (0x30019520): adsZoomInFrac +0x278, adsOverlayShader +0x280.
+ * CG_GetWeapReticleZoom (0x30019520): adsZoomInFrac +0x278, adsOverlayShader +0x280.
  * The owner=sp_trigger_mount_no_brush label was a wrong size-based auto-name.
  * Example: 3001952c   8b 15 80 79 48 30            MOV EDX,dword ptr [0x30487980] | 30034d79   a3 80 79 48 30               MOV [0x30487980],EAX
  */

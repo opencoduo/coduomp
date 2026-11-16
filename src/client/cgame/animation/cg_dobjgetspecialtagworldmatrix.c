@@ -9,7 +9,7 @@
 #include <string.h>
 
 /*
- * CG_DObjGetSpecialTagWorldMatrix (provisional-by-role) — resolve a named DObj
+ * CG_DObjGetViewModelTagMatrix (provisional-by-role) — resolve a named DObj
  * bone/tag on `self`, advance that bone's DObj trace-part state, then compose the
  * fixed placement `cg.specialTagPlacement` into the bone's engine matrix to produce
  * a world-space tag matrix in `out`. Returns qtrue on success, qfalse when the
@@ -68,7 +68,7 @@
  * 0xad fills it, 0x9a consumes it for animation, and 0xae consumes it for the
  * final skeleton. The local matrix (base-0x30) is adjacent and non-overlapping.
  */
-qboolean CG_DObjGetSpecialTagWorldMatrix(struct DObj_s *self,
+qboolean CG_DObjGetViewModelTagMatrix(struct DObj_s *self,
                                          const char *tagName,
                                          DObjSkelMat *out)
 {

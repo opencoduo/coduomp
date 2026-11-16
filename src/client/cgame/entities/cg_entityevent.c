@@ -317,8 +317,8 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
 
     if (event < EV_TABLE_LO || event >= EV_TABLE_HI) {
         /* 0x30022af9..0x30022afc JA -> 0x30023539: CALL 0x3002b300, the fatal
-         * Com_ErrorMessage (CG_ERROR trap) — NOT a benign print. */
-        Com_ErrorMessage("Unknown event: '%s'", cg_eventNames[event]);
+         * CG_Error (CG_ERROR trap) — NOT a benign print. */
+        CG_Error("Unknown event: '%s'", cg_eventNames[event]);
         return;
     }
 
@@ -1013,14 +1013,14 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         return;
 
     /* 0xbb/0xbc/0xbe/0xc6/0xc7: in-window jump-table slots wired to the
-     * unknown-event error leg (0x30023539), same fatal Com_ErrorMessage as the
+     * unknown-event error leg (0x30023539), same fatal CG_Error as the
      * out-of-window path. */
     case EV_MOLOTOV_EXPLODE:
     case EV_MOLOTOV_EXPLODE_NOMARKS:
     case EV_BULLET:
     case EV_PLAY_FX_ON_PLAYER:
     case EV_STOP_ATTACHED_FX:
-        Com_ErrorMessage("Unknown event: '%s'", cg_eventNames[event]);
+        CG_Error("Unknown event: '%s'", cg_eventNames[event]);
         return;
 
     /* 0x98, 0xaa, 0xac, 0xb2, 0xb3, 0xb4, 0xbf, 0xc0, 0xc9, 0xca, 0xd2

@@ -28,7 +28,7 @@
  *    Each index is formed as cfgIndex = CS_SOUNDS + soundIndex (0x295 == 661) and
  *    resolved through CG_ConfigString's INLINED lookup (the code does not CALL
  *    CG_ConfigString; it inlines the identical body): if cfgIndex is outside
- *    [0, MAX_CONFIGSTRINGS) it reports Com_ErrorMessage("CG_ConfigString: bad index:
+ *    [0, MAX_CONFIGSTRINGS) it reports CG_Error("CG_ConfigString: bad index:
  *    %i", cfgIndex) (string @0x30077d90) and STILL proceeds, then reads
  *    name = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]]. The alias
  *    name is registered with the engine via cgame_syscall(CG_COM_PICK_SOUND_ALIAS, name,
@@ -105,7 +105,7 @@ void CG_SoundBlend(centity_t *self /* EBX */)
     cfgIndex = coduo_int32_from_bits(
         (uint32_t)soundIndex1 + (uint32_t)CS_SOUNDS);
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS)
-        Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
+        CG_Error("CG_ConfigString: bad index: %i", cfgIndex);
     stringOffset = cgame_compat_read_target_i32_index(
         cgs.gameState.stringOffsets, cfgIndex);
     soundName = (const char *)(
@@ -118,7 +118,7 @@ void CG_SoundBlend(centity_t *self /* EBX */)
     cfgIndex = coduo_int32_from_bits(
         (uint32_t)soundIndex2 + (uint32_t)CS_SOUNDS);
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS)
-        Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
+        CG_Error("CG_ConfigString: bad index: %i", cfgIndex);
     stringOffset = cgame_compat_read_target_i32_index(
         cgs.gameState.stringOffsets, cfgIndex);
     soundName = (const char *)(

@@ -61,13 +61,13 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
 {
     /*
      * 3002a1dd..a1f3: copy the shader's config string for elem->materialIndex into
-     * a 0x40-byte stack buffer. CG_GetShaderConfigString takes the index in EAX
+     * a 0x40-byte stack buffer. CG_ServerShaderName takes the index in EAX
      * (MOV EAX,[EDI+0x38]) and (dest, size) on the stack, returning qtrue on
      * success; an empty/oversized string returns qfalse and the whole draw is
      * skipped.
      */
     char shaderName[MAX_QPATH];
-    if (!CG_GetShaderConfigString(elem->materialIndex, shaderName,
+    if (!CG_ServerShaderName(elem->materialIndex, shaderName,
                                   (int)sizeof(shaderName))) {
         return;
     }

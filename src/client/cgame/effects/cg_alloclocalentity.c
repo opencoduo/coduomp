@@ -11,7 +11,7 @@
 //   - links it at the head of the cg_activeLocalEntities [0x30537da0] active list,
 //   - when the free list is empty it recycles the oldest active entity by inlining
 //     CG_FreeLocalEntity, which raises the CG_ERROR string
-//     "CG_FreeLocalEntity: not active" (global_30077908) via Com_ErrorMessage
+//     "CG_FreeLocalEntity: not active" (global_30077908) via CG_Error
 //     (0x3002b300) when that entity's ->prev link is null.
 // This is the canonical Quake3/CoD CG_AllocLocalEntity; the sibling initializer at
 // 0x3002a9e0 (CG_InitLocalEntities) proves the list/free-list layout and the
@@ -41,7 +41,7 @@ localEntity_t *CG_AllocLocalEntity(void)
         /* if ( !oldest->prev ) CG_Error("CG_FreeLocalEntity: not active");
          * (CMP dword ptr [ESI],0x0 tests oldest->prev at +0.) */
         if (oldest->prev == 0) {
-            Com_ErrorMessage("CG_FreeLocalEntity: not active");
+            CG_Error("CG_FreeLocalEntity: not active");
             /* Only the returning error path reloads EDX/freeHead. */
             le = cg_freeLocalEntities;
         }

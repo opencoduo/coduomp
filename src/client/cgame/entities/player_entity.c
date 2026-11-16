@@ -151,8 +151,8 @@ void CG_Player(centity_t *cent)
     /* AFTER_DRAW (0x300344c6): build the player model orientation basis from the entity's
      * render angles (cent+0x214), then add the head icon and per-frame effects. */
     AnglesToAxisNegRight(re.axis, cent->lerpAngles);
-    CG_AddHeadIcon(cent);       /* 0x300344da (EAX=cent) */
-    CG_AddPlayerWaterShadow(cent); /* 0x300344df (ESI=cent) */
+    CG_PlayerSprites(cent);       /* 0x300344da (EAX=cent) */
+    CG_PlayerSplash(cent); /* 0x300344df (ESI=cent) */
 
     /* 0x300344e4..0x3003452c compute the base renderfx. Start at 0; set RF_THIRD_PERSON
      * (0x2) only when the local player is drawing their OWN model in first-person view

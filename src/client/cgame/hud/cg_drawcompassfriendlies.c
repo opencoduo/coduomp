@@ -127,7 +127,7 @@ void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
         }
     }
 
-    CG_UpdateCompassOrientation();
+    CG_UpdateCompPointerOrientation();
 
     const float centerX = (float)(
         (long double)cg_hudCompassSize_vmCvar.value * (long double)rect->w *

@@ -307,8 +307,8 @@ void CG_RegisterGraphics(void)
             break;
         }
         if (CG_ShellShockLoad(cs) == 0) {
-            /* 0x3002c7f8: Com_ErrorMessage(fmt, cs) directly (fmt + one arg), NOT via va. */
-            Com_ErrorMessage("couldn't register shell shock '%s' -- see console\n", cs);
+            /* 0x3002c7f8: CG_Error(fmt, cs) directly (fmt + one arg), NOT via va. */
+            CG_Error("couldn't register shell shock '%s' -- see console\n", cs);
         }
         CG_SetShellShockParams(&cgs.shellshocks[i + 1]);
     }

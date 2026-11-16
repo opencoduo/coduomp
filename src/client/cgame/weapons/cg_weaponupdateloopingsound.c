@@ -12,7 +12,7 @@
 //     (cgWeaponInfo.stopFireSound, +0x12c) instead.
 // The 3D sound position is the tag_flash world point: for the LOCAL predicted player
 // (cent->currentState.number == cg.snap->ps.psClientNum) it uses the view-weapon DObj special-tag
-// matrix (CG_DObjGetSpecialTagWorldMatrix on cgWeaponInfo.viewDObjSelf); for any
+// matrix (CG_DObjGetViewModelTagMatrix on cgWeaponInfo.viewDObjSelf); for any
 // other entity it queries the entity's DObj handle (trap CG_DOBJ_GET_HANDLE) and
 // builds the entity-bone world matrix (CG_DObjGetWorldTagMatrix). If neither
 // tag resolves, the sound position falls back to the entity's trajectory position
@@ -38,7 +38,7 @@
 //   - 0x300490e9 SUB cg.frametime (raw ms), store back to +0x204.
 //   - 0x300490f5/0x300490fe CMP cent->currentState.number(+0x00) vs cg.snap->ps.psClientNum(+0xe0).
 //   - local branch: MOV EDI,[wi] (wi->viewDObjSelf); if 0 -> fallback; else
-//     CG_DObjGetSpecialTagWorldMatrix(EDI, "tag_flash", &tagMatrix); if 0 -> fallback;
+//     CG_DObjGetViewModelTagMatrix(EDI, "tag_flash", &tagMatrix); if 0 -> fallback;
 //     else soundPos = tagMatrix translation row (float 12/13/14 at [ESP+0x50/54/58]).
 //   - remote branch: handle = trap(CG_DOBJ_GET_HANDLE, cent->currentState.number); if 0 ->
 //     fallback; else CG_DObjGetWorldTagMatrix(handle, "tag_flash", cent,
@@ -91,9 +91,9 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent)
         /* 0x30049106: the local view-weapon DObj self handle. */
         struct DObj_s *self = wi->viewDObjSelf;
         if (self != NULL) {
-            /* 0x30049116: CG_DObjGetSpecialTagWorldMatrix(self, "tag_flash",
+            /* 0x30049116: CG_DObjGetViewModelTagMatrix(self, "tag_flash",
              * &tagMatrix) — EDI=self, EAX=tagName, PUSH &tagMatrix. */
-            if (CG_DObjGetSpecialTagWorldMatrix(self, cg_muzzleFlashTagName,
+            if (CG_DObjGetViewModelTagMatrix(self, cg_muzzleFlashTagName,
                                                 &tagMatrix)) {
                 /* 0x30049122-0x30049136: translation row -> soundPos. */
                 soundPos[0] = tagMatrix.origin[0];

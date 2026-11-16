@@ -43,7 +43,7 @@
  *   -- expired branch (cg.time >= le->endTime): inlined CG_FreeLocalEntity(le) --
  *   3002ad20  TEST EDI,EDI                le->prev
  *   3002ad22  JNZ 0x3002ad31              if le->prev != 0 skip error
- *   3002ad24  PUSH 0x30077908 ; CALL ...  Com_ErrorMessage("CG_FreeLocalEntity: not active")
+ *   3002ad24  PUSH 0x30077908 ; CALL ...  CG_Error("CG_FreeLocalEntity: not active")
  *   3002ad31  MOV EAX,[0x30134cfc]        EAX = cg_numLocalEntities
  *   3002ad36  MOV EDX,[ESI+0x4]           EDX = le->next
  *   3002ad39  MOV ECX,[ESI]               ECX = le->prev
@@ -59,7 +59,7 @@
  *   3002ad61  SUB EAX,0x0 ; JZ 0x3002ad8c     case 0 -> CG_AddFadeRGB
  *   3002ad66  DEC EAX      ; JZ 0x3002ad85     case 1 -> CG_AddScaleFade (0x3002ac20)
  *   3002ad69  DEC EAX      ; JZ 0x3002ad7c     case 2 -> CG_AddMovingTracer (0x3002ab00)
- *   3002ad6c  PUSH ECX ; PUSH 0x300778f8 ; CALL Com_ErrorMessage("Bad leType: %i", leType)
+ *   3002ad6c  PUSH ECX ; PUSH 0x300778f8 ; CALL CG_Error("Bad leType: %i", leType)
  *   3002ad91  CMP EDI,0x30537da0 ; MOV ESI,EDI ; JNZ 0x3002ad14   advance & loop until sentinel
  */
 void CG_AddLocalEntities(void)
@@ -88,7 +88,7 @@ void CG_AddLocalEntities(void)
 
             /* Expired: inlined CG_FreeLocalEntity(le). */
             if (le->prev == 0) {
-                Com_ErrorMessage("CG_FreeLocalEntity: not active");
+                CG_Error("CG_FreeLocalEntity: not active");
             }
 
             /* The list-walk `next` above remains the pre-error traversal value;
@@ -120,7 +120,7 @@ void CG_AddLocalEntities(void)
                 CG_AddMovingTracer(le);
                 break;
             default:
-                Com_ErrorMessage("Bad leType: %i", le->leType);
+                CG_Error("Bad leType: %i", le->leType);
                 break;
             }
         }

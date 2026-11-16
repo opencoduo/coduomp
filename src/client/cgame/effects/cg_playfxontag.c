@@ -22,7 +22,7 @@
  * Name: role name; the .mcode's size-matched "G_DObjSetLocalTag" guess is REJECTED
  * — that is a game-server DObj tag setter, whereas this is cgame code that reads a
  * config string, resolves a tag, and fires an effect-play trap. The bad-index path
- * reuses CG_ConfigString's inlined Com_ErrorMessage("CG_ConfigString: bad index:
+ * reuses CG_ConfigString's inlined CG_Error("CG_ConfigString: bad index:
  * %i", n) (string at 0x30077d90), which anchors the config-string lookup identity.
  * The Mac CG_PlayFxOnTag performs the corresponding config-string, bone-index,
  * and entity-effect play sequence, resolving the source name.
@@ -37,7 +37,7 @@
  *   - 30022786 ADD ESI,0x3e5           cfgIndex = fxId + 997
  *   - 3002278f JS  (bad if cfgIndex<0) 30022797 JL 0x800 (skip error if <2048),
  *     else PUSH cfgIndex; PUSH "CG_ConfigString: bad index: %i"; CALL
- *     Com_ErrorMessage (0x3002b300); the lookup still proceeds afterwards (matches
+ *     CG_Error (0x3002b300); the lookup still proceeds afterwards (matches
  *     CG_ConfigString's inlined behaviour).
  *   - 300227a7 MOV EAX,[ESI*4 + 0x30440a00]  offset = cgs.gameState.stringOffsets[cfgIndex]
  *   - 300227ae ADD EAX,0x30442a00            EAX = &cgs.gameState.stringData[offset] = cfg
@@ -79,7 +79,7 @@ void CG_PlayFxOnTag(centity_t *self, int fxId)
      * up (matches the machine code, which falls through into the lookup). The
      * signed compare uses JS then JL against 2048, i.e. cfgIndex < 0 || >= 2048. */
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS) {
-        Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
+        CG_Error("CG_ConfigString: bad index: %i", cfgIndex);
     }
 
     int32_t stringOffset = cgame_compat_read_target_i32_index(

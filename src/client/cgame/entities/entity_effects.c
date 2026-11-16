@@ -95,7 +95,7 @@ void CG_EntityEffects(centity_t *cent)
          * look up (the machine code falls through into the lookup). Signed compare:
          * cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS. */
         if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS) {
-            Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
+            CG_Error("CG_ConfigString: bad index: %i", cfgIndex);
         }
 
         soundName = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]];

@@ -41,19 +41,19 @@ void CG_DrawSkyBoxPortal(void)
 
         token = Com_ParseOnLine(&parse);
         if (token == NULL || token[0] == '\0') {
-            Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
+            CG_Error("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
         }
         cg.refdef.vieworg[0] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(&parse);
         if (token == NULL || token[0] == '\0') {
-            Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
+            CG_Error("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
         }
         cg.refdef.vieworg[1] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(&parse);
         if (token == NULL || token[0] == '\0') {
-            Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
+            CG_Error("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
         }
         cg.refdef.vieworg[2] = (float)coduo_compat_atof(token);
 
@@ -61,13 +61,13 @@ void CG_DrawSkyBoxPortal(void)
          * consumed afterward by this build (CALL Q_atoi, result overwritten). */
         token = Com_ParseOnLine(&parse);
         if (token == NULL || token[0] == '\0') {
-            Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
+            CG_Error("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
         }
         (void)coduo_crt_atoi(token);
 
         token = Com_ParseOnLine(&parse);
         if (token == NULL || token[0] == '\0') {
-            Com_ErrorMessage(
+            CG_Error(
                 "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog state\n");
         }
         fogState = coduo_crt_atoi(token);
@@ -79,21 +79,21 @@ void CG_DrawSkyBoxPortal(void)
 
             token = Com_ParseOnLine(&parse);
             if (token == NULL || token[0] == '\0') {
-                Com_ErrorMessage(
+                CG_Error(
                     "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[0]\n");
             }
             fogParam[0] = (float)coduo_compat_atof(token);
 
             token = Com_ParseOnLine(&parse);
             if (token == NULL || token[0] == '\0') {
-                Com_ErrorMessage(
+                CG_Error(
                     "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[1]\n");
             }
             fogParam[1] = (float)coduo_compat_atof(token);
 
             token = Com_ParseOnLine(&parse);
             if (token == NULL || token[0] == '\0') {
-                Com_ErrorMessage(
+                CG_Error(
                     "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[2]\n");
             }
             fogParam[2] = (float)coduo_compat_atof(token);

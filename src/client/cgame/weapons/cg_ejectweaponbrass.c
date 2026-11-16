@@ -24,7 +24,7 @@
  *   0x30047bfa  MOV EAX,[self+0xcc]            weaponModel (index into cg_weaponInfos)
  *   0x30047c00  TEST EAX; JZ end               skip if no weapon
  *   0x30047c08  CMP EAX,[bg_numWeapons]; JLE ok
- *   0x30047c10  else Com_ErrorMessage("CG_FireWeapon: ent->weapon > BG_GetNumWeapons()")
+ *   0x30047c10  else CG_Error("CG_FireWeapon: ent->weapon > BG_GetNumWeapons()")
  *               and RET (the shared CG_FireWeapon range error; reuse anchors identity).
  *
  * Effect selection (0x30047c22..): record = &cg_weaponInfos[weaponModel]
@@ -84,7 +84,7 @@ void CG_EjectWeaponBrass(entityState_t *self, int eventId)
     }
     if (weaponIndex > bg_numWeapons) {
         /* 0x30047c10 pushes this object itself as the sole format argument. */
-        Com_ErrorMessage(cg_weaponIndexOutOfRangeErrorMessage);
+        CG_Error(cg_weaponIndexOutOfRangeErrorMessage);
         return;
     }
 

@@ -21,7 +21,7 @@
  *   - an unsigned range gate (CMP eType,0xf; JA -> default) and a 16-entry table
  *     at 0x30022228, the classic switch(eType) fan-out;
  *   - the default diagnostic "Bad entity type: %i\n" (global 0x30077138) issued
- *     via Com_ErrorMessage — an entity-type-specific message that nails the id.
+ *     via CG_Error — an entity-type-specific message that nails the id.
  *
  * ABI: cent is passed in EAX (register convention). The prologue PUSH ECX is a
  * scratch/alignment slot (balanced by the epilogue POP ECX); no stack local is
@@ -54,7 +54,7 @@
  *   eType 13 -> 0x300221e3  CALL 0x30021660               CG_AddCEntity_Vehicle(cent)      (shared with 12)
  *   eType 14 -> 0x30022216  (default: "Bad entity type: %i\n")
  *   eType 15 -> 0x300221ec  MOV ESI,EBX; CALL 0x30021540   CG_VehicleOwnerIcon(cent)        (ESI=cent)
- *   default   -> 0x30022216  PUSH eType; PUSH fmt; CALL Com_ErrorMessage; ADD ESP,0x8
+ *   default   -> 0x30022216  PUSH eType; PUSH fmt; CALL CG_Error; ADD ESP,0x8
  *
  * At the entry the handler receives cent in a specific register (EAX/ECX/ESI) or
  * as a pushed stack dword; source-wise this is the same argument in every case
@@ -119,7 +119,7 @@ void CG_AddCEntity(centity_t *cent)
     default:
         /* ET_VEHICLE_COLLMAP and any value > 15 land here. The type is passed
          * as the %i argument (PUSH eType; PUSH fmt; caller-cleaned 8 bytes). */
-        Com_ErrorMessage(cg_badEntityTypeErrorFormat, eType);
+        CG_Error(cg_badEntityTypeErrorFormat, eType);
         break;
     }
 }

@@ -67,7 +67,7 @@ void CG_DrawCrosshair(void)
     // 0x30019d05..0x30019d1d: color = {1,1,1,0}; alpha rewritten below.
     vec4_t color;
     // 0x30019f13/0x30019f17: two adjacent stack floats handed to
-    // CG_ProjectDamageDirToScreen (EDI=&projected[0], ESI=&projected[1]).
+    // CG_CalcCrosshairPosition (EDI=&projected[0], ESI=&projected[1]).
     vec2_t projected;
     // 0x30019cf6/0x30019cfb: ps.adsFraction is copied to a frame slot once and
     // every later read uses the copy.
@@ -101,7 +101,7 @@ void CG_DrawCrosshair(void)
         if (cg.predictedPlayerState.viewLockedEntityNum == ENTITYNUM_NONE) {
             return;
         }
-        CG_DrawWeaponIcon3D();  // 0x30019d5f CALL 0x30019ba0
+        CG_DrawTurretCrossHair();  // 0x30019d5f CALL 0x30019ba0
         return;
     }
 
@@ -197,7 +197,7 @@ void CG_DrawCrosshair(void)
     }
 
     // 0x30019f13..0x30019f1b (EDI/ESI register args).
-    CG_ProjectDamageDirToScreen(&projected[0], &projected[1]);
+    CG_CalcCrosshairPosition(&projected[0], &projected[1]);
     // 0x30019f20..0x30019f27: the draw color is installed HERE, before the
     // ADS and grenade blocks.
     cgame_syscall(CG_R_SETCOLOR, (intptr_t)color);

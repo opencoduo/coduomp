@@ -36,10 +36,10 @@
 void CG_MergeFlameChunks(flameChunk_t *f1, flameChunk_t *f2)
 {
     /* 0x300257e1..07f0: integrity assert. f2 must be f1's forward-chain successor.
-     * If f1->parent != f2, emit the merge error (Com_ErrorMessage is the cgame
+     * If f1->parent != f2, emit the merge error (CG_Error is the cgame
      * error emitter at 0x3002b300; the format string carries its own newline). */
     if (f1->parent != f2) {                          /* 0x300257e1/e4 */
-        Com_ErrorMessage("CG_MergeFlameChunks: f2 doesn't follow f1, cannot merge\n");
+        CG_Error("CG_MergeFlameChunks: f2 doesn't follow f1, cannot merge\n");
     }
 
     /* 0x300257f3..07ff: splice f1's forward chain past f2 (f1->parent := f2->parent)

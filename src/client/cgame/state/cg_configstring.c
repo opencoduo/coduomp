@@ -24,7 +24,7 @@
 //   POP  ESI; RET                     ; cdecl, caller-cleaned (no RET imm)
 //
 // Note the bounds check only *reports* an out-of-range index via
-// Com_ErrorMessage and then falls through to the (unbounded) table lookup —
+// CG_Error and then falls through to the (unbounded) table lookup —
 // the ADD/MOV are reached on every path. This matches the original Q3/CoD
 // CG_ConfigString, which relies on Com_Error to not return.
 //
@@ -43,7 +43,7 @@ const char *CG_ConfigString(int index)
     // Out of [0, MAX_CONFIGSTRINGS) reports the bad index, then still proceeds
     // to the lookup (fallthrough), exactly as the machine code does.
     if (index < 0 || index >= MAX_CONFIGSTRINGS) {
-        Com_ErrorMessage(cg_configStringBadIndexFmt, index);
+        CG_Error(cg_configStringBadIndexFmt, index);
     }
 
     // MOV EAX,[ESI*4 + 0x30440a00] ; ADD EAX,0x30442a00

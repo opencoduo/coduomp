@@ -1,16 +1,16 @@
 // Source: uo_cgame_mp_x86.dll 0x30032ac0..0x30032c1e
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30032ac0_30032c1e.mcode
 //
-// CG_AddHeadIcon — per-frame dispatcher that selects and submits at most one
+// CG_PlayerSprites — per-frame dispatcher that selects and submits at most one
 // floating head icon for a single rendered client entity (cent, arriving in ESI).
-// It hands the actual render-entity build to CG_AddHeadIconSprite (0x30032910).
+// It hands the actual render-entity build to CG_PlayerFloatSprite (0x30032910).
 //
 // NAME ADJUDICATION: the .mcode mechanical pre-hint `CG_DebugCircleEx` (a
 // size-guess: win 0x15e vs matched 0x160) is REJECTED. CG_DebugCircleEx is a
 // sin/cos debug ring drawer that issues CG_ADD_DEBUG_LINE (trap 202) in a loop;
 // it was reconstructed separately at 0x3001db70. This body has no trig, no loop,
 // and no debug-line trap — it is a head-icon selector. The name here is derived
-// from behavior (it builds head-icon sprites through CG_AddHeadIconSprite) and the
+// from behavior (it builds head-icon sprites through CG_PlayerFloatSprite) and the
 // icon shaders it chooses; the exact CoD symbol is unproven.
 //
 // Register-arg ABI: the subject entity is passed in ESI (MOV ESI,EAX at 0x30032ac2),
@@ -38,7 +38,7 @@ enum { CG_HEADICON_CONFIGSTRING_BASE = 37 };
  * rounding (FSUB [0x3007bde0] == 5.0f at 0x30032bff). */
 #define CG_TALKBALLOON_SIZE_BIAS 5.0f
 
-void CG_AddHeadIcon(centity_t *cent)
+void CG_PlayerSprites(centity_t *cent)
 {
     float size; /* [ESP+0xc]; initialized after the first infoValid load below */
 
@@ -49,7 +49,7 @@ void CG_AddHeadIcon(centity_t *cent)
     const int32_t centClientNum = cent->currentState.clientNum;
     if ((uint32_t)centClientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_AddHeadIcon: invalid entity client number %i",
+                  "\x15" "CG_PlayerSprites: invalid entity client number %i",
                   centClientNum);
         return;
     }
@@ -67,7 +67,7 @@ void CG_AddHeadIcon(centity_t *cent)
     const int32_t localClientNum = cg.snap->ps.psClientNum;
     if ((uint32_t)localClientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_AddHeadIcon: invalid local client number %i",
+                  "\x15" "CG_PlayerSprites: invalid local client number %i",
                   localClientNum);
         return;
     }
@@ -92,7 +92,7 @@ void CG_AddHeadIcon(centity_t *cent)
             const char *name = CG_ConfigString(configStringIndex);
             qhandle_t shader = CG_RegisterMaterial(name, R_IMAGE_TRACK_HUD);
             if (shader != 0) {
-                CG_AddHeadIconSprite(cent, shader, 0, 0);
+                CG_PlayerFloatSprite(cent, shader, 0, 0);
                 size = CG_HEADICON_SPRITE_SIZE;
             }
         }
@@ -104,7 +104,7 @@ void CG_AddHeadIcon(centity_t *cent)
      * IS that client (i.e. we are not actually watching ourselves die). */
     if (cent->currentState.number == cg.clientNum) {
         if (cg.snap->ps.psClientNum != cg.clientNum) {
-            CG_AddHeadIconSprite(cent, cgs.media.youInKillCamIcon, coduo_fp_to_i32_extended(size), 1);
+            CG_PlayerFloatSprite(cent, cgs.media.youInKillCamIcon, coduo_fp_to_i32_extended(size), 1);
             return;
         }
         /* 0x30032b72 je 0x30032b94: when psClientNum == cg.clientNum (we are not
@@ -119,7 +119,7 @@ void CG_AddHeadIcon(centity_t *cent)
 
     /* Disconnected clients get the "disconnected" icon regardless of team. */
     if ((eFlags & EF_HEADICON_DISCONNECTED) != 0) {
-        CG_AddHeadIconSprite(cent, cgs.media.connectionShader, coduo_fp_to_i32_extended(size), 0);
+        CG_PlayerFloatSprite(cent, cgs.media.connectionShader, coduo_fp_to_i32_extended(size), 0);
         return;
     }
 
@@ -128,13 +128,13 @@ void CG_AddHeadIcon(centity_t *cent)
         /* Active per-client voice chat: draw the entity's currently-registered
          * voiceChatIcon while its deadline has not yet passed (voiceChatTime > cg.time). */
         if (cent->voiceChatTime > cg.time) {
-            CG_AddHeadIconSprite(cent, cent->voiceChatIcon, coduo_fp_to_i32_extended(size), 0);
+            CG_PlayerFloatSprite(cent, cent->voiceChatIcon, coduo_fp_to_i32_extended(size), 0);
             return;
         }
         /* Otherwise, if the entity is flagged as typing/chatting, draw the talk balloon
          * (rendered slightly smaller: size - 5.0). */
         if ((eFlags & EF_HEADICON_TALKING) != 0) {
-            CG_AddHeadIconSprite(cent, cgs.media.balloonShader,
+            CG_PlayerFloatSprite(cent, cgs.media.balloonShader,
                                  coduo_fp_to_i32_extended(
                                      (long double)size -
                                      (long double)CG_TALKBALLOON_SIZE_BIAS),

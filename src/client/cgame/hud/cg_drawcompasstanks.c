@@ -99,7 +99,7 @@ void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
                           TANK_COMPASS_PACKED_YAW_SCALE;
     }
 
-    CG_UpdateCompassOrientation();
+    CG_UpdateCompPointerOrientation();
 
     const float centerX = (float)(
         (long double)cg_hudCompassSize_vmCvar.value * (long double)rect->w *

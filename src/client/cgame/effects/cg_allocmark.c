@@ -15,7 +15,7 @@
 // set up by CG_InitMarkPolys (0x3002e400) and consumed by CG_ImpactMark
 // (0x3002e520, the caller that fills the returned node) and CG_AddMarks
 // (0x3002e8c0). The "CG_FreeLocalEntity: not active" string handed to
-// Com_ErrorMessage on the reclaim path is a copy-pasted list-integrity assert
+// CG_Error on the reclaim path is a copy-pasted list-integrity assert
 // shared with the local-entity free routine (a different pool) and does not name
 // this allocator.
 //
@@ -55,8 +55,8 @@ markPoly_t *CG_AllocMark(void)
             // 0x3002e4aa: CMP [ESI],0 — a mark on the active list must have a
             // non-null prevMark. If it is null the list is corrupt: fatal error.
             if (oldest->prevMark == 0) {
-                // 0x3002e4af/0x3002e4b4: Com_ErrorMessage("CG_FreeLocalEntity: not active").
-                Com_ErrorMessage("CG_FreeLocalEntity: not active");
+                // 0x3002e4af/0x3002e4b4: CG_Error("CG_FreeLocalEntity: not active").
+                CG_Error("CG_FreeLocalEntity: not active");
                 // 0x3002e4b9: EDX (mark) = cg_freeMarkPolys reloaded after the call.
                 mark = cg_freeMarkPolys;
             }

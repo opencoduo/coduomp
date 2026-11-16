@@ -18,7 +18,7 @@
 //     hud-element config-string range.
 //   - It runs the shared inlined CG_ConfigString bounds check: if cfgIndex is < 0 (JL)
 //     or >= MAX_CONFIGSTRINGS (0x800), it reports
-//     Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex) and (as with every
+//     CG_Error("CG_ConfigString: bad index: %i", cfgIndex) and (as with every
 //     inlined CG_ConfigString site) proceeds with the lookup regardless.
 //   - It resolves the config string &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]]
 //     (offsets table at 0x30440a00, data heap at 0x30442a00).
@@ -36,7 +36,7 @@
 //
 // Register-argument ABI: the index arrives in EAX and is read at entry (TEST EAX,EAX)
 // before any stack traffic; modeled as the first C parameter. The two words pushed for
-// CG_TranslateMessage (and the two for Com_ErrorMessage) are cleaned by the ADD ESP,8 after each
+// CG_TranslateMessage (and the two for CG_Error) are cleaned by the ADD ESP,8 after each
 // call, and the function ends in a plain RET.
 //
 // Instruction map:
@@ -48,7 +48,7 @@
 //   3002d811 TEST ESI,ESI / JL             cfgIndex < 0  -> error path
 //   3002d815 CMP  ESI,0x800 / JL           cfgIndex < MAX_CONFIGSTRINGS -> skip error
 //   3002d81d PUSH ESI / PUSH 0x30077d90 / CALL 0x3002b300 / ADD ESP,8
-//                                          Com_ErrorMessage(cg_configStringBadIndexFmt, cfgIndex)
+//                                          CG_Error(cg_configStringBadIndexFmt, cfgIndex)
 //   3002d82b MOV  EAX,[ESI*4 + 0x30440a00] EAX = cgs.gameState.stringOffsets[cfgIndex]
 //   3002d832 ADD  EAX,0x30442a00           EAX = &cgs.gameState.stringData[offset]
 //   3002d837 PUSH 0x30077b18 / PUSH EAX / CALL 0x3002d850 / ADD ESP,8
@@ -69,7 +69,7 @@ const char *CG_SafeTranslateHudElemString(int index /* EAX */)
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS) {
         /* Shared inlined CG_ConfigString bounds report; the lookup still proceeds
          * with the out-of-range index, matching every other inlined site. */
-        Com_ErrorMessage(cg_configStringBadIndexFmt, cfgIndex);
+        CG_Error(cg_configStringBadIndexFmt, cfgIndex);
     }
 
     str = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]];

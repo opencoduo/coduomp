@@ -22,7 +22,7 @@
 //   - Each config-string pointer is formed as
 //     &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfg]] (data base
 //     0x30442a00), which is the inlined CG_ConfigString body, including its
-//     out-of-range Com_ErrorMessage("CG_ConfigString: bad index: %i", cfg)
+//     out-of-range CG_Error("CG_ConfigString: bad index: %i", cfg)
 //     (bounds [0,0x800); the error is emitted but execution falls through).
 //   - Stops at the first empty (leading-NUL) name string; otherwise runs the
 //     full 128-entry range. Loop condition at 0x300384ab: continue while
@@ -56,7 +56,7 @@ void CG_SetConfigValues(void)
          * error and still proceeds with the (unbounded) offset lookup.
          * 0x30038446..0x30038462 (signed compare, upper bound MAX_CONFIGSTRINGS). */
         if (nameIndex < 0 || nameIndex >= MAX_CONFIGSTRINGS) {
-            Com_ErrorMessage(cg_configStringBadIndexFmt, nameIndex);
+            CG_Error(cg_configStringBadIndexFmt, nameIndex);
         }
         name = &cgs.gameState.stringData[cgs.gameState.stringOffsets[nameIndex]];
 
@@ -67,7 +67,7 @@ void CG_SetConfigValues(void)
 
         /* Inlined CG_ConfigString(valueIndex). 0x30038473..0x3003848d. */
         if (valueIndex < 0 || valueIndex >= MAX_CONFIGSTRINGS) {
-            Com_ErrorMessage(cg_configStringBadIndexFmt, valueIndex);
+            CG_Error(cg_configStringBadIndexFmt, valueIndex);
         }
         value = &cgs.gameState.stringData[cgs.gameState.stringOffsets[valueIndex]];
 

@@ -8,7 +8,7 @@
 #include <string.h>
 
 /*
- * CG_GetObjectiveShaderForDir (0x3002fd90) — resolve the HUD objective/compass
+ * CG_ObjectiveIcon (0x3002fd90) — resolve the HUD objective/compass
  * icon shader handle for a direction slot, optionally building it on the fly
  * from a per-shader config-string name plus a direction suffix.
  *
@@ -25,7 +25,7 @@
  *   - If shaderIndex == 0 (0x3002fda0 TEST/JZ), return the preregistered
  *     cgs.media.objectiveShaders[dir] (0x3002fe50 MOV EAX,[ESI*4 + 0x3044bb4c]).
  *   - Otherwise fetch the shader-index config-string name into a 64-byte stack
- *     buffer via CG_GetShaderConfigString(shaderIndex, name, 64)
+ *     buffer via CG_ServerShaderName(shaderIndex, name, 64)
  *     (0x3002fdc7 PUSH 0x40 / PUSH &name / CALL 0x3002fd10). On a false return,
  *     fall through to the cgs.media.objectiveShaders[dir] path (0x3002fdd4 JZ else).
  *   - Truncate the name at the first '.' (0x3002fde2 CMP AL,0x2e) — strip the
@@ -51,7 +51,7 @@
  *   3002fd9c MOV EAX,[ESP+0x54]          shaderIndex
  *   3002fda0 TEST EAX,EAX ; JZ else      if (shaderIndex == 0) -> cgs.media.objectiveShaders[dir]
  *   3002fda3 MOV ESI,ECX                 dir
- *   3002fdc7 PUSH 0x40 ; PUSH &name ; CALL 0x3002fd10   CG_GetShaderConfigString
+ *   3002fdc7 PUSH 0x40 ; PUSH &name ; CALL 0x3002fd10   CG_ServerShaderName
  *   3002fdd2 TEST EAX,EAX ; JZ else      if (!ok) -> cgs.media.objectiveShaders[dir]
  *   3002fde2 loop: CMP AL,'.' / JZ ; ... truncate name at first '.'
  *   3002fdf0 EAX = suffixTable[dir] ; *cut = 0
@@ -75,7 +75,7 @@ _Static_assert(MAX_QPATH <=
                    INT32_MAX - CG_OBJECTIVE_LONGEST_SUFFIX_LENGTH,
                "objective shader composition capacity overflows int32_t");
 
-qhandle_t CG_GetObjectiveShaderForDir(int dir, int shaderIndex)
+qhandle_t CG_ObjectiveIcon(int dir, int shaderIndex)
 {
     /* Direction-suffix table: index 0/1/2 -> "" / "_up" / "_down"
      * (0x30074a0c / 0x300798a0 / 0x30079898). */
@@ -85,7 +85,7 @@ qhandle_t CG_GetObjectiveShaderForDir(int dir, int shaderIndex)
     char *cut;
 
     if (shaderIndex != 0 &&
-        CG_GetShaderConfigString(shaderIndex, name, CG_OBJECTIVE_NAME_MAX)) {
+        CG_ServerShaderName(shaderIndex, name, CG_OBJECTIVE_NAME_MAX)) {
 
         /* Strip the file extension: truncate at the first '.'. */
         cut = name;

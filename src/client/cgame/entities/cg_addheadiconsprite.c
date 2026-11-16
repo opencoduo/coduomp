@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x30032910..0x30032ac0
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30032910_30032ac0.mcode
 //
-// CG_AddHeadIconSprite (provisional-by-role) — build and submit one camera-facing
+// CG_PlayerFloatSprite (provisional-by-role) — build and submit one camera-facing
 // icon sprite positioned over an entity's head, used to draw the marker above a
 // client (the voice-chat / talking / follow icon over the head).
 //
@@ -9,7 +9,7 @@
 // "CG_VoiceChat" (win size 0x1b0 matched size 0x1b0). That is a SIZE match, which the
 // workflow forbids as identification, and the body does no voice-chat string/buffer
 // work at all — it is a pure render-entity emitter. Its five callers
-// (0x30032b4d..0x30032c11, the CG_AddHeadIcon dispatcher at 0x30032b20) each pick a
+// (0x30032b4d..0x30032c11, the CG_PlayerSprites dispatcher at 0x30032b20) each pick a
 // sprite-shader handle (cg_headIconShaders at 0x3044b6d0/d4/d8) and a per-icon radius
 // scale (via 0x3006be3c) for a speaking/spectated/objective condition and hand it
 // here. So this is the head-icon SPRITE builder, not the voice-chat command. The
@@ -43,7 +43,7 @@
  * 0x30079af8, loaded into EAX just before the bone-matrix call. */
 static const char CG_HEAD_TAG_NAME[] = "Bip01 Head";
 
-void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
+void CG_PlayerFloatSprite(centity_t *entity, int32_t sfxOrShaderHandle,
                           int32_t iconScale, int32_t attenuateByDistance)
 {
     /* ---- Spectator/follow-view renderfx gate (0x30032928..0x30032952) ------------
