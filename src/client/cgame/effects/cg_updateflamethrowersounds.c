@@ -78,7 +78,7 @@ void CG_UpdateFlamethrowerSounds(void)
      * The _ftol2 at 0x3002922d consumes floor's ST0 return directly (0x3002922a is
      * ADD ESP only -- no store), so the raw unrounded ST0 is what gets converted;
      * a (float) cast here would round it. coduo_fp_to_i32_extended takes long double
-     * for exactly this. (Same shape as CG_AddFlameToScene 0x30027d30/0x30027d38.)
+     * for exactly this. (Same shape as CG_AddFlameChunks 0x30027d30/0x30027d38.)
      * EBP holds flameTime for the rest of the function. */
     int32_t signedTime = cg.time;
     double timeD = (double)signedTime;

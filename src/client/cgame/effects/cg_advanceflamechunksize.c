@@ -13,9 +13,9 @@
 // flameChunk_t: it advances radius (+0xe4) toward startSpeedBits (+0x5c), caches
 // the rate into sizeRate (+0x64), stamps spawnTimeCopy (+0x68), and clamps to
 // 290.0. The 290.0 clamp constant at 0x3007bebc and its siblings are the shared
-// flame constants used across CG_AddFlameToScene; the callee rate helper is
+// flame constants used across CG_AddFlameChunks; the callee rate helper is
 // CG_FlameGetSizeRate (0x30023b70). All four call sites are inside
-// CG_AddFlameToScene (0x30027d10) passing a flame chunk.
+// CG_AddFlameChunks (0x30027d10) passing a flame chunk.
 //
 // Register ABI (non-default; proven from the four call sites in 0x30027d10,
 // e.g. 0x30027ff7: PUSH EAX(time); MOV EAX,EBP(chunk); CALL; ADD ESP,4): the

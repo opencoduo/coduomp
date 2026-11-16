@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 /*
- * CG_DrawScoreboard_Backdrop (0x30037090)
+ * CG_DrawScoreboard_ListBanner (0x30037090)
  *
  * Draws one multiplayer-scoreboard team-section header: the "<team name> (N
  * players)" banner line and, for the AXIS/ALLIES sections, a per-team totals row
@@ -24,7 +24,7 @@
  * banner via CG_SE_LOCALIZE_MESSAGE, registers/sets a 2D shader (traps 89/72), draws the
  * banner background (CG_DrawPic), the team name and the totals columns
  * (CG_R_TEXT_PAINT text draws), and walks the static cg_scoreboardColumns[] table.
- * The name CG_DrawScoreboard_Backdrop is provisional, chosen by proven role
+ * The name CG_DrawScoreboard_ListBanner is provisional, chosen by proven role
  * (it is the per-team banner drawer invoked by CG_DrawScoreboardBody, adjacent
  * to CG_DrawScoreboard_ListColumnHeaders / CG_DrawClientScore); the exact CoD:UO
  * symbol is not proven from the allowed inputs.
@@ -103,7 +103,7 @@ enum {
  * passes team in EBX; TEAM_FREE => "None"/spectator-band banner, followed by
  * Axis and Allies, while other values select the default spectators banner. */
 
-float CG_DrawScoreboard_Backdrop(const cgScoreboardDrawCtx_t *drawCtx, float y,
+float CG_DrawScoreboard_ListBanner(const cgScoreboardDrawCtx_t *drawCtx, float y,
                                   float boardWidth, float bannerHeight, team_t team,
                                   int *lineCounter)
 {

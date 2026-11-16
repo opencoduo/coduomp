@@ -280,11 +280,11 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
                            sizeof(flameViewAngles));
                 }
 
-                /* 30046365..30046387: CG_AddFlameChunks(
+                /* 30046365..30046387: CG_FireFlameChunks(
                  * EAX=&flameViewAngles, cent, &worldMatrix[12] (tag_flash world
                  * position, out +0x30), 1.8f (imm 0x3fe66666), 1, 0) — same
                  * shape as the CG_Player call site (player_entity.c). */
-                CG_AddFlameChunks(flameViewAngles, cent, worldMatrix.origin,
+                CG_FireFlameChunks(flameViewAngles, cent, worldMatrix.origin,
                                          1.8f, 1, 0);
             }
         }

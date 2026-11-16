@@ -229,7 +229,7 @@ void CG_FakeTrajectoryEffects(int32_t entityNum, int32_t weaponIndex,
         }
 
         if ((float)coduo_crt_rand() * FAKE_TRAJECTORY_RAND_SCALE < tracerChance) {
-            CG_BulletTrajectoryEffects(trace.endpos, muzzleOrigin, weaponIndex);
+            CG_SpawnTracer(trace.endpos, muzzleOrigin, weaponIndex);
         }
         return;
     }

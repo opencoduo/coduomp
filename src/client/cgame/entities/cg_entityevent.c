@@ -696,7 +696,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
 
     /* 0xb0 (0x30023172): weapon bullet/impact effect between the two origins. */
     case EV_BULLET_TRACER:
-        CG_BulletTrajectoryEffects(self->currentState.effectEndOrigin, self->currentState.origin,
+        CG_SpawnTracer(self->currentState.effectEndOrigin, self->currentState.origin,
                            coduo_int32_from_bits(self->currentState.eventParm));
         return;
 

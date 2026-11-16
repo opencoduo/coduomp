@@ -127,10 +127,10 @@ void CG_BulletTrajectoryEffects(vec3_t impactOrigin, int32_t entityNum, int32_t 
     } else {
         /* 30048e40 MOV EAX,impactOrigin; 30048e42 LEA ECX,&muzzle;
          * PUSH EDI(weaponIndex); CALL 0x30048260; ADD ESP,4.
-         * CG_BulletTrajectoryEffects consumes EAX as its destination and ECX as
+         * CG_SpawnTracer consumes EAX as its destination and ECX as
          * trBase. The previous reconstruction reversed these two arguments,
          * making ordinary tracer animations travel from impact to muzzle. */
-        CG_BulletTrajectoryEffects(impactOrigin, muzzle, weaponIndex);
+        CG_SpawnTracer(impactOrigin, muzzle, weaponIndex);
     }
 
     /* 30048e36 / 30048e54: EAX=impactOrigin, EBX=&muzzle;

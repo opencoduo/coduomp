@@ -421,7 +421,7 @@ void CG_PerturbCamera(float dist);
 void CG_TrackAdsZoomDirection(void);
 void CG_AddViewWeapon(void);
 void CG_AddMarks(void);
-void CG_AddFlameSpriteToScene(void);
+void CG_AddFlameChunks(void);
 void CG_UpdateShellShockCamera(void);
 void CG_DrawSkyBoxPortal(void);
 void CG_DrawActive(int32_t stereoView);
@@ -1582,7 +1582,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum, vec3_t mu
 void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
                           int32_t weaponInfoIndex, int32_t weaponIndex);
 
-/* CG_BulletTrajectoryEffects (0x30048260) — RECONSTRUCTED in
+/* CG_SpawnTracer (0x30048260) — RECONSTRUCTED in
  * src/client/cgame/weapons/cg_spawntracerline.c. Spawns a moving LINE tracer as a
  * LE_MOVING_TRACER local entity that flies from the shot start point toward the shot
  * end point. Selects the tracer length twin by bg_weaponInfos[weapon]->ammoType
@@ -1603,7 +1603,7 @@ void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
  * alternate-path twin of CG_SpawnMovingTracer, which builds tracer geometry directly; this
  * one instead spawns a self-moving local entity). The .mcode's size-matched "Menus_Open"
  * guess is REJECTED (this is a cgame tracer/local-entity builder, not a UI menu opener). */
-void CG_BulletTrajectoryEffects(const vec3_t endOrigin, const vec3_t startOrigin, int32_t weapon);
+void CG_SpawnTracer(const vec3_t endOrigin, const vec3_t startOrigin, int32_t weapon);
 
 /* CG_WhizbySound (0x300480f0) — reconstructed in
  * src/client/cgame/weapons/cg_whizbysound.c. From the bullet impact point (register
@@ -2845,7 +2845,7 @@ void CG_DrawFlashDamage(void);
  * (0 < cg.time - serverTime < duration) it computes alpha = min(2 - 2*elapsed/duration,
  * 1) so each arrow fades out over the back half of its window, and draws a rotated icon
  * quad (width cg_hudDamageIconWidth_vmCvar.value, from cg_hudDamageIconOffset_vmCvar.value down cg_hudDamageIconHeight_vmCvar.value)
- * via CG_FillRotatedRect, rotated by vectoyaw(cg.refdef.viewaxis[0]) - slot->yaw so it
+ * via CG_DrawRotatedQuadPic, rotated by vectoyaw(cg.refdef.viewaxis[0]) - slot->yaw so it
  * points at the attacker relative to the current view. The white draw color
  * (1,1,1,alpha) is installed per-arrow with cgame_syscall(CG_R_SETCOLOR, color). The
  * .mcode size-guess name "CG_EjectWeaponBrass" is REJECTED: no 3D shell/entity is
@@ -3810,13 +3810,8 @@ void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm);
  * cent,model,event,mode right-to-left (so mode is pushed first). Provisional role name. */
 /* NOT_FROM_ORIGINAL_SOURCE: presentEffects gates audiovisual work after recoil. */
 void CG_FireWeapon(uint32_t flags, centity_t *cent,
-<<<<<<< HEAD
                    entityState_t *model, int32_t event, int32_t mode, qboolean presentEffects);
 void CG_WeaponFlash(qboolean selectViewDObj, int32_t weaponIndex,
-=======
-                   entityState_t *model, int32_t event, int32_t mode);
-void CG_WeaponFlash(qboolean selectViewDObj, int32_t weaponIndex,
->>>>>>> stock
                           int32_t model, const vec3_t effectOrigin,
                           const char *tagName, int32_t drawTagModel);
 void CG_FakeTrajectoryEffects(int32_t entityNum, int32_t weaponIndex,
@@ -5308,7 +5303,7 @@ void VectorNormalizeFast(vec3_t v);
  * on ST(0), leaving pow(base, exponent) on ST(0). Declared as a caller-observed
  * provisional (matching the sqrt_f pattern) so flame/physics callers name their
  * pow call instead of a bare FUN_ address. Argument order proven from the two
- * CG_AddFlameSpriteToScene (0x300272b0) call sites, which load base then push the exponent
+ * CG_AddFlameToScene (0x300272b0) call sites, which load base then push the exponent
  * constant last (ST0). Recovered callers use the shared CRT power provider,
  * which preserves the selected binary64 or native x87 arithmetic route.
  * HUD and icon arithmetic retain this same CRT contract.
@@ -5397,7 +5392,7 @@ _Static_assert(sizeof(cgScoreboardDrawCtx_t) == 0x10,
                "cgScoreboardDrawCtx_t is one vec4");
 
 /*
- * CG_DrawScoreboard_Backdrop (0x30037090) — draw one scoreboard team-section
+ * CG_DrawScoreboard_ListBanner (0x30037090) — draw one scoreboard team-section
  * header: the localized "<team name> (N players)" banner line and, for the
  * AXIS/ALLIES sections, a per-team totals row (cg.teamScores in the
  * score column, cg.scoreboardTeamPings in the ping column). Returns the Y at which the
@@ -5415,7 +5410,7 @@ _Static_assert(sizeof(cgScoreboardDrawCtx_t) == 0x10,
  * cgame scoreboard drawer. Name provisional by proven role; exact CoD symbol
  * unproven from the allowed inputs.
  */
-float CG_DrawScoreboard_Backdrop(const cgScoreboardDrawCtx_t *drawCtx, float y,
+float CG_DrawScoreboard_ListBanner(const cgScoreboardDrawCtx_t *drawCtx, float y,
                                   float boardWidth, float bannerHeight, team_t team,
                                   int *lineCounter);
 
@@ -5665,7 +5660,7 @@ void ProjectPointOnPlane(vec3_t dst, const vec3_t point, const vec3_t normal);
  * +0x60=smokeDensityRate, +0x64=sizeRate, +0x68=spawnTimeCopy, +0x94=driftSpeed,
  * +0xa0=deadFlag, +0xa4=birthTime, +0xb8=soundAmpRate, +0xe4=radius. Every caller
  * (0x30023d3a, 0x30025c73, 0x30025faa, 0x30027825, 0x30027c42, and the four sites
- * in CG_AddFlameSpriteToScene) passes a flame chunk in EAX/ESI, and all live in the
+ * in CG_AddFlameChunks) passes a flame chunk in EAX/ESI, and all live in the
  * flame subsystem cluster. The struct, its offset asserts, and the ADS-named decls
  * are therefore removed; the flameChunk_t definition and the flame-role decls
  * (CG_FlameGetSizeRate / CG_AdvanceFlameChunkSize / CG_UpdateFlameChunk) below are
@@ -5792,7 +5787,7 @@ void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter,
                              const float *color, int32_t bitIndex);
 
 /*
- * CG_FillRotatedRect (0x3001ccf0, role name) — RECONSTRUCTED; see
+ * CG_DrawRotatedQuadPic (0x3001ccf0, role name) — RECONSTRUCTED; see
  * src/client/cgame/hud/cg_drawturrettagquad.c. Renders a rotated, screen-scaled
  * 2D quad via cgame_syscall(CG_R_DRAW_ROTATED_QUAD, &verts[8], shaderParams, hShader).
  * Register-ABI: the four {x,y} corner offsets are passed in EDX as `const float *`
@@ -5806,7 +5801,7 @@ void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter,
  * five stack args). Both known callers (0x3001aae0 in FUN_3001a980_3001aafe and
  * 0x30031f55 in the turret-tag drawer 0x30031e20) match this ABI; the name is a
  * role name from the turret-tag caller, not a proven CoD symbol. */
-void CG_FillRotatedRect(float *cornerOffsets, float x, float y,
+void CG_DrawRotatedQuadPic(float *cornerOffsets, float x, float y,
                           const float *shaderParams, float angleDegrees,
                           int32_t hShader);
 
@@ -5817,7 +5812,7 @@ void CG_FillRotatedRect(float *cornerOffsets, float x, float y,
  * the currently-processed entity's "tag_turret" DObj bone world matrix
  * (CG_DObjGetWorldTagMatrix), converts that matrix to Euler angles
  * (Axis4ToAngles), and draws a rotated icon quad there
- * (CG_FillRotatedRect -> trap 0x4c) with the static cg_turretTagShaderParams
+ * (CG_DrawRotatedQuadPic -> trap 0x4c) with the static cg_turretTagShaderParams
  * descriptor. Same entry gates as the siblings: entityStateFlags bit
  * EF_IN_VEHICLE set and EF_VEHICLE_ALLOW_WEAPON clear, entity->eType == 12
  * (ET_VEHICLE), and a stateFilter match; additionally the entity must have a live
@@ -6161,7 +6156,7 @@ typedef struct flameChunk_s {
                                      * block unless ownerSentinel == -1 (CMP [f+0x14],-1). Exact name
                                      * unresolved. */
     uint32_t emitScatterIndex;      /* +0x18: rand()-scattered emit index (Q_rint of a
-                                     * randomized value); seeded by CG_AddFlameSpriteToScene
+                                     * randomized value); seeded by CG_FireFlameChunks
                                      * and CG_MoveFlameChunk. Exact name unresolved. */
     uint32_t unresolvedField_1c;    /* +0x1c: written/reset but never read by any recovered
                                      * client consumer. This is not an abiGap because the store
@@ -6169,7 +6164,7 @@ typedef struct flameChunk_s {
     uint32_t liveFlag;              /* +0x20: set to 1 by CG_SpawnFlameChunk (spawned/live flag; exact name unresolved) */
     uint32_t listMarker;            /* +0x24: secondary-list membership marker */
     uint32_t emitArgFlag;           /* +0x28: emit `arg4` flag stamped at emit by
-                                     * CG_AddFlameSpriteToScene (0x3002496c / 0x30025295);
+                                     * CG_FireFlameChunks (0x3002496c / 0x30025295);
                                      * exact source name unresolved. */
     int32_t  kind;                  /* +0x2c: per-chunk mode/kind. CG_UpdateFlamethrowerSounds
                                      * (0x30029210) skips a chunk's sound update when
@@ -6211,7 +6206,7 @@ typedef struct flameChunk_s {
                                      * +0x34/+0x38 are the flame's owner-entity/limb index.
                                      * Exact source name unresolved. */
     int32_t  centFlags;             /* +0x3c: cent[+0xcc] copied at emit by
-                                     * CG_AddFlameSpriteToScene (0x30025108 / 0x30025416);
+                                     * CG_FireFlameChunks (0x30025108 / 0x30025416);
                                      * exact source name unresolved. */
     int32_t  boneHandle;            /* +0x40: DObj bone/tag handle+1 that this chunk is attached
                                      * to (0 = free chunk, not bone-attached). CG_SpawnFlameChunkOnBone
@@ -6241,7 +6236,7 @@ typedef struct flameChunk_s {
                                      * provisional role name unresolved. */
     float    sizeRate;              /* +0x64: per-chunk size/expansion rate cache
                                      * (single). CG_FlameDropDrip (0x30027ad0)
-                                     * and CG_AddFlameSpriteToScene (0x30027d10) store
+                                     * and CG_AddFlameChunks (0x30027d10) store
                                      * CG_FlameGetSizeRate(chunk) (optionally scaled)
                                      * here; the emitter (0x30024050) writes
                                      * startSpeedBits * alpha * 0.00060024 into it.
@@ -6274,19 +6269,19 @@ typedef struct flameChunk_s {
     float    radiusBaseB;           /* +0x9c: sprite radius/size base B (single). Merged from f2.
                                      * The alternate half-extent CG_AddFlameSpriteToScene picks
                                      * when the flag arg != 1 (FLD [f+0x9c]). Provisional. */
-    int32_t  deadFlag;              /* +0xa0: dead/inactive flag. CG_AddFlameSpriteToScene
+    int32_t  deadFlag;              /* +0xa0: dead/inactive flag. CG_AddFlameToScene
                                      * (0x300272b0) skips the per-chunk render/merge
                                      * body when deadFlag != 0. */
     int32_t  birthTime;             /* +0xa4: chunk birth/emit time (ms), read via
                                      * FILD as an int and compared against the
-                                     * per-flame reference time in CG_AddFlameSpriteToScene. */
+                                     * per-flame reference time in CG_AddFlameToScene. */
     float    expansionRate;         /* +0xa8: chunk expansion/radius rate (single). Read via FLD
                                      * by CG_ComputeFlameChunkOrigin (0x30025990): scaled by -1.5
                                      * for the drift term and multiplied into the free-chunk z
                                      * turbulence. Merged from f2. */
     vec3_t    axisDir;            /* +0xac/b0/b4: direction/basis row (a vec3), read by
-                                     * CG_AddFlameSpriteToScene for the chunk-axis dot; written at
-                                     * emit by CG_AddFlameSpriteToScene (0x30024ce8) as a
+                                     * CG_AddFlameToScene for the chunk-axis dot; written at
+                                     * emit by CG_FireFlameChunks (0x30024ce8) as a
                                      * copy of the drift dir (driftDir). */
     float    soundAmpRate;          /* +0xb8: per-chunk sound-amplitude rate; used as a
                                      * float multiplier when CG_UpdateFlamethrowerSounds
@@ -6294,7 +6289,7 @@ typedef struct flameChunk_s {
                                      * envelope for this chunk's index. Exact source
                                      * name unresolved. */
     float    alpha;                 /* +0xbc: initialized to 1.0f at emit by
-                                     * CG_AddFlameSpriteToScene (0x30024da8 / 0x30025476);
+                                     * CG_FireFlameChunks (0x30024da8 / 0x30025476);
                                      * exact source name unresolved. */
     vec3_t    posCopy;            /* +0xc0/c4/c8: chunk position copy (a vec3); the emitter
                                      * (0x30024d83 / 0x300253f6) stamps the accum0 position
@@ -6317,7 +6312,7 @@ typedef struct flameChunk_s {
                                      * (0x300268e0) passes it as arg1 to CG_FlameDamage
                                      * (0x300265c0) and halves it (radius*0.5) as a size term. */
     float    lifeFraction;          /* +0xe8: chunk life/fade fraction (single, ~[0,1]). Merged
-                                     * from f2. CG_AddFlameSpriteToScene (0x300272b0) derives it from the
+                                     * from f2. CG_AddFlameToScene (0x300272b0) derives it from the
                                      * chunk's elapsed-vs-lifetime ratio and passes it (and a curve
                                      * of it) to CG_AddFlameSpriteToScene (0x300268e0), which
                                      * compares it against 0.9f for the flicker/damage-trace gate
@@ -6347,7 +6342,7 @@ typedef struct flameChunk_s {
                                      * from the mechanical reserved gap; exact source name
                                      * unresolved. */
     int32_t  emitCounter;           /* +0x128: emit counter (cgFlameInfo emitCounter) stamped at emit by
-                                     * CG_AddFlameSpriteToScene (0x30024990 / 0x300252ae);
+                                     * CG_FireFlameChunks (0x30024990 / 0x300252ae);
                                      * exact source name unresolved. */
     uint8_t  padding12C[4]; /* ABI_AUDITED_PADDING: aligns lifeStartTime at +0x130. */
     double   lifeStartTime;         /* +0x130: min-time/lifetime (double); f2's value
@@ -6456,7 +6451,7 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
  * and stamps spawnTimeCopy (+0x68); 0x30023c30 advances driftSpeed (+0x94),
  * recomputes startSpeedBits and sizeRate (+0x64), and shares the flame clock. Every
  * caller passes a flame chunk in EAX/ESI and lives in the flame subsystem;
- * CG_AddFlameSpriteToScene (0x30027d10) calls all three with flameChunk_t*. The ADS
+ * CG_AddFlameChunks (0x30027d10) calls all three with flameChunk_t*. The ADS
  * struct and decls have been removed — these are the single source of truth.
  * ==========================================================================
  *
@@ -6465,7 +6460,7 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
  * float result returned on ST(0). Body reads kind/ownerInfoIndex/driftSpeed/soundAmpRate
  * and the chunk's double life span (endTime - spawnTime) and mixes cg.snap->ps.psClientNum. */
 /* long double return: 0x30023b70 ends FADDP; ADD ESP; RET with no store, so it
- * returns raw st(0). CG_AdvanceFlameChunkSize FMULPs it and CG_AddFlameSpriteToScene
+ * returns raw st(0). CG_AdvanceFlameChunkSize FMULPs it and CG_AddFlameChunks
  * FMULs it by 14.5f, both before any rounding (Class 7). The five callers that
  * store the result straight to a float slot are unaffected (float widens
  * exactly, then their store rounds once). */
@@ -6512,7 +6507,7 @@ flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent, float a, float b);
  * — per-frame finalize/submit of a single flame chunk: reads the chunk's field_94,
  * field_bc, field_f8, its owner cgFlameInfo[field_34].field_40 (+0x300ab790) and
  * various render state, and advances/submits the chunk for the given flame time.
- * Caller-observed ABI (proven at the CG_AddFlameSpriteToScene call sites 0x3002800c /
+ * Caller-observed ABI (proven at the CG_AddFlameChunks call sites 0x3002800c /
  * 0x30028ee6 / 0x30028f22 / 0x3002909b): two caller-cleaned stack args pushed in
  * reverse — (flameChunk_t *chunk, int32_t flameTime). NOTE: this is NOT the pool
  * merge helper CG_MergeFlameChunks (0x300257e0); the PHASE-2 interface spec labeled
@@ -6553,7 +6548,7 @@ void CG_InitFlameChunks(void);
 
 /* --- Flame callee declarations consolidated from the reconstructed bodies (body-proven,
  * not caller-guessed). These carry authority for the deferred flame giants
- * (CG_AddFlameSpriteToScene 0x30024050, CG_AddFlameSpriteToScene 0x30027d10); a later
+ * (CG_FireFlameChunks 0x30024050, CG_AddFlameChunks 0x30027d10); a later
  * reconstruction may override a signature but must state why. --- */
 
 /* CG_FlameDamage (0x300265c0, reconstructed FUN_300265c0_300268d7): traces from
@@ -6562,15 +6557,15 @@ void CG_InitFlameChunks(void);
 void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum,
                              float radiusBase, const flameChunk_t *chunk);
 
-/* CG_AddFlameSpriteToScene (0x300272b0, reconstructed FUN_300272b0_3002783f): per-owner-chunk
+/* CG_AddFlameToScene (0x300272b0, reconstructed FUN_300272b0_3002783f): per-owner-chunk
  * frame update — advances/merges the chunk's children and submits their sprites via
  * CG_AddFlameSpriteToScene. Body-proven signature: takes the owner (root) chunk. */
-void CG_AddFlameSpriteToScene(flameChunk_t *ownerChunk);
+void CG_AddFlameToScene(flameChunk_t *ownerChunk);
 
 /* CG_AddFlameSpriteToScene (0x300268e0 == FUN_300268e0_300272ac, alias CG_AddFlameSpriteToScene):
  * build one camera-facing flame/smoke billboard quad for a flameChunk_t and submit it via
  * trap_R_AddPolyToScene (CG_R_ADDPOLYTOSCENE=0x40). Reconstructed from the dense x87
- * body; the call shape is also proven from CG_AddFlameSpriteToScene at 0x30027819. */
+ * body; the call shape is also proven from CG_AddFlameToScene at 0x30027819. */
 void CG_AddFlameSpriteToScene(flameChunk_t *chunk, float animationFraction,
                         float alpha, int32_t finalFrame);
 
@@ -6594,10 +6589,10 @@ void CG_AddFlameSpriteToScene(flameChunk_t *chunk, float animationFraction,
 typedef struct cgFlameInfo_s {
     int32_t  clientFrame;        /* +0x00: cg.clientFrame stamp of the last emitter
                                   * update. Current/recent checks compare it against
-                                  * cg.clientFrame-1; CG_AddFlameSpriteToScene writes
+                                  * cg.clientFrame-1; CG_FireFlameChunks writes
                                   * the current frame here on exit (0x30025550). */
     vec3_t    prevDir;            /* +0x04/+0x08/+0x0c: the emitter's previous-frame aim
-                                     * direction (a vec3). CG_AddFlameSpriteToScene
+                                     * direction (a vec3). CG_FireFlameChunks
                                      * (0x30024050) reads it at 0x30024131/0x30024177 as the
                                      * angle-delta base (originDir - prevDir) for the emit
                                      * rate limiter, again at 0x300245c3 as the AngleVectors#2
@@ -6618,7 +6613,7 @@ typedef struct cgFlameInfo_s {
                                      * current vDir on exit (0x30025523). Provisional name;
                                      * exact source unresolved. */
     vec3_t    emitDir;            /* +0x34/+0x38/+0x3c: the emitter's previous-frame
-                                     * spawn direction (a vec3). CG_AddFlameSpriteToScene
+                                     * spawn direction (a vec3). CG_FireFlameChunks
                                      * (0x30024050) reads it at 0x30024216.. as the accum2
                                      * lerp base (infoDir2) and writes the current dir back
                                      * on exit. Provisional name; exact source unresolved. */
@@ -6631,27 +6626,27 @@ typedef struct cgFlameInfo_s {
                                      * flame-time flameTime/EBP at 0x3002957f). */
     uint8_t  emitterState48[4]; /* ABI_AUDITED_OPAQUE: unconsumed flame-emitter state. */
     int32_t  emitSeedGate;          /* +0x4c: emit-index seed threshold (flame-clock units).
-                                     * CG_AddFlameSpriteToScene (0x30024050) compares it
+                                     * CG_FireFlameChunks (0x30024050) compares it
                                      * against the per-iteration radius seed (0x30024c28/35)
                                      * to gate the rand-scattered emit-index block and stores
                                      * the seed back here (0x30024c76). Provisional name;
                                      * exact source unresolved. */
     uint8_t  emitterState50[4]; /* ABI_AUDITED_OPAQUE: unconsumed flame-emitter state. */
     int32_t  lastEmitTime;          /* +0x54: last-emit timestamp (flame-clock ms).
-                                     * CG_AddFlameSpriteToScene gates a non-owner emitter
+                                     * CG_FireFlameChunks gates a non-owner emitter
                                      * on lastEmitTime >= cg_flameTime - 150 (0x3002431b);
                                      * CG_UpdateFlamethrowerSounds also touches +0x54. Provisional
                                      * name; exact source unresolved. */
-    int32_t  emitAccumTime;         /* +0x58: accumulated emit time (ms). CG_AddFlameSpriteToScene
+    int32_t  emitAccumTime;         /* +0x58: accumulated emit time (ms). CG_FireFlameChunks
                                      * (0x30024050) adds cg.frametime to it each non-terminal
                                      * emit (0x30024562) and resets it to 0 on the terminal
                                      * path (0x30025222). Provisional name; exact source
                                      * unresolved. */
     int32_t  soundPathFlag;         /* +0x5c: nonzero (== 1) gates the primary vs
-                                     * secondary sound-envelope path. CG_AddFlameSpriteToScene
+                                     * secondary sound-envelope path. CG_FireFlameChunks
                                      * compares it against arg3 and stamps arg3 into it. */
     int32_t  activeFlag;            /* +0x60: nonzero flag; the final decay loop skips
-                                     * an element whose activeFlag is 0. CG_AddFlameSpriteToScene
+                                     * an element whose activeFlag is 0. CG_FireFlameChunks
                                      * also writes arg3 here on exit (0x300254ec). */
     int32_t  soundActiveFlag;       /* +0x64: nonzero => this info's sound is already
                                      * active; CG_UpdateFlamethrowerSounds skips the chunk. */
@@ -6659,11 +6654,11 @@ typedef struct cgFlameInfo_s {
     int32_t  activeUntil;          /* +0x6c: cg_flameTime through which this owner's
                                     * flame can apply damage. */
     uint8_t  ownerRuntimeState[28]; /* ABI_AUDITED_OPAQUE: per-owner flame runtime state. */
-    int32_t  emitRandSeed;          /* +0x8c: per-emit random seed. CG_AddFlameSpriteToScene
+    int32_t  emitRandSeed;          /* +0x8c: per-emit random seed. CG_FireFlameChunks
                                      * (0x30024050) stores the per-iteration rand() radius
                                      * seed (EBX) here at 0x30024c20; the retry sub-loop
                                      * bumps it. Provisional name; exact source unresolved. */
-    int32_t  emitCounter;           /* +0x90: monotonic emit counter. CG_AddFlameSpriteToScene
+    int32_t  emitCounter;           /* +0x90: monotonic emit counter. CG_FireFlameChunks
                                      * (0x30024050) copies it into chunk->emitCounter at each
                                      * chunk spawn (0x30024990) and increments it on the
                                      * terminal path (0x30025251). Provisional name; exact
@@ -6684,7 +6679,7 @@ typedef struct cgFlameInfo_s {
     int32_t  lastPainTime;         /* +0xa8: cg.time of last pain notification */
     int32_t  painCounter;          /* +0xac: caller-supplied pain event id */
     double   lastFlameTime;         /* +0xb0: last emit's flame-clock time as a double.
-                                     * CG_AddFlameSpriteToScene stores (double)cg_flameTime
+                                     * CG_FireFlameChunks stores (double)cg_flameTime
                                      * here at the end of each loop iteration (0x300250ee).
                                      * Provisional name; exact source unresolved. */
 } cgFlameInfo_t;
@@ -6880,7 +6875,7 @@ void CG_TraceCapsule(trace_t *out, const vec3_t start, const vec3_t mins,
  * CG_FlamethrowerTrace (0x30025cd0) — reconstructed in
  * functions/FUN_30025cd0_30025d94.c. A trace helper in the flame-chunk cluster
  * (its callers are the flame-fire paths at 0x30025da0 and 0x30027d10 / the
- * provisional CG_AddFlameSpriteToScene). It first runs the ordinary world trace/
+ * provisional CG_AddFlameChunks). It first runs the ordinary world trace/
  * projection CG_Trace (0x30035310) into the caller's `out` buffer, then
  * — unless the traced entity IS the local player (entityNum == cg.snap->ps.psClientNum)
  * — refines the result against the local player's own body: it issues the setup
@@ -7509,12 +7504,12 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
                         float viewOriginOffset);
 void CG_WeaponUpdateLoopingSound(centity_t *cent);
 
-/* CG_AddFlameSpriteToScene (0x30024050) — emits flamethrower flame chunks for a player
+/* CG_FireFlameChunks (0x30024050) — emits flamethrower flame chunks for a player
  * whose held weapon is WEAPTYPE_GAS. NOT the per-chunk processor at 0x300272b0
- * (which owns the CG_AddFlameSpriteToScene name); the globals.h note attributing that name to
+ * (which owns the CG_AddFlameToScene name); the globals.h note attributing that name to
  * 0x300240a3 concerns THIS function's interior and is not adopted as its name. CG_Player
  * call site (0x300346a0): EAX register arg + five __cdecl stack dwords:
- * CG_AddFlameSpriteToScene(viewAngles(EAX), cent, flashOrigin, spread=1.8f, a3=1, a4=0).
+ * CG_FireFlameChunks(viewAngles(EAX), cent, flashOrigin, spread=1.8f, a3=1, a4=0).
  * `viewAngles` (EAX) is the emitter's pitch/yaw/roll triple — the CG_Player caller
  * seeds it from animState->viewPitch/viewYaw/viewRoll and the body does
  * AngleNormalize180 math on its components; `flashOrigin` is the tag_flash
@@ -7524,7 +7519,7 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent);
  * cg_flameInfo (0x300ab750, stride 0xb8) by cent[0] (the emitter owner clientNum).
  * Partial reconstruction in progress at
  * src/client/cgame/effects/cg_emitplayerflamechunks.c (region-split; loop body deferred). */
-void CG_AddFlameSpriteToScene(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
+void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
                               float spread, int32_t a3, int32_t a4);
 
 

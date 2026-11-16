@@ -259,7 +259,7 @@ _Static_assert(sizeof(cg_turretTagShaderParams) == sizeof(vec2_t) * 4u,
                "turret tag must provide one texture coordinate per vertex");
 /* Source: uo_cgame_mp_x86.dll 0x30071a60 (.rdata); first=0x30037314.
  * cg_scoreboardColumnValueSelect[5] — per-column value-source selector lane read
- * by CG_DrawScoreboard_Backdrop (0x30037314, stride 0x10); see globals.h. The
+ * by CG_DrawScoreboard_ListBanner (0x30037314, stride 0x10); see globals.h. The
  * lane starts at 0x30071a60 (the column table base minus 4): element 0 is the
  * standalone dword 4, elements 1..4 are
  * cg_scoreboardColumns[0..3].nextColumnValueSelect
@@ -1642,7 +1642,7 @@ renderer_frame_statistics_t cg_rendererStats = {0};
  * 3001d255 MOV EAX,0x300a84e8 | 3001d25a FSTP float ptr [0x300a84f4]. */
 vec4_t cg_fadeColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300a84f8..0x300a8503 (.data) — cg_flameSpriteSrcRight vec3.
- * Written by CG_AddFlameToScene (0x30027dbd/dc7/dd3) = cg.refdef.viewaxis[1]; read by
+ * Written by CG_AddFlameChunks (0x30027dbd/dc7/dd3) = cg.refdef.viewaxis[1]; read by
  * CG_AddFlameSpriteToScene (0x30026de7/ded/df2). Retyped from three uint32_t placeholders. */
 vec3_t cg_flameSpriteSrcRight = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300a8508 (.data); refs=3 width=4; first=0x30027119; owner=cg_addflamespritetoscene.
@@ -1692,7 +1692,7 @@ struct cgFlameSoundLoop_s cg_flameSoundLoops[1024];
 /* Source: uo_cgame_mp_x86.dll 0x300ab718 (.data); refs=46 width=4; first=0x30023d10.
  * RESOLVED: cg_flameTime — the flame subsystem's per-frame time base, computed as
  * round(2 * cg.time) by CG_UpdateFlameTime (0x30023af0) and inlined at the head of
- * CG_AddFlameSpriteToScene (0x300272b0) and CG_AddFlameSpriteToScene (0x300268e0), and written
+ * CG_AddFlameToScene (0x300272b0) and CG_AddFlameSpriteToScene (0x300268e0), and written
  * as `(uint32_t)flameTime` by CG_UpdateFlamethrowerSounds (0x30029210). Read via FILD as
  * an int timestamp by the flame chunk clock consumers (and by the per-frame chunk
  * driver CG_UpdateFlameChunk, which shares this flame clock). The mechanical owner
@@ -1735,7 +1735,7 @@ vec3_t cg_flameLastSpritePos = {0.0f, 0.0f, 0.0f};
  * Example: 30027279   89 15 40 b7 0a 30            MOV dword ptr [0x300ab740],EDX
  */
 /* Source: uo_cgame_mp_x86.dll 0x300ab744..0x300ab74f (.data) — cg_flameSpriteSrcUp vec3.
- * Written by CG_AddFlameToScene (0x30027ddf/de4/dea) = cg.refdef.viewaxis[2]; read by
+ * Written by CG_AddFlameChunks (0x30027ddf/de4/dea) = cg.refdef.viewaxis[2]; read by
  * CG_AddFlameSpriteToScene (0x30026dfe/e09/e14). Retyped from three uint32_t placeholders. */
 vec3_t cg_flameSpriteSrcUp = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300ab750 (.data); refs=9 width=4; first=0x300240a3; owner=cg_addflamechunks.
@@ -2438,7 +2438,7 @@ cgs_t cgs;
  * (float)glconfig.vidWidth * (1.0f/640.0f) [FILD [0x30447a88]; FMUL
  * [0x3007c3f4]=0.0015625]; consumed as a float in every 2D-draw wrapper
  * (e.g. FMUL [0x30447aa4] at 0x30017d3b, and CG_DrawPic at 0x3001cae0, and
- * CG_FillRotatedRect at 0x3001ccf0). Zero-initialized .data (BSS tail).
+ * CG_DrawRotatedQuadPic at 0x3001ccf0). Zero-initialized .data (BSS tail).
  * The 1/640 factor is proven from the writer's .rdata constant 0x3007c3f4.
  */
 /* Source: uo_cgame_mp_x86.dll 0x30447aa8 (.data); refs=96; owner=pm_cmdscale label is wrong.
@@ -2446,7 +2446,7 @@ cgs_t cgs;
  * (float)glconfig.vidHeight * (1.0f/480.0f) [FILD [0x30447a8c]; FMUL
  * [0x3007c3f0]=0.0020833334]; consumed as a float in every 2D-draw wrapper
  * (e.g. FMUL [0x30447aa8] at 0x30017d0f, and CG_DrawPic at 0x3001caa4, and
- * CG_FillRotatedRect at 0x3001ccf0). Zero-initialized .data (BSS tail).
+ * CG_DrawRotatedQuadPic at 0x3001ccf0). Zero-initialized .data (BSS tail).
  * The 1/480 factor is proven from the writer's .rdata constant 0x3007c3f0.
  */
 /* Source: uo_cgame_mp_x86.dll 0x30447ab0 (.data); refs=5 width=4; first=0x30018021.
@@ -2911,7 +2911,7 @@ cgs_t cgs;
  */
 /* Source: uo_cgame_mp_x86.dll 0x3044c24c (.data); refs=2 width=4; first=0x3002522c; owner=cg_addflamechunks.
  * cgs.media.flameStartSound: flame start-sound qhandle (writer 0x3002b756; consumed by
- * CG_AddFlameChunks 0x3002522c). RESOLVED (role) on consume. */
+ * CG_FireFlameChunks 0x3002522c). RESOLVED (role) on consume. */
 /* Source: uo_cgame_mp_x86.dll 0x3044c250 (.data); refs=2 width=4; first=0x300294d2; owner=cg_updateflamethrowersounds.
  * Example: 300294d2   8b 15 50 c2 44 30            MOV EDX,dword ptr [0x3044c250] | 3002b76b   a3 50 c2 44 30               MOV [0x3044c250],EAX
  * RESOLVED cgs.media.flameStreamSound: alias-name pointer stored from cgame_syscall(0xc3,
@@ -3077,7 +3077,7 @@ cgs_t cgs;
  * this vmCvar_t as cl_serverloadmap; consumers read .string at +0x10. */
 vmCvar_t cl_serverloadmap;
 /* Source: uo_cgame_mp_x86.dll 0x30450148 (.data); refs=1 width=4; first=0x30025419; owner=cg_addflamechunks.
- * timescale_vmCvar.value: float divisor consumed by CG_AddFlameChunks
+ * timescale_vmCvar.value: float divisor consumed by CG_FireFlameChunks
  * (0x30025419). RESOLVED (role) on consume; retyped uint32_t -> float. */
 
 /* Source: uo_cgame_mp_x86.dll 0x3045014c (.data); refs=2 width=4; first=0x3002de90; owner=g_dobjcalcpose.

@@ -59,7 +59,7 @@ void cgame_compat_reset_module_load_state(void);
  *   - The per-owner flame-info region cg_flameInfo holds FLAME_INFO_COUNT elements
  *     of FLAME_INFO_SIZE bytes; CG_ClearFlameChunks clears the whole
  *     FLAME_INFO_COUNT*FLAME_INFO_SIZE == 0x2e000-byte region, and
- *     CG_AddFlameSpriteToScene indexes it with element stride 0xb8.
+ *     CG_AddFlameToScene indexes it with element stride 0xb8.
  */
 enum {
     FLAME_CHUNK_COUNT = 0x2000,   /* 8192 pool nodes */
@@ -611,7 +611,7 @@ void CG_OpenWMPurchase_f(void);       /* 0x30017720 */
  * up in the client console/autocomplete. Takes no args, returns nothing. */
 void CG_InitConsoleCommands(void);    /* 0x30017920 */
 /* 0x30071854 .rdata — cg_damageDirShaderParams: the static shader/texcoord parameter
- * block handed to the rotated-quad trap (CG_R_DRAW_ROTATED_QUAD via CG_FillRotatedRect) by
+ * block handed to the rotated-quad trap (CG_R_DRAW_ROTATED_QUAD via CG_DrawRotatedQuadPic) by
  * CG_DrawDamageDirectionIndicators (0x3001aad5 PUSHes its address). Eight floats in .rdata:
  * {1,1,0, 1,0,0, 1,0}. The mechanical single-dword export g_const_float_one_30071854
  * captured only the leading 1.0f; superseded as the full const float[8]. */
@@ -649,14 +649,14 @@ extern const uint32_t cg_debugBoxEdges[12][2];
 extern const uint32_t cg_boxCornerSelectors[24][3];
 /* 0x30071a3c..0x30071a5c (.rdata, refs=1, first=0x30031f4a) — the four
  * texture-coordinate pairs {{1,1},{1,0},{0,0},{0,1}} passed by
- * CG_DrawTankBarrel through CG_FillRotatedRect to the rotated-quad renderer.
+ * CG_DrawTankBarrel through CG_DrawRotatedQuadPic to the rotated-quad renderer.
  * Original RE_DrawQuadPic consumes all eight floats, one pair per vertex, at
  * 0x004f0468..0x004f04cb. The dword at 0x30071a5c is alignment padding before
  * the next independent datum at 0x30071a60. */
 extern const float cg_turretTagShaderParams[8];
 /*
  * 0x30071a60 .rdata — cg_scoreboardColumnValueSelect[5]: the per-column value-
- * source selector read by CG_DrawScoreboard_Backdrop's totals-row loop
+ * source selector read by CG_DrawScoreboard_ListBanner's totals-row loop
  * (0x30037314 MOV EAX,[ESI + 0x30071a60], stride 0x10). It is the
  * `.nextColumnValueSelect`
  * lane of cg_scoreboardColumns read one entry EARLY (0x30071a60 = the column
@@ -1554,7 +1554,7 @@ extern vec4_t cg_fadeColor;
  * which builds its own basis via AngleVectors). ROLE-RESOLVED (name provisional) from
  * CG_AddFlameSpriteToScene (0x300268e0): on the non-first-person path it copies this
  * triple into cg_flameSpriteRight (0x300ab72c) verbatim (0x30026de7..0x30026df8).
- * WRITER PROVEN: CG_AddFlameSpriteToScene (0x30027da4..0x30027dd3) copies cg.refdef.viewaxis[1]
+ * WRITER PROVEN: CG_AddFlameChunks (0x30027da4..0x30027dd3) copies cg.refdef.viewaxis[1]
  * (viewaxis[1]) into these three dwords once per frame. Retyped from three mechanical
  * uint32_t placeholders to the one vec3 they form. */
 extern vec3_t cg_flameSpriteSrcRight;
@@ -1586,7 +1586,7 @@ extern flameChunk_t *cg_freeFlameChunks;
  * fields move together on native 64-bit builds. refs were 6/5/4/4/3/2/3/2/1/2. */
 extern trace_t cg_flameDamageTrace;
 /* 0x300a85e8 .data — cg_rFullscreenCvar: the module-side vmCvar mirror handle for the
- * "r_fullscreen" cvar. RESOLVED from CG_AddFlameSpriteToScene (0x30027d59): its address is
+ * "r_fullscreen" cvar. RESOLVED from CG_AddFlameChunks (0x30027d59): its address is
  * pushed as the vmCvar arg to trap(7, &vmCvar, "r_fullscreen", "1", 0x21) on first
  * frame (register) and to trap(8, &vmCvar) on later frames (refresh). Compact 12-byte
  * cvar-handle slot (next .data symbol is 0x300a85f4), so it is NOT the classic
@@ -1633,7 +1633,7 @@ _Static_assert(sizeof(cgFlameSoundLoop_t) == 12, "cgFlameSoundLoop_t must be 12 
 extern cgFlameSoundLoop_t cg_flameSoundLoops[1024];
 /* 0x300ab718 .data refs=46 — cg_flameTime: the flame subsystem per-frame time base
  * (round(2*cg.time)); written by the flame update path and read via FILD as an int
- * timestamp. RESOLVED from CG_AddFlameSpriteToScene (0x300272b0) / CG_UpdateFlamethrowerSounds
+ * timestamp. RESOLVED from CG_AddFlameToScene (0x300272b0) / CG_UpdateFlamethrowerSounds
  * (0x30029210); the mechanical owner=cg_playadsanim was a first-toucher label. */
 extern uint32_t cg_flameTime;
 /* 0x300ab71c/720/724 .data — cg_flameSpriteUp: the flame billboard's UP basis vec3.
@@ -1669,14 +1669,14 @@ extern vec3_t cg_flameLastSpritePos;
  * CG_AddFlameSpriteToScene (0x300268e0): on the non-first-person path it copies this
  * triple into cg_flameSpriteUp (0x300ab71c) verbatim (0x30026dfe..0x30026e25); the pair
  * with cg_flameSpriteSrcRight (0x300a84f8) spans the world-flame sprite quad. WRITER
- * PROVEN: CG_AddFlameSpriteToScene (0x30027dc2..0x30027dea) copies cg.refdef.viewaxis[2]
+ * PROVEN: CG_AddFlameChunks (0x30027dc2..0x30027dea) copies cg.refdef.viewaxis[2]
  * (viewaxis[2]) into these three dwords once per frame. Retyped from three mechanical
  * uint32_t placeholders to the one vec3 they form. */
 extern vec3_t cg_flameSpriteSrcUp;
 /* 0x300ab750 .data refs=9 width=4 first=0x300240a3 owner=cg_addflamechunks.
  * RESOLVED base of the contiguous per-owner flame-state region cleared by
  * CG_ClearFlameChunks (0x30025589: REP STOSD of 0xb800 (47104) dwords ==
- * 0x2e000 bytes, spanning 0x300ab750..0x300d9750). CG_AddFlameSpriteToScene (0x300240a3)
+ * 0x2e000 bytes, spanning 0x300ab750..0x300d9750). CG_AddFlameToScene (0x300240a3)
  * indexes it as base + i*0xb8 (IMUL EBP,EBP,0xb8; ADD EBP,0x300ab750), i.e.
  * FLAME_INFO_COUNT (1024) elements of 0xb8 (184) bytes. Its typed declaration is
  * in client_recovered.h after the complete cgFlameInfo_t definition. */
@@ -1716,7 +1716,7 @@ extern int32_t cg_numActiveFlameChunks;
  * (0x300d9760/64/68) into one vec3. mechanical owner=item_listbox_overlb was the first toucher. */
 extern vec3_t cg_flameDamageBestPos;
 /* 0x300d9770 .data — cg_rOverbrightBitsCvar: the module-side vmCvar mirror handle for
- * the "r_overbrightbits" cvar. RESOLVED from CG_AddFlameSpriteToScene (0x30027d75): its
+ * the "r_overbrightbits" cvar. RESOLVED from CG_AddFlameChunks (0x30027d75): its
  * address is pushed as the vmCvar arg to trap(7, &vmCvar, "r_overbrightbits", "1",
  * 0x21) on first frame and trap(8, &vmCvar) on later frames. Compact 12-byte
  * cvar-handle slot (next .data symbol is 0x300d977c), like cg_rFullscreenCvar; kept as
@@ -2138,7 +2138,7 @@ extern qboolean cg_flameChunksInited;
  * first-touching function name, not the identity. Retyped uint32_t -> flameChunk_t*. */
 extern flameChunk_t *cg_lastFlameChunkProcessed;
 /* 0x30134cf4 .data — cg_fireFlameChunksCvarsRegistered: once-only latch guarding the
- * lazy cvar registration in CG_AddFlameSpriteToScene (0x30027d42). Zero on the first frame
+ * lazy cvar registration in CG_AddFlameChunks (0x30027d42). Zero on the first frame
  * (=> trap(7,...) registers r_fullscreen/r_overbrightbits), nonzero afterward (=>
  * trap(8,...) refreshes them). RESOLVED from that sole consumer; the mechanical
  * owner=cg_fireflamechunks label happened to be correct here. NOTE: no writer that
@@ -2723,7 +2723,7 @@ typedef struct cgMedia_s {
     int field_b9c;
     /* 0x3044c24c .data — cgs.media.flameStartSound: an alias-name pointer resolved by a flame-init
      * function (writer 0x3002b756) and passed as the soundName to CG_PlaySoundAliasByName
-     * by CG_AddFlameSpriteToScene (0x3002522c, the terminal-chunk emit path).
+     * by CG_FireFlameChunks (0x3002522c, the terminal-chunk emit path).
      * RESOLVED (role) on consume; exact CoD sound alias name unresolved. */
     const char *flameStartSound;
     /* 0x3044c250 .data — cgs.media.flameStreamSound: alias-name pointer from trap 0xc3,
@@ -2817,7 +2817,7 @@ typedef struct cgs_s {
      * the cgs-init path (0x3002e016) as (float)glconfig.vidWidth * (1.0f/640.0f)
      * [FILD [0x30447a88]; FMUL [0x3007c3f4]=0.0015625f; FSTP [0x30447aa4]], and
      * multiplied into every X/width UI coordinate. Consumed as a float by CG_DrawPic
-     * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_FillRotatedRect at
+     * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_DrawRotatedQuadPic at
      * 0x3001ccf0). The 1/640 divisor is proven from the writer's .rdata constant
      * 0x3007c3f4. */
     float screenXScale;
@@ -2826,7 +2826,7 @@ typedef struct cgs_s {
      * cgs-init path (0x3002e028) as (float)glconfig.vidHeight * (1.0f/480.0f)
      * [FILD [0x30447a8c]; FMUL [0x3007c3f0]=0.0020833334f; FSTP [0x30447aa8]], and
      * multiplied into every Y/height UI coordinate. Consumed as a float by CG_DrawPic
-     * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_FillRotatedRect at
+     * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_DrawRotatedQuadPic at
      * 0x3001ccf0). The 1/480 divisor is proven from the writer's .rdata constant
      * 0x3007c3f0. */
     float screenYScale;
@@ -3313,7 +3313,7 @@ _Static_assert(offsetof(cgMedia_t, vehicleTreadEffects) == 0x1414, "cgs.media.ve
  * "cl_serverloadmap"; loading-screen paths read .string at +0x10. */
 extern vmCvar_t cl_serverloadmap;
 /* 0x30450148 .data — timescale_vmCvar.value: a float read (FLD float ptr) only by
- * CG_AddFlameSpriteToScene's terminal-chunk path (0x30025419), where it is the
+ * CG_FireFlameChunks's terminal-chunk path (0x30025419), where it is the
  * divisor of 1000.0 (Q_rint(1000.0/timescale_vmCvar.value) % 360) that seeds the
  * terminal chunk's field_98 spin angle. RESOLVED (role) on consume; exact CoD
  * source name unresolved. Retyped from the mechanical uint32_t to float. */
@@ -3556,7 +3556,7 @@ extern itemInfo_t cg_items[256];
 /* 0x304555a8 .data refs=1 width=4 first=0x30044f14 owner=setclientviewangle */
 
 /* 0x304556c8 .data — cg_tracerSpeed: the LE_MOVING_TRACER travel speed (world
- * units per second) of the line-tracer local entity built by CG_BulletTrajectoryEffects
+ * units per second) of the line-tracer local entity built by CG_SpawnTracer
  * (0x30048260, its only reader — all four refs at 0x300483f9/0x30048422/0x3004842f/
  * 0x3004843c). Used two ways there: le->pos.trDelta = cg_tracerSpeed * dir (the
  * TR_LINEAR velocity vector), and le->endTime = trTime + (int)(span*1000/speed)
@@ -4361,7 +4361,7 @@ typedef struct cg_s {
      * (0x300380a1 MOV [0x30489f24],EAX and the team loop), CG_DrawScoreboardBody
      * reads elements 1 and 2 directly to pick the leading team (0x30037c0c
      * MOV EAX,[0x30489f28]; 0x30037c11 MOV ECX,[0x30489f2c]; CMP), and
-     * CG_DrawScoreboard_Backdrop (0x30037090) reads cg.teamScores[team]
+     * CG_DrawScoreboard_ListBanner (0x30037090) reads cg.teamScores[team]
      * (0x3003732d MOV EAX,[EBX*4 + 0x30489f24]) when the column value-selector is 1.
      * Supersedes the mechanical per-element split (0x30489f28 as cg_entitypreevent,
      * 0x30489f2c as cg_entitypreevent, 0x30489f30 as g_touchtriggers) — one array,
@@ -4372,7 +4372,7 @@ typedef struct cg_s {
      * integer average, of each team's client pings. Proven a 4-element int array:
      * the build routine accumulates row +0x08 (ping) team-indexed
      * (0x300382a2 ADD [EAX*4 + 0x30489f34],ECX;
-     * 0x30038121 MOV [0x30489f34],EAX) and CG_DrawScoreboard_Backdrop (0x30037090)
+     * 0x30038121 MOV [0x30489f34],EAX) and CG_DrawScoreboard_ListBanner (0x30037090)
      * reads cg.scoreboardTeamPings[team] (0x30037336 MOV EAX,[EBX*4 + 0x30489f34])
      * when the column value-selector is 3, formatting it into the totals row's ping
      * column. Supersedes the mechanical per-element split (0x30489f38/0x30489f3c/
@@ -4428,7 +4428,7 @@ typedef struct cg_s {
     /* 0x3048a564 .data refs=6 width=4 first=0x300370a2 — cg.scoreboardOverflowed: the
      * "scoreboard content has flowed past the bottom of the visible area" latch.
      * CG_DrawScoreboardBody clears it at frame start; the per-line drawers
-     * CG_DrawScoreboard_Backdrop (0x300370a2 reads it; 0x300370f0 sets it to 1 when
+     * CG_DrawScoreboard_ListBanner (0x300370a2 reads it; 0x300370f0 sets it to 1 when
      * y+24 > 432.0) and CG_DrawClientScore (0x30037420 reads it) early-out once it is
      * set. CG_ScrollScoreboardDown (0x30037e60) gates its scroll on it. qboolean.
      * Mechanical owner=g_damage was the exporter's wrong size-match guess. */
@@ -5152,14 +5152,9 @@ extern vmCvar_t cg_viewSizeCvar;
  * single consumer, so the role name is behavioral. */
 
 /* 0x3052f7c8 .data refs=2 width=4.
-<<<<<<< HEAD
  * RESOLVED on consume by CG_GetViewFov (0x3003ffc0): cg_fov_vmCvar.value -- the
  * configured unzoomed horizontal field-of-view in degrees (the cg_fov cvar's
  * float value mirror). CG_GetViewFov reads
-=======
- * RESOLVED on consume by CG_GetViewFov (0x3003ffc0): cg_fov_vmCvar.value -- the base view
- * field-of-view in degrees (the cg_fov cvar's float value mirror). CG_GetViewFov reads
->>>>>>> stock
  * it and clamps it to [80, 160] degrees; a screen-projection helper at 0x30040330
  * divides a screen coordinate by it (FDIV) as a float. Read as a float by both
  * consumers; no direct .text writer (engine cvar-registration path updates it). The

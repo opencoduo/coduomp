@@ -153,11 +153,7 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
         } else {
             s1 = 0.0f;   t1 = 0.0f; s2 = right; t2 = bottom;
         }
-<<<<<<< HEAD
         CG_DrawCroppedPic(drawX, item->y, sizeW, sizeH,
-=======
-        CG_DrawCroppedPic(item->x, item->y, sizeW, sizeH,
->>>>>>> stock
                           s1, t1, s2, t2, hShader);
     }
 

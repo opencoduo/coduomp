@@ -68,7 +68,7 @@
  *
  * ---- draw sequence ----
  *   0x30031f34  trap_R_SetColor(color)                         (via wrapper 0x3003e0d0)
- *   0x30031f55  CG_FillRotatedRect(&corners, slidX, rect[1],
+ *   0x30031f55  CG_DrawRotatedQuadPic(&corners, slidX, rect[1],
  *                    cg_turretTagShaderParams, angleResult, hShader)   (trap 0x4c)
  *   0x30031f5e  trap_R_SetColor(NULL)                          (reset draw color)
  */
@@ -176,7 +176,7 @@ void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
      * (first pushed = deepest arg): hShader(arg0), angleResult, cg_turretTagShaderParams
      * (0x30071a3c), rect[1], slidX; EDX = &cornerOffsets. So the argument order is
      * (cornerOffsets, x=slidX, y=rect[1], shaderParams, rotOrScale=angleResult, hShader). */
-    CG_FillRotatedRect(cornerOffsets, slidX, rect->y,
+    CG_DrawRotatedQuadPic(cornerOffsets, slidX, rect->y,
                          cg_turretTagShaderParams, angleResult, hShader);
 
     /* 0x30031f5a..0x30031f5e: reset the 2D draw color to opaque white

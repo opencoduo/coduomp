@@ -4,11 +4,7 @@
 // CG_CalcViewProjection (provisional name; address-anchored below because the
 // exact original cgame symbol is not proven). Role proven from behavior:
 //
-<<<<<<< HEAD
 //   1. Calls CG_GetViewFov (0x3003ffc0), which leaves the current horizontal FOV
-=======
-//   1. Calls CG_GetViewFov (0x3003ffc0), which leaves the base horizontal FOV
->>>>>>> stock
 //      (degrees) on the x87 stack as its float return value.
 //   2. Derives the vertical FOV from the horizontal FOV and the current 3D-view
 //      aspect ratio (cg.refdef.width / cg.refdef.height) using the exact
