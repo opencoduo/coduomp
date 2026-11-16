@@ -10,7 +10,7 @@
 // function references — "CG_ProcessSnapshots: n < cg.latestSnapshotNum" (0x3007a454)
 // and "CG_ProcessSnapshots: Server time went backwards" (0x3007a424) — which name it
 // outright, and from its call graph (CG_ReadNextSnapshot, CG_SetNextSnap,
-// CG_InstallSnapshotResetEffects, CG_SetFrameInterpolation) and its cg.snap /
+// CG_SetInitialSnapshot, CG_SetFrameInterpolation) and its cg.snap /
 // cg.nextSnap / cg.time state machine. This is the stock id-Tech/CoD CG_ProcessSnapshots.
 //
 // Behavior (all proven against the .mcode):
@@ -35,7 +35,7 @@
 //   - Com_ErrorMessage (0x3002b300): one format-string dword, caller-cleaned (ADD ESP,4).
 //   - CG_ReadNextSnapshot (0x3003d220): no args, returns snapshot_t * in EAX.
 //   - CG_SnapshotTransitionStage2 (0x30034d40), CG_SetNextSnap (0x3003cc10, one arg),
-//     CG_InstallSnapshotResetEffects (0x3003c9d0, arg in EAX), CG_SetFrameInterpolation
+//     CG_SetInitialSnapshot (0x3003c9d0, arg in EAX), CG_SetFrameInterpolation
 //     (0x3001f710, no args), CG_ResetSnapshotEntityEffects (0x3003ca30, no args): all
 //     return void.
 //   - RET with no imm: cdecl, caller-cleaned. The SUB ESP,8 / ADD ESP,8 frame holds
@@ -136,8 +136,8 @@ void CG_ProcessSnapshots(void)
              * snapshot and the new one marks a server restart. */
             if (((snap->snapFlags ^ cg.snap->snapFlags) & SNAPFLAG_SERVERCOUNT) != 0) {
                 /* 3003d3e6..3003d3fb: full reset — reinstall from scratch and restart
-                 * the loop. CG_InstallSnapshotResetEffects receives `snap` in EAX. */
-                CG_InstallSnapshotResetEffects(snap);
+                 * the loop. CG_SetInitialSnapshot receives `snap` in EAX. */
+                CG_SetInitialSnapshot(snap);
                 CG_SetNextSnap(snap);
                 CG_TransitionSnapshot();
                 continue;  /* 3003d3fb: JMP back to loop top */

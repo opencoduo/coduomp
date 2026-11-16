@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x30045c10..0x30045c91
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30045c10_30045c91.mcode
 //
-// CG_PlayFxOnWeaponTag - resolve a named tag on one of a weapon's cached DObj
+// CG_WeaponFlash - resolve a named tag on one of a weapon's cached DObj
 // handles and play a registered effect on that tag.
 //
 // Rejected .mcode name guess `script_func_randomintrange`: that name was a pure
@@ -37,7 +37,7 @@
  * cleans nothing (caller does `add esp,0xc`). Superseded by its own .mcode
  * reconstruction. Named by role: it renders using the just-resolved tag.
  */
-void CG_PlayFxOnWeaponTag(qboolean selectViewDObj, int32_t weaponIndex,
+void CG_WeaponFlash(qboolean selectViewDObj, int32_t weaponIndex,
                           int32_t model, const vec3_t effectOrigin,
                           const char *tagName, int32_t drawTagModel)
 {

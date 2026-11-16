@@ -46,14 +46,14 @@ void CG_DrawVote(void)
         /* Both complaint and ordinary vote text can show the current yes/no
          * bindings. The DLL uses CRT strncpy(count=255) followed by an explicit
          * byte-255 NUL. */
-        if (UI_KeysStringForBinding("vote yes", &binding) != 0) {
+        if (GetKeyBindingLocalizedString("vote yes", &binding) != 0) {
             strncpy(yesKey, binding, 255);
         } else {
             strncpy(yesKey, "vote yes", 255);
         }
         yesKey[255] = '\0';
 
-        if (UI_KeysStringForBinding("vote no", &binding) != 0) {
+        if (GetKeyBindingLocalizedString("vote no", &binding) != 0) {
             strncpy(noKey, binding, 255);
         } else {
             strncpy(noKey, "vote no", 255);

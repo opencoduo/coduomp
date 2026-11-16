@@ -8,7 +8,7 @@
 // replacement weapon and commit it. Part of the cgame weapon-selection cluster
 // (siblings 0x30047820 CG_SelectFirstWeaponInSlot, 0x300478a0, the
 // wrap/cycle selector 0x30047960, and the commit primitive 0x30047390
-// CG_SelectWeaponIndex), all of which share the same held-bit / slot / ammo
+// CG_FinishWeaponChange), all of which share the same held-bit / slot / ammo
 // idioms and the same predicted-playerState globals. The sole caller
 // (0x30022ef9) invokes it with no arguments after gating on cg.snap flags and
 // the local client's predicted state, i.e. once per predicted frame when the
@@ -19,7 +19,7 @@
 // script builtin in vehicle.c; this function touches no script VM, no vehicle
 // state, and no precache path. It reads cg.snap, cg.currentWeaponInfo, the
 // weapon-held bitset, the predicted clip/ammo arrays and the weapon-slot table,
-// then commits a choice through CG_SelectWeaponIndex -- weapon-select behavior,
+// then commits a choice through CG_FinishWeaponChange -- weapon-select behavior,
 // not precache. The same-module (cgame_mp.dll) PPC bank has CG_OutOfAmmoChange,
 // whose documented behavior (switch away from an empty weapon to the next one
 // that still has ammo) matches this body exactly; adopted behaviorally.
@@ -99,8 +99,8 @@ void CG_OutOfAmmoChange(void)
                 (uint32_t)cg.predictedPlayerState.ammo[weaponInfo->ammoIndex];
             if (totalBits != 0u) {
                 /* 0x30047734 MOV ECX,[cg_weaponSelect_vmCvar.integer]; 0x3004773a CALL
-                 * CG_SelectWeaponIndex(weapon=EAX, currentWeapon=ECX). */
-                CG_SelectWeaponIndex(weapon, cg_weaponSelect_vmCvar.integer);
+                 * CG_FinishWeaponChange(weapon=EAX, currentWeapon=ECX). */
+                CG_FinishWeaponChange(weapon, cg_weaponSelect_vmCvar.integer);
                 return;
             }
         }
@@ -146,8 +146,8 @@ void CG_OutOfAmmoChange(void)
                 (uint32_t)cg.predictedPlayerState.ammo[weaponInfo->ammoIndex];
             if (totalBits != 0u) {
                 /* 0x30047729..0x30047745: re-read the slot's weapon index
-                 * (sign-extended) and commit via CG_SelectWeaponIndex. */
-                CG_SelectWeaponIndex(
+                 * (sign-extended) and commit via CG_FinishWeaponChange. */
+                CG_FinishWeaponChange(
                     (int32_t)(int8_t)cg.predictedPlayerState.weaponSlots[slotOrder[k]],
                     cg_weaponSelect_vmCvar.integer);
                 return;

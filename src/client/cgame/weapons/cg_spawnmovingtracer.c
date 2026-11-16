@@ -9,7 +9,7 @@
 // NAME ADJUDICATION: the .mcode's mechanical `# name G_RunItem` is a broad-corpus
 // SIZE-GUESS (win 0x15f ~ matched 0x160 from game_mp.dll) and is REJECTED — this is a
 // cgame client tracer builder, not a server item-run entity think. The name
-// CG_SpawnMovingTracer comes from its sole caller CG_SpawnTracer (0x30048d60, already
+// CG_SpawnMovingTracer comes from its sole caller CG_BulletTrajectoryEffects (0x30048d60, already
 // reconstructed) — the direct-surface branch of that function calls this at 0x30048e28 —
 // and is corroborated by the behavior: it reuses the same tracer-mode selection
 // (bg_weaponInfos[idx]->ammoType in {3,4,5} -> mode A) and the same

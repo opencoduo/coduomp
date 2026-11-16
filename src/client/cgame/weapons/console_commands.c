@@ -31,7 +31,7 @@ void CG_AltWeapon_f(void) /* 0x30047400 */
             (intptr_t)"game message");
         CG_GameMessage(message);
     } else if (CG_IsWeaponHeld(alternate)) {
-        CG_SelectWeaponIndex(alternate, current);
+        CG_FinishWeaponChange(alternate, current);
     }
 }
 
@@ -112,5 +112,5 @@ void CG_WeaponSlot_f(void) /* 0x30047750 */
 
     int32_t weapon = (int32_t)(int8_t)cg.predictedPlayerState.weaponSlots[slot];
     if (weapon != 0 && CG_IsWeaponHeld(weapon))
-        CG_SelectWeaponIndex(weapon, cg_weaponSelect_vmCvar.integer);
+        CG_FinishWeaponChange(weapon, cg_weaponSelect_vmCvar.integer);
 }

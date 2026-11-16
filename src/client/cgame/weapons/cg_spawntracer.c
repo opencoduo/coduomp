@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x30048d60..0x30048e5e
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30048d60_30048e5e.mcode
 //
-// CG_SpawnTracer — probabilistically spawn a bullet tracer for one shot.
+// CG_BulletTrajectoryEffects — probabilistically spawn a bullet tracer for one shot.
 //
 // NAME ADJUDICATION: the .mcode's mechanical `# name BG_AnimScriptStateChange` is a
 // size-guess (win 0xfe ~ matched 0xff) and is REJECTED. This function contains no
@@ -40,7 +40,7 @@ enum { CG_TRACER_DIRECT_SURFACE_TYPE = 7 };
 /* cg_entities[] base (centity_t, stride 0x288) at 0x3048c6e0, accessed through
  * the same typed view CG_CalcMuzzlePoint uses. */
 
-void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
+void CG_BulletTrajectoryEffects(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
                     int32_t surfaceType, const char *tagName)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
@@ -48,7 +48,7 @@ void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
         weaponIndex > bg_numWeapons ||
         (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS) {
         Com_Printf(
-            "WARNING: CG_SpawnTracer: invalid weapon index %i\n",
+            "WARNING: CG_BulletTrajectoryEffects: invalid weapon index %i\n",
             weaponIndex);
         return;
     }
@@ -127,10 +127,10 @@ void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
     } else {
         /* 30048e40 MOV EAX,impactOrigin; 30048e42 LEA ECX,&muzzle;
          * PUSH EDI(weaponIndex); CALL 0x30048260; ADD ESP,4.
-         * CG_SpawnTracerLine consumes EAX as its destination and ECX as
+         * CG_SpawnTracer consumes EAX as its destination and ECX as
          * trBase. The previous reconstruction reversed these two arguments,
          * making ordinary tracer animations travel from impact to muzzle. */
-        CG_SpawnTracerLine(impactOrigin, muzzle, weaponIndex);
+        CG_SpawnTracer(impactOrigin, muzzle, weaponIndex);
     }
 
     /* 30048e36 / 30048e54: EAX=impactOrigin, EBX=&muzzle;

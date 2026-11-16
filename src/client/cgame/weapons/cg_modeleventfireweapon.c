@@ -12,7 +12,7 @@
 // size-match guess (win 0x42 == some 0x42-byte PPC routine) and is REJECTED. This
 // body issues NO filesystem trap: there is no CALL [0x30085e9c] with an FS id here —
 // it selects a pre-registered sound handle from a surface-indexed table, calls
-// CG_PlaySoundAliasByName, then CG_SpawnTracer. The provisional role name
+// CG_PlaySoundAliasByName, then CG_BulletTrajectoryEffects. The provisional role name
 // CG_ModelEventFireWeapon (already recorded in client_recovered.h from the caller) is
 // kept; exact CoD symbol unproven.
 //
@@ -20,7 +20,7 @@
 //   EAX   -> event            (179 == EV_BULLET_HIT_CLIENT_SMALL selects the "small" pool;
 //                              anything else, i.e. 180, selects the "large" pool)
 //   ECX   -> poseType         (surface-type index 0..22 into the sound tables)
-//   EDI   -> weaponIndex      (model->weaponIndex, forwarded to CG_SpawnTracer)
+//   EDI   -> weaponIndex      (model->weaponIndex, forwarded to CG_BulletTrajectoryEffects)
 //   EBX   -> lerpOrigin     (&cent->lerpOrigin at cent+0x208; the sound channel
 //                              object AND the tracer impact origin)
 //   stack -> vehicleEntityNum (one caller-cleaned stack arg; the tracer entityNum)
@@ -46,11 +46,11 @@
 //   30049082 CALL 0x3002ca80          ; CG_PlaySoundAliasByName(channelObj, handle, 0x3fe)
 //   30049087 MOV EAX,[0x30085eec]     ; cg_muzzleTagNames[0] == "tag_flash"
 //   3004908c ADD ESP,4                ; balance the pushed 0x3fe
-//   3004908f PUSH EAX                 ; CG_SpawnTracer stack arg1 = tagName
-//   30049090 PUSH ESI                 ; CG_SpawnTracer stack arg0 = surfaceType (poseType)
+//   3004908f PUSH EAX                 ; CG_BulletTrajectoryEffects stack arg1 = tagName
+//   30049090 PUSH ESI                 ; CG_BulletTrajectoryEffects stack arg0 = surfaceType (poseType)
 //   30049091 MOV ESI,[ESP+0x14]       ; ESI = vehicleEntityNum (the caller stack arg)
 //   30049095 MOV EAX,EBX              ; impactOrigin = &cent->lerpOrigin
-//   30049097 CALL 0x30048d60          ; CG_SpawnTracer(impactOrigin, entityNum,
+//   30049097 CALL 0x30048d60          ; CG_BulletTrajectoryEffects(impactOrigin, entityNum,
 //                                      ;   weaponIndex(EDI), surfaceType, tagName)
 //   3004909c ADD ESP,8                ; balance the two tracer stack args
 //   3004909f POP ESI
@@ -122,6 +122,6 @@ void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIn
     /* 0x30049087..0x30049097: spawn the bullet tracer from the muzzle. The impact is
      * the same weapon-angles context; the surface index doubles as the tracer's
      * surfaceType; the muzzle bone tag is cg_muzzleTagNames[0] ("tag_flash"). */
-    CG_SpawnTracer(lerpOrigin, vehicleEntityNum, (int32_t)weaponIndex,
+    CG_BulletTrajectoryEffects(lerpOrigin, vehicleEntityNum, (int32_t)weaponIndex,
                    (int32_t)poseType, cg_muzzleTagNames[0]);
 }

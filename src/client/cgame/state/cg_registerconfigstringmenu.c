@@ -2,11 +2,11 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30038790_300387df.mcode
 // FUN_30038790_300387df  (0x30038790..0x300387df)  uo_cgame_mp_x86.dll
 //
-// CG_RegisterConfigStringMenu — resolve the config string at a gameState index
+// CG_PrecacheScriptMenu — resolve the config string at a gameState index
 // and, when it is non-empty, load/register it as a script-menu file with the
 // engine; report a failure to load.
 //
-// Adjacent sibling of CG_RegisterConfigStringShader (0x300387e0). Where that
+// Adjacent sibling of CG_RegisterServerShader (0x300387e0). Where that
 // registrar issues CG_R_REGISTERSHADER for the shader config-string range, this one
 // issues CG_R_REGISTERMENU (trap 0x7b) for the menu-file config-string range
 // [0x535, 0x555): the config-string-modified dispatcher, after clamping the changed
@@ -16,7 +16,7 @@
 //
 // Naming: the .mcode size-guess "Q_stricmp" (win size 0x4f == matched 0x50,
 // broad-corpus name) is REJECTED — the body compares nothing; it reads a config
-// string and issues a menu-load trap. Named CG_RegisterConfigStringMenu from that
+// string and issues a menu-load trap. Named CG_PrecacheScriptMenu from that
 // proven behavior (config-string lookup + CG_R_REGISTERMENU whose failure prints
 // "Could not load script menu file '%s'"); exact CoD symbol unproven.
 //
@@ -56,7 +56,7 @@
 #include "client/cgame/globals.h"
 #include "client/cgame/client_recovered.h"
 
-void CG_RegisterConfigStringMenu(int index)
+void CG_PrecacheScriptMenu(int index)
 {
     const char *name;
 

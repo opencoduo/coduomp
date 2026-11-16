@@ -299,7 +299,7 @@ void CG_Player(centity_t *cent)
     flameViewAngles[2] = animState->viewRoll;   /* +0x3f0 */
     flameViewAngles[1] = animState->viewYaw;    /* +0x3ec */
 
-    CG_EmitPlayerFlameChunks(flameViewAngles, cent, tagFlashMatrix.origin, 1.8f, 1, 0);
+    CG_FireFlameChunks(flameViewAngles, cent, tagFlashMatrix.origin, 1.8f, 1, 0);
 
     /* 0x300346a8 exit: __security_check_cookie(canary) (i386 /GS detail; not modeled). */
 }

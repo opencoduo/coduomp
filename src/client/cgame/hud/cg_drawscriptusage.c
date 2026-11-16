@@ -24,7 +24,7 @@
  * live variable count, active thread count, and string-table byte usage.
  *
  * The draw for each line is the CG_R_TEXT_PAINT fixed-arity 2D-text emitter (the same
- * 10-argument frame documented on CG_EmitTrap54DrawScaled / CG_R_TEXT_PAINT). All
+ * 10-argument frame documented on CG_DrawStringExt / CG_R_TEXT_PAINT). All
  * three draws share the same frame except the vertical position (arg2 = Z), which
  * steps 92.8 -> 108.8 -> 124.8 (a 16.0-unit line pitch), and the string handle
  * (arg6 = the va() result). Proven by simulating the interleaved PUSH/MOV stack

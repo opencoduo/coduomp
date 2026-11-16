@@ -1,14 +1,14 @@
 // Source: uo_cgame_mp_x86.dll 0x30045230..0x3004547e
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30045230_3004547e.mcode
 //
-// CG_CalcViewLeanKickOffset(vec3_t out) — build the per-frame first-person
+// CG_CalculateWeaponPosition(vec3_t out) — build the per-frame first-person
 // view/weapon positional offset into the caller's scratch vec3 `out` (passed in
 // EAX -> EDI). The offset is the sum of three contributions, all evaluated in the
 // view-effect spin frame, then the aim-down-sight (ADS) view offset is derived
 // from the finished point:
 //   1. a procedural lean sway (envelope of the interpolated player lean fraction,
 //      faded out as ADS zoom increases),
-//   2. the current weapon-movement view angles (via CG_ApplyWeaponMovementAngles), plus a fixed
+//   2. the current weapon-movement view angles (via CG_CalculateWeaponPosition_BasePosition), plus a fixed
 //      per-frame Y/Z view-kick nudge, and
 //   3. a time-based recoil bump on Z (rise over the first 150 ms after the last
 //      impact event, then decay over the following 300 ms).
@@ -66,9 +66,9 @@
 //   300453a8 out[0] += push * dirx                    ; FADD [EDI]  / FSTP [EDI]
 //   300453b4 out[1] += push * diry                    ; FADD [EDI+4]/ FSTP [EDI+4]
 //   300453c2 out[2] += push * dirz                    ; FADD [EDI+8]/ FSTP [EDI+8]
-//   300453d0 CALL 0x30045070  CG_ApplyWeaponMovementAngles(out)      ; out += weapon-movement angles
+//   300453d0 CALL 0x30045070  CG_CalculateWeaponPosition_BasePosition(out)      ; out += weapon-movement angles
 //   300453d5 out[1] -= af0 ; out[2] += af4            ; fixed per-frame view-kick nudge
-//   300453de PUSH EDI ; CALL 0x300450e0               ; CG_SpinEffectPointToWorld(out)
+//   300453de PUSH EDI ; CALL 0x300450e0               ; CG_CalculateWeaponPosition_ToWorldPosition(out)
 //   300453f3 EAX = cg.time - kickTime                 ; ms since last impact event
 //   30045401 CMP EAX,0x96 ; JGE                        ; 150 ms rise window
 //   3004540c out[2] += (float)elapsed * kick * 0.25 / 150.0 ; then CG_CalcAdsViewOffset(out); RET
@@ -93,7 +93,7 @@
 /* PI/180 — the DEG2RAD constant at 0x3007bd70 (0x3c8efa35). */
 #define CG_DEG2RAD 0.017453292f
 
-void CG_CalcViewLeanKickOffset(vec3_t out /* EAX -> EDI: in/out view offset vec3 */)
+void CG_CalculateWeaponPosition(vec3_t out /* EAX -> EDI: in/out view offset vec3 */)
 {
     /* 0x3004523e: zero the output vector. */
     out[0] = 0.0f;
@@ -152,7 +152,7 @@ void CG_CalcViewLeanKickOffset(vec3_t out /* EAX -> EDI: in/out view offset vec3
     }
 
     /* 0x300453d0: add this frame's weapon-movement view angles into the offset. */
-    CG_ApplyWeaponMovementAngles(out);
+    CG_CalculateWeaponPosition_BasePosition(out);
 
     /* 0x300453d5..0x300453eb: fixed per-frame view-kick nudge (Y down, Z up). The
      * two globals hold float bits and are reset to 0 each frame by 0x30034d40. */
@@ -161,7 +161,7 @@ void CG_CalcViewLeanKickOffset(vec3_t out /* EAX -> EDI: in/out view offset vec3
 
     /* 0x300453ee: rotate the accumulated point through the view-effect spin frame
      * into world space, anchored at the current view origin. */
-    CG_SpinEffectPointToWorld(out);
+    CG_CalculateWeaponPosition_ToWorldPosition(out);
 
     /* 0x300453f3: elapsed ms since the last impact-event kick was recorded. */
     const int32_t elapsed = coduo_int32_from_bits(

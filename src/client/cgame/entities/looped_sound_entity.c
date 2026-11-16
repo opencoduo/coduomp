@@ -7,7 +7,7 @@
 #include <math.h>
 
 /*
- * CG_AddLoopedEntitySound (0x30021860)
+ * CG_SoundBlend (0x30021860)
  *
  * Registers and (re)starts a client entity's pair of looping sounds for the current
  * frame, using a snapshot-interpolated "phase" value.
@@ -76,7 +76,7 @@
  *  - Out-of-range cfgIndex still proceeds to the array read after the diagnostic — this
  *    mirrors CG_ConfigString's own inlined behaviour and is preserved as-is.
  */
-void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
+void CG_SoundBlend(centity_t *self /* EBX */)
 {
     int soundIndex1;
     int soundIndex2;

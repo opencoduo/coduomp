@@ -2,7 +2,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30034d40_30034eb2.mcode
 //
 // CG_SnapshotTransitionStage2 (0x30034d40) — the second stage of the client's
-// snapshot-transition, tail-JMP'd into from CG_InstallSnapshotResetEffects
+// snapshot-transition, tail-JMP'd into from CG_SetInitialSnapshot
 // (0x3003c9d0) and also called directly from the initial-snapshot install path in
 // CG_ProcessSnapshots (0x3003d0cd, guarded by the "not yet initialized" test on
 // cg.mapRestart). It resets the locally-predicted player state to
@@ -32,7 +32,7 @@
 // only on byte size 0x172~0x174, zero behavioral basis) — REJECTED; this function
 // scales/fades nothing. The address already has an established caller-observed name,
 // CG_SnapshotTransitionStage2 (client_recovered.h, referenced by CG_ProcessSnapshots
-// / CG_InstallSnapshotResetEffects reconstructions), which is retained. Many of the
+// / CG_SetInitialSnapshot reconstructions), which is retained. Many of the
 // zeroed globals list this function as owner= only because it is their first toucher
 // (it merely resets them here); their identities live at their own addresses.
 //

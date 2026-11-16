@@ -20,7 +20,7 @@
 //
 // Before every single registration it pumps the loading HUD with
 // CG_DrawInformation(0) — the same loading-pump idiom used by the sibling
-// precachers CG_RegisterMenuAssets (0x3002dcf0) and CG_RegisterConfigStringShader
+// precachers CG_RegisterMenuAssets (0x3002dcf0) and CG_RegisterServerShader
 // (0x300387e0). Each cgame_syscall(CG_R_REGISTERSHADER, name, 5) returns a
 // qhandle_t that is discarded here: this function only forces the assets to load
 // (precache side effect), it stores nothing.
@@ -36,7 +36,7 @@
 //   0x3002a530  = CG_DrawInformation(qboolean force) — loading-HUD pump, called
 //                 with 0 (client_recovered.h decl).
 //   trap 0x59   = CG_R_REGISTERSHADER  — cgame_syscall(0x59, name, sort=5); same
-//                 shape and sort=5 as CG_RegisterConfigStringShader (0x300387e0).
+//                 shape and sort=5 as CG_RegisterServerShader (0x300387e0).
 //   trap 0xb    = CG_CVAR_VARIABLE_STRING_BUFFER — trap_Cvar_VariableStringBuffer
 //                 (name, buffer, 0x400).
 //   [0x30081650]/0x30061639 = /GS stack cookie + __security_check_cookie (frame

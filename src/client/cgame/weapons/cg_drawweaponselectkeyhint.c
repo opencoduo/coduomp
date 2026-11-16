@@ -5,7 +5,7 @@
 #include "client/cgame/globals.h"
 
 /*
- * CG_DrawWeaponSelectKeyHint (0x30046a40)
+ * CG_DrawWeapSlotBinding (0x30046a40)
  *
  * Draws the "which key selects this weapon slot" hint for one entry of the
  * weapon-select HUD: it looks up the key currently bound to the slot's
@@ -75,7 +75,7 @@ enum { CG_WSHINT_STYLE = 5 };          /* PUSH 5 (int)                       */
 
 /* Draw-params struct pointed to by EDI. Only +0x0c is read by this function
  * (forwarded into both draw blocks); the surrounding fields are opaque here. */
-void CG_DrawWeaponSelectKeyHint(const vec4_t params,
+void CG_DrawWeapSlotBinding(const vec4_t params,
                                 int32_t slot,
                                 float x,
                                 float y)

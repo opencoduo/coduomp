@@ -12,7 +12,7 @@
 // no-size-matching rule. PM_AddTouchEnt is pmove touch-list bookkeeping (void,
 // no x87); this reads cg.time (0x304831b0), does elapsed-time fade math, and
 // returns a color pointer, matching the PPC CG_FadeColor and its many HUD/overlay
-// callers. Corroborated by CG_LatchOverlaySource (0x3001a5b0), which latches
+// callers. Corroborated by CG_CheckForCursorHints (0x3001a5b0), which latches
 // (cg.time, duration) as this function's (startMsec, totalMsec).
 //
 // Register-argument ABI (custom regparm): EDX = startMsec, ECX = totalMsec

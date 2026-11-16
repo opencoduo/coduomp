@@ -29,7 +29,7 @@
  * cleans one dword. This wrapper forwards that float (as its raw bit pattern) as the
  * trap's first payload dword. The trap's real 2-argument shape is
  * (float targetVolume, int durationMsec) — the
- * siblings CG_InstallSnapshotResetEffects (0x3003c9d0), FUN_3003d2d0, and
+ * siblings CG_SetInitialSnapshot (0x3003c9d0), FUN_3003d2d0, and
  * CG_ShutdownEffectsAndHud (0x3002e390) all issue the same fade-all command
  * with (1.0f_bits, 0). This thin wrapper receives the duration in ECX: the
  * sole caller at 0x3003b039 explicitly does

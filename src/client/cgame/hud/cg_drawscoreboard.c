@@ -67,7 +67,7 @@ qboolean CG_DrawScoreboard(void)
     /* 0x30037e01: draw the scoreboard, header first then body, both scaled by the
      * fade-alpha computed above. The dword local is forwarded to each drawer as a
      * float by value. */
-    CG_DrawScoreboard_ListBanner(fadeAlpha);      /* 0x30037e07 CALL 0x300361d0 */
+    CG_DrawScoreboard_Backdrop(fadeAlpha);      /* 0x30037e07 CALL 0x300361d0 */
     CG_DrawScoreboardBody(fadeAlpha);        /* 0x30037e0d CALL 0x30037b50 */
 
     return qtrue;                            /* 0x30037e15 MOV EAX,1; RET */

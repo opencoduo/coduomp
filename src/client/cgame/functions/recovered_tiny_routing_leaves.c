@@ -8,7 +8,7 @@
 
 void CG_SelectWeapon(int32_t weapon) /* 0x300474b0 */
 {
-    CG_SelectWeaponIndex(weapon, cg_weaponSelect_vmCvar.integer);
+    CG_FinishWeaponChange(weapon, cg_weaponSelect_vmCvar.integer);
 }
 
 void *CG_RegisterDObjModel(const char *name) /* 0x30004d60 */

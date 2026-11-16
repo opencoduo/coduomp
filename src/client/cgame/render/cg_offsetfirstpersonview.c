@@ -195,7 +195,7 @@ void CG_OffsetFirstPersonView(void)
         }
     }
 
-    CG_SettleViewOriginZ();
+    CG_StepOffset();
 
     AddLeanToPosition(cg.refdef.vieworg,
                           cg.refdefViewAngles[1],

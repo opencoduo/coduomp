@@ -47,7 +47,7 @@ void TransformPoint(const float matrix[16], const vec3_t point,
 }
 
 // Source RVA: 0x30044cc0
-void ApplyViewKickNudge(vec3_t angles)
+void CG_CalculateWeaponPosition_SwayMovement(vec3_t angles)
 {
     angles[1] -= cg.weaponSwayOffset[1];
     angles[2] += cg.weaponSwayOffset[2];

@@ -13,7 +13,7 @@
 // Nothing here ejects a 3D shell or spawns a local entity: it reads cg.snap only as a
 // present-frame gate, builds a 2D icon quad in virtual 640x480 space, rotates it by a
 // view-relative yaw, and submits it through the 2D-draw traps CG_R_SETCOLOR (72) and
-// CG_DrawTurretTagQuad (trap 76). The 320.0/240.0 anchor constants are the 640x480
+// CG_DrawRotatedQuadPic (trap 76). The 320.0/240.0 anchor constants are the 640x480
 // screen center; the per-slot {serverTime, duration, yaw} records and the
 // vectoyaw(viewForward)-yaw rotation identify it as the damage-direction HUD drawer.
 // It also supersedes the provisional caller-observed name CG_DrawScreenBlend
@@ -51,7 +51,7 @@
 //                   (FCOMP 1.0; the arrow holds full alpha for the first half of its
 //                    lifetime, then fades to 0 over the second half);
 //       color     = (1,1,1,alpha);  cgame_syscall(CG_R_SETCOLOR, color);
-//       CG_DrawTurretTagQuad(cornerOffsets, sx, sy, cg_damageDirShaderParams,
+//       CG_DrawRotatedQuadPic(cornerOffsets, sx, sy, cg_damageDirShaderParams,
 //                            yaw, cgs.media.hitDirectionShader);   // rotated icon at the anchor
 //
 // .rdata / .data constants recovered exactly via objdump -s -j:
@@ -176,7 +176,7 @@ void CG_DrawDamageDirectionIndicators(void)
 
         cgame_syscall(CG_R_SETCOLOR, (intptr_t)color);
         qhandle_t shader = cgs.media.hitDirectionShader;
-        CG_DrawTurretTagQuad(cornerOffsets, sx, sy, cg_damageDirShaderParams,
+        CG_DrawRotatedQuadPic(cornerOffsets, sx, sy, cg_damageDirShaderParams,
                              yaw, shader);
     }
 }

@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 /*
- * CG_EmitTrap54DrawScaled (0x3001ce40) — a fixed-arity cgame 2D-draw emitter that
+ * CG_DrawStringExt (0x3001ce40) — a fixed-arity cgame 2D-draw emitter that
  * issues the unresolved-service cgame trap 54 (CG_R_TEXT_PAINT) with the same 10-arg
  * draw frame as the sibling emitters CG_EmitTrap54Draw (0x3001cf10) and
  * CG_Trap54DrawElement (0x3001cff0). Compared with those, this variant adds two
@@ -79,7 +79,7 @@ enum {
 #define CG_DRAW54_SUM_SCALE   0.8f          /* 0x3007bdf0 (0x3f4ccccd)          */
 #define CG_DRAW54_HEIGHT_SCALE (1.0f/48.0f) /* 0x3007bf04 (0x3caaaaab)          */
 
-void CG_EmitTrap54DrawScaled(int modeFlag, int adjustFlag, const vec_t *color,
+void CG_DrawStringExt(int modeFlag, int adjustFlag, const vec_t *color,
                              float x, float y, void *handle,
                              float width, float height, int32_t extra)
 {

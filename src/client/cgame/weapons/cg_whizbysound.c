@@ -16,7 +16,7 @@ enum { CG_WHIZBY_ENTITYNUM_WORLD = 1022 };
 // decl name "CG_TracerMuzzleFlashDist" is also superseded — the bytes prove no
 // "distance" is returned (the function is void) and the emitted effect is a sound,
 // not a muzzle flash. The name is derived from behavior + the emitted sound handle:
-//   * the sole caller CG_SpawnTracer (0x30048d60) passes impactOrigin (EAX) and the
+//   * the sole caller CG_BulletTrajectoryEffects (0x30048d60) passes impactOrigin (EAX) and the
 //     shot muzzle point (EBX);
 //   * the geometry projects the view origin onto the shot ray and gates on close
 //     approach to the listener;

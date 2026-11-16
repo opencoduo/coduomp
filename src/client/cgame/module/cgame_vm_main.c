@@ -146,7 +146,7 @@ CGAME_EXPORT intptr_t CGAME_ABI_CDECL vmMain(
     case CGVM_DRAW_SCALED:
         /* The four coordinates are also FILD conversions in the dispatcher.
          * Register args are mode=arg3, adjust=1, color=NULL. */
-        CG_EmitTrap54DrawScaled(
+        CG_DrawStringExt(
             coduo_int32_from_bits((uint32_t)arg3), 1, NULL,
             (float)coduo_int32_from_bits((uint32_t)arg0),
             (float)coduo_int32_from_bits((uint32_t)arg1),

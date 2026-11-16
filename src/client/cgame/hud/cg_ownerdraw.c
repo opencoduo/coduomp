@@ -184,7 +184,7 @@ void CG_OwnerDraw(float x, float y, float w, float h,
         CG_DrawHudSlidePicColor(&rect, background, color);
         return;
     case CG_OD_OBJECTIVE_POINTERS:
-        CG_DrawObjectivePointers(&rect, color);
+        CG_DrawPlayerCompassPointers(&rect, color);
         return;
     case CG_OD_STAT_BAR:
         CG_DrawStatBarWithDecay(color, &rect, background);

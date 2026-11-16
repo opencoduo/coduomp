@@ -6,7 +6,7 @@
 //
 // Role: scan the local player's weapon inventory slots in one direction and
 // select the first slot that holds a usable weapon, committing the choice via
-// CG_SelectWeaponIndex. Part of the weapon-selection command cluster
+// CG_FinishWeaponChange. Part of the weapon-selection command cluster
 // (0x300475f0 / 0x300478a0 / 0x30047960 all share the same slot/ammo idioms and
 // the same globals). This helper is the plain linear slot sweep: forward selects
 // slots 1..7 in order, backward selects slots 7..1.
@@ -14,7 +14,7 @@
 // Name adjudication: the .mcode header's assigned MenuParse_execKey is a
 // size-only match (win size 0x78) and is REJECTED — this function does no menu
 // parsing; it reads the weapon-slot table, tests ammo, and calls
-// CG_SelectWeaponIndex. The Mac CG_SelectFirstWeaponInSlot is called by
+// CG_FinishWeaponChange. The Mac CG_SelectFirstWeaponInSlot is called by
 // CG_CycleWeap in the same position where Windows CG_CycleWeap calls this
 // directional slot sweep, resolving the source name despite the inlined Mac
 // weapon-selection tail.
@@ -77,9 +77,9 @@ qboolean CG_SelectFirstWeaponInSlot(int32_t forward, int32_t requireAmmo)
                 /* 0x3004787e MOVSX EAX,byte[ECX + cg.predictedPlayerState.weaponSlots]:
                  * re-read the slot's weapon index (sign-extended).
                  * 0x30047885 MOV ECX,cg_weaponSelect_vmCvar.integer.
-                 * 0x3004788b CALL CG_SelectWeaponIndex(weapon, currentWeapon).
+                 * 0x3004788b CALL CG_FinishWeaponChange(weapon, currentWeapon).
                  * 0x30047891 MOV EAX,1: return qtrue. */
-                CG_SelectWeaponIndex((int32_t)(int8_t)cg.predictedPlayerState.weaponSlots[slot],
+                CG_FinishWeaponChange((int32_t)(int8_t)cg.predictedPlayerState.weaponSlots[slot],
                                      cg_weaponSelect_vmCvar.integer);
                 return qtrue;
             }

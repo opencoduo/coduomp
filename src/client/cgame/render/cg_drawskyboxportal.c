@@ -112,7 +112,7 @@ void CG_DrawSkyBoxPortal(void)
             cg_skyboxFogConfigured = qtrue;
         }
 
-        cg.refdef.fov_x = CG_CalcFov();
+        cg.refdef.fov_x = CG_GetViewFov();
         long double tangent = coduo_x87_tanl(
             (long double)cg.refdef.fov_x *
             (long double)DEG_TO_HALF_RAD);

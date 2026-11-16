@@ -17,7 +17,7 @@
  * script keyword and touches no itemDef_t/windowDef_t: it looks up a shader config
  * string by elem->materialIndex, registers it, interpolates the element's animated
  * size, brackets a shader draw with trap_R_SetColor, and issues CG_DrawPic /
- * CG_DrawStretchPic. The name is anchored by the same-module PPC cgame_mp.dll bank
+ * CG_DrawCroppedPic. The name is anchored by the same-module PPC cgame_mp.dll bank
  * (CG_DrawHudElemShader) and by CG_DrawSingleHudElem's shader-branch call site, which
  * hands it the draw item (ECX) and the hud element (EDI/this).
  *
@@ -44,7 +44,7 @@
 
 /* trap_R_SetColor (cgame trap CG_R_SETCOLOR = 72 = 0x48) is declared in
  * client_recovered.h and consumed via the cgame_syscall pointer (0x30085e9c);
- * CG_DrawPic (0x3001caa0) and CG_DrawStretchPic (0x3001cb00) likewise. */
+ * CG_DrawPic (0x3001caa0) and CG_DrawCroppedPic (0x3001cb00) likewise. */
 
 /* Provenance for the fields this function reads. item carries char* members past
  * +0x10, so guard those offset asserts to the 32-bit target ABI. */
@@ -120,7 +120,7 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
      * 3002a272..a284: pick the draw path from the element's shader texcoords.
      * If both shaderRightTexcoord and shaderBottomTexcoord are exactly 1.0f
      * (compared as raw dword bits against 0x3f800000), draw the full image via
-     * CG_DrawPic; otherwise draw a sub-rectangle via CG_DrawStretchPic.
+     * CG_DrawPic; otherwise draw a sub-rectangle via CG_DrawCroppedPic.
      */
     if (elem->shaderRightTexcoord == 1.0f && elem->shaderBottomTexcoord == 1.0f) {
         /*
@@ -130,7 +130,7 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
         CG_DrawPic(item->x, yTop, sizeW, sizeH, hShader);
     } else {
         /*
-         * 3002a2a3..a2ea: CG_DrawStretchPic with explicit texcoords.
+         * 3002a2a3..a2ea: CG_DrawCroppedPic with explicit texcoords.
          *   x = item->x, y = item->y, w = sizeW, h = sizeH.
          * Texcoords depend on the sign of shaderRightTexcoord (FCOMP vs 0.0f at
          * 0x3007bcec, then TEST AH,0x5 / JP):
@@ -146,7 +146,7 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
         } else {
             s1 = 0.0f;   t1 = 0.0f; s2 = right; t2 = bottom;
         }
-        CG_DrawStretchPic(item->x, item->y, sizeW, sizeH,
+        CG_DrawCroppedPic(item->x, item->y, sizeW, sizeH,
                           s1, t1, s2, t2, hShader);
     }
 

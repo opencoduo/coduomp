@@ -9,10 +9,10 @@
 // bg_weaponInfos[1..bg_numWeapons], gated by the cg.predictedPlayerState.weaponBits ownership
 // bitset) in one direction and select the first held weapon that is NOT already
 // assigned to a numbered inventory slot, committing the choice via
-// CG_SelectWeaponIndex. This is the by-index sibling of the by-slot sweep
+// CG_FinishWeaponChange. This is the by-index sibling of the by-slot sweep
 // CG_SelectFirstWeaponInSlot (0x30047820); both live in the
 // weapon-selection command cluster (0x300475f0 / 0x30047820 / 0x300478a0 /
-// 0x30047960) and share the same held-bit / ammo / CG_SelectWeaponIndex idioms
+// 0x30047960) and share the same held-bit / ammo / CG_FinishWeaponChange idioms
 // and the same cg predicted-playerState globals.
 //
 // Name adjudication: CG_SelectFirstWeaponNotInSlot is recovered from the Mac
@@ -24,7 +24,7 @@
 // win-size match (0xb6 == 0xb6) and is REJECTED — this function contains no
 // floating point, no distance compare, and no damage attenuation. It is integer
 // weapon-inventory logic: it iterates a weapon-ownership bitset, calls the two
-// BG inventory-slot helpers, tests ammo, and calls CG_SelectWeaponIndex. No exact
+// BG inventory-slot helpers, tests ammo, and calls CG_FinishWeaponChange. No exact
 // same-module Windows symbol is present; the independent PPC body proves the
 // exact shared-source name.
 //
@@ -108,7 +108,7 @@ qboolean CG_SelectFirstWeaponNotInSlot(int32_t forward, int32_t requireAmmo)
                     if (qualifies) {
                         // 0x30047928..0x3004793e: commit the selection and return
                         // qtrue. ECX=cg_weaponSelect_vmCvar.integer, EAX=weapon before the CALL.
-                        CG_SelectWeaponIndex(weapon, cg_weaponSelect_vmCvar.integer);
+                        CG_FinishWeaponChange(weapon, cg_weaponSelect_vmCvar.integer);
                         return qtrue;
                     }
                     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */

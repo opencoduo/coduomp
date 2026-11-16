@@ -1,8 +1,8 @@
 // Source: uo_cgame_mp_x86.dll 0x30027d10..0x300291b4
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30027d10_300291b4.mcode
 //
-// CG_FireFlameChunks — the per-frame flame-chunk simulation tick (the SECOND
-// flame giant, sibling of CG_EmitPlayerFlameChunks). Reconstructed via the proven
+// CG_AddFlameChunks — the per-frame flame-chunk simulation tick (the SECOND
+// flame giant, sibling of CG_FireFlameChunks). Reconstructed via the proven
 // REGION-SPLIT strategy. Phase 1 established the shared stack frame + entry ABI and
 // fully reconstructed REGION A (setup) and REGION C (teardown). Phase 2 filled the
 // three loop bodies (OUTER, INNER, INNERMOST) and their induction. PHASE 3 (this
@@ -93,7 +93,7 @@ enum {
 /* rand()/32768.0f -> uniform [0,1). rand (0x3005b879) is the MSVC CRT PRNG. */
 #define FLAME_RAND_DIVISOR 32768.0f
 
-void CG_FireFlameChunks(void)
+void CG_AddFlameChunks(void)
 {
     flameChunk_t *cur;   /* [ESP+0x24] / EBX — OUTER loop iterator */
     flameChunk_t *next;  /* [ESP+0x50] / ESI — cur->next latched at loop top */
@@ -1079,11 +1079,11 @@ finalize_child:
             } else {
                 /* live node: render it unless it is a dead-but-not-owner remnant.
                  * if (field_a0 == 0 OR cgFlameInfo[field_34].field_40 == node)
-                 *    CG_AddFlameChunks(node). */
+                 *    CG_AddFlameToScene(node). */
                 cgFlameInfo_t *info = &cg_flameInfo[node->ownerInfoIndex];
                 if (node->deadFlag == 0                              /* 0x30029142 */
                     || info->ownerChunk == node) { /* 0x30029153 */
-                    CG_AddFlameChunks(node);        /* 0x3002915b */
+                    CG_AddFlameToScene(node);        /* 0x3002915b */
                 }
             }
 

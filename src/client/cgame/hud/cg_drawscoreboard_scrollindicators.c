@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x300378b0..0x30037b45
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_300378b0_30037b45.mcode
 //
-// CG_DrawScoreboard_ScrollIndicators — draw the multiplayer scoreboard's vertical
+// CG_DrawScrollbar — draw the multiplayer scoreboard's vertical
 // scrollbar down the right edge when the collected row list overflows the visible
 // window. Drawn by CG_DrawScoreboardBody (0x30037b50) only when it decided a
 // scrollbar column is needed. Four elements:
@@ -18,7 +18,7 @@
 // size-match-name-is-noise). This draws the scoreboard scroll indicators — it
 // registers "black"/"white" and the hudScoreboardScroll_* arrow/key shaders and
 // stretch-draws them; it is not a UI text-field widget. The behavioral name
-// CG_DrawScoreboard_ScrollIndicators is the role already used by the caller's
+// CG_DrawScrollbar is the role already used by the caller's
 // reconstruction and the client_recovered.h forward decl; exact CoD symbol unproven.
 //
 // ABI (proven from this function's own bytes and the sole caller at 0x30037d62):
@@ -87,7 +87,7 @@
 /* sort/precache class passed to the register-shader trap for every element. */
 enum { CG_SB_SCROLL_SHADER_SORT = 5 };
 
-void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY,
+void CG_DrawScrollbar(const vec_t *color, float topY,
                                         int lineCount, int visibleLineCount)
 {
     /* 0x300378b3..0x300378cb: copy r/g/b out of the incoming color; the alpha slot

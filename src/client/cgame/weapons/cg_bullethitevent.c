@@ -18,7 +18,7 @@
 //   [0x30085eec] = 0x300772c0 -> "tag_flash"            (plain-weapon muzzle tag)
 //   [0x30085efc] = 0x3007ac10 -> "tag_altfire"          (vehicle mount position 1)
 //   [0x30085f00] = 0x3007abfc -> "tag_secondary_flash"  (vehicle mount position 2)
-// Each is forwarded verbatim as the tagName argument to CG_SpawnTracer. (The single
+// Each is forwarded verbatim as the tagName argument to CG_BulletTrajectoryEffects. (The single
 // runtime trap dispatcher used by this function is [0x30085e9c] = cgame_syscall.)
 //
 // Callees (identities reused per provisional-decl policy; call shapes re-derived from
@@ -29,7 +29,7 @@
 //   [0x30085e9c] cgame_syscall(CG_PLAY_EFFECT_ORIENTED=0xe8, qhandle_t effectHandle,
 //     const vec3_t origin, const vec3_t dir): plays an oriented impact effect. Called
 //     up to twice — the primary impact effect and the secondary (blood/debris) effect.
-//   0x30048d60 CG_SpawnTracer(vec3_t impactOrigin, int entityNum, int weaponIndex,
+//   0x30048d60 CG_BulletTrajectoryEffects(vec3_t impactOrigin, int entityNum, int weaponIndex,
 //     int surfaceType, const char *tagName): EAX=impactOrigin=origin, ESI=entityNum,
 //     EDI=weaponIndex, stack=[surfaceType, tagName]; ADD ESP,8 (caller-cleaned).
 //   0x3002b2b0 Com_PrintMessage(const char *fmt, ...): the "unknown vehicle position"
@@ -60,7 +60,7 @@
 //   arg3 effectDir2            [callee ESP+0x24] : direction for the secondary impact effect
 //   arg4 weaponIndex           [callee ESP+0x28] : index into bg_weaponInfos[]
 //   arg5 surfaceType           [callee ESP+0x2c] : impacted surface type (0..22);
-//                                                  forwarded to CG_SpawnTracer
+//                                                  forwarded to CG_BulletTrajectoryEffects
 //   arg6 linkedEntitySlotPlus1 [callee ESP+0x30] : (linked-vehicle slot + 1), or 0; in/out
 //                                                  scratch, also recomputed by the head
 //   arg7 vehicleMountPos       [callee ESP+0x34] : vehicle weapon mount position (1/2), or 0
@@ -73,7 +73,7 @@
 #include <string.h>
 
 /* cg_entities[] base (centity_t, stride 0x288) at 0x3048c6e0 — the same typed
- * view CG_SpawnTracer/CG_CalcMuzzlePoint use. */
+ * view CG_BulletTrajectoryEffects/CG_CalcMuzzlePoint use. */
 
 /* cg_tagFlashName / cg_tagAltfireName / cg_tagSecondaryFlashName (the .data pointer
  * slots at 0x30085eec/0x30085efc/0x30085f00) are declared in client_recovered.h. */
@@ -234,14 +234,14 @@ void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
 
         if (mountPos == 2) {
             /* 30048fc9..30048ff7: secondary mount — "tag_secondary_flash". */
-            CG_SpawnTracer(origin, tracerEntityNum, weaponIndex, surfaceType,
+            CG_BulletTrajectoryEffects(origin, tracerEntityNum, weaponIndex, surfaceType,
                            cg_muzzleTagNames[5]);
             return;
         }
         if (mountPos == 1) {
             /* 30048ffd..30049011: primary/alt mount — "tag_altfire". Falls through to the
-             * shared CG_SpawnTracer call below with tracerEntityNum as the entity. */
-            CG_SpawnTracer(origin, tracerEntityNum, weaponIndex, surfaceType,
+             * shared CG_BulletTrajectoryEffects call below with tracerEntityNum as the entity. */
+            CG_BulletTrajectoryEffects(origin, tracerEntityNum, weaponIndex, surfaceType,
                            cg_muzzleTagNames[4]);
             return;
         }
@@ -259,6 +259,6 @@ void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
 
     /* 30049037..30049054: spawn the ordinary "tag_flash" tracer for this shot, keyed on
      * the firing entity number. */
-    CG_SpawnTracer(origin, fireEntityNum, weaponIndex, surfaceType,
+    CG_BulletTrajectoryEffects(origin, fireEntityNum, weaponIndex, surfaceType,
                    cg_muzzleTagNames[0]);
 }

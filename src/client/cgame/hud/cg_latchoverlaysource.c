@@ -30,7 +30,7 @@
 //   0x3048ae18 <- cg.state+0x5d8 (consumer reads it as a pointer/handle)
 //
 // The pointer at 0x30459160 is cg.snap (snapshot_t*), proven by
-// CG_InstallSnapshotResetEffects (0x3003c9d0). Snapshot +0x5d0..+0x5d8 are
+// CG_SetInitialSnapshot (0x3003c9d0). Snapshot +0x5d0..+0x5d8 are
 // playerState +0x5c4..+0x5cc: serverCursorHint, serverCursorHintVal,
 // serverCursorHintString.
 
@@ -43,7 +43,7 @@
 // (proven); the other three keep their mechanical names until the drawer's
 // subsystem is fully reconstructed.
 
-void CG_LatchOverlaySource(void)
+void CG_CheckForCursorHints(void)
 {
     snapshot_t *snap;
     uint32_t startTime;

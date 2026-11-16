@@ -1,6 +1,6 @@
 // FUN_300387e0_30038826  (0x300387e0..0x30038826)  uo_cgame_mp_x86.dll
 //
-// CG_RegisterConfigStringShader — resolve the config string at a gameState index
+// CG_RegisterServerShader — resolve the config string at a gameState index
 // and, when it is non-empty, register it as a 2D/HUD shader with the engine.
 //
 // Called from the config-string-modified dispatcher (0x300392dc) whenever a
@@ -13,7 +13,7 @@
 // config string and issues a shader-register trap. Nor is this CG_ConfigString
 // itself (that is 0x3002c990, which merely returns the string pointer): this one
 // shares CG_ConfigString's inlined bounds check + "bad index" error but then goes
-// on to register the string as a shader. Named CG_RegisterConfigStringShader from
+// on to register the string as a shader. Named CG_RegisterServerShader from
 // that proven behavior (config-string lookup + CG_R_REGISTERSHADER); exact CoD
 // symbol unproven.
 //
@@ -54,7 +54,7 @@
 #include "client/cgame/globals.h"
 #include "client/cgame/client_recovered.h"
 
-void CG_RegisterConfigStringShader(int index)
+void CG_RegisterServerShader(int index)
 {
     const char *name;
 

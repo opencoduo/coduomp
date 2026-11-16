@@ -5,7 +5,7 @@
 #include "client/cgame/globals.h"
 
 /*
- * CG_SpinEffectPointToWorld — transform one point from the spinning view-effect's
+ * CG_CalculateWeaponPosition_ToWorldPosition — transform one point from the spinning view-effect's
  * local axis frame into world space, anchored at the current view origin.
  *
  * NAME NOTE: the .mcode pre-hint "Item_ListBox_MaxScroll" is a pure size-match
@@ -62,7 +62,7 @@
  * local-frame-to-world placement (right is subtracted, matching the negate-right
  * AnglesToAxis convention used elsewhere in this binary).
  */
-void CG_SpinEffectPointToWorld(vec3_t point /* one 32-bit stack arg: vec3_t * */)
+void CG_CalculateWeaponPosition_ToWorldPosition(vec3_t point /* one 32-bit stack arg: vec3_t * */)
 {
     vec3_t forward, right, up;
 

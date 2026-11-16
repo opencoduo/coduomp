@@ -61,7 +61,7 @@ const char *CG_TranslateMessage(const char *src, const char *keyOrFormat)
         command[commandLength] = '\0';
 
         Controls_GetConfig();
-        if (UI_KeysStringForBinding(command, &keys) == 0) {
+        if (GetKeyBindingLocalizedString(command, &keys) == 0) {
             return text;
         }
 

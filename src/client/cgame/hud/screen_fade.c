@@ -22,7 +22,7 @@
 // The animator storage is cgs.scrFade (cgFovFade_t at 0x3044b69c, defined in
 // globals.h): startValue (+0x00) is the fade target, currentValue (+0x04) is the
 // live alpha, startTime (+0x08) and durationMs (+0x0c) are the schedule. It is
-// seeded by CG_StartFovFade (startValue = numerator/255.0) and by CG_CalcFov,
+// seeded by CG_Fade (startValue = numerator/255.0) and by CG_GetViewFov,
 // which fixes currentValue as a 0..1 alpha. cg_screenFadeLastMs (0x300a84b8) holds
 // the trap_Milliseconds() tick from the previous advance.
 //
