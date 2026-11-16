@@ -404,7 +404,7 @@ void CG_DrawWeaponSelect(void)
         /* 0x30047310..0x30047325: slot key hint at the slot's left edge
          * (ECX=slot, EDI=color, stack x, 8.0f); reached by every path that
          * drew a real icon (the empty and no-icon paths skip it). */
-        CG_DrawWeaponSelectKeyHint(color, slot, x, 8.0f);
+        CG_DrawWeapSlotBinding(color, slot, x, 8.0f);
 
         /* 0x30047345: 2px gutter between slots ([0x3007bce4] = 2.0f). */
         x -= 2.0f;

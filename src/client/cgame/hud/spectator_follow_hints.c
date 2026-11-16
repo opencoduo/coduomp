@@ -27,7 +27,7 @@
 //   C. flags & 0x200000  -> label CGAME_FOLLOWSTOP, key of "toggle cl_run" (or, if
 //      that is unbound, "+speed"), y = running y (436 if A/B ran, else 416).
 //
-// Per-line key lookup (UI_KeysStringForBinding, 0x30056b40; register-split ABI
+// Per-line key lookup (GetKeyBindingLocalizedString, 0x30056b40; register-split ABI
 // EAX=&outStr, ECX=command): it fills `keyStr` with the human-readable name of the
 // key(s) bound to the command and returns the bound-key count. When the command is
 // unbound (count == 0) the machine code overwrites the outStr slot with the command
@@ -108,7 +108,7 @@ void CG_DrawSpectatorFollowHints(void)
         const char *text;
 
         // Line A: "Next Player" bound to "+attack".
-        if (UI_KeysStringForBinding("+attack", &keyStr) == 0) {
+        if (GetKeyBindingLocalizedString("+attack", &keyStr) == 0) {
             keyStr = "+attack"; // unbound: show the raw command token
         }
         translatedLabel = CG_SafeTranslateString_Internal(
@@ -123,7 +123,7 @@ void CG_DrawSpectatorFollowHints(void)
         // Line B: "Previous Player" bound to "+melee" (0x30076aa8, loaded at
         // 0x3001be0b/0x3001be19). A prior pass used the ADJACENT .rdata string
         // "toggle cl_run" (0x30076a98) -- which is Line C's command, not this one.
-        if (UI_KeysStringForBinding("+melee", &keyStr) == 0) {
+        if (GetKeyBindingLocalizedString("+melee", &keyStr) == 0) {
             keyStr = "+melee"; // unbound: show the raw command token
         }
         translatedLabel = CG_SafeTranslateString_Internal(
@@ -144,8 +144,8 @@ void CG_DrawSpectatorFollowHints(void)
 
         // Line C: "Stop Following" — its key is whichever of "toggle cl_run" or
         // "+speed" is currently bound; if neither is bound, the line is skipped.
-        if (UI_KeysStringForBinding("toggle cl_run", &keyStr) == 0 &&
-            UI_KeysStringForBinding("+speed", &keyStr) == 0) {
+        if (GetKeyBindingLocalizedString("toggle cl_run", &keyStr) == 0 &&
+            GetKeyBindingLocalizedString("+speed", &keyStr) == 0) {
             return;
         }
         translatedLabel =

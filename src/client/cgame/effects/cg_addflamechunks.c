@@ -1,11 +1,11 @@
 // Source: uo_cgame_mp_x86.dll 0x300272b0..0x3002783f
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_300272b0_3002783f.mcode
 //
-// CG_AddFlameChunks (0x300272b0) — per-frame processing of one flame's chunk
+// CG_AddFlameSpriteToScene (0x300272b0) — per-frame processing of one flame's chunk
 // chain. Walks a flame owner's parent-linked flameChunk_t chain (f = f->parent),
 // updates the shared flame-time base, accumulates the per-owner looping-sound
 // envelope in cg_flameSoundLoops[], culls/merges adjacent chunks, and adds each
-// surviving chunk's sprite to the render scene via CG_AddFlameToScene.
+// surviving chunk's sprite to the render scene via CG_AddFlameSpriteToScene.
 //
 // NAME ADJUDICATION — the mechanical pre-hint "G_RadiusDamage" (a game_mp.dll
 // SERVER combat function, matched only by byte size 0x59c) is REJECTED: this is a
@@ -15,9 +15,9 @@
 // cg.refdef.vieworg 0x30487a90) and calls the flame chunk merger
 // (CG_MergeFlameChunks 0x300257e0, whose "CG_MergeFlameChunks: f2 doesn't follow
 // f1" string anchors the subsystem), the recursive chunk free (CG_FreeFlameChunk
-// 0x300256e0) and the per-chunk scene renderer (CG_AddFlameToScene 0x300268e0).
+// 0x300256e0) and the per-chunk scene renderer (CG_AddFlameSpriteToScene 0x300268e0).
 // Behavior + call-graph name taken from the same-module PPC bank
-// (CG_AddFlameChunks). The globals.h note that attributes the name to 0x300240a3
+// (CG_AddFlameSpriteToScene). The globals.h note that attributes the name to 0x300240a3
 // refers to a different function (entry 0x30024056); it is a first-toucher label.
 //
 // Callee-cleanup: RET (no immediate); the one argument (the flame owner chunk)
@@ -37,15 +37,15 @@
  * result stay 80-bit where the DLL keeps them; a double pow would round both. */
 
 /*
- * CG_AddFlameToScene (0x300268e0, provisional) — build and add one flame chunk's
+ * CG_AddFlameSpriteToScene (0x300268e0, provisional) — build and add one flame chunk's
  * render sprite(s) to the scene (invokes the renderer import at 0x30085e9c,
- * normalizes flame direction, etc.). Called ONLY by CG_AddFlameChunks.
+ * normalizes flame direction, etc.). Called ONLY by CG_AddFlameSpriteToScene.
  * Caller-cleaned (ADD ESP,0x10 after four dwords pushed). Observed push order at
  * 0x30027805..0x30027819 (right-to-left): PUSH 1, PUSH <float alpha>, PUSH
  * chunk->lifeFraction (as a dword), PUSH chunk. arity/types UNPROVEN — verify at its
  * own .mcode; the alpha slot is a float and field_e8 is pushed as its raw dword.
  */
-/* CG_AddFlameToScene is now declared in client_recovered.h (single source of truth);
+/* CG_AddFlameSpriteToScene is now declared in client_recovered.h (single source of truth);
  * the local extern was removed to avoid decl drift. */
 
 /*
@@ -62,7 +62,7 @@
  * further FMUL that consumes the raw value.
  */
 
-void CG_AddFlameChunks(flameChunk_t *ownerChunk)
+void CG_AddFlameSpriteToScene(flameChunk_t *ownerChunk)
 {
     flameChunk_t *f;        /* EDI: chunk currently being processed */
     flameChunk_t *next;     /* EBX: f->parent for this iteration */
@@ -411,7 +411,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
             /* alpha = lifeFrac * 0.5f; add the sprite. */
             {
                 float alpha = lifeFrac * 0.5f;    /* FMUL 0.5f */
-                CG_AddFlameToScene(f, f->lifeFraction, alpha, 1);
+                CG_AddFlameSpriteToScene(f, f->lifeFraction, alpha, 1);
             }
             lastKept = f;                          /* MOV EBP,EDI */
         }

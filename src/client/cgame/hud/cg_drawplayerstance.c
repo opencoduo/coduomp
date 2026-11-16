@@ -321,7 +321,7 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
                 }
 
                 /* 0x3002f593: localized key string bound to this command. */
-                UI_KeysStringForBinding(chosenCmd[row], &keyStr);
+                GetKeyBindingLocalizedString(chosenCmd[row], &keyStr);
                 /* 0x3002f5a1: translate the hint label, then format "<hint> <key>". */
                 hintText = CG_SafeTranslateString_Internal("cgame", hintLabels[row]);
                 /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */

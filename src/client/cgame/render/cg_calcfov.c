@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x3003ffc0..0x300402a7
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3003ffc0_300402a7.mcode
 //
-// CG_CalcFov (0x3003ffc0) — compute the current view field of view (degrees) and,
+// CG_GetViewFov (0x3003ffc0) — compute the current view field of view (degrees) and,
 // as a side effect, maintain the FOV/zoom transition trackers and the cgs.scrFade
 // animator. The value is returned on the x87 stack (a float return).
 //
@@ -11,7 +11,7 @@
 // (cg_fov_vmCvar.value, cg.predictedPlayerState.pmType, cg.predictedPlayerState.{adsFraction, currentWeapon,
 // vehicleType, vehiclePosition, entityStateFlags}, cg.currentWeaponInfo). The FOV
 // clamp signature (base FOV forced to 90 in game mode 5, clamped to [80,160]) plus
-// the float FOV return matches the cgame_mp.dll PPC symbol CG_CalcFov; adopted as a
+// the float FOV return matches the cgame_mp.dll PPC symbol CG_GetViewFov; adopted as a
 // provisional (behavior-based, NOT size-based) name.
 //
 // Callers observed: 0x300402b0 and 0x30042085, both consuming the returned float
@@ -66,7 +66,7 @@ enum {
     FOV_FADE_SETTLE_MS     = 700  /* 0x2bc, settle-out fade duration */
 };
 
-float CG_CalcFov(void)
+float CG_GetViewFov(void)
 {
     /* EDX in the machine code: held live across the whole body. */
     const int32_t now = cg.time;
@@ -138,7 +138,7 @@ float CG_CalcFov(void)
                 }
                 /* 0x300400c5: only when no HUD timeout is active. */
                 if (cgs.timeoutEndTime == 0) {
-                    CG_StartFovFade(
+                    CG_Fade(
                         coduo_int32_from_bits(
                             (uint32_t)now
                             - (uint32_t)FOV_FADE_BACKDATE_MS),
@@ -151,14 +151,14 @@ float CG_CalcFov(void)
 
         commit_position:
             /* 0x300400f6: commit the current vehiclePosition; fade on a change.
-             * The commit-path CG_StartFovFade call at 0x3004010b is NOT guarded
+             * The commit-path CG_Fade call at 0x3004010b is NOT guarded
              * by cgs.timeoutEndTime -- 0x30447fd0 is never loaded between 0x300400f6
              * and 0x30040119; only the driver do-fade block at 0x300400c5 checks
              * it. A prior pass added a spurious `if (cgs.timeoutEndTime == 0)` here,
              * suppressing the FOV fade on a vehicle-position change whenever a HUD
              * timeout was active. */
             if (cg_fovLastVehiclePosition != vehiclePosition) {
-                CG_StartFovFade(
+                CG_Fade(
                     coduo_int32_from_bits(
                         (uint32_t)now
                         - (uint32_t)FOV_FADE_BACKDATE_MS),

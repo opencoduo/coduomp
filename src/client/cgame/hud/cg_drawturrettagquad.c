@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x3001ccf0..0x3001ce35
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3001ccf0_3001ce35.mcode
 //
-// CG_DrawTurretTagQuad (role name; the .mcode size-guess "G_BackupSpawnVars" is
+// CG_FillRotatedRect (role name; the .mcode size-guess "G_BackupSpawnVars" is
 // REJECTED — this is not a spawn-var backup: there is no varinfo table, no field
 // copy loop, and no string work. It is a pure float 2D-quad rotate + a cgame 2D
 // draw syscall). The name is adopted from the turret-tag HUD caller (0x30031e20);
@@ -36,7 +36,7 @@
 // the attribute; see WORKFLOW.md).
 
 #include "client/cgame/globals.h"          /* cgs.screenXScale / cgs.screenYScale, cgame_syscall */
-#include "client/cgame/client_recovered.h" /* CG_R_DRAW_ROTATED_QUAD, CG_DrawTurretTagQuad decl */
+#include "client/cgame/client_recovered.h" /* CG_R_DRAW_ROTATED_QUAD, CG_FillRotatedRect decl */
 #include "compat/coduo_native_x87.h"
 
 /*
@@ -48,7 +48,7 @@
 #define CG_PI_F        3.1415927410125732f /* 0x3007bd88 = 0x40490fdb */
 #define CG_INV_180_F   0.0055555556900799274f /* 0x3007bed4 = 0x3bb60b61; 1/180 */
 
-void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y,
+void CG_FillRotatedRect(float *cornerOffsets, float x, float y,
                           const float *shaderParams, float angleDegrees,
                           int32_t hShader)
 {

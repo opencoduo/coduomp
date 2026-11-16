@@ -1,8 +1,8 @@
 // Source: uo_cgame_mp_x86.dll 0x30024050..0x30025561
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30024050_30025561.mcode
 //
-// CG_EmitPlayerFlameChunks (mechanical .mcode name CG_AddFlameChunks; the real
-// per-owner-chunk frame updater CG_AddFlameChunks is a DIFFERENT function at
+// CG_AddFlameChunks (mechanical .mcode name CG_AddFlameSpriteToScene; the real
+// per-owner-chunk frame updater CG_AddFlameSpriteToScene is a DIFFERENT function at
 // 0x300272b0, already reconstructed. This 0x30024050 giant is the flame-chunk
 // EMITTER: it spawns a run of flame chunks along a fire path for one owner and
 // stitches them onto the flame-info emit state cg_flameInfo[owner]).
@@ -186,7 +186,7 @@
  * `cent` is an incomplete centity_t; Region A reads only cent[0] (owner
  * clientNum) via a cast at its proven offset (the loop reads cent+0x208 etc.). */
 
-void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
+void CG_AddFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
                               float spread, int32_t a3, int32_t a4)
 {
     /* vec3_t params decay to float*; use them directly. `angles` == flashOrigin.
@@ -490,7 +490,7 @@ void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOr
          * LEA EDX,[ESP+0x144] with 3 pushes outstanding = base+0x138, so the
          * 0x30-byte trace record spans base+0x138..base+0x167 and the byte is
          * traceBuf+0x2f — trace_t.startsolid, the same post-trace flag the rest
-         * of the flame code tests (cf. 0x30028291 in CG_FireFlameChunks). */
+         * of the flame code tests (cf. 0x30028291 in CG_AddFlameToScene). */
         if (traceBuf.fraction < 1.0f || traceBuf.startsolid != 0) {
             adsGate = 1;                          /* [0xa0] = 1 */
             chunkCount = coduo_fp_to_i32_extended((float)chunkCount * 0.5f);

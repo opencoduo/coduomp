@@ -34,7 +34,7 @@
  * — this function performs no quaternion math and no x87 rotation work; it issues
  * a sequence of shutdown/reset traps and frees handle pools. Named by proven role
  * (shutdown-reset of the effect + HUD-element subsystems). It pairs with the
- * snapshot-reset sibling CG_InstallSnapshotResetEffects (0x3003c9d0), which also
+ * snapshot-reset sibling CG_SetInitialSnapshot (0x3003c9d0), which also
  * issues CG_MSS_FADE_ALL_SOUNDS(1.0f, 0). Exact original source name unresolved.
  */
 

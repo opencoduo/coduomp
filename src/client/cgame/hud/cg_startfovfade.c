@@ -7,11 +7,11 @@
 #define CG_FOV_FADE_BYTE_SCALE 0.0039215689f
 
 /*
- * CG_StartFovFade — seed the cgs.scrFade timed alpha animator (cgFovFade_t at
+ * CG_Fade — seed the cgs.scrFade timed alpha animator (cgFovFade_t at
  * 0x3044b69c) for a new screen fade, then decide whether the fade is already
  * finished.
  *
- * Calling convention (nonstandard; proven from the two callers inside CG_CalcFov
+ * Calling convention (nonstandard; proven from the two callers inside CG_GetViewFov
  * at 0x300400db and 0x3004010b):
  *   - startTime    arrives in ECX      (caller: LEA ECX,[EDX-0xa] = cg.time - 10)
  *   - durationMs   arrives in EAX      (caller: MOV EAX,1)
@@ -42,11 +42,11 @@
  *
  * Naming: the .mcode size-guess name script_func_setplayerignoreradiusdamage is
  * rejected (that is a server script builtin; this is x87 HUD/FOV fade state setup,
- * seeding a cgFovFade_t and reading cg.time). Named CG_StartFovFade by its proven
+ * seeding a cgFovFade_t and reading cg.time). Named CG_Fade by its proven
  * role, matching the storage it drives and the CG_ScreenFade evaluator that
  * consumes it.
  */
-void CG_StartFovFade(int32_t startTime, int32_t durationMs, int32_t numerator255)
+void CG_Fade(int32_t startTime, int32_t durationMs, int32_t numerator255)
 {
     /* The numerator's FILD occurs first and remains live while the integer state
      * is published. ADD is target-dword wrapping and precedes durationMs' store. */

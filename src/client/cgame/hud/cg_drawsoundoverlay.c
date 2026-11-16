@@ -40,7 +40,7 @@
  * Q_atoi, 0x3005b6ce). The channel count shown is 2 when mss_stereo is nonzero,
  * else 1 (SETNZ + INC). These plus cpuValue are formatted through va() into
  * "CPU: ^3%%%i ^73D provider: ^3%s ^7bits: ^3%i ^7kHz: ^3%i ^7chan: ^3%i"
- * (0x30076c40) and drawn at (x=2, y=82) by CG_EmitTrap54DrawScaled (the trap-54
+ * (0x30076c40) and drawn at (x=2, y=82) by CG_DrawStringExt (the trap-54
  * 2D-text emitter, screen-rescale on).
  *
  * Per-channel lines: for each of the `count` channel structs (stride 0x14), a
@@ -52,14 +52,14 @@
  * (0x30076bf8). The three float fields are promoted to double for the variadic
  * va() call (the machine code FSTPs them as `double`), matching the %f format.
  * Each line's draw is the same fixed trap-54 frame the header uses — the compiler
- * inlined CG_EmitTrap54DrawScaled(modeFlag=1, adjustFlag=0, &white, x=2, y, str,
+ * inlined CG_DrawStringExt(modeFlag=1, adjustFlag=0, &white, x=2, y, str,
  * width=8, height=16, extra=0) into the loop. The inlined copy's ROUNDING
  * STRUCTURE deviates from the out-of-line body in one place (the y-sum multiplies
  * the float-ROUNDED 1/screenYScale, FSTP 0x3001ae82 / FMUL 0x3001ae90, where the
  * callee keeps it 80-bit), so the loop emits the trap frame directly instead of
  * calling the function; see the inline comments for the per-value evidence.
  *
- * Screen scale: CG_EmitTrap54DrawScaled(adjustFlag=0) divides x/width by
+ * Screen scale: CG_DrawStringExt(adjustFlag=0) divides x/width by
  * cgs.screenXScale (0x30447aa4) and the y-sum/height-scale by cgs.screenYScale
  * (0x30447aa8), the CG_AdjustFrom640 rescale. The colour pointer passed is the
  * shared white .rdata constant cg_colorWhite (0x30072034), start of
@@ -123,7 +123,7 @@ void CG_DrawSoundOverlay(void)
 
     const char *headerText = va(cg_soundDebugHeaderFormat,
                                 cpuForHeader, provider, bits, khz, chan);
-    CG_EmitTrap54DrawScaled(1, 0,
+    CG_DrawStringExt(1, 0,
                             cg_colorWhite,
                             CG_SNDINFO_HEADER_X, CG_SNDINFO_HEADER_Y,
                             (void *)headerText,
@@ -153,7 +153,7 @@ void CG_DrawSoundOverlay(void)
                           basePlaybackRate);
         }
 
-        /* Inlined CG_EmitTrap54DrawScaled(1, 0, &white, x=2, y, text, 8, 16, 0),
+        /* Inlined CG_DrawStringExt(1, 0, &white, x=2, y, text, 8, 16, 0),
          * emitted directly because the inlined copy rounds the y-sum's reciprocal
          * to float where the out-of-line body does not (0x3001ae40..0x3001aede):
          *   invX      = 1.0f/screenXScale, kept 80-bit (FDIV 0x3001ae48), a float

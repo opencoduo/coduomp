@@ -3,7 +3,7 @@
 //
 // CG_DrawCursorhint — the "draw" half of the animated on-screen usable-entity /
 // crosshair hint overlay (pick-up ammo/weapon/health, swap weapons, LMG mount,
-// generic activate/use). Its seed/latch half is CG_LatchOverlaySource
+// generic activate/use). Its seed/latch half is CG_CheckForCursorHints
 // (0x3001a5b0), whose only caller is this drawer (call at 0x300303db); that
 // routine copies cg.snap source fields into the persistent overlay block
 // (cg.usableHintKind/ColorByte/CommandIndex + the CG_FadeColor timing pair) and
@@ -153,7 +153,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
     }
 
     // 0x300303db: seed the overlay source from cg.snap.
-    CG_LatchOverlaySource();
+    CG_CheckForCursorHints();
 
     // 0x300303e0: dispatch selector + validity-table gate. The original indexes
     // one physically contiguous qhandle_t band beginning at 0x3044b6f8:
@@ -277,7 +277,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
         if (emptySlot == 0) {
             // 0x30030551: no free slot -> "swap weapons" hint (or nothing if identical).
             Controls_GetConfig();
-            UI_KeysStringForBinding("+activate", &activateKey);
+            GetKeyBindingLocalizedString("+activate", &activateKey);
 
             int32_t curWeaponIndex = cg.predictedPlayerState.currentWeapon;      // [0x3048329c]
             weaponInfo_t *curWeap = bg_weaponInfos[curWeaponIndex];
@@ -357,7 +357,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
                 goto measure_and_paint;
             }
             Controls_GetConfig();
-            UI_KeysStringForBinding("+activate", &outKey);
+            GetKeyBindingLocalizedString("+activate", &outKey);
             if (cgame_compat_splice_hint_key(
                     pickupTextBuf, sizeof(pickupTextBuf), tmpl, marker,
                     outKey) == qfalse) {
@@ -395,7 +395,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
                 goto measure_and_paint;
             }
             Controls_GetConfig();
-            UI_KeysStringForBinding("+activate", &outKey);
+            GetKeyBindingLocalizedString("+activate", &outKey);
             if (cgame_compat_splice_hint_key(
                     pickupTextBuf, sizeof(pickupTextBuf), tmpl, marker,
                     outKey) == qfalse) {
@@ -427,9 +427,9 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
         // the result stricmp-equals "Unbound" does 0x30030920 re-look-up
         // ECX = 0x30076a90 = "+speed" (string bytes dumped from .rdata).
         Controls_GetConfig();
-        UI_KeysStringForBinding("toggle cl_run", &outKey);     // 0x30076a98
+        GetKeyBindingLocalizedString("toggle cl_run", &outKey);     // 0x30076a98
         if (coduo_crt_stricmp(outKey, "Unbound") == 0) {      // 0x30079824
-            UI_KeysStringForBinding("+speed", &outKey);        // 0x30076a90
+            GetKeyBindingLocalizedString("+speed", &outKey);        // 0x30076a90
         }
         const char *tmpl =
             CG_SafeTranslateString_Internal("cgame", "GMI_CGAME_LMGMOUNTPOINT"); // 0x3007980c
@@ -464,7 +464,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
         if (marker != 0) {
             int32_t markerIdx = (int32_t)(marker - rawHintTextBuf);
             Controls_GetConfig();
-            int32_t n = UI_KeysStringForBinding("+activate", &outKey);
+            int32_t n = GetKeyBindingLocalizedString("+activate", &outKey);
             if (n == 0) {
                 // 0x30030a28: no binding -> fall back to the localized "KEY_USE".
                 outKey = (char *)CG_SafeTranslateString_Internal("cgame", "KEY_USE"); // 0x300797f8
@@ -491,7 +491,7 @@ void CG_DrawCursorhint(rectDef_t *hintRect,
     if (kind == CURSOR_HINT_HEALTH) {
         // ---- health hint (+activate binding). ----
         Controls_GetConfig();
-        UI_KeysStringForBinding("+activate", &outKey);         // 0x3007988c
+        GetKeyBindingLocalizedString("+activate", &outKey);         // 0x3007988c
         const char *tmpl =
             CG_SafeTranslateString_Internal("cgame", "CGAME_PICKUPHEALTH");  // 0x300797e4
         if (cgame_compat_hint_format_is_valid(tmpl, "s") == qfalse) {

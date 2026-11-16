@@ -25,7 +25,7 @@ void CG_ServerCommand(void)
     case '\0':  /* 0x3003b367: silent return, no unknown-command print */
         return;
     case 'a':   /* 0x3003acd9 */
-        CG_SelectWeaponIndex(coduo_crt_atoi(CG_Argv(1)), cg_weaponSelect_vmCvar.integer);
+        CG_FinishWeaponChange(coduo_crt_atoi(CG_Argv(1)), cg_weaponSelect_vmCvar.integer);
         return;
     case 'b':   /* 0x3003ad0c */
         CG_ParseScores();

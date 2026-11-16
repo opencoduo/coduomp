@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x30048260..0x30048451
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30048260_30048451.mcode
 //
-// CG_SpawnTracerLine — spawn a moving LINE bullet-tracer as an LE_MOVING_TRACER local
+// CG_BulletTrajectoryEffects — spawn a moving LINE bullet-tracer as an LE_MOVING_TRACER local
 // entity that travels from the shot START point toward the shot END point. This is the
 // alternate-path twin of CG_SpawnMovingTracer (0x30048a00): where that function builds
 // tracer polygon endpoints directly for the current frame, this one allocates a
@@ -11,7 +11,7 @@
 // NAME ADJUDICATION: the .mcode's mechanical `# name Menus_Open` is a broad-corpus
 // SIZE-GUESS (win 0x1f1 ~ matched 0x1f0 from cgame_mp.dll) with zero behavioral basis and
 // is REJECTED — this is a cgame tracer / local-entity builder, not a UI menu opener. The
-// name CG_SpawnTracerLine is the caller-observed placeholder already carried in
+// name CG_BulletTrajectoryEffects is the caller-observed placeholder already carried in
 // client_recovered.h for 0x30048260; it is corroborated here by the body: the same
 // bg_weaponInfos[weapon]->ammoType in {3,4,5} mode select and the same
 // cg_tracerLengthMode{A,B} twins as CG_AddMovingTracer / CG_SpawnMovingTracer, the same
@@ -19,7 +19,7 @@
 // cg_activeLocalEntities list via CG_AllocLocalEntity. Exact CoD symbol unproven; role
 // name kept.
 //
-// ABI (mixed register/stack, proven from this body + the sole caller CG_SpawnTracer's
+// ABI (mixed register/stack, proven from this body + the sole caller CG_BulletTrajectoryEffects's
 // non-7 branch at 0x30048e40..0x30048e4b: `MOV EAX,impactOrigin; LEA ECX,&muzzle;
 // PUSH weapon; CALL; ADD ESP,4`):
 //   register EAX -> endOrigin   (vec3, shot end point;   read as end[0..2] at +0/+4/+8)
@@ -49,7 +49,7 @@
  * mutable .data floats/ints declared in globals.h.
  */
 
-void CG_SpawnTracerLine(const vec3_t endOrigin, const vec3_t startOrigin, int32_t weapon)
+void CG_BulletTrajectoryEffects(const vec3_t endOrigin, const vec3_t startOrigin, int32_t weapon)
 {
     /* 30048263..30048279: fetch the weapon's tracer descriptor (may be NULL). */
     const weaponInfo_t *weaponInfo = bg_weaponInfos[weapon]; /* [0x30134cd8][weapon] */

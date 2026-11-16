@@ -10,7 +10,7 @@
 #include "compat/coduo_native_x87.h"
 
 /*
- * CG_DrawObjectivePointers (0x3002fe70) — draw the HUD compass/objective markers.
+ * CG_DrawPlayerCompassPointers (0x3002fe70) — draw the HUD compass/objective markers.
  *
  * Name adjudication: the .mcode header's size-matched "ClientEndFrame" guess is
  * REJECTED. ClientEndFrame is a server per-frame bookkeeping routine that issues no
@@ -63,7 +63,7 @@ enum {
     OBJPTR_DIR_DOWN  = 2  /* dz < cg_hudObjectiveMinHeight_vmCvar.value */
 };
 
-void CG_DrawObjectivePointers(const rectDef_t *rect, const vec3_t color)
+void CG_DrawPlayerCompassPointers(const rectDef_t *rect, const vec3_t color)
 {
     /* 0x3002fe7d: advance the smoothed compass reference yaw for this frame. */
     CG_UpdateCompassOrientation();
@@ -92,7 +92,7 @@ void CG_DrawObjectivePointers(const rectDef_t *rect, const vec3_t color)
     const int32_t clientNum = cg.snap->ps.psClientNum;
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_DrawObjectivePointers: invalid client number %i",
+                  "\x15" "CG_DrawPlayerCompassPointers: invalid client number %i",
                   clientNum);
         return;
     }
@@ -143,7 +143,7 @@ void CG_DrawObjectivePointers(const rectDef_t *rect, const vec3_t color)
             if ((uint32_t)followedEntityNum >=
                 (uint32_t)MAX_GENTITIES) {
                 Com_Error(ERR_DROP,
-                          "\x15" "CG_DrawObjectivePointers: invalid "
+                          "\x15" "CG_DrawPlayerCompassPointers: invalid "
                           "view-lock entity %i",
                           followedEntityNum);
                 return;

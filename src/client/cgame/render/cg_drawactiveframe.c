@@ -175,7 +175,7 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
     if (cameraClipped == qfalse) {
         CG_AddViewWeapon();
     }
-    CG_FireFlameChunks();
+    CG_AddFlameToScene();
 
     cgame_syscall(CG_FX_ADD_SCHEDULED_EFFECTS);
     cg.refdef.time = cg.time;

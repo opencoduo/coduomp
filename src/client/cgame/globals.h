@@ -59,7 +59,7 @@ void cgame_compat_reset_module_load_state(void);
  *   - The per-owner flame-info region cg_flameInfo holds FLAME_INFO_COUNT elements
  *     of FLAME_INFO_SIZE bytes; CG_ClearFlameChunks clears the whole
  *     FLAME_INFO_COUNT*FLAME_INFO_SIZE == 0x2e000-byte region, and
- *     CG_AddFlameChunks indexes it with element stride 0xb8.
+ *     CG_AddFlameSpriteToScene indexes it with element stride 0xb8.
  */
 enum {
     FLAME_CHUNK_COUNT = 0x2000,   /* 8192 pool nodes */
@@ -611,7 +611,7 @@ void CG_OpenWMPurchase_f(void);       /* 0x30017720 */
  * up in the client console/autocomplete. Takes no args, returns nothing. */
 void CG_InitConsoleCommands(void);    /* 0x30017920 */
 /* 0x30071854 .rdata — cg_damageDirShaderParams: the static shader/texcoord parameter
- * block handed to the rotated-quad trap (CG_R_DRAW_ROTATED_QUAD via CG_DrawTurretTagQuad) by
+ * block handed to the rotated-quad trap (CG_R_DRAW_ROTATED_QUAD via CG_FillRotatedRect) by
  * CG_DrawDamageDirectionIndicators (0x3001aad5 PUSHes its address). Eight floats in .rdata:
  * {1,1,0, 1,0,0, 1,0}. The mechanical single-dword export g_const_float_one_30071854
  * captured only the leading 1.0f; superseded as the full const float[8]. */
@@ -649,14 +649,14 @@ extern const uint32_t cg_debugBoxEdges[12][2];
 extern const uint32_t cg_boxCornerSelectors[24][3];
 /* 0x30071a3c..0x30071a5c (.rdata, refs=1, first=0x30031f4a) — the four
  * texture-coordinate pairs {{1,1},{1,0},{0,0},{0,1}} passed by
- * CG_DrawTankBarrel through CG_DrawTurretTagQuad to the rotated-quad renderer.
+ * CG_DrawTankBarrel through CG_FillRotatedRect to the rotated-quad renderer.
  * Original RE_DrawQuadPic consumes all eight floats, one pair per vertex, at
  * 0x004f0468..0x004f04cb. The dword at 0x30071a5c is alignment padding before
  * the next independent datum at 0x30071a60. */
 extern const float cg_turretTagShaderParams[8];
 /*
  * 0x30071a60 .rdata — cg_scoreboardColumnValueSelect[5]: the per-column value-
- * source selector read by CG_DrawScoreboardTeamHeader's totals-row loop
+ * source selector read by CG_DrawScoreboard_Backdrop's totals-row loop
  * (0x30037314 MOV EAX,[ESI + 0x30071a60], stride 0x10). It is the
  * `.nextColumnValueSelect`
  * lane of cg_scoreboardColumns read one entry EARLY (0x30071a60 = the column
@@ -1023,7 +1023,7 @@ extern const char cg_voiceChatTauntCommandName[6];
 extern const char cg_voiceChatKillInsultCommandName[12];
 /* 0x3007a340 .rdata refs=2 first=0x300387d0.
  * "Could not load script menu file '%s'\n" — the load-failure format used by the
- * two config-string menu registrars CG_RegisterConfigStringMenu (0x30038790) and
+ * two config-string menu registrars CG_PrecacheScriptMenu (0x30038790) and
  * its sibling at 0x30038826 when trap(CG_R_REGISTERMENU, name) returns zero. The
  * mechanical owner=q_stricmp is a wrong size-guess first-touch label. */
 extern const char cg_couldNotLoadScriptMenuFmt[38];
@@ -1348,7 +1348,7 @@ extern uint32_t cg_ufoMoveBoundsMaxsBits[3];
  * const char *[6]: the muzzle/flash bone-tag name table -- "tag_flash", "tag_flash_11",
  * "tag_flash_2", "tag_flash_22", "tag_altfire", "tag_secondary_flash". Read at element 0
  * (0x300463f5/0x3004642f/0x30049087, plain "tag_flash") and indexed
- * (0x30047e15/0x30047ed6). Handed as the tagName to CG_CalcMuzzlePoint / CG_SpawnTracer.
+ * (0x30047e15/0x30047ed6). Handed as the tagName to CG_CalcMuzzlePoint / CG_BulletTrajectoryEffects.
  * Entry [6] onward is a distinct float pool (-4.0f...), not part of this table. */
 extern const char *cg_muzzleTagNames[6];
 extern const float cg_muzzleEffectBoundsAndBias[7];
@@ -1554,7 +1554,7 @@ extern vec4_t cg_fadeColor;
  * which builds its own basis via AngleVectors). ROLE-RESOLVED (name provisional) from
  * CG_AddFlameSpriteToScene (0x300268e0): on the non-first-person path it copies this
  * triple into cg_flameSpriteRight (0x300ab72c) verbatim (0x30026de7..0x30026df8).
- * WRITER PROVEN: CG_FireFlameChunks (0x30027da4..0x30027dd3) copies cg.refdef.viewaxis[1]
+ * WRITER PROVEN: CG_AddFlameSpriteToScene (0x30027da4..0x30027dd3) copies cg.refdef.viewaxis[1]
  * (viewaxis[1]) into these three dwords once per frame. Retyped from three mechanical
  * uint32_t placeholders to the one vec3 they form. */
 extern vec3_t cg_flameSpriteSrcRight;
@@ -1586,7 +1586,7 @@ extern flameChunk_t *cg_freeFlameChunks;
  * fields move together on native 64-bit builds. refs were 6/5/4/4/3/2/3/2/1/2. */
 extern trace_t cg_flameDamageTrace;
 /* 0x300a85e8 .data — cg_rFullscreenCvar: the module-side vmCvar mirror handle for the
- * "r_fullscreen" cvar. RESOLVED from CG_FireFlameChunks (0x30027d59): its address is
+ * "r_fullscreen" cvar. RESOLVED from CG_AddFlameSpriteToScene (0x30027d59): its address is
  * pushed as the vmCvar arg to trap(7, &vmCvar, "r_fullscreen", "1", 0x21) on first
  * frame (register) and to trap(8, &vmCvar) on later frames (refresh). Compact 12-byte
  * cvar-handle slot (next .data symbol is 0x300a85f4), so it is NOT the classic
@@ -1633,7 +1633,7 @@ _Static_assert(sizeof(cgFlameSoundLoop_t) == 12, "cgFlameSoundLoop_t must be 12 
 extern cgFlameSoundLoop_t cg_flameSoundLoops[1024];
 /* 0x300ab718 .data refs=46 — cg_flameTime: the flame subsystem per-frame time base
  * (round(2*cg.time)); written by the flame update path and read via FILD as an int
- * timestamp. RESOLVED from CG_AddFlameChunks (0x300272b0) / CG_UpdateFlamethrowerSounds
+ * timestamp. RESOLVED from CG_AddFlameSpriteToScene (0x300272b0) / CG_UpdateFlamethrowerSounds
  * (0x30029210); the mechanical owner=cg_playadsanim was a first-toucher label. */
 extern uint32_t cg_flameTime;
 /* 0x300ab71c/720/724 .data — cg_flameSpriteUp: the flame billboard's UP basis vec3.
@@ -1669,14 +1669,14 @@ extern vec3_t cg_flameLastSpritePos;
  * CG_AddFlameSpriteToScene (0x300268e0): on the non-first-person path it copies this
  * triple into cg_flameSpriteUp (0x300ab71c) verbatim (0x30026dfe..0x30026e25); the pair
  * with cg_flameSpriteSrcRight (0x300a84f8) spans the world-flame sprite quad. WRITER
- * PROVEN: CG_FireFlameChunks (0x30027dc2..0x30027dea) copies cg.refdef.viewaxis[2]
+ * PROVEN: CG_AddFlameSpriteToScene (0x30027dc2..0x30027dea) copies cg.refdef.viewaxis[2]
  * (viewaxis[2]) into these three dwords once per frame. Retyped from three mechanical
  * uint32_t placeholders to the one vec3 they form. */
 extern vec3_t cg_flameSpriteSrcUp;
 /* 0x300ab750 .data refs=9 width=4 first=0x300240a3 owner=cg_addflamechunks.
  * RESOLVED base of the contiguous per-owner flame-state region cleared by
  * CG_ClearFlameChunks (0x30025589: REP STOSD of 0xb800 (47104) dwords ==
- * 0x2e000 bytes, spanning 0x300ab750..0x300d9750). CG_AddFlameChunks (0x300240a3)
+ * 0x2e000 bytes, spanning 0x300ab750..0x300d9750). CG_AddFlameSpriteToScene (0x300240a3)
  * indexes it as base + i*0xb8 (IMUL EBP,EBP,0xb8; ADD EBP,0x300ab750), i.e.
  * FLAME_INFO_COUNT (1024) elements of 0xb8 (184) bytes. Its typed declaration is
  * in client_recovered.h after the complete cgFlameInfo_t definition. */
@@ -1716,7 +1716,7 @@ extern int32_t cg_numActiveFlameChunks;
  * (0x300d9760/64/68) into one vec3. mechanical owner=item_listbox_overlb was the first toucher. */
 extern vec3_t cg_flameDamageBestPos;
 /* 0x300d9770 .data — cg_rOverbrightBitsCvar: the module-side vmCvar mirror handle for
- * the "r_overbrightbits" cvar. RESOLVED from CG_FireFlameChunks (0x30027d75): its
+ * the "r_overbrightbits" cvar. RESOLVED from CG_AddFlameSpriteToScene (0x30027d75): its
  * address is pushed as the vmCvar arg to trap(7, &vmCvar, "r_overbrightbits", "1",
  * 0x21) on first frame and trap(8, &vmCvar) on later frames. Compact 12-byte
  * cvar-handle slot (next .data symbol is 0x300d977c), like cg_rFullscreenCvar; kept as
@@ -1805,9 +1805,9 @@ extern vec3_t cg_vehicleViewSwayOrigin;
 extern vec3_t cg_turretViewSwayPreviousViewAngles;
 extern vec2_t cg_turretViewSwayViewAngles;
 /* 0x300dc9d8 .data refs=4 width=4.
- * RESOLVED on consume by CG_CalcFov (0x3003ffc0): cg_fovLastVehiclePosition — the
+ * RESOLVED on consume by CG_GetViewFov (0x3003ffc0): cg_fovLastVehiclePosition — the
  * last predicted vehiclePosition (cg.predictedPlayerState.vehiclePosition, values 1/2/3)
- * for which the vehicle/turret FOV path ran. CG_CalcFov compares the current
+ * for which the vehicle/turret FOV path ran. CG_GetViewFov compares the current
  * position against it to detect a change (0x300400f6), stores the new position
  * (0x30040120), and resets it to 0 when the vehicle-view flag is clear (0x3004023a).
  * A plain signed int. The mechanical owner=bg_parseweaponinfospecificfieldtyp label
@@ -1823,7 +1823,7 @@ extern vec3_t cg_vehicleViewSwayOffset;
  * BG_CalculateWeaponPosition_Sway at 0x3004096d and updated by the sway core. */
 extern vec3_t cg_vehicleViewSwayPreviousViewAngles;
 /* 0x300dc9f4 .data refs=5 width=4.
- * RESOLVED on consume by CG_CalcFov (0x3003ffc0): cg_fovTransitionTime — the
+ * RESOLVED on consume by CG_GetViewFov (0x3003ffc0): cg_fovTransitionTime — the
  * cg.time (ms) at which the most recent FOV/zoom transition was triggered, or -1
  * when none is pending. Set to cg.time by the vehicle-view path (0x300400ea,
  * 0x30040113, 0x30040234) and to -1 (0x30040283) after the non-vehicle transition
@@ -1837,7 +1837,7 @@ extern int32_t cg_fovTransitionTime;
 extern vec2_t cg_vehicleViewSwayViewAngles;
 extern vec3_t cg_turretViewSwayOffset;
 /* 0x300dca10..0x300dca18 .data refs=3 width=4.
- * RESOLVED on consume by CG_CalcFov (0x3003ffc0): cg_fovAdsUpdateTime[2] -- the last
+ * RESOLVED on consume by CG_GetViewFov (0x3003ffc0): cg_fovAdsUpdateTime[2] -- the last
  * cg.time (ms) at which the vehicle/turret ADS FOV was committed, one slot per
  * ADS state (index 0 = not aiming, index 1 = aiming; the index is
  * cg.predictedPlayerState.adsFraction != 0.0f). Indexed [edi*4] and compared with
@@ -2138,7 +2138,7 @@ extern qboolean cg_flameChunksInited;
  * first-touching function name, not the identity. Retyped uint32_t -> flameChunk_t*. */
 extern flameChunk_t *cg_lastFlameChunkProcessed;
 /* 0x30134cf4 .data — cg_fireFlameChunksCvarsRegistered: once-only latch guarding the
- * lazy cvar registration in CG_FireFlameChunks (0x30027d42). Zero on the first frame
+ * lazy cvar registration in CG_AddFlameSpriteToScene (0x30027d42). Zero on the first frame
  * (=> trap(7,...) registers r_fullscreen/r_overbrightbits), nonzero afterward (=>
  * trap(8,...) refreshes them). RESOLVED from that sole consumer; the mechanical
  * owner=cg_fireflamechunks label happened to be correct here. NOTE: no writer that
@@ -2297,7 +2297,7 @@ extern vmCvar_t cl_serverloadwaiting;
 extern cgWeaponInfo_t cg_weaponInfos[MAX_WEAPONS];
 /* 0x304219c8 .data refs=20 width=4 first=0x300168d6 owner=cg_asset_parse.
  * Type repaired uint32_t->float: the mechanical dword truncation is wrong, this is a
- * float config/cvar value. CG_DrawObjectivePointers (0x3002fe70) reads it via FCOMP/
+ * float config/cvar value. CG_DrawPlayerCompassPointers (0x3002fe70) reads it via FCOMP/
  * FSUB against a screen distance as the objective-pointer NEAR distance (below it the
  * marker is fully opaque and full-size). The compass and objective-pointer
  * consumers prove the shared near-distance role. */
@@ -2318,7 +2318,7 @@ extern cgWeaponInfo_t cg_weaponInfos[MAX_WEAPONS];
  * copies its mouse-coordinate source pair into those fields. */
 /* 0x30422064..0x3044028b are fields of g_uiDCInstance (+0x104..+0x1e32b), not independent globals. */
 /* 0x3044034c .data refs=21: the local player's currently-selected weapon index,
- * used engine-wide as an index into bg_weaponInfos (e.g. CG_SelectWeaponIndex
+ * used engine-wide as an index into bg_weaponInfos (e.g. CG_FinishWeaponChange
  * 0x30047390 reads bg_weaponInfos[cg_weaponSelect_vmCvar.integer]->altWeapon; the weapon-select
  * iterators 0x30046bb0/0x30047820/0x300478a0/0x30047960 read it likewise). The
  * mechanical owner=vectordistance2d label is a first-touch artifact and wrong.
@@ -2723,7 +2723,7 @@ typedef struct cgMedia_s {
     int field_b9c;
     /* 0x3044c24c .data — cgs.media.flameStartSound: an alias-name pointer resolved by a flame-init
      * function (writer 0x3002b756) and passed as the soundName to CG_PlaySoundAliasByName
-     * by CG_EmitPlayerFlameChunks (0x3002522c, the terminal-chunk emit path).
+     * by CG_AddFlameSpriteToScene (0x3002522c, the terminal-chunk emit path).
      * RESOLVED (role) on consume; exact CoD sound alias name unresolved. */
     const char *flameStartSound;
     /* 0x3044c250 .data — cgs.media.flameStreamSound: alias-name pointer from trap 0xc3,
@@ -2817,7 +2817,7 @@ typedef struct cgs_s {
      * the cgs-init path (0x3002e016) as (float)glconfig.vidWidth * (1.0f/640.0f)
      * [FILD [0x30447a88]; FMUL [0x3007c3f4]=0.0015625f; FSTP [0x30447aa4]], and
      * multiplied into every X/width UI coordinate. Consumed as a float by CG_DrawPic
-     * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_DrawTurretTagQuad at
+     * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_FillRotatedRect at
      * 0x3001ccf0). The 1/640 divisor is proven from the writer's .rdata constant
      * 0x3007c3f4. */
     float screenXScale;
@@ -2826,7 +2826,7 @@ typedef struct cgs_s {
      * cgs-init path (0x3002e028) as (float)glconfig.vidHeight * (1.0f/480.0f)
      * [FILD [0x30447a8c]; FMUL [0x3007c3f0]=0.0020833334f; FSTP [0x30447aa8]], and
      * multiplied into every Y/height UI coordinate. Consumed as a float by CG_DrawPic
-     * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_DrawTurretTagQuad at
+     * (0x3001caa0) and the other 2D draw wrappers (e.g. CG_FillRotatedRect at
      * 0x3001ccf0). The 1/480 divisor is proven from the writer's .rdata constant
      * 0x3007c3f0. */
     float screenYScale;
@@ -3052,10 +3052,10 @@ typedef struct cgs_s {
     /* 0x3044b69c..0x3044b6a8 .data: a single 16-byte timed float-value fade animator
      * used by the FOV/zoom subsystem. The mechanical export split it into four
      * g_data_vectosignedangles_* uint32 scalars with a wrong first-touch owner label;
-     * superseded here as the struct it actually is. Updater CG_StartFovFade
+     * superseded here as the struct it actually is. Updater CG_Fade
      * (0x3001ab50) seeds all four fields; the evaluator at 0x3001a7c0 lerps
      * currentValue from startValue over durationMs starting at startTime (via
-     * trap_Milliseconds); CG_CalcFov (0x3003ffc0) consumes/updates it. Provisional
+     * trap_Milliseconds); CG_GetViewFov (0x3003ffc0) consumes/updates it. Provisional
      * field names (no cgame symbol table recovered); exact original names unproven. */
     /* RTCW cgs.scrFade* (CG_Fade_f stores the same four fields in the same
      * way): alpha target, current alpha, start time and duration in ms. */
@@ -3289,7 +3289,7 @@ _Static_assert(offsetof(cgMedia_t, vehicleTreadEffects) == 0x1414, "cgs.media.ve
  * label was only the first toucher; not a standalone global. */
 
 /* cg_hudObjectiveMinHeight_vmCvar.value (0x3044fba8, .data) — the lower height/elevation
- * threshold CG_DrawObjectivePointers (0x3002fe70, the only consumer, refs=1) compares
+ * threshold CG_DrawPlayerCompassPointers (0x3002fe70, the only consumer, refs=1) compares
  * the objective's world-Z delta (dz = objOrigin.z - viewOrigin.z) against to pick the
  * "below" objective-icon variant (direction index 2) when dz is small/negative. Type
  * repaired uint32_t->float (FCOMP consumer). The owner=clientendframe label is the
@@ -3297,7 +3297,7 @@ _Static_assert(offsetof(cgMedia_t, vehicleTreadEffects) == 0x1414, "cgs.media.ve
  * cvar/source name unproven so the role name is provisional. */
 
 /* 0x3044fcc8 .data refs=8 width=4 first=0x30016905 owner=cg_asset_parse.
- * Type repaired uint32_t->float. CG_DrawObjectivePointers (0x3002fe70) reads it as the
+ * Type repaired uint32_t->float. CG_DrawPlayerCompassPointers (0x3002fe70) reads it as the
  * objective-pointer MIN ALPHA — the marker alpha at/after the far fade distance. */
 /* 0x3044fdec .data refs=3 width=4 first=0x30032c2c owner=g_isvehicleusable */
 /* bg_swingSpeed_vmCvar.value (0x3044ff08, .data) — per-frame swing speed passed as the
@@ -3313,7 +3313,7 @@ _Static_assert(offsetof(cgMedia_t, vehicleTreadEffects) == 0x1414, "cgs.media.ve
  * "cl_serverloadmap"; loading-screen paths read .string at +0x10. */
 extern vmCvar_t cl_serverloadmap;
 /* 0x30450148 .data — timescale_vmCvar.value: a float read (FLD float ptr) only by
- * CG_EmitPlayerFlameChunks's terminal-chunk path (0x30025419), where it is the
+ * CG_AddFlameSpriteToScene's terminal-chunk path (0x30025419), where it is the
  * divisor of 1000.0 (Q_rint(1000.0/timescale_vmCvar.value) % 360) that seeds the
  * terminal chunk's field_98 spin angle. RESOLVED (role) on consume; exact CoD
  * source name unresolved. Retyped from the mechanical uint32_t to float. */
@@ -3403,7 +3403,7 @@ extern vmCvar_t pmove_msec;
  * (rejected). Retyped uint32_t -> int32_t: tested as a plain boolean int. */
 
 /* 0x304517c8 .data refs=8 width=4 first=0x300169a3 owner=cg_asset_parse.
- * Type repaired uint32_t->float. CG_DrawObjectivePointers (0x3002fe70) reads it as the
+ * Type repaired uint32_t->float. CG_DrawPlayerCompassPointers (0x3002fe70) reads it as the
  * objective-pointer FAR distance — at/beyond it the marker alpha is clamped to
  * cg_hudObjectiveMinAlpha_vmCvar.value; between near and far the alpha is
  * interpolated. */
@@ -3457,7 +3457,7 @@ extern vmCvar_t cg_objectiveText;
  * standalone global. */
 
 /* 0x30452548 .data refs=10 width=4 first=0x30016a2c owner=cg_asset_parse.
- * Type repaired uint32_t->float. CG_DrawObjectivePointers (0x3002fe70) reads it as the
+ * Type repaired uint32_t->float. CG_DrawPlayerCompassPointers (0x3002fe70) reads it as the
  * objective-pointer MAX-SIZE distance: at/below it the marker size scale is clamped to
  * cg_hudCompassMinRadius_vmCvar.value; between it and the near distance the size scales
  * toward 1.0. */
@@ -3556,7 +3556,7 @@ extern itemInfo_t cg_items[256];
 /* 0x304555a8 .data refs=1 width=4 first=0x30044f14 owner=setclientviewangle */
 
 /* 0x304556c8 .data — cg_tracerSpeed: the LE_MOVING_TRACER travel speed (world
- * units per second) of the line-tracer local entity built by CG_SpawnTracerLine
+ * units per second) of the line-tracer local entity built by CG_BulletTrajectoryEffects
  * (0x30048260, its only reader — all four refs at 0x300483f9/0x30048422/0x3004842f/
  * 0x3004843c). Used two ways there: le->pos.trDelta = cg_tracerSpeed * dir (the
  * TR_LINEAR velocity vector), and le->endTime = trTime + (int)(span*1000/speed)
@@ -3566,21 +3566,21 @@ extern itemInfo_t cg_items[256];
  * first-toucher/size-guess artifact (0x30048260 is a tracer builder, not a menu
  * opener). Exact source cvar name unresolved; role name kept. */
 /* 0x30455908 .data refs=2 — cg_tracerchancelmg_vmCvar.value: per-shot tracer spawn probability
- * [0..1] for the "mode A" ammo types (LMG/HMG/UMG). CG_SpawnTracer
+ * [0..1] for the "mode A" ammo types (LMG/HMG/UMG). CG_BulletTrajectoryEffects
  * (0x30048d60) overrides its default chance with this when
  * bg_weaponInfos[weapon]->ammoType is 3/4/5. Read (never written) as a float; type
  * repaired uint32_t->float. owner=cg_drawplayerstance was only its first toucher.
- * Exact CoD source name unproven; role name from CG_SpawnTracer. */
+ * Exact CoD source name unproven; role name from CG_BulletTrajectoryEffects. */
 /* 0x30455fc8: cg_crosshairAlphaMin_vmCvar.value (vmCvar_t at 0x30455fc0,
  * cg_cvarTable[43] "cg_crosshairAlphaMin"). CG_DrawCrosshair (0x3001a239) clamps
  * the side-reticle alpha up to it. The old owner=veh_playercollision label was
  * that consumer's size-guess mislabel; not a standalone global. */
 /* 0x30456208 .data refs=3 — cg_tracerchance_vmCvar.value: the default per-shot tracer spawn
- * probability [0..1]. CG_SpawnTracer (0x30048d60) gates itself on cg_tracerchance_vmCvar.value > 0.0
+ * probability [0..1]. CG_BulletTrajectoryEffects (0x30048d60) gates itself on cg_tracerchance_vmCvar.value > 0.0
  * and uses it as the default spawn chance (rand()/32768 < chance draws the tracer).
  * Read (never written) as a float; type repaired uint32_t->float.
  * owner=cg_drawplayerstance was only its first toucher. Exact CoD source name unproven;
- * role name from CG_SpawnTracer. */
+ * role name from CG_BulletTrajectoryEffects. */
 
 /* 0x3045632c: cg_norender_vmCvar.integer.integer. Proven by the cvar-table entry at
  * 0x30085880 (vmCvar 0x30456320, name 0x30078f60 "cg_norender_vmCvar.integer"). It trims
@@ -3588,14 +3588,14 @@ extern itemInfo_t cg_items[256];
  * in CG_DrawActiveFrame. */
 
 /* cg_hudObjectiveMaxHeight_vmCvar.value (0x30456448, .data) — the upper height/elevation
- * threshold CG_DrawObjectivePointers (0x3002fe70, the only consumer, refs=1) compares
+ * threshold CG_DrawPlayerCompassPointers (0x3002fe70, the only consumer, refs=1) compares
  * the objective's world-Z delta (dz) against to pick the "above" objective-icon variant
  * (direction index 1) when dz exceeds it. Type repaired uint32_t->float. The
  * owner=clientendframe mechanical label is superseded by this consumer's proven role;
  * exact CoD cvar/source name unproven so the role name is provisional. */
 
 /* 0x30456568 .data refs=6 width=4 first=0x30016a70 owner=cg_asset_parse.
- * Type repaired uint32_t->float. CG_DrawObjectivePointers (0x3002fe70) reads it as the
+ * Type repaired uint32_t->float. CG_DrawPlayerCompassPointers (0x3002fe70) reads it as the
  * objective-pointer size scale at the max-size distance (cg_hudCompassMinRange_vmCvar.value). */
 
 /* 0x304567ac (.data): cg_letterbox_vmCvar.integer - a boolean gate that, when nonzero,
@@ -4011,7 +4011,7 @@ typedef struct cgWeaponPositionState_s {
      * owner=sp_trigger_mount_no_brush was a wrong size-based auto-name. */
     qboolean adsZoomingIn;
     /* 0x30487958..0x30487963 .data vec3_t: weapon-movement view-angle offset computed
-     * and applied for the current frame. Written as one vector store by CG_ApplyWeaponMovementAngles
+     * and applied for the current frame. Written as one vector store by CG_CalculateWeaponPosition_BasePosition
      * (0x30045070); supersedes the mechanical uint32 triple that mislabeled these
      * three consecutive floats (wrong owner=com_dprintf). Sole writer; role-proven
      * provisional name. */
@@ -4019,7 +4019,7 @@ typedef struct cgWeaponPositionState_s {
     /* Persistent scalar preserved around the BG weapon-position angle calculation. */
     float weaponPositionMoveScale;
     /* 0x30487968..0x30487973: persistent weapon-movement angular offset, smoothed
-     * toward the stance/speed-derived target by CG_CalcWeaponMovementAngles. */
+     * toward the stance/speed-derived target by CG_CalculateWeaponPosition_BasePosition_movement. */
     vec3_t weaponMoveAngles;
     /* Persistent angle triple preserved around the BG weapon-position calculation. */
     vec3_t weaponPositionPrevAngles;
@@ -4085,7 +4085,7 @@ typedef struct cg_s {
      * datum). refs=3, width=4. */
     int32_t latestSnapshotTime;
     /* 0x30459160 .data refs=137: the current client snapshot pointer, cg.snap.
-     * CG_InstallSnapshotResetEffects (0x3003c9d0) stores the installed snapshot here;
+     * CG_SetInitialSnapshot (0x3003c9d0) stores the installed snapshot here;
      * the snapshot-transition loop (0x3003d2d0) reads snap->snapFlags (+0x00) and
      * snap->serverTime (+0x08) through it, and the paired next-snapshot pointer sits
      * at 0x30459164. Retyped from the mechanical uint32_t/void* to snapshot_t *. */
@@ -4192,14 +4192,14 @@ typedef struct cg_s {
     /* 0x304879d8: cg.stepChange. CG_EntityEvent's step event (0x30022c58..0x30022cf1)
      * decays the previous value over STEP_TIME (100 ms), adds the new step height
      * (eventParm - 128), clamps it to [-16, 24] and stamps cg.stepTime, the Quake 3 stair
-     * smoothing sequence; CG_SettleViewOriginZ (0x3003f9cb) applies it to vieworg.z. */
+     * smoothing sequence; CG_StepOffset (0x3003f9cb) applies it to vieworg.z. */
     float stepChange;
     /* 0x304879dc: cg.stepTime, the cg.time of the last step change (see stepChange). */
     int32_t stepTime;
     /* 0x304879e0: cg.landChange. The per-surface landing events in CG_EntityEvent
      * (0x30022a1c, 0x30022ae5) store the negated landing strength here for the local
      * client, as Quake 3's EV_FALL cases do. CG_OffsetFirstPersonView applies its 150 ms
-     * rise / 300 ms fall envelope to vieworg.z, and CG_CalcViewLeanKickOffset applies the
+     * rise / 300 ms fall envelope to vieworg.z, and CG_CalculateWeaponPosition applies the
      * same envelope at quarter scale. */
     float landChange;
     /* 0x304879e4: cg.landTime, the cg.time stamp paired with cg.landChange. */
@@ -4216,7 +4216,7 @@ typedef struct cg_s {
     refdef_t refdef;
     /* 0x30487a88 / 0x30487a8c .data — cached view-projection scale pair, two floats
      * produced together by the screen-projection helper at 0x300402b0 (which follows
-     * CG_CalcFov): it FSTPs a fov/aspect-derived scale to 0x30487a88 and the paired
+     * CG_GetViewFov): it FSTPs a fov/aspect-derived scale to 0x30487a88 and the paired
      * fov-degrees angle term to 0x30487a8c. Consumers (the 0x30019xxx view/impact
      * cluster, e.g. 0x30019448/0x3001a29f/0x30019fbd) FLD/FDIV them as floats to map
      * world coordinates into the letterboxed 3D view. Retyped from the mislabeled
@@ -4361,7 +4361,7 @@ typedef struct cg_s {
      * (0x300380a1 MOV [0x30489f24],EAX and the team loop), CG_DrawScoreboardBody
      * reads elements 1 and 2 directly to pick the leading team (0x30037c0c
      * MOV EAX,[0x30489f28]; 0x30037c11 MOV ECX,[0x30489f2c]; CMP), and
-     * CG_DrawScoreboardTeamHeader (0x30037090) reads cg.teamScores[team]
+     * CG_DrawScoreboard_Backdrop (0x30037090) reads cg.teamScores[team]
      * (0x3003732d MOV EAX,[EBX*4 + 0x30489f24]) when the column value-selector is 1.
      * Supersedes the mechanical per-element split (0x30489f28 as cg_entitypreevent,
      * 0x30489f2c as cg_entitypreevent, 0x30489f30 as g_touchtriggers) — one array,
@@ -4372,7 +4372,7 @@ typedef struct cg_s {
      * integer average, of each team's client pings. Proven a 4-element int array:
      * the build routine accumulates row +0x08 (ping) team-indexed
      * (0x300382a2 ADD [EAX*4 + 0x30489f34],ECX;
-     * 0x30038121 MOV [0x30489f34],EAX) and CG_DrawScoreboardTeamHeader (0x30037090)
+     * 0x30038121 MOV [0x30489f34],EAX) and CG_DrawScoreboard_Backdrop (0x30037090)
      * reads cg.scoreboardTeamPings[team] (0x30037336 MOV EAX,[EBX*4 + 0x30489f34])
      * when the column value-selector is 3, formatting it into the totals row's ping
      * column. Supersedes the mechanical per-element split (0x30489f38/0x30489f3c/
@@ -4428,7 +4428,7 @@ typedef struct cg_s {
     /* 0x3048a564 .data refs=6 width=4 first=0x300370a2 — cg.scoreboardOverflowed: the
      * "scoreboard content has flowed past the bottom of the visible area" latch.
      * CG_DrawScoreboardBody clears it at frame start; the per-line drawers
-     * CG_DrawScoreboardTeamHeader (0x300370a2 reads it; 0x300370f0 sets it to 1 when
+     * CG_DrawScoreboard_Backdrop (0x300370a2 reads it; 0x300370f0 sets it to 1 when
      * y+24 > 432.0) and CG_DrawClientScore (0x30037420 reads it) early-out once it is
      * set. CG_ScrollScoreboardDown (0x30037e60) gates its scroll on it. qboolean.
      * Mechanical owner=g_damage was the exporter's wrong size-match guess. */
@@ -4515,7 +4515,7 @@ typedef struct cg_s {
     int32_t crosshairHealth;
     int32_t field_31cc4[1]; /* 0x3048ae04: unresolved */
     /* 0x3048ae08: cg.usableHintKind — the latched "which usable-entity hint to draw"
-     * selector. CG_LatchOverlaySource (0x3001a5b0) copies cg.snap.field_5d0 here; the
+     * selector. CG_CheckForCursorHints (0x3001a5b0) copies cg.snap.field_5d0 here; the
      * drawer CG_DrawCursorhint (0x300303a0) dispatches on it: <=1 draws nothing, a
      * weapon-pickup selector in [0xb,0x8a] or [0x8b,0x10a] selects a weapon hint,
      * CURSOR_HINT_LMG (7) selects the mount hint, CURSOR_HINT_HEALTH (8)
@@ -4526,20 +4526,20 @@ typedef struct cg_s {
      * size-match mislabel) rejected; named by proven role, exact CoD name unproven. */
     cursorHint_t usableHintKind;
     /* 0x3048ae0c: CG_FadeColor start time (startMsec); latched from cg.time by
-     * CG_LatchOverlaySource (0x3001a5b0), consumed by the drawer FUN_300303a0. */
+     * CG_CheckForCursorHints (0x3001a5b0), consumed by the drawer FUN_300303a0. */
     uint32_t overlayFadeStartTime;
     /* 0x3048ae10: CG_FadeColor duration (totalMsec); latched from the fade-duration
-     * constant 0x3052fc4c by CG_LatchOverlaySource, consumed by the same drawer. */
+     * constant 0x3052fc4c by CG_CheckForCursorHints, consumed by the same drawer. */
     uint32_t overlayFadeDuration;
     /* 0x3048ae14: cg.usableHintColorByte — a latched 0..255 color/alpha byte for the
-     * usable-entity hint. Latched from cg.snap.field_5d4 by CG_LatchOverlaySource; the
+     * usable-entity hint. Latched from cg.snap.field_5d4 by CG_CheckForCursorHints; the
      * drawer CG_DrawCursorhint gates the optional CG_FilledBar overlay on it being
      * nonzero and FILDs it, multiplying by 1/255 (0x3007be24) to a [0,1] fraction used
      * as the bar's alpha. Mechanical owner=pm_jumpforsurface (size-match mislabel)
      * rejected; named by proven role, exact CoD name unproven. */
     int32_t usableHintColorByte;
     /* 0x3048ae18: cg.usableHintCommandIndex — a latched signed selector for the "raw
-     * command" hint. Latched from cg.snap.field_5d8 by CG_LatchOverlaySource. In
+     * command" hint. Latched from cg.snap.field_5d8 by CG_CheckForCursorHints. In
      * CG_DrawCursorhint, when >= 0 it is a gameState hint slot (index + 0x555 passed to
      * CG_ConfigString) whose text is localized via CG_TranslateMessage(.., "Hint String"); when
      * < 0 the hint falls back to the serverCursorHint selector's named
@@ -4805,7 +4805,7 @@ typedef struct cg_s {
      * unproven; role-derived. */
     float hudSpinVel;
     /* cg.compassRefYaw (0x3048b5d4, .data) — the current compass/objective-pointer
-     * reference yaw (float, degrees). CG_DrawObjectivePointers (0x3002fe70) subtracts it
+     * reference yaw (float, degrees). CG_DrawPlayerCompassPointers (0x3002fe70) subtracts it
      * from each objective's world bearing (vectoyaw of objOrigin - viewOrigin) before
      * converting to a screen-relative angle, so it is the yaw the HUD compass is oriented
      * to. Written/advanced by the sibling spin-angle updater at 0x3001d6d0 (a twin of
@@ -5152,9 +5152,14 @@ extern vmCvar_t cg_viewSizeCvar;
  * single consumer, so the role name is behavioral. */
 
 /* 0x3052f7c8 .data refs=2 width=4.
- * RESOLVED on consume by CG_CalcFov (0x3003ffc0): cg_fov_vmCvar.value -- the
+<<<<<<< HEAD
+ * RESOLVED on consume by CG_GetViewFov (0x3003ffc0): cg_fov_vmCvar.value -- the
  * configured unzoomed horizontal field-of-view in degrees (the cg_fov cvar's
- * float value mirror). CG_CalcFov reads
+ * float value mirror). CG_GetViewFov reads
+=======
+ * RESOLVED on consume by CG_GetViewFov (0x3003ffc0): cg_fov_vmCvar.value -- the base view
+ * field-of-view in degrees (the cg_fov cvar's float value mirror). CG_GetViewFov reads
+>>>>>>> stock
  * it and clamps it to [80, 160] degrees; a screen-projection helper at 0x30040330
  * divides a screen coordinate by it (FDIV) as a float. Read as a float by both
  * consumers; no direct .text writer (engine cvar-registration path updates it). The
@@ -5484,7 +5489,7 @@ extern int32_t cg_hudEmitCount; /* 0x305385e0 */
  * is a wrong first-touch artifact. Exact cvar name unresolved; named by role. */
 
 /* 0x3053a030 .data refs=14: cg_effectTime, the effect subsystem's current time
- * base in ms. CG_InstallSnapshotResetEffects (0x3003c9d0) mirrors the installed
+ * base in ms. CG_SetInitialSnapshot (0x3003c9d0) mirrors the installed
  * snapshot's serverTime here alongside cg.time; effect/trajectory code FILDs it
  * (0x30004da0 loads it as an integer -> float in several effect computations) and
  * subtracts it for elapsed-time math. Provisional role name (bg_evaluatetrajectory

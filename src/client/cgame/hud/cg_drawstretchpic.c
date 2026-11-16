@@ -3,7 +3,7 @@
 // Source: uo_cgame_mp_x86.dll 0x3001cb00..0x3001cb58
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3001cb00_3001cb58.mcode
 //
-// CG_DrawStretchPic — draw shader hShader as a 2D stretch-pic in the virtual
+// CG_DrawCroppedPic — draw shader hShader as a 2D stretch-pic in the virtual
 // 640x480 UI coordinate space, using caller-supplied texture coordinates. This is
 // the general sibling of CG_DrawPic (0x3001caa0): CG_DrawPic pins the texcoords to
 // the full image (0,0)-(1,1); this routine forwards the four texcoords passed in.
@@ -45,7 +45,7 @@
 // DrawStretchPic takes all nine as opaque 32-bit words, so CG_FloatBits reproduces
 // the exact forwarding. The multiply order in the machine code is h, x, y, w.
 
-void CG_DrawStretchPic(float x, float y, float width, float height,
+void CG_DrawCroppedPic(float x, float y, float width, float height,
                        float s1, float t1, float s2, float t2,
                        qhandle_t hShader)
 {

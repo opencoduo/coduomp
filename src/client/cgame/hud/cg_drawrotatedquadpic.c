@@ -3,10 +3,10 @@
 
 #include "../client_recovered.h"
 
-/* The Mac CG_DrawRotatedQuadPic performs the corresponding physical-screen
+/* The Mac CG_FillRotatedRect performs the corresponding physical-screen
  * scaling, color setup, rotated-quad draw, and color reset. */
 
-void CG_DrawRotatedQuadPic(const vec4_t color, float x, float y,
+void CG_FillRotatedRect(const vec4_t color, float x, float y,
                            float width, float height,
                            int32_t rotation, int32_t pivot)
 {

@@ -67,7 +67,7 @@ void CG_AddPlayerCorpseEntity(centity_t *cent);
 void CG_Missile(centity_t *cent);
 void CG_AddCEntity_ET11(centity_t *cent);
 qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider);
-void CG_DrawScoreboard_ListBanner(float fade);
+void CG_DrawScoreboard_Backdrop(float fade);
 void CG_DrawScriptUsage(void);
 qboolean CG_DrawFollowingMessage(void);
 void CG_DrawExpiringIconGrid(void);
@@ -243,7 +243,7 @@ void CG_CalcAdsViewOffset(const vec3_t pos);
 /*
  * The cgs.scrFade* fields are members of cgs_t (globals.h, included above).
  *
- * CG_StartFovFade (0x3001ab50) — reconstructed (see functions/FUN_3001ab50_3001ab81.c).
+ * CG_Fade (0x3001ab50) — reconstructed (see functions/FUN_3001ab50_3001ab81.c).
  * Begins a cgs.scrFade animation: startTime = ECX, durationMs = EAX, and
  * startValue = (stack arg) / 255.0f; if (startTime + durationMs) <= cg.time the
  * fade is already finished so currentValue is snapped to startValue. Nonstandard
@@ -252,7 +252,7 @@ void CG_CalcAdsViewOffset(const vec3_t pos);
  * script_func_setplayerignoreradiusdamage is rejected (this is x87 HUD/FOV fade
  * state, not a script damage builtin).
  */
-void CG_StartFovFade(int32_t startTime, int32_t durationMs, int32_t numerator255);
+void CG_Fade(int32_t startTime, int32_t durationMs, int32_t numerator255);
 /*
  * CG_ScreenFade (0x3001a7c0) — advance the cgs.scrFade timed alpha animator by real
  * elapsed time, then draw a fullscreen black quad at the resulting alpha. Called
@@ -264,9 +264,9 @@ void CG_StartFovFade(int32_t startTime, int32_t durationMs, int32_t numerator255
  * snaps currentValue to startValue. Once the schedule has expired it snaps to
  * startValue immediately. When the (settled or stepped) alpha is > 0 it fills the
  * whole virtual 640x480 screen with color (0,0,0,alpha) via CG_FillRect. The
- * animator's numerator/255 anchor (CG_StartFovFade) confirms currentValue is a
+ * animator's numerator/255 anchor (CG_Fade) confirms currentValue is a
  * 0..1 screen-fade alpha, not an FOV value; the struct keeps its cgFovFade name
- * because CG_CalcFov drives the same instance during the zoom/scope transition.
+ * because CG_GetViewFov drives the same instance during the zoom/scope transition.
  * The .mcode size-guess name vectosignedangles is rejected: this function reads no
  * vector, does no atan2/FSQRT/BAMS angle math, and takes no arguments — it is a
  * timed screen-fade drawer. Provisional match to the cgame_mp.dll PPC name
@@ -275,7 +275,7 @@ void CG_StartFovFade(int32_t startTime, int32_t durationMs, int32_t numerator255
  */
 void CG_ScreenFade(void);
 /*
- * CG_CalcFov (0x3003ffc0) — compute the current view field of view (degrees),
+ * CG_GetViewFov (0x3003ffc0) — compute the current view field of view (degrees),
  * returned as a float. Clamps the base FOV (cg_fov_vmCvar.value) to [80, 160] degrees,
  * forces 90 degrees in game mode 5 (cg.predictedPlayerState.pmType), and — when the local player's
  * entityStateFlags bit EF_IN_VEHICLE is set (a vehicle/turret view) —
@@ -287,9 +287,9 @@ void CG_ScreenFade(void);
  * .mcode size-guess name BG_ParseWeaponInfoSpecificFieldType is rejected: this
  * function parses nothing and touches no weapon-info field table — it is pure x87
  * FOV/zoom math over cgame view globals. Provisional match to the cgame_mp.dll PPC
- * name CG_CalcFov by the 80/90/160-degree FOV-clamp signature (not by size).
+ * name CG_GetViewFov by the 80/90/160-degree FOV-clamp signature (not by size).
  */
-float CG_CalcFov(void);
+float CG_GetViewFov(void);
 /*
  * CG_AddToTeamChat (0x30039390) — append a (color-coded) team-chat line to the
  * team-chat scroll ring, word-wrapping at TEAMCHAT_WIDTH and re-emitting the
@@ -359,16 +359,16 @@ extern cgVoiceChatMsg_t cg_voiceChatBuffer[CG_VOICE_CHAT_BUFFER_COUNT];
 void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg);
 
 /*
- * CG_CalcViewLeanKickOffset (0x30045230) — build the per-frame first-person
+ * CG_CalculateWeaponPosition (0x30045230) — build the per-frame first-person
  * view/weapon positional offset into the caller-supplied scratch vec3 `out`
  * (passed in EAX -> EDI; the sole caller FUN_30046570 zeroes a stack vec3 then
  * passes its address). Zeroes `out`, then accumulates: (1) a procedural lean sway
  * — an envelope (2-|leanFraction|)*leanFraction of the interpolated player lean
  * fraction (0x30483208), aimed by an FSINCOS forward vector and scaled by
  * (1-adsFraction)*1.6, evaluated only when leanFraction != 0 and adsFraction < 1;
- * (2) the current weapon-movement view angles via CG_ApplyWeaponMovementAngles plus a fixed per-frame
+ * (2) the current weapon-movement view angles via CG_CalculateWeaponPosition_BasePosition plus a fixed per-frame
  * Y/Z view-kick nudge (0x30487af0/af4); the point is then rotated into world space
- * by CG_SpinEffectPointToWorld; (3) a recoil Z bump from the last impact-event kick
+ * by CG_CalculateWeaponPosition_ToWorldPosition; (3) a recoil Z bump from the last impact-event kick
  * (0x304879e0) — rising over 150 ms then decaying over the next 300 ms since its
  * cg.time stamp (0x304879e4). Finally CG_CalcAdsViewOffset projects the finished
  * point to cg.adsViewOffset. Register-arg ABI (out in EAX/EDI, plain RET); modeled
@@ -376,38 +376,38 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg);
  * size-match "Info_SetValueForKey_Big" is REJECTED (no info-string/key-value work
  * whatsoever — this is dense x87 view math). See FUN_30045230_3004547e.c.
  */
-void CG_CalcViewLeanKickOffset(vec3_t out);
+void CG_CalculateWeaponPosition(vec3_t out);
 
 /*
- * CG_CalcWeaponMovementAngles (0x30044ce0) — compute the current weapon-movement view
+ * CG_CalculateWeaponPosition_BasePosition_movement (0x30044ce0) — compute the current weapon-movement view
  * angle offset and accumulate it (three FADD/FSTP, pitch/yaw/roll) into the
  * caller-supplied vec3. It derives a target from sprint/stance, movement speed,
  * and the current weapon's movement/offset fields, smooths the persistent vec3
  * at 0x30487968 toward that target, and fades it during the first half of ADS.
- * Called only by CG_ApplyWeaponMovementAngles (0x30045070). The i386 build passes the output
+ * Called only by CG_CalculateWeaponPosition_BasePosition (0x30045070). The i386 build passes the output
  * vec3 pointer in ESI (register-arg ABI); here it is modeled as a normal
  * pointer parameter. Preserves EDI. Provisional caller-observed ABI — supersede
  * with this callee's own .mcode reconstruction; exact source name unresolved
  * (the mechanical "SetClientViewAngle" size-match is rejected as size-based).
  */
-void CG_CalcWeaponMovementAngles(vec3_t angles);
+void CG_CalculateWeaponPosition_BasePosition_movement(vec3_t angles);
 /*
- * CG_ApplyWeaponMovementAngles (0x30045070) — compute this frame's weapon-movement view-angle offset
- * (via CG_CalcWeaponMovementAngles), publish it to cg.weaponPosition.weaponMovementAngles, and add it
+ * CG_CalculateWeaponPosition_BasePosition (0x30045070) — compute this frame's weapon-movement view-angle offset
+ * (via CG_CalculateWeaponPosition_BasePosition_movement), publish it to cg.weaponPosition.weaponMovementAngles, and add it
  * componentwise into the caller's view-angle accumulator `angles` (in/out, passed
  * in EDI; register-arg ABI). See FUN_30045070_300450d3.c. Mechanical "Com_DPrintf"
  * size-match rejected.
  */
-void CG_ApplyWeaponMovementAngles(vec3_t angles);
+void CG_CalculateWeaponPosition_BasePosition(vec3_t angles);
 /*
- * CG_SpinEffectPointToWorld (0x300450e0) — transform one point from the spinning
+ * CG_CalculateWeaponPosition_ToWorldPosition (0x300450e0) — transform one point from the spinning
  * view-effect's local axis frame (AngleVectors of the spin-angle triple at
  * 0x30487ac8) into world space anchored at cg.refdef.vieworg, overwriting `point`
  * in place: point = viewOrigin + px*forward - py*right + pz*up. Single stack arg
  * (vec3_t *; caller cleans). See FUN_300450e0_3004519c.c. Mechanical
  * "Item_ListBox_MaxScroll" size-match rejected.
  */
-void CG_SpinEffectPointToWorld(vec3_t point);
+void CG_CalculateWeaponPosition_ToWorldPosition(vec3_t point);
 /*
  * CG_PerturbCamera (0x30046490) — recovered. Slides cg.refdef.vieworg along
  * cg.refdef.viewaxis[0] by `dist` (single float stack arg; the lone caller
@@ -421,7 +421,7 @@ void CG_PerturbCamera(float dist);
 void CG_TrackAdsZoomDirection(void);
 void CG_AddViewWeapon(void);
 void CG_AddMarks(void);
-void CG_FireFlameChunks(void);
+void CG_AddFlameSpriteToScene(void);
 void CG_UpdateShellShockCamera(void);
 void CG_DrawSkyBoxPortal(void);
 void CG_DrawActive(int32_t stereoView);
@@ -671,7 +671,7 @@ void CG_ConfigString11Modified(void);
 const char *CG_ConfigString(int index);
 
 /*
- * CG_RegisterConfigStringShader (0x300387e0) — resolve the config string at a
+ * CG_RegisterServerShader (0x300387e0) — resolve the config string at a
  * gameState index and, when it is non-empty, (re)register it as a 2D/HUD shader
  * via cgame_syscall(CG_R_REGISTERSHADER, name, 5) after pumping the loading HUD
  * once (CG_DrawInformation(0)). The resulting qhandle_t is discarded — this is
@@ -683,10 +683,10 @@ const char *CG_ConfigString(int index);
  * CS_SHADERS_COUNT. The .mcode size-guess "Scr_FreeHudElem" is rejected (frees
  * nothing; registers a shader). Named by proven behavior; exact CoD symbol
  * unproven. Proven by its own .mcode reconstruction. */
-void CG_RegisterConfigStringShader(int index);
+void CG_RegisterServerShader(int index);
 
 /*
- * CG_RegisterConfigStringMenu (0x30038790) — resolve the config string at a
+ * CG_PrecacheScriptMenu (0x30038790) — resolve the config string at a
  * gameState index and, when it is non-empty, load/register it as a script-menu
  * file via cgame_syscall(CG_R_REGISTERMENU, name); if the trap returns zero
  * (load failed) it reports Com_ErrorMessage("Could not load script menu file
@@ -694,11 +694,11 @@ void CG_RegisterConfigStringShader(int index);
  * inlined [0, MAX_CONFIGSTRINGS) bounds check and its Com_ErrorMessage(
  * "CG_ConfigString: bad index: %i", index) diagnostic (after which the lookup still
  * proceeds). Invoked by the config-string-modified dispatcher (0x300391xx) for the
- * menu-file range [0x535, 0x555). Sibling of CG_RegisterConfigStringShader and of
+ * menu-file range [0x535, 0x555). Sibling of CG_RegisterServerShader and of
  * the identical registrar at 0x30038826. The .mcode size-guess "Q_stricmp" is
  * rejected (compares nothing; loads a menu). Named by proven behavior; exact CoD
  * symbol unproven. Proven by its own .mcode reconstruction. */
-void CG_RegisterConfigStringMenu(int index);
+void CG_PrecacheScriptMenu(int index);
 
 /*
  * CG_SafeTranslateHudElemString (0x3002d800) — return the localized hud-element string for a
@@ -1052,7 +1052,7 @@ void CG_RegisterScoreboardShaders(void);
  *     (vel *= (1 - 3*dt_s), and an extra (1 - 5*dt_s) plus a +-2*dt_s bias term), clamp
  *     |vel| to 2000 and floor it at 0 in the closing direction. After the substeps,
  *     refYaw = AngleNormalize360(residualStep + target), i.e. requantized through 16-bit
- *     BAMS. Called once at the top of CG_DrawObjectivePointers (0x3002fe70) before the
+ *     BAMS. Called once at the top of CG_DrawPlayerCompassPointers (0x3002fe70) before the
  *     objective loop. The velocity/angle twin of CG_UpdateHudSpinAngle (0x3001d3a0).
  * The .mcode size-guess "VEH_CheckPushClients" (from game_mp_uo, wrong DLL) is rejected:
  * no vehicle/push-client work; this is pure HUD compass angle math. Exact CoD symbol
@@ -1060,7 +1060,7 @@ void CG_RegisterScoreboardShaders(void);
 void CG_UpdateCompassOrientation(void);
 
 /*
- * CG_DrawObjectivePointers (0x3002fe70) — draw the HUD compass/objective markers.
+ * CG_DrawPlayerCompassPointers (0x3002fe70) — draw the HUD compass/objective markers.
  * For the local player's snapshot (cg.snap) it iterates all 16
  * playerState.objectives[] entries and, for each whose state ==
  * OBJECTIVE_STATE_CURRENT, computes the objective's screen bearing relative to
@@ -1073,7 +1073,7 @@ void CG_UpdateCompassOrientation(void);
  * a server per-frame routine that issues no 2D draw traps, whereas this is pure cgame
  * HUD drawing (trap_R_SetColor / trap_R_DrawStretchPic / CG_GetObjectiveShaderForDir).
  * Register-argument ABI (rect in EAX) is recorded in the .c evidence comment. */
-void CG_DrawObjectivePointers(const rectDef_t *rect, const vec3_t color);
+void CG_DrawPlayerCompassPointers(const rectDef_t *rect, const vec3_t color);
 void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color);
 void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color);
 
@@ -1540,8 +1540,8 @@ void CG_AddMovingTracer(localEntity_t *le);
 void CG_DrawMovingTracerPoly(const vec3_t tailPoint, const vec3_t headPoint, float width);
 
 /*
- * Provisional caller-observed declarations for the CG_SpawnTracer (0x30048d60)
- * callees. ABIs re-derived from CG_SpawnTracer's OWN machine code at each call site;
+ * Provisional caller-observed declarations for the CG_BulletTrajectoryEffects (0x30048d60)
+ * callees. ABIs re-derived from CG_BulletTrajectoryEffects's OWN machine code at each call site;
  * arity/types UNPROVEN in full — verify against each callee's own .mcode when it is
  * reconstructed. These are the tracer-spawn cluster (0x30048xxx: muzzle-point +
  * moving-tracer + line-effect builders).
@@ -1554,7 +1554,7 @@ void CG_DrawMovingTracerPoly(const vec3_t tailPoint, const vec3_t headPoint, flo
  * player it uses cg.snap's view origin; for other entities it queries the entity's DObj
  * tag (trap 0xa5), falling back to the entity lerpOrigin. Returns qtrue when a point was
  * produced. Register-argument ABI proven in its own file: weaponName in EAX, entityNum in
- * ECX, muzzle a single caller-pushed stack pointer. CG_SpawnTracer's call site matches
+ * ECX, muzzle a single caller-pushed stack pointer. CG_BulletTrajectoryEffects's call site matches
  * (EAX=tagName, ECX=entityNum, PUSH &muzzle; ADD ESP,4). */
 qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum, vec3_t muzzle);
 
@@ -1570,7 +1570,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum, vec3_t mu
  *
  * ABI SUPERSEDED (the earlier placeholder guessed a phantom `int edxUnknownZero` slot and
  * mislabeled the mode-select index as a stack arg). Proven from this body + the sole call
- * site 0x30048e20 (CG_SpawnTracer's selector-7 branch: XOR EDX,EDX;
+ * site 0x30048e20 (CG_BulletTrajectoryEffects's selector-7 branch: XOR EDX,EDX;
  * MOV ECX,impactOrigin; LEA EAX,&muzzle; PUSH weaponIndex; CALL; ADD ESP,4):
  *   register EAX -> startOrigin     (vec3*, muzzle point; copied to EDI at entry)
  *   register ECX -> endOrigin       (vec3*, impact point)
@@ -1582,7 +1582,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum, vec3_t mu
 void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
                           int32_t weaponInfoIndex, int32_t weaponIndex);
 
-/* CG_SpawnTracerLine (0x30048260) — RECONSTRUCTED in
+/* CG_BulletTrajectoryEffects (0x30048260) — RECONSTRUCTED in
  * src/client/cgame/weapons/cg_spawntracerline.c. Spawns a moving LINE tracer as a
  * LE_MOVING_TRACER local entity that flies from the shot start point toward the shot
  * end point. Selects the tracer length twin by bg_weaponInfos[weapon]->ammoType
@@ -1594,16 +1594,16 @@ void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
  * time is dithered back by (rand() % cg.frametime)/2 ms to de-alias per-frame spawns.
  * The tracer-mode-A class also OR-marks le->leFlags = LEF_TRACER_MODE_A.
  *
- * ABI proven from this body + CG_SpawnTracer's non-7 branch call site
+ * ABI proven from this body + CG_BulletTrajectoryEffects's non-7 branch call site
  * 0x30048e42 (MOV EAX,impactOrigin; LEA ECX,&muzzle; PUSH weapon; CALL; ADD ESP,4):
  *   register EAX -> endOrigin   (vec3, shot end point; read only)
  *   register ECX -> startOrigin (vec3, shot start point; read only)
  *   stack  arg0  -> weapon      (int; index into bg_weaponInfos[] for length/flag select)
- * caller-cleaned. Role name adopted from CG_SpawnTracer's call site + behavior (it is the
+ * caller-cleaned. Role name adopted from CG_BulletTrajectoryEffects's call site + behavior (it is the
  * alternate-path twin of CG_SpawnMovingTracer, which builds tracer geometry directly; this
  * one instead spawns a self-moving local entity). The .mcode's size-matched "Menus_Open"
  * guess is REJECTED (this is a cgame tracer/local-entity builder, not a UI menu opener). */
-void CG_SpawnTracerLine(const vec3_t endOrigin, const vec3_t startOrigin, int32_t weapon);
+void CG_BulletTrajectoryEffects(const vec3_t endOrigin, const vec3_t startOrigin, int32_t weapon);
 
 /* CG_WhizbySound (0x300480f0) — reconstructed in
  * src/client/cgame/weapons/cg_whizbysound.c. From the bullet impact point (register
@@ -1617,7 +1617,7 @@ void CG_SpawnTracerLine(const vec3_t endOrigin, const vec3_t startOrigin, int32_
 void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle);
 
 /*
- * CG_SpawnTracer (0x30048d60) — reconstructed in
+ * CG_BulletTrajectoryEffects (0x30048d60) — reconstructed in
  * src/client/cgame/weapons/cg_spawntracer.c. Probabilistically spawns a bullet
  * tracer for one shot: gated on cg_tracerchance_vmCvar.value > 0, computes the muzzle point of the
  * shot (CG_CalcMuzzlePoint on the "tag_flash"-family tagName), suppresses the tracer for
@@ -1632,12 +1632,12 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle);
  * unproven. The .mcode's size-matched "BG_AnimScriptStateChange" guess is REJECTED —
  * this is cgame tracer/muzzle-flash rendering (rand chance, tag muzzle point, tracer
  * local-entities), not a BG anim-script state machine. */
-void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
+void CG_BulletTrajectoryEffects(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
                     int32_t surfaceType, const char *tagName);
 
 /*
  * Muzzle-tag name pointer slots (.data at 0x30085eec/0x30085efc/0x30085f00). Each holds
- * a const char* into .rdata; CG_BulletHitEvent forwards them to CG_SpawnTracer as the
+ * a const char* into .rdata; CG_BulletHitEvent forwards them to CG_BulletTrajectoryEffects as the
  * tagName. NOT a syscall dispatcher (that is cgame_syscall at 0x30085e9c):
  *   0x30085eec -> 0x300772c0 "tag_flash"            (plain-weapon muzzle tag)
  *   0x30085efc -> 0x3007ac10 "tag_altfire"          (vehicle weapon mount position 1)
@@ -1649,7 +1649,7 @@ void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
  * src/client/cgame/weapons/cg_bullethitevent.c. The client-side bullet fire/impact
  * event handler: plays the surface impact sound (CG_PlaySoundAliasByName) and the primary +
  * secondary oriented impact/blood effects (cgame_syscall CG_PLAY_EFFECT_ORIENTED) at the
- * hit point, then spawns the bullet tracer (CG_SpawnTracer) from the right muzzle tag —
+ * hit point, then spawns the bullet tracer (CG_BulletTrajectoryEffects) from the right muzzle tag —
  * "tag_flash" for a hand weapon, or "tag_altfire"/"tag_secondary_flash" for a
  * vehicle-mounted weapon's firing position. Names itself via its lone error string
  * "CG_BulletHitEvent: unknown vehicle position\n" (0x3007a7f4, printed at 0x30049013);
@@ -1680,7 +1680,7 @@ void CG_AddLocalEntities(void);
 localEntity_t *CG_AllocLocalEntity(void);
 void CG_SpawnScaleFadeSprite(const vec3_t origin, qhandle_t shader,
                              int32_t radius, int32_t duration);
-void CG_DrawRotatedQuadPic(const vec4_t color, float x, float y,
+void CG_FillRotatedRect(const vec4_t color, float x, float y,
                                float width, float height,
                                int32_t rotation, int32_t pivot);
 void CG_Trap54DrawStyle4(const vec4_t color, int32_t x, float y,
@@ -2101,14 +2101,14 @@ void CG_DrawCenterString(void);
 char *Q_strlwr(char *s);
 
 /*
- * CG_LatchOverlaySource (0x3001a5b0) — the "begin/seed" half of the animated
+ * CG_CheckForCursorHints (0x3001a5b0) — the "begin/seed" half of the animated
  * usable-entity / crosshair-hint overlay: latch the current cg.snap source fields
  * into the persistent overlay-effect state block (0x3048ae08..), gated by the
  * cgame-ready flag and a nonzero source field. Its only caller is the draw half
  * CG_DrawCursorhint (0x300303a0), which immediately consumes the block. Full body
  * in src/client/cgame/hud/cg_latchoverlaysource.c.
  */
-void CG_LatchOverlaySource(void);
+void CG_CheckForCursorHints(void);
 
 /*
  * CG_DrawAreaSystemChat / CG_DrawAreaChat (0x30031940 / 0x30031a00) —
@@ -2436,7 +2436,7 @@ void CG_EndShellShock(void);
 
 /*
  * CG_SnapshotTransitionStage2 (0x30034d40) — second stage of the snapshot
- * transition, reached by tail JMP from CG_InstallSnapshotResetEffects and called
+ * transition, reached by tail JMP from CG_SetInitialSnapshot and called
  * directly from the initial-snapshot install path in CG_ProcessSnapshots. Resets the
  * locally-predicted player state to the freshly installed snapshot and clears the
  * per-life transient client view/weapon/HUD/effect state. Reconstructed (see
@@ -2452,11 +2452,11 @@ void CG_EndShellShock(void);
 void CG_SnapshotTransitionStage2(void);
 
 /*
- * CG_InstallSnapshotResetEffects (0x3003c9d0) — install `snap` as cg.snap, mirror
+ * CG_SetInitialSnapshot (0x3003c9d0) — install `snap` as cg.snap, mirror
  * its serverTime into the client time bases, free every effect-pool slot, issue
  * cgame trap 0xdb (1.0f), and tail-call CG_SnapshotTransitionStage2. Named by
  * proven role; the size-matched .mcode guess "DebugDumpAnims" is rejected. */
-void CG_InstallSnapshotResetEffects(snapshot_t *snap);
+void CG_SetInitialSnapshot(snapshot_t *snap);
 
 /*
  * CG_ReadNextSnapshot (0x3003d220) — read the next engine snapshot into the free one
@@ -2707,7 +2707,7 @@ static inline int32_t CG_RoundToNearest(float coord)
 void CG_DrawPic(float x, float y, float width, float height, qhandle_t hShader);
 
 /*
- * CG_DrawStretchPic (0x3001cb00) — draw shader `hShader` as a 2D stretch-pic in the
+ * CG_DrawCroppedPic (0x3001cb00) — draw shader `hShader` as a 2D stretch-pic in the
  * virtual 640x480 UI space, with caller-supplied texture coordinates. Same as
  * CG_DrawPic except the four texcoords (s1,t1,s2,t2) are passed in rather than pinned
  * to (0,0,1,1): scales (x,width) by cgs.screenXScale and (y,height) by
@@ -2719,7 +2719,7 @@ void CG_DrawPic(float x, float y, float width, float height, qhandle_t hShader);
  * parameter. The size-matched `.mcode` guess `PM_GetSlowdownFriction` is rejected:
  * this issues the 2D stretch-pic draw trap and reads cgs.screenXScale/screenYScale,
  * touching no playerState or friction state. */
-void CG_DrawStretchPic(float x, float y, float width, float height,
+void CG_DrawCroppedPic(float x, float y, float width, float height,
                        float s1, float t1, float s2, float t2,
                        qhandle_t hShader);
 
@@ -2845,7 +2845,7 @@ void CG_DrawFlashDamage(void);
  * (0 < cg.time - serverTime < duration) it computes alpha = min(2 - 2*elapsed/duration,
  * 1) so each arrow fades out over the back half of its window, and draws a rotated icon
  * quad (width cg_hudDamageIconWidth_vmCvar.value, from cg_hudDamageIconOffset_vmCvar.value down cg_hudDamageIconHeight_vmCvar.value)
- * via CG_DrawTurretTagQuad, rotated by vectoyaw(cg.refdef.viewaxis[0]) - slot->yaw so it
+ * via CG_FillRotatedRect, rotated by vectoyaw(cg.refdef.viewaxis[0]) - slot->yaw so it
  * points at the attacker relative to the current view. The white draw color
  * (1,1,1,alpha) is installed per-arrow with cgame_syscall(CG_R_SETCOLOR, color). The
  * .mcode size-guess name "CG_EjectWeaponBrass" is REJECTED: no 3D shell/entity is
@@ -2905,7 +2905,7 @@ void CG_DrawVote(void);              /* 0x3001b7d0: complaint/vote HUD */
 void CG_VoiceMenuTimeout(void);      /* 0x3001ab00: close voiceMenu after 2500 ms */
 void CG_DrawHudElems(void);          /* 0x3002a4a0: gather+draw active hudElem_t list (calls CG_GetSortedHudElems) */
 void CG_DrawWeaponSelect(void);      /* 0x30046bb0: animated weapon-selection carousel */
-void CG_DrawWeaponSelectKeyHint(const vec4_t color, int32_t slot, float x, float y);
+void CG_DrawWeapSlotBinding(const vec4_t color, int32_t slot, float x, float y);
 void CG_DrawWeaponIcon3D(void);
 void CG_DrawCrosshairNames(void); /* 0x3001a610: reconstructed — draws the faded, health-tinted name of the player under the crosshair (was mis-guessed CG_DrawPlayerWeaponNameBack); src/client/cgame/hud/cg_drawcrosshairnames.c */
 void CG_DrawMatchTimeout(void);      /* 0x3001bbd0: reconstructed — draws the screen-centered match-timeout/"CGAME_PAUSED" overlay (was mis-guessed CG_DrawWeaponSelect) */
@@ -2933,12 +2933,12 @@ void CG_DrawSoundOverlay(void);         /* 0x3001acc0: overlay-A — the Miles S
                                       * 2D text). Reconstructed in FUN_3001acc0_3001af0e.c;
                                       * supersedes the provisional CG_DrawInfoOverlayA and
                                       * the wrong size-guess Info_SetValueForKey. */
-/* CG_EmitTrap54DrawScaled (0x3001ce40) — fixed-arity CG_R_TEXT_PAINT 2D-text/draw emitter
+/* CG_DrawStringExt (0x3001ce40) — fixed-arity CG_R_TEXT_PAINT 2D-text/draw emitter
  * with a custom register+stack ABI, reconstructed in FUN_3001ce40_3001cf06.c. Called
  * by CG_DrawSoundOverlay for the header and each channel line. modeFlag!=0 -> mode 3;
  * adjustFlag==0 -> CG_AdjustFrom640 rescale of x/width/y by the screen scales;
  * color NULL -> local white {1,1,1,1}. */
-void CG_EmitTrap54DrawScaled(int modeFlag, int adjustFlag, const vec_t *color,
+void CG_DrawStringExt(int modeFlag, int adjustFlag, const vec_t *color,
                              float x, float y, void *handle,
                              float width, float height, int32_t extra);
 void CG_DrawScriptVmDebugOverlay(void); /* 0x30017e90: overlay-B, script-VM debug
@@ -3257,7 +3257,7 @@ _Static_assert(offsetof(parseField_t, type) == 0x08, "parseField_t type");
 #endif
 
 /*
- * CG_SettleViewOriginZ (0x3003f9a0) — reconstructed in
+ * CG_StepOffset (0x3003f9a0) — reconstructed in
  * functions/FUN_3003f9a0_3003f9e5.c. A void(void) helper called at the tail of the
  * view-kick evaluator FUN_3003fb60 (0x3003ff59): it subtracts a time-decaying
  * amount from the view-origin Z (cg.refdef.vieworg[2]) over a fixed 100 ms settle
@@ -3267,7 +3267,7 @@ _Static_assert(offsetof(parseField_t, type) == 0x08, "parseField_t type");
  * size-guess name Cmd_PrevVehSlot_f is rejected (no argc/argv, no Cmd_* calls, no
  * vehicle state); behavioral name, exact CoD symbol unproven.
  */
-void CG_SettleViewOriginZ(void);
+void CG_StepOffset(void);
 
 /*
  * CG_UpdateViewKick (0x3003f9f0) — advance the persistent first-person view-kick
@@ -3358,7 +3358,7 @@ void InitWeaponInfo(void);
 void CG_RegisterWeaponInfo(int index, const char *configString);
 
 /*
- * CG_SelectWeaponIndex (0x30047390) — commit a weapon selection: snapshot the
+ * CG_FinishWeaponChange (0x30047390) — commit a weapon selection: snapshot the
  * game time, write the "cg_weaponSelect" cvar to `weapon`, and (unless the
  * request merely re-selects the current weapon's alt-weapon) assert the "cl_run"
  * cvar. Reconstructed in functions/FUN_30047390_300473f6.c.
@@ -3368,7 +3368,7 @@ void CG_RegisterWeaponInfo(int index, const char *configString);
  * requested weapon index arrives in EAX and the current weapon index in ECX,
  * with no stack arguments. Expressed as (weapon, currentWeapon) to match the
  * reconstructed definition. */
-void CG_SelectWeaponIndex(int32_t weapon, int32_t currentWeapon);
+void CG_FinishWeaponChange(int32_t weapon, int32_t currentWeapon);
 
 /*
  * CG_IsWeaponHeld (0x30047370) — predicate returning whether weapon `weapon` is
@@ -3396,7 +3396,7 @@ qboolean CG_SelectFirstWeaponNotInSlot(int32_t forward, int32_t requireAmmo);
  * current weapon is in a numbered inventory slot it scans neighboring slots first
  * and then the held loose-weapon list; when the current weapon is not slotted, it
  * scans held loose weapons first and then slots. Selections are committed through
- * CG_SelectWeaponIndex; the final reconcile path re-stamps cg_weaponSelect when
+ * CG_FinishWeaponChange; the final reconcile path re-stamps cg_weaponSelect when
  * cg_weaponSelect_vmCvar.integer is no longer held.
  *
  * ABI: two caller-cleaned stack arguments, no register args:
@@ -3421,7 +3421,7 @@ void CG_OutOfAmmoChange(void);
  * weapon index (cg.lastRequestedWeapon) and cg.time snapshots, then, only when
  * bg_itemlist[weaponIndex].type == IT_WEAPON and no weapon is yet
  * selected (cg_weaponSelect_vmCvar.integer == 0), sets trap_Cvar_Set("cg_weaponSelect",
- * va("%i", bg_itemlist[weaponIndex].weapon)). Distinct from CG_SelectWeaponIndex
+ * va("%i", bg_itemlist[weaponIndex].weapon)). Distinct from CG_FinishWeaponChange
  * (0x30047390), which commits unconditionally and also asserts cl_run.
  *
  * Non-default register ABI (proven from the sole caller at 0x30022da1: MOV
@@ -3658,7 +3658,7 @@ double atof(const char *s);
 void CG_PlayFxOnTag(centity_t *self, int fxId);
 
 /*
- * CG_AddLoopedEntitySound (0x30021860) — register and (re)start an entity's pair of
+ * CG_SoundBlend (0x30021860) — register and (re)start an entity's pair of
  * looping sounds for the current frame, with an interpolated cyclic "phase".
  *
  * Guards (any failing => nothing emitted): self->fxId (+0xa4) and self->surfaceType
@@ -3676,7 +3676,7 @@ void CG_PlayFxOnTag(centity_t *self, int fxId);
  * self->objId). Role name (exact CoD symbol unproven); the .mcode's size-matched
  * "CheckMatchTimeout" guess (from the wrong DLL, game_mp_uo) is rejected.
  */
-void CG_AddLoopedEntitySound(centity_t *self);
+void CG_SoundBlend(centity_t *self);
 
 /*
  * CG_EjectWeaponBrass (0x30047be0) -- eject the current weapon's shell-casing ("brass")
@@ -3810,8 +3810,13 @@ void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm);
  * cent,model,event,mode right-to-left (so mode is pushed first). Provisional role name. */
 /* NOT_FROM_ORIGINAL_SOURCE: presentEffects gates audiovisual work after recoil. */
 void CG_FireWeapon(uint32_t flags, centity_t *cent,
+<<<<<<< HEAD
                    entityState_t *model, int32_t event, int32_t mode, qboolean presentEffects);
-void CG_PlayFxOnWeaponTag(qboolean selectViewDObj, int32_t weaponIndex,
+void CG_WeaponFlash(qboolean selectViewDObj, int32_t weaponIndex,
+=======
+                   entityState_t *model, int32_t event, int32_t mode);
+void CG_WeaponFlash(qboolean selectViewDObj, int32_t weaponIndex,
+>>>>>>> stock
                           int32_t model, const vec3_t effectOrigin,
                           const char *tagName, int32_t drawTagModel);
 void CG_FakeTrajectoryEffects(int32_t entityNum, int32_t weaponIndex,
@@ -5303,7 +5308,7 @@ void VectorNormalizeFast(vec3_t v);
  * on ST(0), leaving pow(base, exponent) on ST(0). Declared as a caller-observed
  * provisional (matching the sqrt_f pattern) so flame/physics callers name their
  * pow call instead of a bare FUN_ address. Argument order proven from the two
- * CG_AddFlameChunks (0x300272b0) call sites, which load base then push the exponent
+ * CG_AddFlameSpriteToScene (0x300272b0) call sites, which load base then push the exponent
  * constant last (ST0). Recovered callers use the shared CRT power provider,
  * which preserves the selected binary64 or native x87 arithmetic route.
  * HUD and icon arithmetic retain this same CRT contract.
@@ -5343,7 +5348,7 @@ void VectorNormalizeFast(vec3_t v);
  * is pmove touch-list bookkeeping (void, no x87), whereas this reads cg.time,
  * does an elapsed-time fade computation, and returns a color pointer — matching
  * the cgame_mp.dll PPC CG_FadeColor and the many callers in the HUD/overlay
- * draw cluster. Corroborated by CG_LatchOverlaySource (0x3001a5b0), which
+ * draw cluster. Corroborated by CG_CheckForCursorHints (0x3001a5b0), which
  * latches (cg.time, duration) as this function's (startMsec, totalMsec).
  *
  * Register-argument ABI (custom regparm): startMsec arrives in EDX and totalMsec
@@ -5392,7 +5397,7 @@ _Static_assert(sizeof(cgScoreboardDrawCtx_t) == 0x10,
                "cgScoreboardDrawCtx_t is one vec4");
 
 /*
- * CG_DrawScoreboardTeamHeader (0x30037090) — draw one scoreboard team-section
+ * CG_DrawScoreboard_Backdrop (0x30037090) — draw one scoreboard team-section
  * header: the localized "<team name> (N players)" banner line and, for the
  * AXIS/ALLIES sections, a per-team totals row (cg.teamScores in the
  * score column, cg.scoreboardTeamPings in the ping column). Returns the Y at which the
@@ -5410,7 +5415,7 @@ _Static_assert(sizeof(cgScoreboardDrawCtx_t) == 0x10,
  * cgame scoreboard drawer. Name provisional by proven role; exact CoD symbol
  * unproven from the allowed inputs.
  */
-float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
+float CG_DrawScoreboard_Backdrop(const cgScoreboardDrawCtx_t *drawCtx, float y,
                                   float boardWidth, float bannerHeight, team_t team,
                                   int *lineCounter);
 
@@ -5478,7 +5483,7 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx,
                                      float y);
 
 /*
- * CG_DrawScoreboard_ScrollIndicators (0x300378b0) — reconstructed. When the
+ * CG_DrawScrollbar (0x300378b0) — reconstructed. When the
  * collected scoreboard list overflows the visible area, this draws the vertical
  * scrollbar down the right edge: a dimmed "black" track (trap_R_DrawStretchPic), a
  * dimmer "white" proportional thumb, and up/down arrow+key glyphs (CG_DrawPic) at
@@ -5502,7 +5507,7 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx,
  * build, mirroring the sibling CG_DrawScoreboard_ListColumnHeaders EBX-colorPtr
  * convention.
  */
-void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY,
+void CG_DrawScrollbar(const vec_t *color, float topY,
                                         int lineCount, int visibleLineCount);
 
 /*
@@ -5660,7 +5665,7 @@ void ProjectPointOnPlane(vec3_t dst, const vec3_t point, const vec3_t normal);
  * +0x60=smokeDensityRate, +0x64=sizeRate, +0x68=spawnTimeCopy, +0x94=driftSpeed,
  * +0xa0=deadFlag, +0xa4=birthTime, +0xb8=soundAmpRate, +0xe4=radius. Every caller
  * (0x30023d3a, 0x30025c73, 0x30025faa, 0x30027825, 0x30027c42, and the four sites
- * in CG_FireFlameChunks) passes a flame chunk in EAX/ESI, and all live in the
+ * in CG_AddFlameSpriteToScene) passes a flame chunk in EAX/ESI, and all live in the
  * flame subsystem cluster. The struct, its offset asserts, and the ADS-named decls
  * are therefore removed; the flameChunk_t definition and the flame-role decls
  * (CG_FlameGetSizeRate / CG_AdvanceFlameChunkSize / CG_UpdateFlameChunk) below are
@@ -5787,7 +5792,7 @@ void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter,
                              const float *color, int32_t bitIndex);
 
 /*
- * CG_DrawTurretTagQuad (0x3001ccf0, role name) — RECONSTRUCTED; see
+ * CG_FillRotatedRect (0x3001ccf0, role name) — RECONSTRUCTED; see
  * src/client/cgame/hud/cg_drawturrettagquad.c. Renders a rotated, screen-scaled
  * 2D quad via cgame_syscall(CG_R_DRAW_ROTATED_QUAD, &verts[8], shaderParams, hShader).
  * Register-ABI: the four {x,y} corner offsets are passed in EDX as `const float *`
@@ -5801,7 +5806,7 @@ void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter,
  * five stack args). Both known callers (0x3001aae0 in FUN_3001a980_3001aafe and
  * 0x30031f55 in the turret-tag drawer 0x30031e20) match this ABI; the name is a
  * role name from the turret-tag caller, not a proven CoD symbol. */
-void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y,
+void CG_FillRotatedRect(float *cornerOffsets, float x, float y,
                           const float *shaderParams, float angleDegrees,
                           int32_t hShader);
 
@@ -5812,7 +5817,7 @@ void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y,
  * the currently-processed entity's "tag_turret" DObj bone world matrix
  * (CG_DObjGetWorldTagMatrix), converts that matrix to Euler angles
  * (Axis4ToAngles), and draws a rotated icon quad there
- * (CG_DrawTurretTagQuad -> trap 0x4c) with the static cg_turretTagShaderParams
+ * (CG_FillRotatedRect -> trap 0x4c) with the static cg_turretTagShaderParams
  * descriptor. Same entry gates as the siblings: entityStateFlags bit
  * EF_IN_VEHICLE set and EF_VEHICLE_ALLOW_WEAPON clear, entity->eType == 12
  * (ET_VEHICLE), and a stateFilter match; additionally the entity must have a live
@@ -6156,7 +6161,7 @@ typedef struct flameChunk_s {
                                      * block unless ownerSentinel == -1 (CMP [f+0x14],-1). Exact name
                                      * unresolved. */
     uint32_t emitScatterIndex;      /* +0x18: rand()-scattered emit index (Q_rint of a
-                                     * randomized value); seeded by CG_EmitPlayerFlameChunks
+                                     * randomized value); seeded by CG_AddFlameSpriteToScene
                                      * and CG_MoveFlameChunk. Exact name unresolved. */
     uint32_t unresolvedField_1c;    /* +0x1c: written/reset but never read by any recovered
                                      * client consumer. This is not an abiGap because the store
@@ -6164,7 +6169,7 @@ typedef struct flameChunk_s {
     uint32_t liveFlag;              /* +0x20: set to 1 by CG_SpawnFlameChunk (spawned/live flag; exact name unresolved) */
     uint32_t listMarker;            /* +0x24: secondary-list membership marker */
     uint32_t emitArgFlag;           /* +0x28: emit `arg4` flag stamped at emit by
-                                     * CG_EmitPlayerFlameChunks (0x3002496c / 0x30025295);
+                                     * CG_AddFlameSpriteToScene (0x3002496c / 0x30025295);
                                      * exact source name unresolved. */
     int32_t  kind;                  /* +0x2c: per-chunk mode/kind. CG_UpdateFlamethrowerSounds
                                      * (0x30029210) skips a chunk's sound update when
@@ -6206,7 +6211,7 @@ typedef struct flameChunk_s {
                                      * +0x34/+0x38 are the flame's owner-entity/limb index.
                                      * Exact source name unresolved. */
     int32_t  centFlags;             /* +0x3c: cent[+0xcc] copied at emit by
-                                     * CG_EmitPlayerFlameChunks (0x30025108 / 0x30025416);
+                                     * CG_AddFlameSpriteToScene (0x30025108 / 0x30025416);
                                      * exact source name unresolved. */
     int32_t  boneHandle;            /* +0x40: DObj bone/tag handle+1 that this chunk is attached
                                      * to (0 = free chunk, not bone-attached). CG_SpawnFlameChunkOnBone
@@ -6236,7 +6241,7 @@ typedef struct flameChunk_s {
                                      * provisional role name unresolved. */
     float    sizeRate;              /* +0x64: per-chunk size/expansion rate cache
                                      * (single). CG_FlameDropDrip (0x30027ad0)
-                                     * and CG_FireFlameChunks (0x30027d10) store
+                                     * and CG_AddFlameSpriteToScene (0x30027d10) store
                                      * CG_FlameGetSizeRate(chunk) (optionally scaled)
                                      * here; the emitter (0x30024050) writes
                                      * startSpeedBits * alpha * 0.00060024 into it.
@@ -6269,19 +6274,19 @@ typedef struct flameChunk_s {
     float    radiusBaseB;           /* +0x9c: sprite radius/size base B (single). Merged from f2.
                                      * The alternate half-extent CG_AddFlameSpriteToScene picks
                                      * when the flag arg != 1 (FLD [f+0x9c]). Provisional. */
-    int32_t  deadFlag;              /* +0xa0: dead/inactive flag. CG_AddFlameChunks
+    int32_t  deadFlag;              /* +0xa0: dead/inactive flag. CG_AddFlameSpriteToScene
                                      * (0x300272b0) skips the per-chunk render/merge
                                      * body when deadFlag != 0. */
     int32_t  birthTime;             /* +0xa4: chunk birth/emit time (ms), read via
                                      * FILD as an int and compared against the
-                                     * per-flame reference time in CG_AddFlameChunks. */
+                                     * per-flame reference time in CG_AddFlameSpriteToScene. */
     float    expansionRate;         /* +0xa8: chunk expansion/radius rate (single). Read via FLD
                                      * by CG_ComputeFlameChunkOrigin (0x30025990): scaled by -1.5
                                      * for the drift term and multiplied into the free-chunk z
                                      * turbulence. Merged from f2. */
     vec3_t    axisDir;            /* +0xac/b0/b4: direction/basis row (a vec3), read by
-                                     * CG_AddFlameChunks for the chunk-axis dot; written at
-                                     * emit by CG_EmitPlayerFlameChunks (0x30024ce8) as a
+                                     * CG_AddFlameSpriteToScene for the chunk-axis dot; written at
+                                     * emit by CG_AddFlameSpriteToScene (0x30024ce8) as a
                                      * copy of the drift dir (driftDir). */
     float    soundAmpRate;          /* +0xb8: per-chunk sound-amplitude rate; used as a
                                      * float multiplier when CG_UpdateFlamethrowerSounds
@@ -6289,7 +6294,7 @@ typedef struct flameChunk_s {
                                      * envelope for this chunk's index. Exact source
                                      * name unresolved. */
     float    alpha;                 /* +0xbc: initialized to 1.0f at emit by
-                                     * CG_EmitPlayerFlameChunks (0x30024da8 / 0x30025476);
+                                     * CG_AddFlameSpriteToScene (0x30024da8 / 0x30025476);
                                      * exact source name unresolved. */
     vec3_t    posCopy;            /* +0xc0/c4/c8: chunk position copy (a vec3); the emitter
                                      * (0x30024d83 / 0x300253f6) stamps the accum0 position
@@ -6312,7 +6317,7 @@ typedef struct flameChunk_s {
                                      * (0x300268e0) passes it as arg1 to CG_FlameDamage
                                      * (0x300265c0) and halves it (radius*0.5) as a size term. */
     float    lifeFraction;          /* +0xe8: chunk life/fade fraction (single, ~[0,1]). Merged
-                                     * from f2. CG_AddFlameChunks (0x300272b0) derives it from the
+                                     * from f2. CG_AddFlameSpriteToScene (0x300272b0) derives it from the
                                      * chunk's elapsed-vs-lifetime ratio and passes it (and a curve
                                      * of it) to CG_AddFlameSpriteToScene (0x300268e0), which
                                      * compares it against 0.9f for the flicker/damage-trace gate
@@ -6342,7 +6347,7 @@ typedef struct flameChunk_s {
                                      * from the mechanical reserved gap; exact source name
                                      * unresolved. */
     int32_t  emitCounter;           /* +0x128: emit counter (cgFlameInfo emitCounter) stamped at emit by
-                                     * CG_EmitPlayerFlameChunks (0x30024990 / 0x300252ae);
+                                     * CG_AddFlameSpriteToScene (0x30024990 / 0x300252ae);
                                      * exact source name unresolved. */
     uint8_t  padding12C[4]; /* ABI_AUDITED_PADDING: aligns lifeStartTime at +0x130. */
     double   lifeStartTime;         /* +0x130: min-time/lifetime (double); f2's value
@@ -6451,7 +6456,7 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
  * and stamps spawnTimeCopy (+0x68); 0x30023c30 advances driftSpeed (+0x94),
  * recomputes startSpeedBits and sizeRate (+0x64), and shares the flame clock. Every
  * caller passes a flame chunk in EAX/ESI and lives in the flame subsystem;
- * CG_FireFlameChunks (0x30027d10) calls all three with flameChunk_t*. The ADS
+ * CG_AddFlameSpriteToScene (0x30027d10) calls all three with flameChunk_t*. The ADS
  * struct and decls have been removed — these are the single source of truth.
  * ==========================================================================
  *
@@ -6460,7 +6465,7 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
  * float result returned on ST(0). Body reads kind/ownerInfoIndex/driftSpeed/soundAmpRate
  * and the chunk's double life span (endTime - spawnTime) and mixes cg.snap->ps.psClientNum. */
 /* long double return: 0x30023b70 ends FADDP; ADD ESP; RET with no store, so it
- * returns raw st(0). CG_AdvanceFlameChunkSize FMULPs it and CG_FireFlameChunks
+ * returns raw st(0). CG_AdvanceFlameChunkSize FMULPs it and CG_AddFlameSpriteToScene
  * FMULs it by 14.5f, both before any rounding (Class 7). The five callers that
  * store the result straight to a float slot are unaffected (float widens
  * exactly, then their store rounds once). */
@@ -6507,7 +6512,7 @@ flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent, float a, float b);
  * — per-frame finalize/submit of a single flame chunk: reads the chunk's field_94,
  * field_bc, field_f8, its owner cgFlameInfo[field_34].field_40 (+0x300ab790) and
  * various render state, and advances/submits the chunk for the given flame time.
- * Caller-observed ABI (proven at the CG_FireFlameChunks call sites 0x3002800c /
+ * Caller-observed ABI (proven at the CG_AddFlameSpriteToScene call sites 0x3002800c /
  * 0x30028ee6 / 0x30028f22 / 0x3002909b): two caller-cleaned stack args pushed in
  * reverse — (flameChunk_t *chunk, int32_t flameTime). NOTE: this is NOT the pool
  * merge helper CG_MergeFlameChunks (0x300257e0); the PHASE-2 interface spec labeled
@@ -6548,7 +6553,7 @@ void CG_InitFlameChunks(void);
 
 /* --- Flame callee declarations consolidated from the reconstructed bodies (body-proven,
  * not caller-guessed). These carry authority for the deferred flame giants
- * (CG_EmitPlayerFlameChunks 0x30024050, CG_FireFlameChunks 0x30027d10); a later
+ * (CG_AddFlameSpriteToScene 0x30024050, CG_AddFlameSpriteToScene 0x30027d10); a later
  * reconstruction may override a signature but must state why. --- */
 
 /* CG_FlameDamage (0x300265c0, reconstructed FUN_300265c0_300268d7): traces from
@@ -6557,16 +6562,16 @@ void CG_InitFlameChunks(void);
 void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum,
                              float radiusBase, const flameChunk_t *chunk);
 
-/* CG_AddFlameChunks (0x300272b0, reconstructed FUN_300272b0_3002783f): per-owner-chunk
+/* CG_AddFlameSpriteToScene (0x300272b0, reconstructed FUN_300272b0_3002783f): per-owner-chunk
  * frame update — advances/merges the chunk's children and submits their sprites via
- * CG_AddFlameToScene. Body-proven signature: takes the owner (root) chunk. */
-void CG_AddFlameChunks(flameChunk_t *ownerChunk);
+ * CG_AddFlameSpriteToScene. Body-proven signature: takes the owner (root) chunk. */
+void CG_AddFlameSpriteToScene(flameChunk_t *ownerChunk);
 
-/* CG_AddFlameToScene (0x300268e0 == FUN_300268e0_300272ac, alias CG_AddFlameSpriteToScene):
+/* CG_AddFlameSpriteToScene (0x300268e0 == FUN_300268e0_300272ac, alias CG_AddFlameSpriteToScene):
  * build one camera-facing flame/smoke billboard quad for a flameChunk_t and submit it via
  * trap_R_AddPolyToScene (CG_R_ADDPOLYTOSCENE=0x40). Reconstructed from the dense x87
- * body; the call shape is also proven from CG_AddFlameChunks at 0x30027819. */
-void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
+ * body; the call shape is also proven from CG_AddFlameSpriteToScene at 0x30027819. */
+void CG_AddFlameSpriteToScene(flameChunk_t *chunk, float animationFraction,
                         float alpha, int32_t finalFrame);
 
 /* CG_SpawnFlameChunkOnBone (0x30023d50) is already declared above (near line 13583) with a
@@ -6589,10 +6594,10 @@ void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
 typedef struct cgFlameInfo_s {
     int32_t  clientFrame;        /* +0x00: cg.clientFrame stamp of the last emitter
                                   * update. Current/recent checks compare it against
-                                  * cg.clientFrame-1; CG_EmitPlayerFlameChunks writes
+                                  * cg.clientFrame-1; CG_AddFlameSpriteToScene writes
                                   * the current frame here on exit (0x30025550). */
     vec3_t    prevDir;            /* +0x04/+0x08/+0x0c: the emitter's previous-frame aim
-                                     * direction (a vec3). CG_EmitPlayerFlameChunks
+                                     * direction (a vec3). CG_AddFlameSpriteToScene
                                      * (0x30024050) reads it at 0x30024131/0x30024177 as the
                                      * angle-delta base (originDir - prevDir) for the emit
                                      * rate limiter, again at 0x300245c3 as the AngleVectors#2
@@ -6613,7 +6618,7 @@ typedef struct cgFlameInfo_s {
                                      * current vDir on exit (0x30025523). Provisional name;
                                      * exact source unresolved. */
     vec3_t    emitDir;            /* +0x34/+0x38/+0x3c: the emitter's previous-frame
-                                     * spawn direction (a vec3). CG_EmitPlayerFlameChunks
+                                     * spawn direction (a vec3). CG_AddFlameSpriteToScene
                                      * (0x30024050) reads it at 0x30024216.. as the accum2
                                      * lerp base (infoDir2) and writes the current dir back
                                      * on exit. Provisional name; exact source unresolved. */
@@ -6626,27 +6631,27 @@ typedef struct cgFlameInfo_s {
                                      * flame-time flameTime/EBP at 0x3002957f). */
     uint8_t  emitterState48[4]; /* ABI_AUDITED_OPAQUE: unconsumed flame-emitter state. */
     int32_t  emitSeedGate;          /* +0x4c: emit-index seed threshold (flame-clock units).
-                                     * CG_EmitPlayerFlameChunks (0x30024050) compares it
+                                     * CG_AddFlameSpriteToScene (0x30024050) compares it
                                      * against the per-iteration radius seed (0x30024c28/35)
                                      * to gate the rand-scattered emit-index block and stores
                                      * the seed back here (0x30024c76). Provisional name;
                                      * exact source unresolved. */
     uint8_t  emitterState50[4]; /* ABI_AUDITED_OPAQUE: unconsumed flame-emitter state. */
     int32_t  lastEmitTime;          /* +0x54: last-emit timestamp (flame-clock ms).
-                                     * CG_EmitPlayerFlameChunks gates a non-owner emitter
+                                     * CG_AddFlameSpriteToScene gates a non-owner emitter
                                      * on lastEmitTime >= cg_flameTime - 150 (0x3002431b);
                                      * CG_UpdateFlamethrowerSounds also touches +0x54. Provisional
                                      * name; exact source unresolved. */
-    int32_t  emitAccumTime;         /* +0x58: accumulated emit time (ms). CG_EmitPlayerFlameChunks
+    int32_t  emitAccumTime;         /* +0x58: accumulated emit time (ms). CG_AddFlameSpriteToScene
                                      * (0x30024050) adds cg.frametime to it each non-terminal
                                      * emit (0x30024562) and resets it to 0 on the terminal
                                      * path (0x30025222). Provisional name; exact source
                                      * unresolved. */
     int32_t  soundPathFlag;         /* +0x5c: nonzero (== 1) gates the primary vs
-                                     * secondary sound-envelope path. CG_EmitPlayerFlameChunks
+                                     * secondary sound-envelope path. CG_AddFlameSpriteToScene
                                      * compares it against arg3 and stamps arg3 into it. */
     int32_t  activeFlag;            /* +0x60: nonzero flag; the final decay loop skips
-                                     * an element whose activeFlag is 0. CG_EmitPlayerFlameChunks
+                                     * an element whose activeFlag is 0. CG_AddFlameSpriteToScene
                                      * also writes arg3 here on exit (0x300254ec). */
     int32_t  soundActiveFlag;       /* +0x64: nonzero => this info's sound is already
                                      * active; CG_UpdateFlamethrowerSounds skips the chunk. */
@@ -6654,11 +6659,11 @@ typedef struct cgFlameInfo_s {
     int32_t  activeUntil;          /* +0x6c: cg_flameTime through which this owner's
                                     * flame can apply damage. */
     uint8_t  ownerRuntimeState[28]; /* ABI_AUDITED_OPAQUE: per-owner flame runtime state. */
-    int32_t  emitRandSeed;          /* +0x8c: per-emit random seed. CG_EmitPlayerFlameChunks
+    int32_t  emitRandSeed;          /* +0x8c: per-emit random seed. CG_AddFlameSpriteToScene
                                      * (0x30024050) stores the per-iteration rand() radius
                                      * seed (EBX) here at 0x30024c20; the retry sub-loop
                                      * bumps it. Provisional name; exact source unresolved. */
-    int32_t  emitCounter;           /* +0x90: monotonic emit counter. CG_EmitPlayerFlameChunks
+    int32_t  emitCounter;           /* +0x90: monotonic emit counter. CG_AddFlameSpriteToScene
                                      * (0x30024050) copies it into chunk->emitCounter at each
                                      * chunk spawn (0x30024990) and increments it on the
                                      * terminal path (0x30025251). Provisional name; exact
@@ -6679,7 +6684,7 @@ typedef struct cgFlameInfo_s {
     int32_t  lastPainTime;         /* +0xa8: cg.time of last pain notification */
     int32_t  painCounter;          /* +0xac: caller-supplied pain event id */
     double   lastFlameTime;         /* +0xb0: last emit's flame-clock time as a double.
-                                     * CG_EmitPlayerFlameChunks stores (double)cg_flameTime
+                                     * CG_AddFlameSpriteToScene stores (double)cg_flameTime
                                      * here at the end of each loop iteration (0x300250ee).
                                      * Provisional name; exact source unresolved. */
 } cgFlameInfo_t;
@@ -6875,7 +6880,7 @@ void CG_TraceCapsule(trace_t *out, const vec3_t start, const vec3_t mins,
  * CG_FlamethrowerTrace (0x30025cd0) — reconstructed in
  * functions/FUN_30025cd0_30025d94.c. A trace helper in the flame-chunk cluster
  * (its callers are the flame-fire paths at 0x30025da0 and 0x30027d10 / the
- * provisional CG_FireFlameChunks). It first runs the ordinary world trace/
+ * provisional CG_AddFlameSpriteToScene). It first runs the ordinary world trace/
  * projection CG_Trace (0x30035310) into the caller's `out` buffer, then
  * — unless the traced entity IS the local player (entityNum == cg.snap->ps.psClientNum)
  * — refines the result against the local player's own body: it issues the setup
@@ -7504,12 +7509,12 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
                         float viewOriginOffset);
 void CG_WeaponUpdateLoopingSound(centity_t *cent);
 
-/* CG_EmitPlayerFlameChunks (0x30024050) — emits flamethrower flame chunks for a player
+/* CG_AddFlameSpriteToScene (0x30024050) — emits flamethrower flame chunks for a player
  * whose held weapon is WEAPTYPE_GAS. NOT the per-chunk processor at 0x300272b0
- * (which owns the CG_AddFlameChunks name); the globals.h note attributing that name to
+ * (which owns the CG_AddFlameSpriteToScene name); the globals.h note attributing that name to
  * 0x300240a3 concerns THIS function's interior and is not adopted as its name. CG_Player
  * call site (0x300346a0): EAX register arg + five __cdecl stack dwords:
- * CG_EmitPlayerFlameChunks(viewAngles(EAX), cent, flashOrigin, spread=1.8f, a3=1, a4=0).
+ * CG_AddFlameSpriteToScene(viewAngles(EAX), cent, flashOrigin, spread=1.8f, a3=1, a4=0).
  * `viewAngles` (EAX) is the emitter's pitch/yaw/roll triple — the CG_Player caller
  * seeds it from animState->viewPitch/viewYaw/viewRoll and the body does
  * AngleNormalize180 math on its components; `flashOrigin` is the tag_flash
@@ -7519,7 +7524,7 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent);
  * cg_flameInfo (0x300ab750, stride 0xb8) by cent[0] (the emitter owner clientNum).
  * Partial reconstruction in progress at
  * src/client/cgame/effects/cg_emitplayerflamechunks.c (region-split; loop body deferred). */
-void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
+void CG_AddFlameSpriteToScene(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
                               float spread, int32_t a3, int32_t a4);
 
 

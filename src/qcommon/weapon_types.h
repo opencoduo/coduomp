@@ -463,7 +463,7 @@ typedef struct weaponInfo_s {
                                * weaponInfo_s::moveSpeedScale (+0x26c). */
     float adsSensitivity;    /* +0x270: server weaponInfo_s::adsSensitivity */
     float adsZoomFov;         /* +0x274, weapon key "adsZoomFov" (alias "turret_fov"): the fully
-                               * zoomed aim-down-sight field of view (degrees). CG_CalcFov
+                               * zoomed aim-down-sight field of view (degrees). CG_GetViewFov
                                * (0x3003ffc0) blends the clamped base FOV toward this while the
                                * player aims down the sight. Matches server
                                * weaponInfo_s::adsZoomFov (+0x274). */
@@ -690,7 +690,7 @@ typedef struct weaponInfo_s {
                                * altWeaponName (+0x368) by BG_SetupAltWeaponIndexes (0x30010c30),
                                * which also zeroes it for every entry before the resolve pass.
                                * Consumed by
-                               * CG_SelectWeaponIndex (0x30047390): a selection request equal
+                               * CG_FinishWeaponChange (0x30047390): a selection request equal
                                * to bg_weaponInfos[current]->altWeapon is treated as an
                                * alt-weapon re-selection. Matches the server
                                * weaponInfo_s::altWeapon (+0x36c,

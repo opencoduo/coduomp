@@ -17,8 +17,8 @@
 // the six cardinal basis matrices of a cube face -- so this is a cube-face /
 // environment-style fixed-axis view builder.
 //
-// NAMING NOTE: the .mcode mechanical name "CG_SpawnTracer" is a pure size match
-// (win 0x208 == corpus cgame_mp CG_SpawnTracer 0x208) and is REJECTED. This body
+// NAMING NOTE: the .mcode mechanical name "CG_BulletTrajectoryEffects" is a pure size match
+// (win 0x208 == corpus cgame_mp CG_BulletTrajectoryEffects 0x208) and is REJECTED. This body
 // contains no tracer trajectory, no VectorMA, no entity spawn, and no call to
 // trap_R_AddRefEntityToScene. It exclusively writes the cg.refdef static block
 // (0x30487a78..0x30487abc: view rect, projection-scale/fov pair, vieworg vec3,

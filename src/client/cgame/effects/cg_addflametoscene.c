@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x300268e0..0x300272ac
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_300268e0_300272ac.mcode
 //
-// CG_AddFlameToScene builds and submits one four-vertex flame/smoke billboard.
+// CG_AddFlameSpriteToScene builds and submits one four-vertex flame/smoke billboard.
 // The same-module CG_AddFlameSpriteToScene name describes this routine too; the
 // shorter name is retained because its reconstructed caller already uses it.
 
@@ -23,7 +23,7 @@ enum {
     FLAME_NEAR_SPRITE_LIMIT = 50
 };
 
-void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
+void CG_AddFlameSpriteToScene(flameChunk_t *chunk, float animationFraction,
                         float alpha, int32_t finalFrame)
 {
     if (chunk->kind == FLAME_KIND_NO_SPRITE) {

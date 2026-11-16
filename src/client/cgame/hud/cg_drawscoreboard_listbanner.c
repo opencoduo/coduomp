@@ -5,7 +5,7 @@
 #include "../globals.h"
 
 /*
- * CG_DrawScoreboard_ListBanner (0x300361d0)
+ * CG_DrawScoreboard_Backdrop (0x300361d0)
  *
  * Draws the header/banner block at the top of the multiplayer scoreboard: a dark
  * background panel, a frame of divider bars, the localized game-type name, the map
@@ -23,14 +23,14 @@
  * touches ("scoreboard gametype display", "CGAME_LISTENSERVER", "0.0.0.0:0",
  * "maps"/"mp"/".bsp") and the cgs.gametype/hostname/mapname mirrors it reads prove
  * the scoreboard-banner role. The symbolized Mac cgame confirms the exact source
- * name CG_DrawScoreboard_ListBanner.
+ * name CG_DrawScoreboard_Backdrop.
  *
  * CoDUOMP.exe's recovered dispatcher identifies the cgame text traps 52/53/54
  * and the banner query traps 128/129. Float args to the
  * variadic traps are forwarded by raw 32-bit bit pattern (FSTP float -> dword PUSH,
  * no double promotion); CG_FloatBits reproduces that. Screen coordinates are the
  * virtual 640x480 UI space scaled by cgs.screenXScale/cgs.screenYScale, the same
- * CG_AdjustFrom640 transform used by CG_DrawStretchPic.
+ * CG_AdjustFrom640 transform used by CG_DrawCroppedPic.
  *
  * ABI: cdecl, one float arg (arg0 at entry+4), plain RET, no return value. The body
  * is /GS-guarded: it snapshots __security_cookie ([0x30081650]) on entry and
@@ -94,7 +94,7 @@ cgame_compat_banner_casecmpn(const char *a, const char *b, int32_t n)
     return 0;
 }
 
-void CG_DrawScoreboard_ListBanner(float fade)
+void CG_DrawScoreboard_Backdrop(float fade)
 {
     vec4_t color;                 /* {r,g,b,a} draw color, reused across draws */
     qhandle_t blackShader;

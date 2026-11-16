@@ -67,7 +67,7 @@ void CG_AddViewWeapon(void)
     CG_TrackAdsZoomDirection();
 
     vec3_t positionOffset;
-    CG_CalcViewLeanKickOffset(positionOffset);
+    CG_CalculateWeaponPosition(positionOffset);
 
     axis_t viewAxis;
     axis_t offsetAxis;

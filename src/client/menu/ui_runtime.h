@@ -29,7 +29,7 @@ const char *BindingFromName(const char *command, qboolean firstKeyOnly);
 qboolean GetCommandHasBinding(const char *command);
 int32_t Key_GetKeysForCommand(char **firstKeyName, char **secondKeyName,
                               const char *command);
-int32_t UI_KeysStringForBinding(const char *command, char **bindingText);
+int32_t GetKeyBindingLocalizedString(const char *command, char **bindingText);
 
 void LerpColor(vec4_t output, const vec4_t from, const vec4_t to,
                float fraction);

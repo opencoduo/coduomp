@@ -31,7 +31,7 @@ enum {
  * BindingFromName               0x300568a0  0x40018400
  * GetCommandHasBinding          0x30056a10  0x40018570
  * Key_GetKeysForCommand         0x30056a60  0x400185c0
- * UI_KeysStringForBinding       0x30056b40  0x400186a0
+ * GetKeyBindingLocalizedString       0x30056b40  0x400186a0
  *
  * The paired PE tables also contain the same 55 records in the same order,
  * with the same 0x18-byte i386 layout and initializer values.  Supporting Mac
@@ -260,7 +260,7 @@ int32_t Key_GetKeysForCommand(char **firstKeyName, char **secondKeyName,
     return 2;
 }
 
-int32_t UI_KeysStringForBinding(const char *command, char **bindingTextOut)
+int32_t GetKeyBindingLocalizedString(const char *command, char **bindingTextOut)
 {
     char *firstKeyName;
     char *secondKeyName;

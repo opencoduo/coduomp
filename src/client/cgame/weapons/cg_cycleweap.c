@@ -5,7 +5,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30047960_30047bd3.mcode
 //
 // CG_CycleWeap — circular weapon-selection scanner. It is the orchestrator
-// for the weapon-select cluster around CG_SelectWeaponIndex: if the current weapon
+// for the weapon-select cluster around CG_FinishWeaponChange: if the current weapon
 // belongs to a numbered inventory slot, scan neighboring slots first; otherwise scan
 // held weapon indices first. The two fallback orders intentionally differ by path,
 // matching the instruction flow at 0x30047a35 and 0x30047b57.
@@ -13,7 +13,7 @@
 // Name adjudication: the .mcode header's assigned vmMain name is a size/corpus
 // collision and is rejected. This function is not the exported VM dispatcher; it
 // reads cg.snap, cg_weaponSelect_vmCvar.integer, bg_weaponInfos, cg weapon-slot/ammo globals, and
-// commits cvars through CG_SelectWeaponIndex/trap_Cvar_Set. The existing header
+// commits cvars through CG_FinishWeaponChange/trap_Cvar_Set. The existing header
 // The Mac CG_CycleWeap shares BG_GetStackSlotForWeapon and
 // CG_SelectFirstWeaponInSlot, and the corresponding next/previous-weapon command
 // callers establish the same circular selection role, resolving the source name.
@@ -115,7 +115,7 @@ void CG_CycleWeap(int32_t forward, int32_t requireAmmo)
                     }
                 }
 
-                CG_SelectWeaponIndex(weapon, cg_weaponSelect_vmCvar.integer);
+                CG_FinishWeaponChange(weapon, cg_weaponSelect_vmCvar.integer);
                 return;
 
 next_weapon:
@@ -145,7 +145,7 @@ next_weapon:
         int8_t slotWeaponByte = cg.predictedPlayerState.weaponSlots[slot];
         if (slotWeaponByte != 0) {
             if (requireAmmo == 0) {
-                CG_SelectWeaponIndex((int32_t)(int8_t)slotWeaponByte, cg_weaponSelect_vmCvar.integer);
+                CG_FinishWeaponChange((int32_t)(int8_t)slotWeaponByte, cg_weaponSelect_vmCvar.integer);
                 return;
             }
 
@@ -155,7 +155,7 @@ next_weapon:
                     (uint32_t)cg.predictedPlayerState.ammo[
                         weaponInfo->ammoIndex] !=
                 0u) {
-                CG_SelectWeaponIndex((int32_t)(int8_t)cg.predictedPlayerState.weaponSlots[slot],
+                CG_FinishWeaponChange((int32_t)(int8_t)cg.predictedPlayerState.weaponSlots[slot],
                                      cg_weaponSelect_vmCvar.integer);
                 return;
             }

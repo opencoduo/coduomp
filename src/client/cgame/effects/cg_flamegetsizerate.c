@@ -15,7 +15,7 @@
 // compared against cg.snap->ps.psClientNum), driftSpeed (+0x94), soundAmpRate (+0xb8),
 // startSpeedBits (+0x5c) and the double life span endTime/spawnTime (+0x50/+0x48).
 // Its callers are all flame-subsystem functions (0x30023d3a, 0x30025c73,
-// 0x30027825, 0x30027c42 and four sites in CG_FireFlameChunks) passing a flame
+// 0x30027825, 0x30027c42 and four sites in CG_AddFlameToScene) passing a flame
 // chunk. The struct and this declaration live in client_recovered.h (flameChunk_t
 // / CG_FlameGetSizeRate).
 //

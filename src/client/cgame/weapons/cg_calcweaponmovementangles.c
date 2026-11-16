@@ -16,7 +16,7 @@ enum {
  * spelling rounds one ULP lower (0x38d1b717). */
 #define CG_WEAPON_MOVE_MINIMUM_STEP_SCALE 0.000100000005f
 
-void CG_CalcWeaponMovementAngles(vec3_t angles)
+void CG_CalculateWeaponPosition_BasePosition_movement(vec3_t angles)
 {
     const weaponInfo_t *weapon = cg.currentWeaponInfo;
     const playerState_t *ps = &cg.predictedPlayerState;

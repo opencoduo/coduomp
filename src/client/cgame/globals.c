@@ -259,7 +259,7 @@ _Static_assert(sizeof(cg_turretTagShaderParams) == sizeof(vec2_t) * 4u,
                "turret tag must provide one texture coordinate per vertex");
 /* Source: uo_cgame_mp_x86.dll 0x30071a60 (.rdata); first=0x30037314.
  * cg_scoreboardColumnValueSelect[5] — per-column value-source selector lane read
- * by CG_DrawScoreboardTeamHeader (0x30037314, stride 0x10); see globals.h. The
+ * by CG_DrawScoreboard_Backdrop (0x30037314, stride 0x10); see globals.h. The
  * lane starts at 0x30071a60 (the column table base minus 4): element 0 is the
  * standalone dword 4, elements 1..4 are
  * cg_scoreboardColumns[0..3].nextColumnValueSelect
@@ -923,7 +923,7 @@ const char cg_voiceChatTauntCommandName[6] = "taunt";
 const char cg_voiceChatKillInsultCommandName[12] = "kill_insult";
 /* Source: uo_cgame_mp_x86.dll 0x3007a340 (.rdata); refs=2; first=0x300387d0.
  * "Could not load script menu file '%s'\n" — trap(CG_R_REGISTERMENU) load-failure
- * format used by CG_RegisterConfigStringMenu (0x30038790) and its sibling at
+ * format used by CG_PrecacheScriptMenu (0x30038790) and its sibling at
  * 0x30038826. owner=q_stricmp was a wrong size-guess first-touch label.
  */
 const char cg_couldNotLoadScriptMenuFmt[38] = "Could not load script menu file '%s'\n";
@@ -1642,7 +1642,7 @@ renderer_frame_statistics_t cg_rendererStats = {0};
  * 3001d255 MOV EAX,0x300a84e8 | 3001d25a FSTP float ptr [0x300a84f4]. */
 vec4_t cg_fadeColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300a84f8..0x300a8503 (.data) — cg_flameSpriteSrcRight vec3.
- * Written by CG_FireFlameChunks (0x30027dbd/dc7/dd3) = cg.refdef.viewaxis[1]; read by
+ * Written by CG_AddFlameToScene (0x30027dbd/dc7/dd3) = cg.refdef.viewaxis[1]; read by
  * CG_AddFlameSpriteToScene (0x30026de7/ded/df2). Retyped from three uint32_t placeholders. */
 vec3_t cg_flameSpriteSrcRight = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300a8508 (.data); refs=3 width=4; first=0x30027119; owner=cg_addflamespritetoscene.
@@ -1692,7 +1692,7 @@ struct cgFlameSoundLoop_s cg_flameSoundLoops[1024];
 /* Source: uo_cgame_mp_x86.dll 0x300ab718 (.data); refs=46 width=4; first=0x30023d10.
  * RESOLVED: cg_flameTime — the flame subsystem's per-frame time base, computed as
  * round(2 * cg.time) by CG_UpdateFlameTime (0x30023af0) and inlined at the head of
- * CG_AddFlameChunks (0x300272b0) and CG_AddFlameToScene (0x300268e0), and written
+ * CG_AddFlameSpriteToScene (0x300272b0) and CG_AddFlameSpriteToScene (0x300268e0), and written
  * as `(uint32_t)flameTime` by CG_UpdateFlamethrowerSounds (0x30029210). Read via FILD as
  * an int timestamp by the flame chunk clock consumers (and by the per-frame chunk
  * driver CG_UpdateFlameChunk, which shares this flame clock). The mechanical owner
@@ -1735,7 +1735,7 @@ vec3_t cg_flameLastSpritePos = {0.0f, 0.0f, 0.0f};
  * Example: 30027279   89 15 40 b7 0a 30            MOV dword ptr [0x300ab740],EDX
  */
 /* Source: uo_cgame_mp_x86.dll 0x300ab744..0x300ab74f (.data) — cg_flameSpriteSrcUp vec3.
- * Written by CG_FireFlameChunks (0x30027ddf/de4/dea) = cg.refdef.viewaxis[2]; read by
+ * Written by CG_AddFlameToScene (0x30027ddf/de4/dea) = cg.refdef.viewaxis[2]; read by
  * CG_AddFlameSpriteToScene (0x30026dfe/e09/e14). Retyped from three uint32_t placeholders. */
 vec3_t cg_flameSpriteSrcUp = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300ab750 (.data); refs=9 width=4; first=0x300240a3; owner=cg_addflamechunks.
@@ -1962,7 +1962,7 @@ vec2_t cg_turretViewSwayViewAngles = { 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300dc9d8 (.data); refs=4 width=4; first=0x300400f6; owner=bg_parseweaponinfospecificfieldtyp.
  * Example: 300400f6   39 35 d8 c9 0d 30            CMP dword ptr [0x300dc9d8],ESI | 30040120   89 35 d8 c9 0d 30            MOV dword ptr [0x300dc9d8],ESI | 30040200   a1 d8 c9 0d 30               MOV EAX,[0x300dc9d8]
  */
-int32_t cg_fovLastVehiclePosition = 0; /* 0x300dc9d8; see globals.h. CG_CalcFov FOV-zoom state. */
+int32_t cg_fovLastVehiclePosition = 0; /* 0x300dc9d8; see globals.h. CG_GetViewFov FOV-zoom state. */
 /* Source: uo_cgame_mp_x86.dll 0x300dc9dc/e0/e4 (.data); owner=CG_CalcVehicleViewPos.
  * BG_CalculateWeaponPosition_Sway positional output (EAX at 0x30040977); read back as float
  * scalars in the thompson-sway blend arm. Consolidated from the per-dword pm_slidemove symbols.
@@ -1978,7 +1978,7 @@ vec3_t cg_vehicleViewSwayPreviousViewAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300dc9f4 (.data); refs=5 width=4; first=0x300400ea; owner=bg_parseweaponinfospecificfieldtyp.
  * Example: 300400ea   89 15 f4 c9 0d 30            MOV dword ptr [0x300dc9f4],EDX | 30040113   89 15 f4 c9 0d 30            MOV dword ptr [0x300dc9f4],EDX | 30040234   89 15 f4 c9 0d 30            MOV dword ptr [0x300dc9f4],EDX
  */
-int32_t cg_fovTransitionTime = 0; /* 0x300dc9f4; see globals.h. CG_CalcFov FOV-zoom state (holds -1 when idle). */
+int32_t cg_fovTransitionTime = 0; /* 0x300dc9f4; see globals.h. CG_GetViewFov FOV-zoom state (holds -1 when idle). */
 /* Source: uo_cgame_mp_x86.dll 0x300dc9f8/fc (.data); owner=CG_CalcVehicleViewPos.
  * BG_CalculateWeaponPosition_Sway out_angles vec2 output buffer (address at 0x30040972).
  * Example: 30040972   bf f8 c9 0d 30               MOV EDI,0x300dc9f8
@@ -1998,7 +1998,7 @@ vec3_t cg_turretViewSwayOffset = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300dca10 (.data); refs=3 width=4; first=0x300400ae; owner=bg_parseweaponinfospecificfieldtyp.
  * Example: 300400ae   8b 04 bd 10 ca 0d 30         MOV EAX,dword ptr [EDI*0x4 + 0x300dca10] | 300400e3   89 14 bd 10 ca 0d 30         MOV dword ptr [EDI*0x4 + 0x300dca10],EDX | 30040119   89 14 bd 10 ca 0d 30         MOV dword ptr [EDI*0x4 + 0x300dca10],EDX
  */
-int32_t cg_fovAdsUpdateTime[2] = { 0, 0 }; /* 0x300dca10..0x300dca18; see globals.h. CG_CalcFov FOV-zoom state. */
+int32_t cg_fovAdsUpdateTime[2] = { 0, 0 }; /* 0x300dca10..0x300dca18; see globals.h. CG_GetViewFov FOV-zoom state. */
 /* Source: uo_cgame_mp_x86.dll 0x300dca18 (.data); refs=2 width=4; first=0x30045579; owner=cg_drawplayerstance.
  * Example: 30045579   39 2d 18 ca 0d 30            CMP dword ptr [0x300dca18],EBP | 3004558c   89 2d 18 ca 0d 30            MOV dword ptr [0x300dca18],EBP
  */
@@ -2438,7 +2438,7 @@ cgs_t cgs;
  * (float)glconfig.vidWidth * (1.0f/640.0f) [FILD [0x30447a88]; FMUL
  * [0x3007c3f4]=0.0015625]; consumed as a float in every 2D-draw wrapper
  * (e.g. FMUL [0x30447aa4] at 0x30017d3b, and CG_DrawPic at 0x3001cae0, and
- * CG_DrawTurretTagQuad at 0x3001ccf0). Zero-initialized .data (BSS tail).
+ * CG_FillRotatedRect at 0x3001ccf0). Zero-initialized .data (BSS tail).
  * The 1/640 factor is proven from the writer's .rdata constant 0x3007c3f4.
  */
 /* Source: uo_cgame_mp_x86.dll 0x30447aa8 (.data); refs=96; owner=pm_cmdscale label is wrong.
@@ -2446,7 +2446,7 @@ cgs_t cgs;
  * (float)glconfig.vidHeight * (1.0f/480.0f) [FILD [0x30447a8c]; FMUL
  * [0x3007c3f0]=0.0020833334]; consumed as a float in every 2D-draw wrapper
  * (e.g. FMUL [0x30447aa8] at 0x30017d0f, and CG_DrawPic at 0x3001caa4, and
- * CG_DrawTurretTagQuad at 0x3001ccf0). Zero-initialized .data (BSS tail).
+ * CG_FillRotatedRect at 0x3001ccf0). Zero-initialized .data (BSS tail).
  * The 1/480 factor is proven from the writer's .rdata constant 0x3007c3f0.
  */
 /* Source: uo_cgame_mp_x86.dll 0x30447ab0 (.data); refs=5 width=4; first=0x30018021.
@@ -2598,8 +2598,8 @@ cgs_t cgs;
 /* Source: uo_cgame_mp_x86.dll 0x3044b69c..0x3044b6a8 (.data); the FOV-zoom fade
  * animator (see cgFovFade_t in globals.h). The mechanical export split it into
  * four uint32 g_data_vectosignedangles_* scalars (wrong first-touch owner);
- * superseded here as one 16-byte struct. Writers: CG_StartFovFade (0x3001ab50),
- * CG_CalcFov (0x3003ffc0). Reader/evaluator: 0x3001a7c0. Zero-initialized. */
+ * superseded here as one 16-byte struct. Writers: CG_Fade (0x3001ab50),
+ * CG_GetViewFov (0x3003ffc0). Reader/evaluator: 0x3001a7c0. Zero-initialized. */
 /* Source: uo_cgame_mp_x86.dll 0x3044b6ac (.data); refs=10 width=4; first=0x30018cfa.
  * (owner=cmd_veh_fireturret label is wrong.)
  * cgs.media hudSoftLine shader handle. Registered at 0x3002dfcc as
@@ -2911,7 +2911,7 @@ cgs_t cgs;
  */
 /* Source: uo_cgame_mp_x86.dll 0x3044c24c (.data); refs=2 width=4; first=0x3002522c; owner=cg_addflamechunks.
  * cgs.media.flameStartSound: flame start-sound qhandle (writer 0x3002b756; consumed by
- * CG_EmitPlayerFlameChunks 0x3002522c). RESOLVED (role) on consume. */
+ * CG_AddFlameChunks 0x3002522c). RESOLVED (role) on consume. */
 /* Source: uo_cgame_mp_x86.dll 0x3044c250 (.data); refs=2 width=4; first=0x300294d2; owner=cg_updateflamethrowersounds.
  * Example: 300294d2   8b 15 50 c2 44 30            MOV EDX,dword ptr [0x3044c250] | 3002b76b   a3 50 c2 44 30               MOV [0x3044c250],EAX
  * RESOLVED cgs.media.flameStreamSound: alias-name pointer stored from cgame_syscall(0xc3,
@@ -3077,7 +3077,7 @@ cgs_t cgs;
  * this vmCvar_t as cl_serverloadmap; consumers read .string at +0x10. */
 vmCvar_t cl_serverloadmap;
 /* Source: uo_cgame_mp_x86.dll 0x30450148 (.data); refs=1 width=4; first=0x30025419; owner=cg_addflamechunks.
- * timescale_vmCvar.value: float divisor consumed by CG_EmitPlayerFlameChunks
+ * timescale_vmCvar.value: float divisor consumed by CG_AddFlameChunks
  * (0x30025419). RESOLVED (role) on consume; retyped uint32_t -> float. */
 
 /* Source: uo_cgame_mp_x86.dll 0x3045014c (.data); refs=2 width=4; first=0x3002de90; owner=g_dobjcalcpose.
@@ -3279,13 +3279,13 @@ itemInfo_t cg_items[256];
 
 /* Source: uo_cgame_mp_x86.dll 0x30455908 (.data); refs=2 width=4; first=0x300455f3.
  * cg_tracerchancelmg_vmCvar.value — the per-shot tracer spawn probability [0..1] used for the
- * "mode A" ammo types (ammoType 3/4/5: LMG/HMG/UMG). CG_SpawnTracer
+ * "mode A" ammo types (ammoType 3/4/5: LMG/HMG/UMG). CG_BulletTrajectoryEffects
  * (0x30048d60) overrides its default chance (cg_tracerchance_vmCvar.value, 0x30456208) with this
  * value when bg_weaponInfos[weapon]->ammoType is 3, 4, or 5, then draws the tracer
  * only when rand()/32768 < chance. Read (never written in this DLL; runtime/cvar-like
  * init outside .text) as a float. Type repaired uint32_t->float; the mechanical
  * owner=cg_drawplayerstance label was only the first toucher (0x30045550 reads the
- * same twin pair). Exact CoD source name unproven; role name from CG_SpawnTracer.
+ * same twin pair). Exact CoD source name unproven; role name from CG_BulletTrajectoryEffects.
  * Example: 30048dee   8b 0d 08 59 45 30   MOV ECX,dword ptr [0x30455908] */
 
 /* Source: uo_cgame_mp_x86.dll 0x30455fc8 (.data): cg_crosshairAlphaMin_vmCvar.value —
@@ -3297,14 +3297,14 @@ itemInfo_t cg_items[256];
  */
 
 /* Source: uo_cgame_mp_x86.dll 0x30456208 (.data); refs=3 width=4; first=0x30045556.
- * cg_tracerchance_vmCvar.value — the default per-shot tracer spawn probability [0..1]. CG_SpawnTracer
+ * cg_tracerchance_vmCvar.value — the default per-shot tracer spawn probability [0..1]. CG_BulletTrajectoryEffects
  * (0x30048d60) first gates the whole routine on cg_tracerchance_vmCvar.value > 0.0 (no tracers when
  * <= 0), uses it as the default spawn chance for non-{3,4,5} weapon classes, then draws
  * the tracer only when rand()/32768 < chance (FLD chance; FMUL 32768.0; FCOMPP vs
  * (float)rand()). Read (never written in this DLL; runtime/cvar-like init outside .text)
  * as a float. Type repaired uint32_t->float; the mechanical owner=cg_drawplayerstance
  * label was only the first toucher (0x30045550 reads the same twin pair). Exact CoD
- * source name unproven; role name from CG_SpawnTracer.
+ * source name unproven; role name from CG_BulletTrajectoryEffects.
  * Example: 30048d60   d9 05 08 62 45 30   FLD float ptr [0x30456208] */
 /* 0x3045632c: cg_norender_vmCvar.integer.integer; cvar-table entry 0x30085880. */
 
@@ -3481,7 +3481,7 @@ cg_t cg;
  * derives the square fov from atan2(size+2, size). Written together with
  * cg.lockedViewFace by the request setter at 0x300421b8. Named by proven role;
  * exact source field name unresolved. owner=cg_spawntracer was a size-collision
- * mislabel (the 0x30040360 builder is not CG_SpawnTracer). */
+ * mislabel (the 0x30040360 builder is not CG_BulletTrajectoryEffects). */
 /* Source: uo_cgame_mp_x86.dll 0x30459158 (.data); refs=6 width=4; first=0x30018026.
  * cg.latestSnapshotNum — see globals.h. Written by CG_ProcessSnapshots (0x3003d30a)
  * next to the "n < cg.latestSnapshotNum" error string; read as the "snap:%i" value
@@ -3503,7 +3503,7 @@ cg_t cg;
 /* Source: uo_cgame_mp_x86.dll 0x30459160 (.data); refs=137 width=4; first=0x300177a5; owner=pm_interuptweaponwithsprintmove.
  * Example: 300177a5   a1 60 91 45 30               MOV EAX,[0x30459160] | 3001802c   8b 15 60 91 45 30            MOV EDX,dword ptr [0x30459160] | 30018acc   8b 15 60 91 45 30            MOV EDX,dword ptr [0x30459160]
  */
-/* cg.snap: the current client snapshot pointer. CG_InstallSnapshotResetEffects
+/* cg.snap: the current client snapshot pointer. CG_SetInitialSnapshot
  * (FUN_3003c9d0) stores the installed snapshot here; the transition loop
  * (FUN_3003d2d0) reads snap->snapFlags (+0x00) and snap->serverTime (+0x08)
  * through it. Retyped from the mechanical uint32_t/void* to snapshot_t *. */
@@ -3553,7 +3553,7 @@ cg_t cg;
  * A boolean view/render-state flag written only as 0/1 at 0x30042558/0x30042564 (from a
  * `mode >= 6` compare). Consumers disagree on its exact meaning (a "not third-person"
  * effect-tag gate in CG_mg42_DoControllers vs. a "not ready" bail in
- * CG_LatchOverlaySource), so it is left mechanical until its writer (0x30042540) is
+ * CG_CheckForCursorHints), so it is left mechanical until its writer (0x30042540) is
  * reconstructed.
  * Example: 30019bdd MOV EAX,[0x304831c0] | 30042558 MOV [0x304831c0],0 | 30042564 MOV [0x304831c0],1
  */
@@ -3584,7 +3584,7 @@ cg_t cg;
  */
 /* Source: uo_cgame_mp_x86.dll 0x30487958..0x30487963 (.data); three consecutive
  * width-4 floats. Superseded the mechanical uint32 triple
- * g_data_com_dprintf_30487958/5c/60: 0x30045070 (CG_ApplyWeaponMovementAngles) writes v[0],
+ * g_data_com_dprintf_30487958/5c/60: 0x30045070 (CG_CalculateWeaponPosition_BasePosition) writes v[0],
  * v[1], v[2] of a scratch vec3 into these three slots as one vector store
  * (300450a5 MOV [58],EAX | 300450aa MOV [5c],ECX | 300450b0 MOV [60],EDX), so
  * this is a single vec3_t, not three scalars. It records the weapon-movement view
@@ -3896,13 +3896,13 @@ cg_t cg;
  * Example: 3001a5d4   89 0d 0c ae 48 30            MOV dword ptr [0x3048ae0c],ECX | 3003040c   8b 15 0c ae 48 30            MOV EDX,dword ptr [0x3048ae0c] | 3003049c   a1 0c ae 48 30               MOV EAX,[0x3048ae0c]
  */
 /* CG_FadeColor start time (startMsec): latched from cg.time by
- * CG_LatchOverlaySource (0x3001a5d4) and consumed as the fade start by the
+ * CG_CheckForCursorHints (0x3001a5d4) and consumed as the fade start by the
  * drawer's CG_FadeColor call (FUN_3001d200 does cg.time - startTime). */
 /* Source: uo_cgame_mp_x86.dll 0x3048ae0c. */
 /* Source: uo_cgame_mp_x86.dll 0x3048ae10 (.data); refs=3 width=4; first=0x3001a5da; owner=pm_jumpforsurface.
  * Example: 3001a5da   89 15 10 ae 48 30            MOV dword ptr [0x3048ae10],EDX | 30030406   8b 0d 10 ae 48 30            MOV ECX,dword ptr [0x3048ae10] | 30039543   89 35 10 ae 48 30            MOV dword ptr [0x3048ae10],ESI
  */
-/* CG_FadeColor duration (totalMsec): latched by CG_LatchOverlaySource and
+/* CG_FadeColor duration (totalMsec): latched by CG_CheckForCursorHints and
  * consumed as the fade length by the drawer's CG_FadeColor call. */
 /* Source: uo_cgame_mp_x86.dll 0x3048ae10. */
 /* Source: uo_cgame_mp_x86.dll 0x3048ae14 (.data); refs=3 width=4; first=0x3001a5f2; owner=pm_jumpforsurface.
@@ -4674,7 +4674,7 @@ vmCvar_t bg_nofatigue;
  * Example: 30003b75   8b 0d 30 a0 53 30            MOV ECX,dword ptr [0x3053a030] | 30003bf2   2b 05 30 a0 53 30            SUB EAX,dword ptr [0x3053a030] | 30003cbe   a1 30 a0 53 30               MOV EAX,[0x3053a030]
  */
 /* cg_effectTime: the effect subsystem's current time base (ms).
- * CG_InstallSnapshotResetEffects (FUN_3003c9d0) mirrors the snapshot serverTime
+ * CG_SetInitialSnapshot (FUN_3003c9d0) mirrors the snapshot serverTime
  * here alongside cg.time; effect code FILDs it and subtracts it for elapsed math.
  * Provisional role name (bg_evaluatetrajectory is the mechanical first-toucher). */
 /* Source: uo_cgame_mp_x86.dll 0x3053a030. */

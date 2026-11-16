@@ -6,7 +6,7 @@
 
 
 /*
- * CG_InstallSnapshotResetEffects (0x3003c9d0)
+ * CG_SetInitialSnapshot (0x3003c9d0)
  *
  * Installs a newly transitioned snapshot as the current one and resets the
  * client effect-instance pool, then tail-calls the next transition stage
@@ -33,7 +33,7 @@
  * and issues a trap. Named here by proven role.
  */
 
-void CG_InstallSnapshotResetEffects(snapshot_t *snap)
+void CG_SetInitialSnapshot(snapshot_t *snap)
 {
     int32_t serverTime;
     int i;

@@ -4,7 +4,11 @@
 // CG_CalcViewProjection (provisional name; address-anchored below because the
 // exact original cgame symbol is not proven). Role proven from behavior:
 //
-//   1. Calls CG_CalcFov (0x3003ffc0), which leaves the current horizontal FOV
+<<<<<<< HEAD
+//   1. Calls CG_GetViewFov (0x3003ffc0), which leaves the current horizontal FOV
+=======
+//   1. Calls CG_GetViewFov (0x3003ffc0), which leaves the base horizontal FOV
+>>>>>>> stock
 //      (degrees) on the x87 stack as its float return value.
 //   2. Derives the vertical FOV from the horizontal FOV and the current 3D-view
 //      aspect ratio (cg.refdef.width / cg.refdef.height) using the exact
@@ -22,11 +26,11 @@
 // (game_mp.dll, vehicle.c) collision-map setup with no FOV/x87 projection math.
 // This body is pure client x87 view-projection setup plus two cgame mark-render
 // traps; it matches nothing about a vehicle collision-map builder. Name matched
-// by call graph (callee CG_CalcFov, the FOV clamp helper) and behavior, not size.
+// by call graph (callee CG_GetViewFov, the FOV clamp helper) and behavior, not size.
 
 #include <math.h>
 #include "client/cgame/globals.h"          /* screen dims, cg.time, cg_fov_vmCvar.value, view globals */
-#include "client/cgame/client_recovered.h" /* CG_CalcFov, CG_PointContents */
+#include "client/cgame/client_recovered.h" /* CG_GetViewFov, CG_PointContents */
 #include "compat/coduo_native_x87.h"
 
 /*
@@ -50,11 +54,11 @@
 qboolean CG_CalcViewProjection(void)
 {
     /*
-     * CG_CalcFov returns the horizontal FOV (degrees) on the x87 stack; keep it
+     * CG_GetViewFov returns the horizontal FOV (degrees) on the x87 stack; keep it
      * in fovX. (Instruction 0x300402b1 CALL 0x3003ffc0, then 0x300402c4 FLD ST2
      * re-reads this returned value after the two FILDs pushed W and H above it.)
      */
-    long double fovX = (long double)CG_CalcFov();
+    long double fovX = (long double)CG_GetViewFov();
 
     /* Screen (3D-view) dimensions, converted int -> float (FILD). */
     long double viewHeightCurrent =

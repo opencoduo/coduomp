@@ -7,7 +7,7 @@
 #include <string.h>
 
 /*
- * CG_SettleViewOriginZ — a no-arg, no-return helper that applies a time-decaying
+ * CG_StepOffset — a no-arg, no-return helper that applies a time-decaying
  * subtraction to the view-origin Z (cg.refdef.vieworg[2], 0x30487a98) over a fixed
  * 100 ms settle window. It is called once, at the tail of the view-kick evaluator
  * FUN_3003fb60 (0x3003ff59), immediately after that function has ADDed the kick
@@ -42,10 +42,10 @@
  * by byte size (win 0x45 == corpus 0x45), which the naming rules forbid, and the
  * machine code contradicts it outright: this is not a console command handler (no
  * argc/argv, no Cmd_* calls, no vehicle-slot state) — it is a void(void) float
- * routine that decays cg.refdef.vieworg[2] over time. CG_SettleViewOriginZ is a
+ * routine that decays cg.refdef.vieworg[2] over time. CG_StepOffset is a
  * behavioral name; the exact original CoD symbol is not proven.
  */
-void CG_SettleViewOriginZ(void)
+void CG_StepOffset(void)
 {
     int32_t now = cg.time;
     int32_t elapsed = coduo_int32_from_bits(

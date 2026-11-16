@@ -163,7 +163,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
     }
 
     if (playMuzzleEffect) {
-        CG_PlayFxOnWeaponTag(localViewEffect, weaponIndex, effectModel,
+        CG_WeaponFlash(localViewEffect, weaponIndex, effectModel,
                             cent->lerpOrigin, muzzleTag, drawTagModel);
     }
 

@@ -106,13 +106,13 @@ void CG_ConfigStringModified(void)
         CG_SetShellShockParams(params);
     } else if (index >= CS_SCRIPTMENUS &&
                index < CS_SCRIPTMENUS + CS_SCRIPTMENUS_COUNT) {
-        CG_RegisterConfigStringMenu(index);
+        CG_PrecacheScriptMenu(index);
     } else if (index >= CS_STATUS_ICONS && index < CS_HEAD_ICONS) {
         trap_R_RegisterShaderNoMip(CG_ConfigString(index), CG_ASSET_SORT_2D);
     } else if (index >= CS_HEAD_ICONS && index < CS_LOCATIONS) {
         CG_RegisterMaterial(CG_ConfigString(index), CG_ASSET_SORT_2D);
     } else if (index >= CS_SHADERS && index < CS_SHADERS + CS_SHADERS_COUNT) {
-        CG_RegisterConfigStringShader(index);
+        CG_RegisterServerShader(index);
     } else if (index == CS_CLIENT_STATE_11) {
         CG_ConfigString11Modified();
     } else if (index == CS_WIND) {

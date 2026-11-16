@@ -22,7 +22,7 @@
 // (0x3048ae38/3c/40/44) carry that same wrong owner=vectordistance2d label. The
 // behavior (latch a weapon index + time, gate on a valid weapon row and "nothing
 // selected", set cg_weaponSelect) is a weapon-select commit; named
-// CG_SetSelectedWeapon by proven role. Distinct from CG_SelectWeaponIndex
+// CG_SetSelectedWeapon by proven role. Distinct from CG_FinishWeaponChange
 // (0x30047390), which sets the same cvar unconditionally from the requested index
 // (no ammo-item/kind gate and no "cg_weaponSelect_vmCvar.integer==0" guard) and also asserts
 // cl_run. The id-to-name binding rests on behavior/call-graph, not a symbol table.

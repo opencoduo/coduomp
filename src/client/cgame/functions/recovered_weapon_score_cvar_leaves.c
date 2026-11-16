@@ -19,7 +19,7 @@ void CG_SizeDown_f(void) /* 0x300172a0 */
 }
 
 // Source RVA: 0x30012260
-int32_t AmmoPlusClip(const playerState_t *ps, int32_t weapon)
+int32_t BG_WeaponAmmo(const playerState_t *ps, int32_t weapon)
 {
     const weaponInfo_t *weaponInfo = bg_weaponInfos[weapon];
     return coduo_int32_from_bits(

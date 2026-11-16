@@ -20,7 +20,7 @@
  *   - CG_SpawnFlameChunk (0x30025600) pops nodes from the cg_freeFlameChunks list
  *     this function builds; CG_SpawnFlameChunkOnBone (0x30023d50) calls that
  *     spawner and prints "Out of flame chunks" on failure.
- *   - CG_AddFlameChunks (0x30024050) indexes the per-owner region cg_flameInfo
+ *   - CG_AddFlameSpriteToScene (0x30024050) indexes the per-owner region cg_flameInfo
  *     (0x300ab750) with element stride 0xb8.
  * The exact original symbol is unproven (no cgame symbol table recovered), but the
  * role — "clear/rebuild the flame-chunk pool" — is proven; named accordingly. The

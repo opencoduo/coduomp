@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x30045070..0x300450d3
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30045070_300450d3.mcode
 //
-// CG_ApplyWeaponMovementAngles — compute this frame's weapon-movement view-angle offset, record it
+// CG_CalculateWeaponPosition_BasePosition — compute this frame's weapon-movement view-angle offset, record it
 // in the global cg.weaponPosition.weaponMovementAngles vec3, and add it into the caller's view
 // angle accumulator.
 //
@@ -11,7 +11,7 @@
 // vec3, calls the weapon-movement angle computation (0x30044ce0) which accumulates
 // pitch/yaw/roll into that scratch, publishes the scratch to a global vec3
 // (0x30487958), and FADDs it componentwise into the caller's angle vector. That
-// is the CG-side weapon-movement applier. "CG_ApplyWeaponMovementAngles" is provisional by proven
+// is the CG-side weapon-movement applier. "CG_CalculateWeaponPosition_BasePosition" is provisional by proven
 // role; the callee is the BG/CG weapon-movement angle math.
 //
 // Calling convention: this is a non-standard register-arg function. The output
@@ -23,14 +23,14 @@
 
 #include "client/cgame/client_recovered.h"
 
-void CG_ApplyWeaponMovementAngles(vec3_t angles /* EDI: view-angle accumulator, in/out */)
+void CG_CalculateWeaponPosition_BasePosition(vec3_t angles /* EDI: view-angle accumulator, in/out */)
 {
     // 30045078..3004508f: zero a scratch vec3 (v[2],v[1],v[0] stores).
     vec3_t movement = { 0.0f, 0.0f, 0.0f };
 
     // 30045090: CALL 0x30044ce0 with ESI = &movement. The callee accumulates the
     // computed weapon-movement angles into movement[0..2] (three FADD [ESI+n]/FSTP).
-    CG_CalcWeaponMovementAngles(movement);
+    CG_CalculateWeaponPosition_BasePosition_movement(movement);
 
     // 30045095..300450b0: publish the computed movement to the global vec3. The
     // machine code copies the three float slots through EAX/ECX/EDX as raw

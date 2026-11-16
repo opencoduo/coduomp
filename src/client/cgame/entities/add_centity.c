@@ -100,7 +100,7 @@ void CG_AddCEntity(centity_t *cent)
         CG_ScriptMover(cent);
         break;
     case ET_SOUND_BLEND:
-        CG_AddLoopedEntitySound(cent);
+        CG_SoundBlend(cent);
         break;
     case ET_LOOPED_FX:
         CG_AddCEntity_LoopedFx(cent);

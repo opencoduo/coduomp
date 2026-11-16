@@ -4,7 +4,7 @@
 // Source: uo_cgame_mp_x86.dll 0x30047390..0x300473f6
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30047390_300473f6.mcode
 //
-// Role: CG_SelectWeaponIndex — commit a weapon selection by writing the
+// Role: CG_FinishWeaponChange — commit a weapon selection by writing the
 // "cg_weaponSelect" cvar to the requested weapon index, and, unless the request
 // merely re-selects the currently-held weapon's alt-weapon, also assert the
 // "cl_run" cvar. Called from the weapon-selection command cluster: the
@@ -22,13 +22,13 @@
 // Name adjudication: the .mcode header's assigned VectorPolar is a size-only
 // match (win size 0x66) and is rejected — this function performs no vector math;
 // it formats an integer and sets cvars. The behavior (take a weapon index, write
-// it to cg_weaponSelect) matches the same-module PPC name CG_SelectWeaponIndex,
+// it to cg_weaponSelect) matches the same-module PPC name CG_FinishWeaponChange,
 // which is adopted with the reservation that the id-to-name binding rests on
 // call-graph/behavior, not a recovered symbol table.
 //
 // Struct: bg_weaponInfos[i] is a weaponInfo_t*; +0x36c is altWeapon (int32_t),
 // corroborated against the recovered server weaponInfo_s (+0x36c altWeapon).
-void CG_SelectWeaponIndex(int32_t weapon, int32_t currentWeapon)
+void CG_FinishWeaponChange(int32_t weapon, int32_t currentWeapon)
 {
     /* 0x30047392 MOV EDX,[0x304831b0] (cg.time) / 0x30047398 MOV
      * [0x3048ae44],EDX: snapshot the current game time as the weapon-(re)select
