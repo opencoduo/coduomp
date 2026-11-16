@@ -47,7 +47,10 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
     }
 
     parse = fileText;
-    token = Com_ParseExt(&parse, qtrue);
+    /* Every token read inlines Com_Parse (0x3003980b: test ungetToken at session
+     * +0x404, restore the saved cursor, then Com_ParseExt), so the unget issued
+     * after a default icon is consumed by the next read. */
+    token = Com_Parse(&parse);
     if (token == NULL || token[0] == '\0') {
         return qtrue;
     }
@@ -67,7 +70,7 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
     while (table->entryCount < maxVoiceChats) {
         cgVoiceChatEntry_t *entry;
 
-        token = Com_ParseExt(&parse, qtrue);
+        token = Com_Parse(&parse);
         if (token == NULL || token[0] == '\0') {
             return qtrue;
         }
@@ -75,7 +78,7 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
         entry = &table->entries[table->entryCount];
         Q_strncpyz(entry->name, token, sizeof(entry->name));
 
-        token = Com_ParseExt(&parse, qtrue);
+        token = Com_Parse(&parse);
         /* 0x30039959: the binary tests ONLY token==NULL here (cmp esi,edi; je 0x30039ca3)
          * and routes it -- exactly like a non-"{" token -- to the "expected {" error
          * block (qfalse). There is NO early return-qtrue and no token[0] empty check; an
@@ -93,7 +96,7 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
             int32_t variant = entry->variantCount;
             qhandle_t icon;
 
-            token = Com_ParseExt(&parse, qtrue);
+            token = Com_Parse(&parse);
             if (token == NULL || token[0] == '\0') {
                 return qtrue;
             }
@@ -105,7 +108,7 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
 
             entry->sounds[variant] = trap_Com_SoundAliasString(token);
 
-            token = Com_ParseExt(&parse, qtrue);
+            token = Com_Parse(&parse);
             if (token == NULL || token[0] == '\0') {
                 return qtrue;
             }
