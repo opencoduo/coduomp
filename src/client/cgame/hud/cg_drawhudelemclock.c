@@ -71,14 +71,14 @@ void CG_DrawHudElemClock(cgAlignedDrawItem *item, hudElem_t *elem)
 {
     /*
      * 3002a00e..a026: copy the shader config-string for elem->materialIndex into
-     * a 0x3a-byte accepted base-name domain via CG_GetShaderConfigString (index
+     * a 0x3a-byte accepted base-name domain via CG_ServerShaderName (index
      * in EAX). An empty/oversized name returns qfalse and the whole draw is
      * skipped. At the stock MAX_QPATH this retains that exact input limit while
      * making the destination large enough for the later suffix; an intentional
      * global MAX_QPATH increase expands both capacities together.
      */
     char shaderName[MAX_QPATH];
-    if (!CG_GetShaderConfigString(elem->materialIndex, shaderName,
+    if (!CG_ServerShaderName(elem->materialIndex, shaderName,
                                   CG_CLOCK_BASE_NAME_CAPACITY)) {
         return;
     }

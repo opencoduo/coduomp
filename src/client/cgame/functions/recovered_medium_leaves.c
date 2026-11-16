@@ -15,7 +15,7 @@ void CG_FreeLocalEntity(localEntity_t *le) /* 0x3002aa30 */
     localEntity_t *freeHead;
 
     if (le->prev == NULL) {
-        Com_ErrorMessage("CG_FreeLocalEntity: not active");
+        CG_Error("CG_FreeLocalEntity: not active");
     }
 
     /* Preserve the target's individual loads and their order.  In particular,

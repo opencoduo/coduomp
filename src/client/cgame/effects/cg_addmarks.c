@@ -33,7 +33,7 @@
 //             i.e. signed `if (cg.time > markTime + duration)`.
 // Expired branch (0x3002e90c):
 //   3002e90c  if (mp->prevMark == NULL)   [+0x0]
-//   3002e916      Com_ErrorMessage("CG_FreeLocalEntity: not active"); [string 0x30077908]
+//   3002e916      CG_Error("CG_FreeLocalEntity: not active"); [string 0x30077908]
 //   unlink from active list:
 //   3002e923  mp->prevMark->nextMark = mp->nextMark;
 //   3002e930  mp->nextMark->prevMark = mp->prevMark;
@@ -98,7 +98,7 @@ void CG_AddMarks(void)
         if (cg.time > expiry) {
             /* Mark has fully elapsed: unlink it and return it to the free list. */
             if (mp->prevMark == NULL) {
-                Com_ErrorMessage("CG_FreeLocalEntity: not active");
+                CG_Error("CG_FreeLocalEntity: not active");
             }
             mp->prevMark->nextMark = mp->nextMark;
             mp->nextMark->prevMark = mp->prevMark;

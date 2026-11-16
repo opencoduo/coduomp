@@ -10,7 +10,7 @@
 // Com_Error: the cgame variadic fatal-error reporter with the canonical
 // Quake3/CoD signature void Com_Error(errorParm_t level, const char *format, ...).
 // It formats (format, ...) into a fixed 1024-byte stack buffer via vsprintf,
-// then re-emits the finished text through Com_ErrorMessage("%s", buffer)
+// then re-emits the finished text through CG_Error("%s", buffer)
 // (0x3002b300), which issues the engine CG_ERROR trap (id 1). The `level`
 // argument is the Q3 error code (ERR_DROP == 1); it is consumed by the
 // caller-cleaned ABI but not otherwise touched by this body (the low-level
@@ -20,10 +20,10 @@
 // (0x4e == 0x4e) and is REJECTED: there is no weapon/anim state access here, only
 // a vararg format followed by a "%s"-relay into the CG_ERROR emitter. Size is not
 // evidence. Com_Error is proven by the PPC symbol, call graph (vsprintf +
-// Com_ErrorMessage) and its consumers (e.g. Com_ScriptError passing level 1).
+// CG_Error) and its consumers (e.g. Com_ScriptError passing level 1).
 //
 // Arg shape (proven; a leading int `level` precedes the format, unlike the
-// byte-sibling Com_ErrorMessage which has none):
+// byte-sibling CG_Error which has none):
 //   after SUB ESP,0x404 the frame is: buffer[0x400] at frame+0, cookie at +0x400.
 //   [ESP+0x408] == original [ESP+4] == 1st stack arg == level   (NOT read here).
 //   [ESP+0x40c] == original [ESP+8] == 2nd stack arg == format.
@@ -42,22 +42,22 @@
 //   3002b3f6 PUSH EDX                   vsprintf arg1 = buffer
 //   3002b3f7 CALL 0x3005b538            vsprintf(buffer, format, args)
 //   3002b3fc LEA EAX,[ESP+0xc]          EAX = &buffer  (frame+0, 3 args on stack)
-//   3002b400 PUSH EAX                   Com_ErrorMessage arg2 = buffer
-//   3002b401 PUSH 0x30076cd8            Com_ErrorMessage arg1 = "%s" (.rdata)
-//   3002b406 CALL 0x3002b300            Com_ErrorMessage("%s", buffer)
+//   3002b400 PUSH EAX                   CG_Error arg2 = buffer
+//   3002b401 PUSH 0x30076cd8            CG_Error arg1 = "%s" (.rdata)
+//   3002b406 CALL 0x3002b300            CG_Error("%s", buffer)
 //   3002b40b MOV ECX,[ESP+0x414]        \  MSVC /GS epilogue: reload canary and
 //   3002b412 CALL 0x30061639           /  verify it via __security_check_cookie
 //   3002b417 ADD ESP,0x418             release frame + both calls' pushed dwords
 //   3002b41d RET                        void, caller-cleaned varargs
 //
 // The final ADD ESP,0x418 releases the 0x404 frame plus the two calls' 5 pushed
-// dwords (3 for vsprintf + 2 for Com_ErrorMessage) that were never explicitly
+// dwords (3 for vsprintf + 2 for CG_Error) that were never explicitly
 // popped, so this is caller-cleaned throughout (plain RET, cdecl varargs).
 //
 // The SUB/MOV cookie snapshot (0x3002b3d6/0x3002b3e2) and the reload+check epilogue
 // (0x3002b40b/0x3002b412) are compiler-generated MSVC /GS stack-protector code, not
 // source statements: they are emitted because this function has a large stack
-// buffer. The "%s" relay through Com_ErrorMessage (rather than a direct CG_ERROR
+// buffer. The "%s" relay through CG_Error (rather than a direct CG_ERROR
 // syscall) is why this wrapper exists distinct from the emitter: it lets callers
 // pass a printf-style (level, format, ...) while the already-formatted text is then
 // safely re-emitted as a literal via "%s". The original C body is below.
@@ -81,5 +81,5 @@ void Com_Error(errorParm_t level, const char *format, ...)
     // 0x3002b3fc..0x3002b406: re-emit the finished text as a literal string through
     // the low-level error emitter, which issues the CG_ERROR engine trap (id 1).
     // The "%s" format ensures the already-expanded text is not re-interpreted.
-    Com_ErrorMessage("%s", buffer);
+    CG_Error("%s", buffer);
 }

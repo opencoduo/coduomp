@@ -245,7 +245,7 @@ void CG_DrawActive(int32_t stereoView)
              * to [ESP+0xc]; the store at 0x3001c34d therefore clears the
              * separation before the call, even if the fatal routine returns. */
             stereoSep = 0.0f;
-            Com_ErrorMessage("CG_DrawActive: Undefined stereoView"); /* 0x3001c355 CALL Com_ErrorMessage */
+            CG_Error("CG_DrawActive: Undefined stereoView"); /* 0x3001c355 CALL CG_Error */
             break;
         }
 

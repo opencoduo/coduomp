@@ -73,7 +73,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
         const char *serverGame =
             &cgs.gameState.stringData[cgs.gameState.stringOffsets[2]];
         if (memcmp("cod", serverGame, CG_INIT_GAME_VERSION_BYTES) != 0) {
-            Com_ErrorMessage("Client/Server game mismatch: %s/%s",
+            CG_Error("Client/Server game mismatch: %s/%s",
                              "cod", serverGame);
         }
     }

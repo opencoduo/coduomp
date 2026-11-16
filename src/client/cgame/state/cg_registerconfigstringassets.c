@@ -35,7 +35,7 @@
 //   * Config-string reads are inlined as
 //     &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfg]] (offset table
 //     0x30440a00, data base 0x30442a00), carrying CG_ConfigString's out-of-range
-//     Com_ErrorMessage("CG_ConfigString: bad index: %i", cfg) diagnostic (bounds
+//     CG_Error("CG_ConfigString: bad index: %i", cfg) diagnostic (bounds
 //     [0, MAX_CONFIGSTRINGS); the error is emitted but the lookup still proceeds).
 //     Same inline idiom as sibling CG_SetConfigValues (0x30038430).
 //   * The HUD-stat seeds store into the parallel signed-int trio
@@ -92,7 +92,7 @@ static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE const char *
 cgame_compat_config_string_inline(int32_t cfg)
 {
     if (cfg < 0 || cfg >= MAX_CONFIGSTRINGS) {          /* TEST/JL + CMP 0x800/JL */
-        Com_ErrorMessage(cg_configStringBadIndexFmt, cfg);
+        CG_Error(cg_configStringBadIndexFmt, cfg);
     }
     return &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfg]];
 }
@@ -238,7 +238,7 @@ void CG_RegisterConfigStringAssets(void)
         const char *name = cgame_compat_config_string_inline(index);
         if (name[0] != '\0' &&
             cgame_syscall(CG_R_REGISTERMENU, (intptr_t)name) == 0) {
-            Com_ErrorMessage("Could not load script menu file '%s'\n", name);
+            CG_Error("Could not load script menu file '%s'\n", name);
         }
     }
 

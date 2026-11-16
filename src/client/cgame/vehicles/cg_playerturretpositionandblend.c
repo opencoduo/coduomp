@@ -202,7 +202,7 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
     }
 
     /* Resolve the "tag_weapon" bone/world matrix on the vehicle DObj. */
-    weaponMatrix = CG_DObjGetEntityBoneMatrix(turretSelf, "tag_weapon",
+    weaponMatrix = CG_DObjGetLocalTagMatrix(turretSelf, "tag_weapon",
                                               (centity_t *)vehicle);
     if (weaponMatrix == NULL) {
         /* WARNING: aborting player positioning on turret since 'tag_weapon' does not
@@ -571,7 +571,7 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
              *   sample = trap_XAnimGetWeight(childPacked)
              *   step   = CG_TurretBlendStep(sample - 1.0f)
              *   trap_XAnimSetGoalWeight(dObj, childPacked, w0=1.0f, w1=step, w2=1.0f) */
-            if (CG_DObjGetEntityBoneMatrix(turretSelf, "tag_aim",
+            if (CG_DObjGetLocalTagMatrix(turretSelf, "tag_aim",
                                            (centity_t *)vehicle) == NULL) {
                 Com_Printf("WARNING: aborting player positioning on turret since "
                            "'tag_aim' does not exist\n");

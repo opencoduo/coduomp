@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 /*
- * CG_UpdateCompassOrientation (0x3001d6d0) — advance the compass/objective-pointer
+ * CG_UpdateCompPointerOrientation (0x3001d6d0) — advance the compass/objective-pointer
  * reference yaw (cg.compassRefYaw) toward the animated effect spin angle
  * (cg.refdefViewAngles[1]) using a critically-damped angular spring, integrated in
  * fixed <= 5 ms substeps. The velocity/angle twin of CG_UpdateHudSpinAngle
@@ -19,7 +19,7 @@
  * size match against game_mp_uo, the WRONG DLL — win 0x295 vs matched 0x296) is
  * REJECTED. This function touches no vehicle/client-push state; it reads cg.time and
  * compass-spin globals and writes cg.compassRefYaw. The Mac
- * CG_UpdateCompassOrientation has the corresponding angle-spring integration
+ * CG_UpdateCompPointerOrientation has the corresponding angle-spring integration
  * call graph, resolving the source name.
  *
  * ABI (proven from this body): NO arguments, no return (bare RET). The stack frame
@@ -58,7 +58,7 @@
 #define COMPASS_VEL_MIN      (-2000.0f) /* 0x3007bee0 / imm 0xc4fa0000 */
 #define FZERO                (0.0f)     /* 0x3007bcec */
 
-void CG_UpdateCompassOrientation(void)
+void CG_UpdateCompPointerOrientation(void)
 {
     /* 0x3001d6d0..0x3001d6e9: first run — snap the reference yaw straight to the
      * target angle and return. The init flag is only tested here, never written by

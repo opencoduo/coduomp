@@ -41,13 +41,13 @@ long double CG_DrawWeapReticle(void)
     float left;
     float top;
 
-    if (!CG_CalcAdsOverlayFrac(&overlayFrac)) {
+    if (!CG_GetWeapReticleZoom(&overlayFrac)) {
         return 1.0f;
     }
 
     weapon = cg.currentWeaponInfo;
     weaponIndex = weapon->weaponIndex;
-    CG_ProjectDamageDirToScreen(&projectedX, &projectedY);
+    CG_CalcCrosshairPosition(&projectedX, &projectedY);
     /* 0x3001963a reads screenXScale, then 0x30019640 reloads the weapon
      * pointer after the projection call. This one reloaded pointer supplies
      * both overlay dimensions. */

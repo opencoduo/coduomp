@@ -409,7 +409,7 @@ void CG_CalculateWeaponPosition_BasePosition(vec3_t angles);
  */
 void CG_CalculateWeaponPosition_ToWorldPosition(vec3_t point);
 /*
- * CG_PerturbCamera (0x30046490) — recovered. Slides cg.refdef.vieworg along
+ * CG_OffsetLMG (0x30046490) — recovered. Slides cg.refdef.vieworg along
  * cg.refdef.viewaxis[0] by `dist` (single float stack arg; the lone caller
  * 0x300468e2 passes -19.0f, a third-person pull-back), then recomputes
  * cg.refdefViewAngles[0] as the Q3 vectoangles pitch of the forward axis built
@@ -417,7 +417,7 @@ void CG_CalculateWeaponPosition_ToWorldPosition(vec3_t point);
  * arg (caller cleans it, plain RET). Name is the corpus label kept for its
  * behavioral fit, NOT the rejected size match; see the .c for the derivation.
  */
-void CG_PerturbCamera(float dist);
+void CG_OffsetLMG(float dist);
 void CG_TrackAdsZoomDirection(void);
 void CG_AddViewWeapon(void);
 void CG_AddMarks(void);
@@ -665,7 +665,7 @@ void CG_ConfigString11Modified(void);
  * Proven from machine code: bounds-checks index into [0, 2048), then returns
  * &cgs.gameState.stringData[cgs.gameState.stringOffsets[index]] (table at 0x30440a00,
  * data base 0x30442a00). The index arrives on the stack ([ESP+8] after the callee
- * pushes ESI); an out-of-range index is reported via Com_ErrorMessage before the
+ * pushes ESI); an out-of-range index is reported via CG_Error before the
  * (unbounded) lookup still proceeds. Provisional caller-observed decl — superseded
  * by the callee's own .mcode reconstruction. */
 const char *CG_ConfigString(int index);
@@ -677,7 +677,7 @@ const char *CG_ConfigString(int index);
  * once (CG_DrawInformation(0)). The resulting qhandle_t is discarded — this is
  * a precache side effect. The index arrives in ECX (register arg); it shares
  * CG_ConfigString's inlined [0, MAX_CONFIGSTRINGS) bounds check and its
- * Com_ErrorMessage("CG_ConfigString: bad index: %i", index) diagnostic (after
+ * CG_Error("CG_ConfigString: bad index: %i", index) diagnostic (after
  * which the lookup still proceeds). Invoked by the config-string-modified
  * dispatcher (0x300392dc) for the shader range CS_SHADERS..CS_SHADERS+
  * CS_SHADERS_COUNT. The .mcode size-guess "Scr_FreeHudElem" is rejected (frees
@@ -689,9 +689,9 @@ void CG_RegisterServerShader(int index);
  * CG_PrecacheScriptMenu (0x30038790) — resolve the config string at a
  * gameState index and, when it is non-empty, load/register it as a script-menu
  * file via cgame_syscall(CG_R_REGISTERMENU, name); if the trap returns zero
- * (load failed) it reports Com_ErrorMessage("Could not load script menu file
+ * (load failed) it reports CG_Error("Could not load script menu file
  * '%s'", name). The index arrives in EAX (register arg); it shares CG_ConfigString's
- * inlined [0, MAX_CONFIGSTRINGS) bounds check and its Com_ErrorMessage(
+ * inlined [0, MAX_CONFIGSTRINGS) bounds check and its CG_Error(
  * "CG_ConfigString: bad index: %i", index) diagnostic (after which the lookup still
  * proceeds). Invoked by the config-string-modified dispatcher (0x300391xx) for the
  * menu-file range [0x535, 0x555). Sibling of CG_RegisterServerShader and of
@@ -705,7 +705,7 @@ void CG_PrecacheScriptMenu(int index);
  * hud-element string index. The index arrives in EAX (register arg). A null/zero
  * index returns the shared empty-string literal g_str_empty (""). Otherwise it forms
  * cfgIndex = index + CS_LOCALIZED_STRINGS (0x575), reports an out-of-range cfgIndex via
- * Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex) (the shared inlined
+ * CG_Error("CG_ConfigString: bad index: %i", cfgIndex) (the shared inlined
  * CG_ConfigString bounds check), then resolves
  * &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]] and returns
  * CG_TranslateMessage(str, "hudelem string") — the config-string localize/text-format service
@@ -798,7 +798,7 @@ void CG_RefreshWeaponInfosForConfigString(const char *configString);
  * CS_CONFIGVALUE_VALUES + i, name config string CS_CONFIGVALUE_NAMES + i — and for
  * each nonempty name calls cgame_syscall(CG_CVAR_SET, name, value) (trap_Cvar_Set).
  * It stops at the first empty name. The config-string reads inline CG_ConfigString,
- * including its out-of-range Com_ErrorMessage("CG_ConfigString: bad index: %i", n).
+ * including its out-of-range CG_Error("CG_ConfigString: bad index: %i", n).
  * Role name; exact CoD symbol unproven (mechanical guess PC_Rect_Parse rejected —
  * the body registers cvars, not a rectangle parse). */
 void CG_SetConfigValues(void);
@@ -912,7 +912,7 @@ void CG_CheckOpenWaitingScriptMenu(void);
  * menu index: %i\n", index) and answered with trap(CG_SEND_CONSOLE_COMMAND,
  * va("cmd mr %i bad\n", index)). Otherwise it resolves the menu-name config string at
  * index + CS_SCRIPTMENUS (sharing CG_ConfigString's inlined bounds check +
- * Com_ErrorMessage(cg_configStringBadIndexFmt, cfgIndex)); an empty (not-yet-loaded)
+ * CG_Error(cg_configStringBadIndexFmt, cfgIndex)); an empty (not-yet-loaded)
  * string is reported with "Server tried to open a non-loaded script menu index: %i\n"
  * and the same "cmd mr %i bad\n" answer. For a loaded menu it reads a "no-mouse"
  * flag from CG_Argc()>2 && CG_Argv(2)[0], sets ui_newScriptMenu = menu name and
@@ -970,7 +970,7 @@ void CG_ExecuteNewServerCommands(int32_t latestSequence);
 void CG_SendFlameDamageCommand(int32_t clientNum, int32_t painId);
 
 /*
- * CG_GetShaderConfigString (0x3002fd10) — copy the shader-name config string for
+ * CG_ServerShaderName (0x3002fd10) — copy the shader-name config string for
  * a shader index into a caller buffer, returning qtrue on success. Proven from
  * machine code (see the C artifact): the shader index arrives in EAX and the dest
  * buffer / buffer size are the two stack args (custom register-arg ABI). It
@@ -979,15 +979,15 @@ void CG_SendFlameDamageCommand(int32_t clientNum, int32_t painId);
  * Returns qfalse for an empty string or one that does not fit in `size`.
  * Role name (exact CoD symbol unproven); adjudicate if a config-string-copy name
  * surfaces in the server bank. */
-qboolean CG_GetShaderConfigString(int index, char *dest, int size);
+qboolean CG_ServerShaderName(int index, char *dest, int size);
 
 /*
- * CG_GetObjectiveShaderForDir (0x3002fd90) — resolve the HUD objective/compass
+ * CG_ObjectiveIcon (0x3002fd90) — resolve the HUD objective/compass
  * icon shader handle for a direction slot. dir (register arg ECX, 0/1/2) selects
  * both the direction-suffix string {"","_up","_down"} and, in the no-override
  * path, the preregistered cgs.media.objectiveShaders[dir]. shaderIndex (single stack
  * arg) is a shader config-string index: when nonzero, the name is fetched via
- * CG_GetShaderConfigString, its extension is stripped at the first '.', the
+ * CG_ServerShaderName, its extension is stripped at the first '.', the
  * direction suffix is appended, and the result is registered on the fly with
  * trap(CG_R_REGISTERSHADER, name, 5); when zero (or on any lookup failure) the
  * function returns the preregistered cgs.media.objectiveShaders[dir] instead. Returns
@@ -995,7 +995,7 @@ qboolean CG_GetShaderConfigString(int index, char *dest, int size);
  * "G_GetHintStringIndex" is rejected (that is a server bool(int*,const char*)
  * hint-index lookup, an unrelated signature and subsystem). Provisional
  * caller-observed decl — superseded by its own .mcode reconstruction. */
-qhandle_t CG_GetObjectiveShaderForDir(int dir, int shaderIndex);
+qhandle_t CG_ObjectiveIcon(int dir, int shaderIndex);
 
 /*
  * CG_DrawInformation (0x3002a530) — draw the connection/loading information
@@ -1031,7 +1031,7 @@ void CG_RegisterMenuAssets(void);
 void CG_RegisterScoreboardShaders(void);
 
 /*
- * CG_UpdateCompassOrientation (0x3001d6d0) — advance the compass/objective-pointer
+ * CG_UpdateCompPointerOrientation (0x3001d6d0) — advance the compass/objective-pointer
  * reference yaw toward the animated effect spin angle via a critically-damped
  * angular spring, integrated in <=5 ms substeps. Proven from its own .mcode: takes
  * no arguments, returns nothing (bare RET). Reads the target cg.refdefViewAngles[1]
@@ -1057,7 +1057,7 @@ void CG_RegisterScoreboardShaders(void);
  * The .mcode size-guess "VEH_CheckPushClients" (from game_mp_uo, wrong DLL) is rejected:
  * no vehicle/push-client work; this is pure HUD compass angle math. Exact CoD symbol
  * unproven; named by proven role. */
-void CG_UpdateCompassOrientation(void);
+void CG_UpdateCompPointerOrientation(void);
 
 /*
  * CG_DrawPlayerCompassPointers (0x3002fe70) — draw the HUD compass/objective markers.
@@ -1071,21 +1071,21 @@ void CG_UpdateCompassOrientation(void);
  * base r,g,b marker color whose alpha this routine overrides per objective. The
  * .mcode header's size-matched "ClientEndFrame" guess is rejected — ClientEndFrame is
  * a server per-frame routine that issues no 2D draw traps, whereas this is pure cgame
- * HUD drawing (trap_R_SetColor / trap_R_DrawStretchPic / CG_GetObjectiveShaderForDir).
+ * HUD drawing (trap_R_SetColor / trap_R_DrawStretchPic / CG_ObjectiveIcon).
  * Register-argument ABI (rect in EAX) is recorded in the .c evidence comment. */
 void CG_DrawPlayerCompassPointers(const rectDef_t *rect, const vec3_t color);
 void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color);
 void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color);
 
 /*
- * Com_ErrorMessage (0x3002b300) — the cgame fatal-error emitter: formats
+ * CG_Error (0x3002b300) — the cgame fatal-error emitter: formats
  * (format, ...) into a 0x400 stack buffer via vsprintf (0x3005b538) after
  * snapshotting the vararg cookie [0x30081650], then invokes the engine CG_ERROR
  * syscall (trap id 1) through *0x30085e9c with the formatted text. Caller-cleaned
  * (format, ...) ABI. This is the inner emitter that Com_Error(level,...)
  * wraps; the name matches its existing use across the codebase. Provisional
  * caller-observed decl — superseded by its own .mcode reconstruction. */
-void Com_ErrorMessage(const char *format, ...);
+void CG_Error(const char *format, ...);
 
 /*
  * CG_UpdateFadeOverlay (0x3003b7e0) — advance one timed 2D fade overlay for the
@@ -1428,7 +1428,7 @@ void trap_R_AddLightToScene(const vec3_t org, float intensity,
                             float r, float g, float b);
 
 /*
- * CG_AddHeadIconSprite (0x30032910, provisional-by-role) — build and submit one
+ * CG_PlayerFloatSprite (0x30032910, provisional-by-role) — build and submit one
  * camera-facing icon sprite (reType RT_SPRITE) over an entity's head.
  * Positions it at the "Bip01 Head" DObj tag (+18 units) when the entity has a
  * skeleton, else at the entity placement origin (+72 units), optionally scales the
@@ -1437,17 +1437,17 @@ void trap_R_AddLightToScene(const vec3_t org, float intensity,
  * entity in first person. Register-arg ABI: the subject entity arrives in ESI
  * (modeled as the leading parameter); sfxOrShaderHandle/iconScale/attenuateByDistance
  * are the three caller-cleaned cdecl stack args (callers do `add esp,0xc`). The five
- * call sites are the CG_AddHeadIcon dispatcher at 0x30032b20. The .mcode size-guess
+ * call sites are the CG_PlayerSprites dispatcher at 0x30032b20. The .mcode size-guess
  * name "CG_VoiceChat" is rejected (size match; the body is a pure render-entity
  * emitter with no voice-chat work). See the function .c for the per-instruction
  * derivation; exact CoD symbol unproven, name is role-derived. */
-void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
+void CG_PlayerFloatSprite(centity_t *entity, int32_t sfxOrShaderHandle,
                           int32_t iconScale, int32_t attenuateByDistance);
 
 /*
- * CG_AddHeadIcon (0x30032ac0) — per-frame dispatcher that picks and submits at most
+ * CG_PlayerSprites (0x30032ac0) — per-frame dispatcher that picks and submits at most
  * one floating head icon for one rendered client entity, by calling
- * CG_AddHeadIconSprite. The subject entity arrives in ESI (register-arg ABI, modeled
+ * CG_PlayerFloatSprite. The subject entity arrives in ESI (register-arg ABI, modeled
  * as the sole parameter). Order of checks: (1) if the entity carries a headIconCsIndex
  * and the local player's team may see it, register CG_ConfigString(headIconCsIndex+37)
  * and draw it at scale 16; (2) if the entity is the local kill-cam subject, draw the
@@ -1457,7 +1457,7 @@ void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
  * `CG_DebugCircleEx` is REJECTED (that ring drawer is at 0x3001db70; this body has no
  * sin/cos loop and no CG_ADD_DEBUG_LINE — it is a head-icon selector). Name is
  * role-derived; exact CoD symbol unproven. */
-void CG_AddHeadIcon(centity_t *cent);
+void CG_PlayerSprites(centity_t *cent);
 
 /*
  * Q_rint (0x3006be3c) — MSVC CRT float/double -> int64 conversion helper `_ftol2`.
@@ -2837,9 +2837,9 @@ void CG_DrawFlashDamage(void);
  * CG_DrawDamageDirectionIndicators (0x3001a980) — draw the fading "damage direction" arrow
  * ring, the directional companion of CG_DrawFlashDamage's red flash. No-ops unless a
  * snapshot is installed (cg.snap != NULL). It first anchors the ring on screen: if the
- * ADS/scope overlay is active (CG_CalcAdsOverlayFrac != 0) it requires the ADS anchor
+ * ADS/scope overlay is active (CG_GetWeapReticleZoom != 0) it requires the ADS anchor
  * gate cg_hudDamageIconInScope_vmCvar.integer and projects the aim point to screen
- * (CG_ProjectDamageDirToScreen), offsetting by the (320,240) screen center; otherwise
+ * (CG_CalcCrosshairPosition), offsetting by the (320,240) screen center; otherwise
  * it anchors at plain screen center (320,240) in virtual 640x480 space. It then walks
  * cg.damageDirIndicators[8]; for each slot still within its lifetime
  * (0 < cg.time - serverTime < duration) it computes alpha = min(2 - 2*elapsed/duration,
@@ -2854,7 +2854,7 @@ void CG_DrawFlashDamage(void);
 void CG_DrawDamageDirectionIndicators(void);
 
 /*
- * CG_ProjectDamageDirToScreen (0x30019370, role name) — project the module's current
+ * CG_CalcCrosshairPosition (0x30019370, role name) — project the module's current
  * aim/impact world point (the cached pair at 0x3048b0b8/0x3048b0bc) to 2D screen
  * coordinates, writing screen X to *outX (EDI) and screen Y to *outY (ESI); both are
  * set to 0 when the point is behind the view plane. Uses the view axis rows
@@ -2863,7 +2863,7 @@ void CG_DrawDamageDirectionIndicators(void);
  * adjacent stack floats). Used by CG_DrawDamageDirectionIndicators to anchor the arrow ring at
  * the projected aim point while aiming down sight. Role name (exact CoD symbol
  * unresolved); the .mcode size-guess "CG_ParseImpactEffects" is a size collision. */
-void CG_ProjectDamageDirToScreen(float *outX, float *outY);
+void CG_CalcCrosshairPosition(float *outX, float *outY);
 
 /*
  * Per-frame screen/HUD draw dispatcher and its draw-step callees, all reached from
@@ -2906,7 +2906,7 @@ void CG_VoiceMenuTimeout(void);      /* 0x3001ab00: close voiceMenu after 2500 m
 void CG_DrawHudElems(void);          /* 0x3002a4a0: gather+draw active hudElem_t list (calls CG_GetSortedHudElems) */
 void CG_DrawWeaponSelect(void);      /* 0x30046bb0: animated weapon-selection carousel */
 void CG_DrawWeapSlotBinding(const vec4_t color, int32_t slot, float x, float y);
-void CG_DrawWeaponIcon3D(void);
+void CG_DrawTurretCrossHair(void);
 void CG_DrawCrosshairNames(void); /* 0x3001a610: reconstructed — draws the faded, health-tinted name of the player under the crosshair (was mis-guessed CG_DrawPlayerWeaponNameBack); src/client/cgame/hud/cg_drawcrosshairnames.c */
 void CG_DrawMatchTimeout(void);      /* 0x3001bbd0: reconstructed — draws the screen-centered match-timeout/"CGAME_PAUSED" overlay (was mis-guessed CG_DrawWeaponSelect) */
 void CG_DrawLagometer(void);         /* 0x30018bc0: frame/snapshot lag graphs + disconnect warning */
@@ -3371,7 +3371,7 @@ void CG_RegisterWeaponInfo(int index, const char *configString);
 void CG_FinishWeaponChange(int32_t weapon, int32_t currentWeapon);
 
 /*
- * CG_IsWeaponHeld (0x30047370) — predicate returning whether weapon `weapon` is
+ * CG_WeaponSelectable (0x30047370) — predicate returning whether weapon `weapon` is
  * currently held by the local player, i.e. the value of that weapon's bit in the
  * cg.predictedPlayerState.weaponBits (0x304836f8) ownership bitset (word = weapon>>5, mask =
  * 1u<<(weapon&31)). The one-line factored form of the inline held-bit test the
@@ -3380,7 +3380,7 @@ void CG_FinishWeaponChange(int32_t weapon, int32_t currentWeapon);
  * Non-default register ABI: the weapon index arrives in EDX (compiler-chosen
  * register argument in this binary; no ECX/stack input). Expressed as a single
  * int parameter to match the reconstructed definition. */
-qboolean CG_IsWeaponHeld(int weapon);
+qboolean CG_WeaponSelectable(int weapon);
 
 /*
  * CG_SelectFirstWeaponInSlot (0x30047820) and
@@ -3651,7 +3651,7 @@ double atof(const char *s);
  * self->origin through CG_PLAY_EFFECT_ON_TAG, passing NULL dir and the address of a
  * stack copy of self->objId as the trailing out/in parameter. The
  * out-of-range config index path reuses CG_ConfigString's inlined
- * Com_ErrorMessage("CG_ConfigString: bad index: %i", n). Role name (exact CoD
+ * CG_Error("CG_ConfigString: bad index: %i", n). Role name (exact CoD
  * symbol unproven); the .mcode's size-matched "G_DObjSetLocalTag" guess is rejected
  * (this is cgame effect-play through config strings, not a server DObj tag setter).
  */
@@ -3667,7 +3667,7 @@ void CG_PlayFxOnTag(centity_t *self, int fxId);
  * unbound (self->legsSound == 0x3ff) is skipped.
  *
  * For each alias index it forms cfgIndex = CS_SOUNDS + index (0x295), reuses
- * CG_ConfigString's inlined [0, MAX_CONFIGSTRINGS) bounds check + Com_ErrorMessage
+ * CG_ConfigString's inlined [0, MAX_CONFIGSTRINGS) bounds check + CG_Error
  * ("CG_ConfigString: bad index: %i") + &cgs.gameState.stringData[offsets[cfgIndex]]
  * lookup, then registers that name via cgame_syscall(CG_COM_PICK_SOUND_ALIAS, name,
  * &self->origin) -> handle. If BOTH handles are non-zero it lerps the sound phase
@@ -3935,7 +3935,7 @@ int32_t compare_impact_files(const void *a, const void *b);
  * CG_RegisterImpactEffects (0x3001e2bd): EAX register argument = text (the loaded,
  * NUL-terminated CSV buffer); stack args (path, count, names, defTables); returns
  * a `char *` error message (via va(...)) on a malformed row, or NULL on success.
- * The caller reports the returned string through Com_ErrorMessage. It tokenizes the
+ * The caller reports the returned string through CG_Error. It tokenizes the
  * comma-separated rows against the effect-type name table (matching column 1 via
  * Q_stricmp), issues the per-name register-effect trap CG_REGISTER_NAMED_EFFECT (0xc8), and
  * writes the effectDef_t entries; the error strings are "unknown effect type ...",
@@ -3974,7 +3974,7 @@ void CG_RegisterImpactEffects(void);
  * Com_Error (0x3002b3d0) — the cgame variadic fatal-error reporter:
  * (int level, const char *format, ...), caller-cleaned. Proven from its machine
  * code: snapshots the /GS cookie, formats (format, ...) into a 0x400 stack buffer
- * via vsprintf (0x3005b538), then emits it via Com_ErrorMessage("%s", buffer)
+ * via vsprintf (0x3005b538), then emits it via CG_Error("%s", buffer)
  * (0x3002b300), which invokes the engine CG_ERROR syscall (trap id 1 through
  * *0x30085e9c). The `level` argument is the Quake3 error code (ERR_DROP == 1).
  * Its signature and PPC symbol are the canonical
@@ -4380,7 +4380,7 @@ qboolean CG_DObjGetWorldTagMatrix(DObj *self, const char *tagName,
                                   centity_t *entity, DObjSkelMat *out);
 
 /*
- * CG_DObjGetEntityBoneMatrix (0x3001fda0, provisional-by-role) — the lighter
+ * CG_DObjGetLocalTagMatrix (0x3001fda0, provisional-by-role) — the lighter
  * sibling of CG_DObjGetWorldTagMatrix. Resolves a NAMED tag on `self`
  * (trap 0xb2 with a tagName in EAX; callers pass "tag_weapon" / "tag_aim"),
  * calculates that bone's DObj hierarchy via CG_DObjCalcBone, then
@@ -4392,7 +4392,7 @@ qboolean CG_DObjGetWorldTagMatrix(DObj *self, const char *tagName,
  * `part` (the owning entity record) the sole stack arg; modeled as ordered
  * parameters, no calling-convention attribute (syntax-only build).
  */
-DObjSkelMat *CG_DObjGetEntityBoneMatrix(DObj *self,
+DObjSkelMat *CG_DObjGetLocalTagMatrix(DObj *self,
                                         const char *tagName,
                                         centity_t *part);
 
@@ -4462,7 +4462,7 @@ const char *CG_GetVehicleViewPosOriginTag(int32_t viewMode);
  * bg_vehicle.h and src/bg/bg_vehicle.c. */
 
 /*
- * CG_DObjGetSpecialTagWorldMatrix (0x3001fec0, provisional-by-role) — third
+ * CG_DObjGetViewModelTagMatrix (0x3001fec0, provisional-by-role) — third
  * sibling of the DObj bone-world-matrix family. Resolves a NAMED tag on `self`
  * (trap 0xb2 with a tagName), calculates that bone's DObj hierarchy (inlined
  * CreateSkelForBone/GetHierarchyBits/CalcAnim/CalcSkel, no controller call), then
@@ -4477,7 +4477,7 @@ const char *CG_GetVehicleViewPosOriginTag(int32_t viewMode);
  * name "PM_BeginReloadLoop" is rejected (no pmove/reload work). See the function's
  * .c for the full per-instruction derivation.
  */
-qboolean CG_DObjGetSpecialTagWorldMatrix(struct DObj_s *self,
+qboolean CG_DObjGetViewModelTagMatrix(struct DObj_s *self,
                                          const char *tagName,
                                          DObjSkelMat *out);
 
@@ -6004,7 +6004,7 @@ void CG_AddHudHeadIconSprite(centity_t *cent, qhandle_t material, int32_t yaw,
  * setup CG_AddCEntity runs on every centity before the eType dispatch (called
  * with EAX=cent). Its own .mcode reads currentState-adjacent fields (+0x84,
  * +0xa0, +0x8c) and the entity origin block (+0x208), does float trajectory math
- * against a per-index table (0x304495e8), and raises two Com_ErrorMessage bounds
+ * against a per-index table (0x304495e8), and raises two CG_Error bounds
  * diagnostics. Caller-observed only; the exact CoD symbol is unresolved and the
  * .mcode size-guess "BG_TakePlayerWeapon" is REJECTED (no weapon-slot / player
  * state work). Superseded by its own .mcode reconstruction. */
@@ -6536,7 +6536,7 @@ flameChunk_t *CG_SpawnFlameChunk(flameChunk_t *parent);
 void CG_FreeFlameChunk(flameChunk_t *chunk);
 /* CG_MergeFlameChunks (0x300257e0): fuse the trailing flame chunk f2 into the
  * leading chunk f1 (f2 must immediately follow f1 on the parent forward chain:
- * f1->parent == f2, asserted via Com_ErrorMessage), copy f2's render/physics state
+ * f1->parent == f2, asserted via CG_Error), copy f2's render/physics state
  * into f1 under a discriminant, then free f2. Args: EDI=f1 (into), ESI=f2 (from),
  * both register-passed by the caller; RET (no immediate) but no args on the stack —
  * pure register-argument entry (the PUSH ECX/POP ECX bracket the body). */
@@ -7310,7 +7310,7 @@ void CG_InitMarkPolys(void);
  * mark-poly pool allocator (free-list pop / oldest-mark reclamation via the
  * cg_freeMarkPolys and cg_activeMarkPolys lists at 0x303b5d20 / 0x30412d40), not
  * a script diagnostic. The "CG_FreeLocalEntity: not active" text passed to
- * Com_ErrorMessage in the reclaim path is a copy-pasted list-integrity assert
+ * CG_Error in the reclaim path is a copy-pasted list-integrity assert
  * shared with the local-entity free routine and does not name this pool. */
 markPoly_t *CG_AllocMark(void);
 
@@ -7408,13 +7408,13 @@ int32_t CG_FindVoiceChatFileIndex(const char *fileName);
 /* Menu matching declarations are shared in ui_runtime.h. */
 
 /*
- * CG_CalcAdsOverlayFrac (0x30019520) - compute the ADS scope/overlay display
+ * CG_GetWeapReticleZoom (0x30019520) - compute the ADS scope/overlay display
  * fraction for the current predicted weapon into *outFrac and return whether the
  * overlay is active this frame (fraction > 0.01). RECONSTRUCTED; see
  * functions/FUN_30019520_300195da.c. Register ABI: outFrac pointer in ECX (modeled
  * as a normal parameter); AL/EAX -> qboolean.
  */
-qboolean CG_CalcAdsOverlayFrac(float *outFrac);
+qboolean CG_GetWeapReticleZoom(float *outFrac);
 
 /* CG_DrawWeapReticle (0x300195e0) — draw the active ADS overlay/reticle and
  * return the complementary ordinary-crosshair alpha. */
@@ -7463,7 +7463,7 @@ void CG_PredictPlayerState(void);
  *  - CG_AddPlayerViewWeapon (0x30032fe0): EBX=cent (register arg; MOV EBX,ESI at
  *    0x30034493), no stack args; returns qboolean in EAX (nonzero => handled, skip the
  *    normal model submit). Reads cent+0x74/+0x88/+0x94. arity/types UNPROVEN.
- *  - CG_AddPlayerWaterShadow (0x30032da0, prior size-match guess CG_AddPlayerHeatEffect):
+ *  - CG_PlayerSplash (0x30032da0, prior size-match guess CG_AddPlayerHeatEffect):
  *    ESI=cent (register arg), no stack args, result unused. Now fully reconstructed in
  *    src/client/cgame/entities/cg_addplayerwatershadow.c — when the shadow-mode global
  *    (0x3044fdec) is set it point-contents-probes 24u below (must be CONTENTS_WATER) and
@@ -7482,7 +7482,7 @@ void CG_PredictPlayerState(void);
  *    writer is elsewhere / still unresolved for the CG_Player caller). */
 void CG_AddPlayerMountedModel(centity_t *cent);
 qboolean CG_AddPlayerViewWeapon(centity_t *cent);
-void CG_AddPlayerWaterShadow(centity_t *cent);
+void CG_PlayerSplash(centity_t *cent);
 /* CG_Player's per-model-effect scratch: +0x00 doubles as the CG_PlayerShadow out
  * float (shadowPlane) and +0x04 as an entityNum the caller compares to
  * cg.snap->ps.psClientNum. CG_PlayerShadow writes only +0x00. */

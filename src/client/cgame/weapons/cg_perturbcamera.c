@@ -1,9 +1,9 @@
 // Source: uo_cgame_mp_x86.dll 0x30046490..0x3004656b
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30046490_3004656b.mcode
 //
-// CG_PerturbCamera(float dist)
+// CG_OffsetLMG(float dist)
 //
-// Naming: the mechanical `# name CG_PerturbCamera` is a broad-corpus name backed
+// Naming: the mechanical `# name CG_OffsetLMG` is a broad-corpus name backed
 // only by a size match (win 0xdb / matched 0xdc) which the contract forbids
 // trusting. The BEHAVIOR, however, does support a camera-perturbation role, so
 // the name is kept as the best defensible symbol with the note below. What the
@@ -47,7 +47,7 @@
 
 #include <math.h>
 
-void CG_PerturbCamera(float dist)
+void CG_OffsetLMG(float dist)
 {
     vec3_t fa; /* forward axis (AngleVectors "forward" output; the only one used) */
     vec3_t ra; /* right axis  — computed by AngleVectors, unused (scratch)        */

@@ -845,7 +845,7 @@ extern const char cg_scriptNumThreadsDebugFormat[16];
 /* 0x30076dac .rdata refs=1 width=imm first=0x30017e9f owner=g_checkpointinsidetriggermount */
 extern const char cg_scriptNumVarsDebugFormat[16];
 /* 0x30077138 .rdata refs=1 width=imm first=0x30022217; consumed by CG_AddCEntity
- * (0x30022170) as the "Bad entity type: %i\n" Com_ErrorMessage format. The
+ * (0x30022170) as the "Bad entity type: %i\n" CG_Error format. The
  * mechanical export truncated this NUL-terminated .rdata string to its first
  * dword ("Bad " = 0x20646142) as a uint32_t; superseded here with the real
  * string per its proven consumer (bytes verified 42 61 64 20 .. 25 69 0a 00). */
@@ -1916,7 +1916,7 @@ typedef struct cgWeaponInfo_s {
      * bone/tag world matrices on the first-person weapon. The flash-sound emitter
      * CG_WeaponUpdateLoopingSound (0x300490b0) reads it as a dword (MOV EDI,[ESI]) and,
      * for the local predicted player, passes it as `self` to
-     * CG_DObjGetSpecialTagWorldMatrix("tag_flash"); a zero handle skips that path.
+     * CG_DObjGetViewModelTagMatrix("tag_flash"); a zero handle skips that path.
      * Exact CoD member name unproven; named by proven role. The original field is
      * 4 bytes on i386 and widens with the native DObj pointer on 64-bit hosts. */
     DObj *viewDObjSelf;             /* +0x00 : local view-weapon DObj self handle. Also read
@@ -2057,7 +2057,7 @@ typedef struct cgWeaponInfo_s {
                                      *         this weapon's 3D-view-centered HUD icon (distinct
                                      *         from the weapon-select icon hudIconShader at
                                      *         +0x148). Read by the view-centered weapon-icon
-                                     *         draw at 0x30019ba0 (CG_DrawWeaponIcon3D) as
+                                     *         draw at 0x30019ba0 (CG_DrawTurretCrossHair) as
                                      *         MOV EAX,[weaponIndex*0x1c4 + 0x30413708] and
                                      *         passed as the hShader to trap_R_DrawStretchPic.
                                      *         (0x30413708 == 0x30413580 + 0x188, i.e. this member
@@ -2113,7 +2113,7 @@ _Static_assert(sizeof(cgWeaponInfo_t) == 0x1c4, "cgWeaponInfo stride");
  * unproven; role-derived. */
 extern int32_t cg_hudSpinPrevTime;
 /* cg_compassSpinPrevTime (0x30134ce4, .data) — last cg.time (ms) at which
- * CG_UpdateCompassOrientation (0x3001d6d0) advanced the compass reference-yaw spring. The
+ * CG_UpdateCompPointerOrientation (0x3001d6d0) advanced the compass reference-yaw spring. The
  * updater integrates over dt = cg.time - this, then stores cg.time back here. It is the
  * compass twin of cg_hudSpinPrevTime (0x30134ce0, adjacent). refs=3, owned solely by
  * 0x3001d6d0; the owner=veh_checkpushclients label is a wrong size-match name. int ms. */
@@ -2473,7 +2473,7 @@ typedef struct cgMedia_s {
      * handle for the "headiconTalkBalloon" icon, drawn over a client whose currentState
      * eFlags carry the 0x20000 "typing/chatting" bit. Written once by the cgame
      * media-registration path at 0x3002c55d (result of registering shader
-     * "headiconTalkBalloon" @0x30077fbc, type 2), then read only by CG_AddHeadIcon
+     * "headiconTalkBalloon" @0x30077fbc, type 2), then read only by CG_PlayerSprites
      * (0x30032ac0). Real name resolved from the registered shader string; supersedes
      * the mechanical owner=pm_updateviewangles guess. */
     qhandle_t balloonShader;
@@ -2482,7 +2482,7 @@ typedef struct cgMedia_s {
      * handle for the "headiconDisconnected" icon, drawn over a client whose currentState
      * eFlags carry the 0x800 "disconnected" bit. Written once by the cgame
      * media-registration path at 0x3002bb25 (result of registering shader
-     * "headiconDisconnected" @0x30078320, type 5), then read only by CG_AddHeadIcon
+     * "headiconDisconnected" @0x30078320, type 5), then read only by CG_PlayerSprites
      * (0x30032ac0). Real name resolved from the registered shader string. */
     qhandle_t connectionShader;
     /* 0x3044b6d8 .data refs=2 (owner label pm_updateviewangles is the mechanical
@@ -2490,7 +2490,7 @@ typedef struct cgMedia_s {
      * handle for the "headiconYouInKillCam" icon, drawn over the local client's own
      * entity when it is being rendered as the kill-cam subject. Written once by the
      * cgame media-registration path at 0x3002bb36 (result of registering shader
-     * "headiconYouInKillCam" @0x30078308, type 5), then read only by CG_AddHeadIcon
+     * "headiconYouInKillCam" @0x30078308, type 5), then read only by CG_PlayerSprites
      * (0x30032ac0). Real name resolved from the registered shader string. */
     qhandle_t youInKillCamIcon;
     /* 0x3044b6dc .data refs=1 width=4 first=0x3002bbee resolved: cgs.media handle for "gfx/2d/select" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
@@ -2550,7 +2550,7 @@ typedef struct cgMedia_s {
      *   [0] = "hudObjective"     (0x300781b4)
      *   [1] = "hudObjectiveUp"   (0x300781a4)
      *   [2] = "hudObjectiveDown" (0x30078190)
-     * Read by CG_GetObjectiveShaderForDir (0x3002fd90) as cgs.media.objectiveShaders[dir]
+     * Read by CG_ObjectiveIcon (0x3002fd90) as cgs.media.objectiveShaders[dir]
      * when no per-shader config-string override is requested. The old mechanical
      * owner label "pm_updateviewangles" was wrong (size-guess); superseded here.
      */
@@ -2584,7 +2584,7 @@ typedef struct cgMedia_s {
     /* 0x3044bba4 .data refs=2 width=4 first=0x3002c5fd resolved: cgs.media handle for the
      * "wake" material (registered by CG_RegisterGraphics 0x3002c5f1: PUSH 0x30077f90
      * "wake"; the old markShadowFade label was a mis-read of the adjacent
-     * "markShadow" string). Consumed by CG_AddPlayerWaterShadow, matching the
+     * "markShadow" string). Consumed by CG_PlayerSplash, matching the
      * Q3/RTCW cgs.media.wakeMarkShader role. */
     qhandle_t wakeMarkShader;
     /* 0x3044bba8 .data refs=1 width=4 first=0x3002c503 resolved: cgs.media handle for "gfx/hud/headicon@allies_flag" (registered by CG_RegisterGraphics 0x3002ba50; owner=pm_updateviewangles was a size-guess). */
@@ -3283,7 +3283,7 @@ _Static_assert(offsetof(cgMedia_t, vehicleTreadEffects) == 0x1414, "cgs.media.ve
 /* 0x3044f96c .data refs=3 width=4 first=0x30022b7e owner=cmd_callvote_f */
 /* 0x3044fa8c: cg_drawCrosshair_vmCvar.integer (vmCvar_t at 0x3044fa80,
  * cg_cvarTable[16] "cg_drawCrosshair"). Read as the enable gate by three
- * HUD/3D-view draw entry points: CG_DrawWeaponIcon3D (0x30019ba3, skips when
+ * HUD/3D-view draw entry points: CG_DrawTurretCrossHair (0x30019ba3, skips when
  * zero), CG_DrawCrosshair (0x30019ea5), and CG_DrawCrosshairNames (0x3001a610,
  * skips when signed-negative). The mechanical owner=pm_viewheighttablelerp
  * label was only the first toucher; not a standalone global. */
@@ -3376,7 +3376,7 @@ extern vmCvar_t pmove_msec;
  * item_enableshowviacvar is the mechanical first-touch and is wrong.) */
 
 /* cg_hudCompassSpringyPointers_vmCvar.integer (0x30450fec, .data) — first-run flag for the compass
- * reference-yaw spring in CG_UpdateCompassOrientation (0x3001d6d0). While 0, the updater snaps
+ * reference-yaw spring in CG_UpdateCompPointerOrientation (0x3001d6d0). While 0, the updater snaps
  * cg.compassRefYaw straight to cg.refdefViewAngles[1] and returns without integrating; the
  * flag is otherwise only tested (never written) inside this function, so the initial
  * snap depends on an external one-shot set. refs=1, owned solely by 0x3001d6d0; the
@@ -3450,7 +3450,7 @@ extern vmCvar_t pmove_msec;
 extern vmCvar_t cg_objectiveText;
 /* 0x30452428: cg_crosshairAlpha_vmCvar.value (vmCvar_t at 0x30452420,
  * cg_cvarTable[42] "cg_crosshairAlpha"). Read across the 0x30019xxx HUD/3D-view
- * cluster: CG_DrawWeaponIcon3D (0x30019c21) FLDs it and skips the icon draw when
+ * cluster: CG_DrawTurretCrossHair (0x30019c21) FLDs it and skips the icon draw when
  * it is < 0.01f (FCOMP against 0.01f, JNP-on-less), and CG_DrawCrosshair
  * (0x30019e8a/0x3001a22f) FMULs it into both reticle alphas. The mechanical
  * owner=pm_viewheighttablelerp label was only the first toucher; not a
@@ -3646,9 +3646,9 @@ extern itemInfo_t cg_items[256];
 
 /* 0x3045776c .data — cg_hudDamageIconInScope_vmCvar.integer: a gate consulted by
  * CG_DrawDamageDirectionIndicators (0x3001a9bf) only when the ADS/scope overlay is active. If
- * the aim-down-sight overlay is up (CG_CalcAdsOverlayFrac != 0) but this is zero, the
+ * the aim-down-sight overlay is up (CG_GetWeapReticleZoom != 0) but this is zero, the
  * function bails without drawing; otherwise it projects the aim point to screen
- * (CG_ProjectDamageDirToScreen) to anchor the arrows there. Non-ADS frames ignore it
+ * (CG_CalcCrosshairPosition) to anchor the arrows there. Non-ADS frames ignore it
  * and anchor at screen center (320,240). Read-only in .text (writer not reconstructed:
  * plausibly a registered scope-anchor shader handle or an enable flag); proven-by-role
  * name. Mechanical owner=cg_ejectweaponbrass rejected. */
@@ -4006,7 +4006,7 @@ typedef struct cgWeaponPositionState_s {
     /* 0x30487954 .data refs=5 width=4 first=0x30019560.
      * RESOLVED: cg.weaponPosition.adsZoomingIn — qboolean set each frame by the ADS-fraction tracker
      * at 0x30045509: 1 when this frame's adsFraction rose above last frame's
-     * (cg.weaponPosition.prevAdsFraction, 0x30487950), else 0. CG_CalcAdsOverlayFrac (0x30019520)
+     * (cg.weaponPosition.prevAdsFraction, 0x30487950), else 0. CG_GetWeapReticleZoom (0x30019520)
      * reads it to pick adsZoomInFrac (zooming in) vs adsZoomOutFrac (zooming out).
      * owner=sp_trigger_mount_no_brush was a wrong size-based auto-name. */
     qboolean adsZoomingIn;
@@ -4168,7 +4168,7 @@ typedef struct cg_s {
      * weaponInfo_t record, cached once per predicted frame at 0x30034d79 as
      * bg_weaponInfos[cg.predictedPlayerState.currentWeapon]. Widely read across the
      * cgame view/HUD code (28 refs) via +offset field access (e.g. adsZoomInFrac
-     * +0x278, adsOverlayShader +0x280 in CG_CalcAdsOverlayFrac, 0x30019520).
+     * +0x278, adsOverlayShader +0x280 in CG_GetWeapReticleZoom, 0x30019520).
      * owner=sp_trigger_mount_no_brush was a wrong size-based auto-name. */
     weaponInfo_t *currentWeaponInfo;
     /* 0x30487984..0x30487993: prediction-error decay state. The prediction updater
@@ -4815,9 +4815,9 @@ typedef struct cg_s {
      * is left unproven; the owner=cg_asset_parse label is only the first toucher. */
     float compassRefYaw;
     /* cg.compassRefVel (0x3048b5d8, .data) — angular velocity (float, deg/s) of the
-     * compass reference-yaw spring driven by CG_UpdateCompassOrientation (0x3001d6d0). It is the
+     * compass reference-yaw spring driven by CG_UpdateCompPointerOrientation (0x3001d6d0). It is the
      * velocity twin of cg.compassRefYaw, exactly as cg.hudSpinVel (0x3048b5d0) is
-     * the velocity for cg.hudSpinAngle. CG_UpdateCompassOrientation integrates it against substep
+     * the velocity for cg.hudSpinAngle. CG_UpdateCompPointerOrientation integrates it against substep
      * time with a critically-damped spring (accel ~1500, damping terms 3/5*dt), clamps its
      * magnitude to [-2000, 2000], and zeroes it on settle/reset. Type repaired uint32_t->float
      * (every value access is an x87 FLD; the reset MOVs store float bit patterns, e.g.
@@ -5183,7 +5183,7 @@ extern vmCvar_t cg_viewSizeCvar;
 
 /* 0x305300cc: cl_paused_vmCvar.integer (vmCvar_t at 0x305300c0, cg_cvarTable[99]
  * "cl_paused"). Read purely as a boolean draw-inhibit gate: CG_DrawScoreboard
- * (0x30037d90) returns qfalse immediately when it is nonzero; CG_DrawWeaponIcon3D
+ * (0x30037d90) returns qfalse immediately when it is nonzero; CG_DrawTurretCrossHair
  * (0x30019bd0), CG_DrawCrosshair (0x30019eb2), and the effect path (0x3001fb3f)
  * likewise skip work when it is set. Not a standalone global. */
 

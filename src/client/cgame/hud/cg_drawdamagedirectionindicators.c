@@ -28,12 +28,12 @@
 //     pre-seeded to white (1,1,1,0) before the gate but only used on the drawing path.
 //
 //   * Anchor the ring (sx,sy):
-//       CG_CalcAdsOverlayFrac(&sx) returns whether the ADS/scope overlay is active
+//       CG_GetWeapReticleZoom(&sx) returns whether the ADS/scope overlay is active
 //       (its out-fraction lands in the sx slot but is immediately overwritten below,
 //       so only the boolean matters here).
 //       - overlay inactive -> sx = 320, sy = 240 (plain screen center).
 //       - overlay active   -> require cg_hudDamageIconInScope_vmCvar.integer (else return with no
-//                             draw); then CG_ProjectDamageDirToScreen(&sx,&sy) projects
+//                             draw); then CG_CalcCrosshairPosition(&sx,&sy) projects
 //                             the aim point, and sx += 320, sy += 240 recenters it.
 //
 //   * Build the icon quad once (cornerOffsets[8], four {x,y} pairs) about the anchor:
@@ -87,18 +87,18 @@ void CG_DrawDamageDirectionIndicators(void)
         return;
     }
 
-    /* Anchor the ring. CG_CalcAdsOverlayFrac writes its out-fraction into the sx slot,
+    /* Anchor the ring. CG_GetWeapReticleZoom writes its out-fraction into the sx slot,
      * but that value is discarded here (overwritten below); only its qboolean return
      * selects the anchor. */
     float sx;
     float sy;
-    if (CG_CalcAdsOverlayFrac(&sx)) {
+    if (CG_GetWeapReticleZoom(&sx)) {
         /* ADS/scope overlay active: require the anchor gate, then project the aim
          * point and recenter it on the 640x480 screen. */
         if (!cg_hudDamageIconInScope_vmCvar.integer) {
             return;
         }
-        CG_ProjectDamageDirToScreen(&sx, &sy);
+        CG_CalcCrosshairPosition(&sx, &sy);
         sx = (float)((long double)sx + (long double)320.0f);
         sy = (float)((long double)sy + (long double)240.0f);
     } else {

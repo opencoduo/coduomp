@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x30019520..0x300195da
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30019520_300195da.mcode
 //
-// CG_CalcAdsOverlayFrac — compute the ADS (aim-down-sight) scope/overlay display
+// CG_GetWeapReticleZoom — compute the ADS (aim-down-sight) scope/overlay display
 // fraction for the current predicted weapon, and return whether that overlay is
 // active this frame.
 //
@@ -46,7 +46,7 @@
 /* Overlay is "active" once its computed fraction exceeds this small threshold. */
 #define CG_ADS_OVERLAY_ACTIVE_THRESHOLD 0.01f
 
-qboolean CG_CalcAdsOverlayFrac(float *outFrac)
+qboolean CG_GetWeapReticleZoom(float *outFrac)
 {
     weaponInfo_t *wi;
     float adsFraction;

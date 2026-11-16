@@ -14,7 +14,7 @@
 //   * it takes a centity in EBX (client render dispatch), not a gentity;
 //   * it emits the two client item-render diagnostics "Bad item index %i on
 //     entity" (0x30077310) and "No XModel loaded for item index %i (%s)"
-//     (0x300772e8) via Com_ErrorMessage;
+//     (0x300772e8) via CG_Error;
 //   * it builds an on-stack refEntity_t (RT_MODEL) and submits it with
 //     trap_R_AddRefEntityToScene (trap 0x3d), exactly like CG_General;
 //   * it drives CG_RegisterItemVisuals (0x30044ac0) over cg_items, the CoD cgame
@@ -30,7 +30,7 @@
 //   1. /GS frame: snapshot __security_cookie into the frame; verify via
 //      __security_check_cookie (0x30061639) on both return paths. Not source-level.
 //   2. 0x3001e698: if cent->currentState.itemIndex >= 134 (CMP EAX,0x86; JL skips), report
-//      Com_ErrorMessage("Bad item index %i on entity", itemIndex) and continue.
+//      CG_Error("Bad item index %i on entity", itemIndex) and continue.
 //   3. 0x3001e6b5: MOV AL,[EBX+8]; TEST AL,AL; JS -> if eFlags bit 7 (EF_NODRAW)
 //      set, skip everything and return (via the /GS-checked exit).
 //   4. 0x3001e6c0: itemInfo = &cg_items[itemIndex] (0x304531a0, stride 0x24);
@@ -39,7 +39,7 @@
 //      and TESTed at 0x3001e6e3) is 0, call CG_RegisterItemVisuals(itemIndex) then
 //      return (via the /GS-checked exit at 0x3001e702). No first-frame draw.
 //   5. 0x3001e708/0x3001e70b: if itemInfo->modelHandle (+0x04) is 0, report
-//      Com_ErrorMessage("No XModel loaded for item index %i (%s)", itemIndex,
+//      CG_Error("No XModel loaded for item index %i (%s)", itemIndex,
 //      item->pickupName). Continues either way.
 //   6. 0x3001e727: refresh the DObj anim tree:
 //      CG_RefreshEntityDObjAnimTree(cent->currentState.eType, itemInfo->modelHandle) with
@@ -82,10 +82,10 @@ void CG_Item(centity_t *cent /* EBX */)
     struct DObj_s *dobj;
 
     /* 0x3001e698: out-of-range item index is a client render diagnostic; execution
-     * then continues into the eFlags check (Com_ErrorMessage does not return here in
+     * then continues into the eFlags check (CG_Error does not return here in
      * source terms but the instruction stream falls through). */
     if (cent->currentState.itemIndex >= CG_ITEM_INDEX_LIMIT)
-        Com_ErrorMessage("Bad item index %i on entity", cent->currentState.itemIndex);
+        CG_Error("Bad item index %i on entity", cent->currentState.itemIndex);
 
     /* 0x3001e6b5: MOV AL,[EBX+8]; TEST AL,AL; JS -> eFlags bit 7 = EF_NODRAW. */
     if (cent->currentState.eFlags & EF_NODRAW)
@@ -108,7 +108,7 @@ void CG_Item(centity_t *cent /* EBX */)
      * is a data error (the XModel failed to load); report it and continue. This is a
      * SECOND, distinct null-check on +0x04, not the +0x00 registered flag above. */
     if (itemInfo->modelHandle == 0)
-        Com_ErrorMessage("No XModel loaded for item index %i (%s)",
+        CG_Error("No XModel loaded for item index %i (%s)",
                          cent->currentState.itemIndex, item->pickupName);
 
     /* 0x3001e727: (re)bind the entity's DObj weapon anim tree. First stack arg is

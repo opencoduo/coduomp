@@ -54,7 +54,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
         }
         if (weaponIndex > bg_numWeapons ||
             (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS) {
-            Com_ErrorMessage("CG_FireWeapon: ent->weapon > BG_GetNumWeapons()");
+            CG_Error("CG_FireWeapon: ent->weapon > BG_GetNumWeapons()");
             return;
         }
     } else {
@@ -188,7 +188,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
             if ((cg.snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
                 (int32_t)model->numberBits == cg.snap->ps.psClientNum) {
                 if (weaponVisual->viewDObjSelf != 0) {
-                    haveTagOrigin = CG_DObjGetSpecialTagWorldMatrix(
+                    haveTagOrigin = CG_DObjGetViewModelTagMatrix(
                         weaponVisual->viewDObjSelf,
                         "tag_flash", &tagMatrix);
                 }

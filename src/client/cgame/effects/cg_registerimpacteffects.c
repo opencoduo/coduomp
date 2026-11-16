@@ -85,7 +85,7 @@ void CG_RegisterImpactEffects(void)
                              (int32_t)CG_IMPACT_FX_DIR_LISTBUF);
 
     if (numFiles == 0) {
-        Com_ErrorMessage("No CSV files in the fx directory to identify impact effects\n");
+        CG_Error("No CSV files in the fx directory to identify impact effects\n");
     } else if ((uint32_t)numFiles > (uint32_t)CG_IMPACT_MAX_CSV_FILES) {
         /* 0x3001e1af uses unsigned JBE. Thus every nonzero value whose target
          * dword is above 4096, including a negative signed result, is capped. */
@@ -152,7 +152,7 @@ void CG_RegisterImpactEffects(void)
 
         if (parseError != NULL) {
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-            Com_ErrorMessage("%s", parseError);
+            CG_Error("%s", parseError);
         }
     }
 
@@ -168,7 +168,7 @@ void CG_RegisterImpactEffects(void)
     }
 
     if (missing != 0) {
-        Com_ErrorMessage("%i missing entries in effect CSV files (see console for details)",
+        CG_Error("%i missing entries in effect CSV files (see console for details)",
                          missing);
     }
 }

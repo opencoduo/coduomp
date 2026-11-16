@@ -6,7 +6,7 @@
 // Naming: the mechanical .mcode pre-hint "script_func_playfxontag" is REJECTED. It
 // came from a size-match (win 0x19b == a server GSC builtin of the same size) and is
 // wrong: this is a cgame client routine, not a server GSC "play fx on tag" builtin.
-// The identity is proven directly from the two Com_ErrorMessage format strings this
+// The identity is proven directly from the two CG_Error format strings this
 // function references — "CG_ProcessSnapshots: n < cg.latestSnapshotNum" (0x3007a454)
 // and "CG_ProcessSnapshots: Server time went backwards" (0x3007a424) — which name it
 // outright, and from its call graph (CG_ReadNextSnapshot, CG_SetNextSnap,
@@ -17,7 +17,7 @@
 //   1. Ask the engine for the latest snapshot number and its server time via
 //      cgame_syscall(CG_GET_CURRENT_SNAPSHOT_NUMBER, &n, &cg.latestSnapshotTime).
 //      Mirror that server time into cg_effectAnimTime.
-//   2. Advance cg.latestSnapshotNum toward n, complaining via Com_ErrorMessage if n
+//   2. Advance cg.latestSnapshotNum toward n, complaining via CG_Error if n
 //      regressed below it.
 //   3. If cg.snap is not yet set, spin CG_ReadNextSnapshot until one arrives, install
 //      the first usable snapshot (skipping SNAPFLAG_NOT_ACTIVE ones), reset the client
@@ -32,7 +32,7 @@
 // Callee/return conventions proven at the call sites:
 //   - cgame_syscall (0x30085e9c): variadic int trap; args pushed right-to-left, id
 //     last, caller-cleaned.
-//   - Com_ErrorMessage (0x3002b300): one format-string dword, caller-cleaned (ADD ESP,4).
+//   - CG_Error (0x3002b300): one format-string dword, caller-cleaned (ADD ESP,4).
 //   - CG_ReadNextSnapshot (0x3003d220): no args, returns snapshot_t * in EAX.
 //   - CG_SnapshotTransitionStage2 (0x30034d40), CG_SetNextSnap (0x3003cc10, one arg),
 //     CG_SetInitialSnapshot (0x3003c9d0, arg in EAX), CG_SetFrameInterpolation
@@ -56,10 +56,10 @@ void CG_ProcessSnapshots(void)
     /* 3003d2ea..3003d30a: advance cg.latestSnapshotNum toward n.
      *   n == latestSnapshotNum -> nothing;
      *   n  > latestSnapshotNum -> latestSnapshotNum = n (JGE skips the warning);
-     *   n  < latestSnapshotNum -> Com_ErrorMessage, then reload n and set it. */
+     *   n  < latestSnapshotNum -> CG_Error, then reload n and set it. */
     if (n != cg.latestSnapshotNum) {
         if (n < cg.latestSnapshotNum) {
-            Com_ErrorMessage("CG_ProcessSnapshots: n < cg.latestSnapshotNum");
+            CG_Error("CG_ProcessSnapshots: n < cg.latestSnapshotNum");
             /* 3003d303: n is reloaded from the stack local before the store. */
         }
         cg.latestSnapshotNum = n;
@@ -146,7 +146,7 @@ void CG_ProcessSnapshots(void)
             /* 3003d3fd..3003d40f: same server session — guard against backwards time. */
             if (coduo_int32_from_bits((uint32_t)snap->serverTime -
                                  (uint32_t)cg.snap->serverTime) < 0) {
-                Com_ErrorMessage("CG_ProcessSnapshots: Server time went backwards");
+                CG_Error("CG_ProcessSnapshots: Server time went backwards");
             }
 
             /* 3003d412: adopt the new snapshot as cg.nextSnap. */

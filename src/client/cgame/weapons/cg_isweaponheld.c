@@ -35,7 +35,7 @@
 //   3004738a  NEG EAX                     EAX = (EAX != 0) ? 1 : 0   (booleanize)
 //   3004738c  RET
 
-qboolean CG_IsWeaponHeld(int weapon)
+qboolean CG_WeaponSelectable(int weapon)
 {
     uint32_t mask = 1u << ((uint32_t)weapon & 0x1f);
     int32_t word = coduo_int32_sar((uint32_t)weapon, 5);

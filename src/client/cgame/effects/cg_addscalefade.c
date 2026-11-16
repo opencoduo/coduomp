@@ -72,7 +72,7 @@
  *   -- dist < radius: sprite has shrunk below its threshold -> free it --
  *   -- (inlined CG_FreeLocalEntity(le), identical to CG_AddLocalEntities' path) --
  *   3002aca5  CMP le->prev,0 ; JNZ           if le->prev == 0 report list-integrity error
- *   3002acaa  PUSH "CG_FreeLocalEntity: not active" ; CALL Com_ErrorMessage ; ADD ESP,4
+ *   3002acaa  PUSH "CG_FreeLocalEntity: not active" ; CALL CG_Error ; ADD ESP,4
  *   3002acb7  EAX = cg_numLocalEntities   [0x30134cfc]
  *   3002acbc  EDX = le->next ; ECX = le->prev
  *   3002acc1  le->prev->next = le->next
@@ -142,7 +142,7 @@ void CG_AddScaleFade(localEntity_t *le)
      * assert fires when le->prev is NULL (the entity is not actually linked).
      */
     if (le->prev == 0) {
-        Com_ErrorMessage(cg_freeLocalEntityInactiveErrorMessage);
+        CG_Error(cg_freeLocalEntityInactiveErrorMessage);
     }
     {
         uint32_t countBits = (uint32_t)cg_numLocalEntities; /* 0x3002acb7 */

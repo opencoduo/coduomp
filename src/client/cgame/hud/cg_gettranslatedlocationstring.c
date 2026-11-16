@@ -11,7 +11,7 @@
 // string by an INLINED CG_ConfigString lookup at index (CS_LOCATIONS + locationIndex):
 //   cfgIndex = locationIndex + 53
 //   if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS)
-//       Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);   // 0x30077d90
+//       CG_Error("CG_ConfigString: bad index: %i", cfgIndex);   // 0x30077d90
 //   raw = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]];
 //   if (raw == NULL || raw[0] == '\0') raw = "CGAME_UNKNOWN";           // 0x300797d0
 // This is the same table/base pair and out-of-range diagnostic as CG_ConfigString
@@ -73,10 +73,10 @@ const char *CG_GetTranslatedLocationString(int32_t locationIndex)
     int32_t cfgIndex = coduo_int32_from_bits(
         (uint32_t)locationIndex + (uint32_t)CS_LOCATIONS);
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS) {
-        /* 0x300310c0..0x300310cb: Com_ErrorMessage("CG_ConfigString: bad index: %i",
+        /* 0x300310c0..0x300310cb: CG_Error("CG_ConfigString: bad index: %i",
          * cfgIndex). The lookup below still proceeds unbounded, exactly as in
          * CG_ConfigString (0x3002c990). */
-        Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
+        CG_Error("CG_ConfigString: bad index: %i", cfgIndex);
     }
 
     /* 0x300310ce..0x300310e5: raw = &cgs.gameState.stringData[

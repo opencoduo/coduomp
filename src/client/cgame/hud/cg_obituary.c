@@ -94,7 +94,7 @@ void CG_Obituary(centity_t *self)
     }
 
     if (target < 0 || target >= CG_OBITUARY_MAX_CLIENTS) {
-        Com_ErrorMessage("CG_Obituary: target out of range");
+        CG_Error("CG_Obituary: target out of range");
     }
     uint32_t targetRowOffsetBits =
         (uint32_t)target * (uint32_t)sizeof(bgs.clientinfo[0]);

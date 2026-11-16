@@ -22,9 +22,9 @@
 //   300387e1  MOV ESI,ECX                  ; ESI = index (register arg)
 //   300387e3  TEST ESI,ESI / JL            ; signed: index < 0  -> error
 //   300387e7  CMP ESI,0x800 / JL           ; index >= MAX_CONFIGSTRINGS -> error
-//   300387ef  PUSH ESI                     ;   Com_ErrorMessage(fmt, index)
+//   300387ef  PUSH ESI                     ;   CG_Error(fmt, index)
 //   300387f0  PUSH 0x30077d90              ;   "CG_ConfigString: bad index: %i"
-//   300387f5  CALL 0x3002b300              ;   Com_ErrorMessage (caller-cleaned)
+//   300387f5  CALL 0x3002b300              ;   CG_Error (caller-cleaned)
 //   300387fa  ADD ESP,0x8
 //   300387fd  MOV ESI,[ESI*4 + 0x30440a00] ; ESI = cgs.gameState.stringOffsets[index]
 //   30038804  ADD ESI,0x30442a00           ; ESI = &cgs.gameState.stringData[offset]
@@ -40,13 +40,13 @@
 //
 // The bounds check mirrors the inlined CG_ConfigString one exactly: on an
 // out-of-range index it prints "CG_ConfigString: bad index: %i" via
-// Com_ErrorMessage and then FALLS THROUGH to the (now unbounded) offset lookup —
+// CG_Error and then FALLS THROUGH to the (now unbounded) offset lookup —
 // preserved here as written (apparent original behavior, not a reconstruction
 // fix). The shader-register result (a qhandle_t) is discarded: this is a precache
 // side effect, so the function returns void.
 //
 // ABI (i386, not source-level): index is a register arg in ECX (custom fastcall-
-// style). Com_ErrorMessage and cgame_syscall are variadic/caller-cleaned. The
+// style). CG_Error and cgame_syscall are variadic/caller-cleaned. The
 // PUSH 0 for CG_DrawInformation stays live on the stack and is reclaimed by the
 // single ADD ESP,0x10 after the trap — same idiom as trap_R_RegisterShaderNoMip
 // (0x3003dda0).
@@ -61,7 +61,7 @@ void CG_RegisterServerShader(int index)
     /* 0x300387e3..0x300387ed: reject a negative or >= MAX_CONFIGSTRINGS index. */
     if (index < 0 || index >= MAX_CONFIGSTRINGS) {
         /* 0x300387f5: shared inlined CG_ConfigString bad-index diagnostic. */
-        Com_ErrorMessage(cg_configStringBadIndexFmt, index);
+        CG_Error(cg_configStringBadIndexFmt, index);
         /* Falls through to the lookup with the still-bad index (as in the DLL). */
     }
 

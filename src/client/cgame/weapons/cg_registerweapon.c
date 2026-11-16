@@ -501,7 +501,7 @@ void CG_RegisterWeapon(int weaponIndex)
         weaponInfo->clipModelHandle = CG_RegisterModel(
             weapon->clipModel, CG_REGISTER_WEAPON_MODEL_CATEGORY);
         if (weaponInfo->clipModelHandle == 0) {
-            Com_ErrorMessage(
+            CG_Error(
                 cg_registerWeaponInvalidProjectileModel,
                 weapon->pickupName, weapon->worldModel);
         }

@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 /*
- * CG_GetShaderConfigString (0x3002fd10) — resolve a shader index to its shader
+ * CG_ServerShaderName (0x3002fd10) — resolve a shader index to its shader
  * config-string name and copy that name into a caller buffer, returning qtrue on
  * success (qfalse for an out-of-range index, an empty config string, or a name
  * that does not fit).
@@ -28,7 +28,7 @@
  *  0x3002fd43 ADD ECX,0x30442a00            = &stringData[offset]).
  *
  * The generic CG_ConfigString bounds check on the composed index
- * (0 <= cfgIndex < MAX_CONFIGSTRINGS, else Com_ErrorMessage("CG_ConfigString:
+ * (0 <= cfgIndex < MAX_CONFIGSTRINGS, else CG_Error("CG_ConfigString:
  * bad index: %i", cfgIndex)) is emitted but, given 1 <= index <= 255, the
  * composed index is always in [1654, 1908] and the error path is never taken at
  * runtime; it is preserved faithfully.
@@ -36,8 +36,8 @@
  * Name adjudication: the .mcode header's "BG_IsPlayerWeaponAnAlt" is a pure
  * size-match (win 0x74 == PPC 0x74) and is REJECTED — this function performs a
  * config-string lookup and a bounded string copy, not a weapon/alt comparison.
- * The exact original CoD symbol is unproven; CG_GetShaderConfigString is a role
- * name from proven behavior (shader config-string range + copy). Com_ErrorMessage
+ * The exact original CoD symbol is unproven; CG_ServerShaderName is a role
+ * name from proven behavior (shader config-string range + copy). CG_Error
  * is a caller-observed provisional decl (callee 0x3002b300).
  *
  * Instruction map:
@@ -48,7 +48,7 @@
  *   3002fd22 TEST ESI,ESI ; JL   err         if (cfgIndex < 0)  -> bad index (signed)
  *   3002fd26 CMP  ESI,0x800 ; JL  ok         if (cfgIndex < 2048) skip error
  *   3002fd2e err: PUSH ESI ; PUSH "CG_ConfigString: bad index: %i"
- *   3002fd34      CALL Com_ErrorMessage ; ADD ESP,8
+ *   3002fd34      CALL CG_Error ; ADD ESP,8
  *   3002fd3c ok: MOV ECX,[ESI*4 + 0x30440a00]   ECX = stringOffsets[cfgIndex]
  *   3002fd43      ADD ECX,0x30442a00             ECX = &stringData[offset] = cs
  *   3002fd49      CMP byte [ECX],0 ; JNZ copy    if (*cs == 0) return qfalse
@@ -60,7 +60,7 @@
  *   3002fd70      loop: MOV CL,[EAX] ; MOV [EDX+EAX],CL ; INC EAX ; TEST CL ; JNZ
  *   3002fd7a      MOV EAX,1 ; POP ESI ; RET       return qtrue
  */
-qboolean CG_GetShaderConfigString(int index, char *dest, int size)
+qboolean CG_ServerShaderName(int index, char *dest, int size)
 {
     int cfgIndex;
     const char *cs;
@@ -76,7 +76,7 @@ qboolean CG_GetShaderConfigString(int index, char *dest, int size)
     /* Generic CG_ConfigString bounds check (unreachable for a valid shader index,
      * but emitted by the compiler and preserved). */
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS)
-        Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
+        CG_Error("CG_ConfigString: bad index: %i", cfgIndex);
 
     cs = &cgs.gameState.stringData[cgs.gameState.stringOffsets[cfgIndex]];
 

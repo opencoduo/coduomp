@@ -9,7 +9,7 @@
 // Naming: the .mcode "CG_ParseImpactEffects" tag is a pure win-size==0x1ac guess
 // against a same-size symbol in a different bank and is REJECTED — this body has no
 // token/string/CSV parsing, only float pool angle/projection math. It matches the
-// pre-existing role-name decl CG_ProjectDamageDirToScreen (client_recovered.h),
+// pre-existing role-name decl CG_CalcCrosshairPosition (client_recovered.h),
 // which was derived from the consumer CG_DrawDamageDirectionIndicators; that name is reused.
 //
 // Register ABI: the two output float addresses arrive in EDI (screen X) and ESI
@@ -60,7 +60,7 @@ static const float CG_DEG2RAD_HALF = 0.008726646f;
 /* Virtual-screen half extents (negated), exact .rdata values @0x3007bf30 / 0x3007bf2c. */
 enum { CG_PROJ_SCREEN_HALF_W = 320, CG_PROJ_SCREEN_HALF_H = 240 };
 
-void CG_ProjectDamageDirToScreen(float *outX, float *outY)
+void CG_CalcCrosshairPosition(float *outX, float *outY)
 {
     /* 0x30019373 loads yaw first and 0x30019379 loads pitch before either
      * conversion or FSINCOS block starts. */

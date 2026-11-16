@@ -7,7 +7,7 @@
 // Source: uo_cgame_mp_x86.dll 0x3002b300..0x3002b34c
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3002b300_3002b34c.mcode
 //
-// Com_ErrorMessage: the low-level variadic fatal-error backend. It formats
+// CG_Error: the low-level variadic fatal-error backend. It formats
 // (format, ...) into a fixed 1024-byte stack buffer and emits the result to the
 // engine via the cgame error trap (CG_ERROR, id 1). It is the byte-for-byte
 // sibling of Com_PrintMessage (0x3002b2b0) — the ONLY difference is the pushed
@@ -18,7 +18,7 @@
 // The .mcode's mechanical name MatrixTranspose is a pure size match
 // (win 0x4c == corpus 0x4c) and is REJECTED: there is no matrix, no vec3 read,
 // and no transpose arithmetic here — the body is a vsprintf + cgame_syscall(1)
-// error emitter. Size is not evidence. The name Com_ErrorMessage is the
+// error emitter. Size is not evidence. The name CG_Error is the
 // established corpus name for this address (client_recovered.h) and is proven by
 // the call graph and the CG_ERROR trap id.
 //
@@ -26,7 +26,7 @@
 //   after SUB ESP,0x404 the frame is: buffer[0x400] at frame+0, cookie at +0x400.
 //   [ESP+0x408] == original [ESP+4] == 1st stack arg == format.
 //   [ESP+0x40c] == original [ESP+8] == 1st vararg slot == va_start(args, format).
-// So the signature is exactly void Com_ErrorMessage(const char *format, ...) —
+// So the signature is exactly void CG_Error(const char *format, ...) —
 // the integer error level lives one frame up in Com_Error, not here.
 //
 // Structure (proven instruction-by-instruction):
@@ -58,7 +58,7 @@
 // (0x3002b339/0x3002b340) are compiler-generated MSVC /GS stack-protector code, not
 // source statements: they are emitted because this function has a large stack
 // buffer. The original C body is just the vsprintf + error trap below.
-void Com_ErrorMessage(const char *format, ...)
+void CG_Error(const char *format, ...)
 {
     // 0x3002b30b..0x3002b327: format the message into a fixed 1024-byte buffer.
     // va_start yields &format+1, i.e. the address of the first vararg slot

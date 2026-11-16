@@ -15,7 +15,7 @@
 //   - trap id 0x3d through *cgame_syscall = trap_R_AddRefEntityToScene (one refEntity_t*);
 //   - reType 4 = RT_SPRITE (camera-facing icon sprite);
 //   - reads cg.snap (0x30459160), cg.refdef.vieworg (0x30487a90) and the view-follow
-//     gate 0x304831c0 exactly like the sibling sprite builder CG_AddHeadIconSprite
+//     gate 0x304831c0 exactly like the sibling sprite builder CG_PlayerFloatSprite
 //     (0x30032910); this is the head-tag-less variant that always uses cent+0x208.
 // The existing caller-observed provisional decl in client_recovered.h already carries
 // this exact signature; this file supersedes its "caller-observed only" status with the

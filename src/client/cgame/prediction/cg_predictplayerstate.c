@@ -16,7 +16,7 @@
 //
 //  2. Only while the local player is the active first-person player
 //     (cg.snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) AND the ADS scope
-//     overlay is active this frame (CG_CalcAdsOverlayFrac): step the ADS view-error
+//     overlay is active this frame (CG_GetWeapReticleZoom): step the ADS view-error
 //     accumulators. The step fires exactly once per activation, latched by
 //     cg.adsViewErrorLatched, and only when the current weapon defines a nonzero
 //     error envelope (adsViewErrorMax != 0). Each step rolls a random magnitude in
@@ -50,7 +50,7 @@
                                * cg.predictedPlayerState.psOrigin, cg.adsViewErrorAngles,
                                * cg.adsViewErrorLatched, the cg_entities base */
 #include "client/cgame/client_recovered.h" /* centity_t, weaponInfo_t, trajectory_t,
-                               * BG_EvaluateTrajectory, CG_CalcAdsOverlayFrac,
+                               * BG_EvaluateTrajectory, CG_GetWeapReticleZoom,
                                * flrand, AngleMod, CG_PredictPlayerState_Internal */
 
 /* cg_entities[] base: 0x3048c6e0, centity_t stride 0x288. */
@@ -63,7 +63,7 @@
 void CG_PredictPlayerState(void)
 {
     centity_t *cent;
-    float outFrac;      /* ESP+0x18 scratch handed to CG_CalcAdsOverlayFrac (ECX arg) */
+    float outFrac;      /* ESP+0x18 scratch handed to CG_GetWeapReticleZoom (ECX arg) */
     float magnitude;    /* flrand(adsViewErrorMin, adsViewErrorMax) */
     float phase;        /* rand() * (1/32768) * 2*pi */
     float sinPhase;
@@ -105,7 +105,7 @@ void CG_PredictPlayerState(void)
     }
 
     /* ...and only while the ADS scope overlay is active this frame. */
-    if (!CG_CalcAdsOverlayFrac(&outFrac)) {
+    if (!CG_GetWeapReticleZoom(&outFrac)) {
         cg.adsViewErrorLatched = 0;
         return;
     }

@@ -95,10 +95,10 @@ void CG_DrawWeaponSelect(void)
 
         /* 0x30046c76/0x30046c81..0x30046c99: empty byte, or held bit clear in
          * cg.predictedPlayerState.weaponBits (word weapon>>5, bit weapon&0x1f;
-         * the inline form of CG_IsWeaponHeld, same sign-extended index math).
+         * the inline form of CG_WeaponSelectable, same sign-extended index math).
          * 0x30047334..0x30047345: back up one unexpanded icon width plus the
          * 2px gutter and collapse the slot's expansion; nothing drawn. */
-        if (weapon == 0 || !CG_IsWeaponHeld(weapon)) {
+        if (weapon == 0 || !CG_WeaponSelectable(weapon)) {
             x -= 32.0f;    /* FSUB [0x3007bdd0] */
             *scale = 0.0f;
             x -= 2.0f;     /* FSUB [0x3007bce4] */

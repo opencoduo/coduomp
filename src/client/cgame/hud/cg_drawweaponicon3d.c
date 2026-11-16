@@ -4,7 +4,7 @@
 // Source: uo_cgame_mp_x86.dll 0x30019ba0..0x30019ced
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30019ba0_30019ced.mcode
 //
-// CG_DrawWeaponIcon3D — draw the current effect entity's weapon HUD icon, centered
+// CG_DrawTurretCrossHair — draw the current effect entity's weapon HUD icon, centered
 // inside the cropped 3D-view rectangle (cg.refdef view region).
 //
 // NAME ADJUDICATION: the .mcode's mechanical pre-hint "PM_ViewHeightTableLerp" is a
@@ -55,7 +55,7 @@
 // double promotion the machine code does not do). Calling convention: no arguments
 // (SUB ESP,0x18 frame; plain RET; caller-cleaned 2D-trap pushes).
 
-void CG_DrawWeaponIcon3D(void)
+void CG_DrawTurretCrossHair(void)
 {
     const centity_t *cent;
     const weaponInfo_t *weap;
@@ -89,7 +89,7 @@ void CG_DrawWeaponIcon3D(void)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_DrawWeaponIcon3D: invalid view-lock entity %i",
+                  "\x15" "CG_DrawTurretCrossHair: invalid view-lock entity %i",
                   entityNum);
         return;
     }

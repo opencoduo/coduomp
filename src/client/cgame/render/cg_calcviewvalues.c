@@ -53,7 +53,7 @@ qboolean CG_CalcViewValues(void)
     CG_CalcVrect();
 
     if (cg.screenReadyState != 0) {
-        Com_ErrorMessage(cg_cinematicCameraUnavailableMessage);
+        CG_Error(cg_cinematicCameraUnavailableMessage);
     }
 
     if (cg.predictedPlayerState.pmType == PM_TYPE_INTERMISSION) {

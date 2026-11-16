@@ -14,7 +14,7 @@
 // stack frame at all. It is pure x87 float comparisons over cgame ADS globals
 // plus two dword stores. The name here is proven by the call graph: this is the
 // sole writer of cg.weaponPosition.adsZoomingIn (0x30487954) and cg.weaponPosition.prevAdsFraction
-// (0x30487950), and CG_CalcAdsOverlayFrac (0x30019520) reads cg.weaponPosition.adsZoomingIn to
+// (0x30487950), and CG_GetWeapReticleZoom (0x30019520) reads cg.weaponPosition.adsZoomingIn to
 // choose the weapon's adsZoomInFrac (+0x278) vs adsZoomOutFrac (+0x27c) when
 // building the ADS overlay. Exact original CoD source symbol unproven; role name.
 //

@@ -40,7 +40,7 @@
 
 /* Config-string base added to cent->currentState.iHeadIcon before the CG_ConfigString lookup
  * that yields the head-icon shader name (ADD ECX,0x25 at 0x30021812). Same +37 base
- * used by CG_AddHeadIcon (0x30032ac0) and the sibling builder at 0x300217ef. */
+ * used by CG_PlayerSprites (0x30032ac0) and the sibling builder at 0x300217ef. */
 enum { CG_HEADICON_CONFIGSTRING_BASE = 37 };
 
 /* Vertical lift (world units) applied to the DObj model's lighting origin: the entity

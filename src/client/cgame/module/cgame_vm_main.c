@@ -26,7 +26,7 @@ CGAME_EXPORT intptr_t CGAME_ABI_CDECL vmMain(
     intptr_t arg11)
 {
     if ((uint32_t)command > (uint32_t)CGVM_LAST_COMMAND) {
-        Com_ErrorMessage("vmMain: unknown command %i", command);
+        CG_Error("vmMain: unknown command %i", command);
         return -1;
     }
 

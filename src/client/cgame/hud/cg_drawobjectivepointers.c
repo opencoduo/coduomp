@@ -54,7 +54,7 @@ enum { OBJPTR_ANGLE2SHORT_MASK = 0xffff };
                                                          * 0x30030167 -- must stay unsuffixed) */
 #define OBJPTR_CENTER_BIAS       (160.0f)               /* 0x3007be90: vertical center bias */
 
-/* Icon direction-variant index passed to CG_GetObjectiveShaderForDir, chosen from the
+/* Icon direction-variant index passed to CG_ObjectiveIcon, chosen from the
  * objective's elevation delta (dz) relative to the view: level/up/down. Exact source
  * enum unproven; named by proven role. */
 enum {
@@ -66,7 +66,7 @@ enum {
 void CG_DrawPlayerCompassPointers(const rectDef_t *rect, const vec3_t color)
 {
     /* 0x3002fe7d: advance the smoothed compass reference yaw for this frame. */
-    CG_UpdateCompassOrientation();
+    CG_UpdateCompPointerOrientation();
 
     /* 0x3002fe82..0x3002fed7: compass ring center in virtual screen space, derived
      * from the HUD rect and the current slide fraction.
@@ -280,7 +280,7 @@ void CG_DrawPlayerCompassPointers(const rectDef_t *rect, const vec3_t color)
         } else {
             dir_variant = OBJPTR_DIR_LEVEL; /* 0x30030227..0x3003022b */
         }
-        qhandle_t shader = CG_GetObjectiveShaderForDir(dir_variant, obj->icon);
+        qhandle_t shader = CG_ObjectiveIcon(dir_variant, obj->icon);
 
         /* 0x30030235..0x3003023e: set the 2D draw color (trap 72) to the faded marker
          * color, then draw. */

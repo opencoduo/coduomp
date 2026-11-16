@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-DObjSkelMat *CG_DObjGetEntityBoneMatrix(struct DObj_s *self, const char *tagName,
+DObjSkelMat *CG_DObjGetLocalTagMatrix(struct DObj_s *self, const char *tagName,
                                         centity_t *part)
 {
     /* 3001fda5: EDI = trap(0xb2, self, tagName) -> the named DObj bone/tag index. */
