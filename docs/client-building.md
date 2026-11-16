@@ -267,7 +267,7 @@ Complete sticky-status parity, custom `matherr` callbacks, and OS exception
 dispatch remain outside this provider.
 
 HUD distance calculations in `CG_DrawCompassFriendlies`,
-`CG_DrawCompassTanks`, and `CG_DrawObjectivePointers` use the recovered CRT
+`CG_DrawCompassTanks`, and `CG_DrawPlayerCompassPointers` use the recovered CRT
 square-root provider, as do flame, camera, and tracer geometry. There are no CG
 square-root performance exceptions. Shared math and BG functions retain their
 own boundaries even when called by HUD code.
