@@ -146,16 +146,9 @@ qboolean Item_Multi_HandleKey(itemDef_t *item, int32_t key)
 
     current = Item_Multi_FindCvarByValue(item);
     count = Item_Multi_CountSettings(item);
-    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): right-click cycles to
-     * the previous choice while left-click, Enter, and middle-click retain the
-     * original forward direction. */
-    if (key == K_MOUSE2 && count > 0) {
-        current = current > 0 ? current - 1 : count - 1;
-    } else {
-        ++current;
-        if (current < 0 || current >= count) {
-            current = 0;
-        }
+    ++current;
+    if (current < 0 || current >= count) {
+        current = 0;
     }
 
     if (multi->strDef != 0) {
