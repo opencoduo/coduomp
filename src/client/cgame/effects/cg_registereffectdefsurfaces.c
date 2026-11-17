@@ -96,8 +96,7 @@ int32_t CG_RegisterEffectDefSurfaces(const effectDef_t *defs,
     for (int32_t i = 0; i < CG_EFFECT_SURFACE_COUNT; ++i) {
         if (defs[i].name[0] != 0) {
             // 0x3001dd0b: register this surface's effect definition, keep its handle.
-            handles[i] = (qhandle_t)coduo_int32_from_bits((uint32_t)cgame_syscall(
-                CG_FX_REGISTER_EFFECT, (intptr_t)&defs[i]));
+            handles[i] = (qhandle_t)coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect(defs[i].name));
         } else {
             // 0x3001dcd5..0x3001dd00: no definition. Warn unless the slot is marked
             // optional or is the last (exempt) surface index, then store handle 0.

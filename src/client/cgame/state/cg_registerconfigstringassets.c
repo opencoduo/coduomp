@@ -192,7 +192,7 @@ cgame_compat_register_assets_loading_pump(void)
 
     if (expectedHunkUsage > 0) {                        /* 0x30038aa9 TEST + 0x30038acf JLE */
         int32_t currentHunkUsage = coduo_int32_from_bits(
-            (uint32_t)cgame_syscall(CG_HUNK_USED)); /* 0x30038ad1 trap(0x3f) */
+            (uint32_t)trap_Hunk_Used()); /* 0x30038ad1 trap(0x3f) */
         /* 0x30038add FILD currentHunkUsage; 0x30038ae4 FIDIV expectedHunkUsage keep
          * both byte counts exact (they exceed 2^24, so (float) casts would round --
          * Class 4). 0x30038ae8 FST(float) stores the rounded fraction but *keeps*
@@ -237,7 +237,7 @@ void CG_SetConfigValues(void)
          index < CS_SCRIPTMENUS + CS_SCRIPTMENUS_COUNT; index++) {
         const char *name = cgame_compat_config_string_inline(index);
         if (name[0] != '\0' &&
-            cgame_syscall(CG_R_REGISTERMENU, (intptr_t)name) == 0) {
+            trap_R_RegisterMenu(name) == 0) {
             CG_Error("Could not load script menu file '%s'\n", name);
         }
     }

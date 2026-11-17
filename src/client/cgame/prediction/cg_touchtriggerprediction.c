@@ -85,7 +85,7 @@ void CG_TouchTriggerPrediction(void)
         }
 
         // 30035774..30035788: resolve the inline collision model.
-        int32_t inlineModel = (int32_t)cgame_syscall(CG_CM_INLINE_MODEL, entity->currentState.itemIndex);
+        int32_t inlineModel = (int32_t)trap_CM_InlineModel(entity->currentState.itemIndex);
         if (inlineModel == 0) {
             continue;
         }

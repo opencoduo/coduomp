@@ -79,7 +79,7 @@ void CG_BuildCorpseDObjModels(clientInfo_t *info, struct DObj_s *dobjHandle,
      * 0x30005944 loads the first byte of modelName; ESI = &modelName. */
     if (info->infoValid == 0 || info->modelName[0] == '\0') {
         /* 0x30005b33 error/cleanup tail: CG_SAFE_CLIENT_DOBJ_FREE(handleKey, 1). */
-        cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE, renderEntity->numberBits, 1);
+        trap_SafeClientDObjFree(renderEntity->numberBits, 1);
         return;
     }
 
@@ -95,7 +95,7 @@ void CG_BuildCorpseDObjModels(clientInfo_t *info, struct DObj_s *dobjHandle,
         }
         /* 0x3000597f: release the existing registration before rebuilding.
          * CG_SAFE_CLIENT_DOBJ_FREE(handleKey = renderEntity->number, 0). */
-        cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE, renderEntity->numberBits, 0);
+        trap_SafeClientDObjFree(renderEntity->numberBits, 0);
     }
 
     /* --- build the model set on the stack --- */
@@ -179,9 +179,7 @@ void CG_BuildCorpseDObjModels(clientInfo_t *info, struct DObj_s *dobjHandle,
     /* Commit the model set. 0x30005acc..0x30005ae9:
      * cgame_syscall(0xa7, &elements, count, animTree, renderEntity->number).
      * The count is passed as a 16-bit value (MOVZX EAX,BP). */
-    cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)&elements[0],
-                  (intptr_t)(uint16_t)count, (intptr_t)animTree,
-                  (int)renderEntity->numberBits);
+    trap_ClientDObjCreate(&elements[0], (uint16_t)count, animTree, (int)renderEntity->numberBits);
 
     /* 0x30005aef snapshots the rebuild word immediately after the trap, before
      * the cached weapon-index store at 0x30005afa. */

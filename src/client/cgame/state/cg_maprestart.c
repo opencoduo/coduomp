@@ -61,7 +61,7 @@ void CG_MapRestart(qboolean restart)
      * two post-init engine traps that always follow this pair in the reset paths. */
     CG_InitLocalEntities();                     /* CALL 0x3002a9e0 */
     CG_InitMarkPolys();                         /* CALL 0x3002e400 */
-    cgame_syscall(CG_FX_FREE_SYSTEM);                 /* PUSH 0xed; CALL *cgame_syscall */
+    trap_FX_FreeSystem();                 /* PUSH 0xed; CALL *cgame_syscall */
 
     /* Clear the vote-time / timeout-HUD-end-time state and re-arm the
      * add-scale-fade guard (0x304831bc <- 1) before the next batch of traps.
@@ -71,7 +71,7 @@ void CG_MapRestart(qboolean restart)
     cgs.voteTime = 0;                            /* MOV [0x30447ca0],ESI */
     cgs.timeoutEndTime = 0;             /* MOV [0x30447fd0],ESI */
     cg.mapRestart = 1;        /* MOV [0x304831bc],1 */
-    cgame_syscall(CG_MSS_STOP_SOUNDS, 0);              /* PUSH 0(ESI); PUSH 0xd7; CALL *cgame_syscall */
+    trap_MSS_StopSounds(0);              /* PUSH 0(ESI); PUSH 0xd7; CALL *cgame_syscall */
     /* 0x30039590: re-register config-string 3's sound alias immediately after
      * the engine reset and submit its nonnegative time delta. */
     CG_StartAmbient();
@@ -105,9 +105,9 @@ void CG_MapRestart(qboolean restart)
         CG_CloseScriptMenu();                   /* CALL 0x3003a950 */
         CG_CloseScriptMenu();                   /* CALL 0x3003a950 (issued twice) */
         trap_Cvar_Set(ui_scriptMenuAllowResponseCvarName, "1"); /* value "1" @0x30077398 */
-        cgame_syscall(CG_MAP_RESTART_RESET_RENDERER);             /* PUSH 0x7e; CALL *cgame_syscall */
+        trap_MapRestartResetRenderer();             /* PUSH 0x7e; CALL *cgame_syscall */
     }
-    cgame_syscall(CG_MAP_RESTART_RESET_RENDERER);                 /* PUSH 0x7e; CALL *cgame_syscall (always) */
+    trap_MapRestartResetRenderer();                 /* PUSH 0x7e; CALL *cgame_syscall (always) */
 
     /* If the scoreboard is up, clear it and latch cg.time as the fade start.
      *   EAX = cg.showScores; if (EAX) { ECX = cg.time;
@@ -145,7 +145,7 @@ void CG_MapRestart(qboolean restart)
     /* Tail call: the compiler unwinds the frame, writes the id 0xf8 into the
      * outgoing argument slot ([ESP+4]) and JMPs into *cgame_syscall so the trap's
      * return becomes this function's return. Modeled as the equivalent tail call. */
-    cgame_syscall(CG_SYNC_TIMES);                 /* MOV [ESP+4],0xf8; JMP *cgame_syscall */
+    trap_SyncTimes();                 /* MOV [ESP+4],0xf8; JMP *cgame_syscall */
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: reset transient demo presentation state around an

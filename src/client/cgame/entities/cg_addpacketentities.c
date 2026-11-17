@@ -56,7 +56,7 @@ void CG_AddPacketEntities(void)
 
     /* 3001f817: trap(0x97) — invalidate the client DObj skeleton cache for the
      * new frame (id only pushed, ADD ESP,4). */
-    cgame_syscall(CG_DOBJ_INVALIDATE_SKELS);
+    trap_DObjInvalidateSkels();
 
     /* First pass: advance each incoming-snapshot entity's DObj animation.
      * 3001f822: EAX = cg.nextSnap; ECX = cg.nextSnap->numEntities. EBX = i (loop
@@ -73,7 +73,7 @@ void CG_AddPacketEntities(void)
             float frameMilliseconds = (float)cg.frametime;
             float dtSeconds = (float)(
                 (long double)frameMilliseconds * (long double)0.001f);
-            cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME, dObjHandle, CG_FloatBits(dtSeconds));
+            trap_DObjAdvanceServerTime(dObjHandle, dtSeconds);
 
             /* 3001f883: re-read cg.nextSnap->entities[i].number into EDI, then
              * CG_SetGunHandFromNotetracks(entityNum) (CALL 0x3001f760). The reload
@@ -193,7 +193,7 @@ void CG_AddPacketEntities(void)
             float frameMilliseconds = (float)cg.frametime;
             float dtSeconds = (float)(
                 (long double)frameMilliseconds * (long double)0.001f);
-            cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME, dObjHandle, CG_FloatBits(dtSeconds));
+            trap_DObjAdvanceServerTime(dObjHandle, dtSeconds);
             /* 3001faa2: CG_SetGunHandFromNotetracks(cg.nextSnap->ps.psClientNum). */
             CG_SetGunHandFromNotetracks(cg.nextSnap->ps.psClientNum);
         }

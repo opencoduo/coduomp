@@ -95,9 +95,7 @@ qboolean CG_DObjGetWorldTagMatrix(struct DObj_s *self, const char *tagName,
 
     /* 3001fe21: EBP = trap(0xa0, self, 0) -> base of the entity's per-bone matrix
      * table; 3001fe29: index it by handle*0x40 (SHL 6) to select this bone. */
-    DObjSkelMat *boneMatrixTable =
-        (DObjSkelMat *)(intptr_t)cgame_syscall(
-            CG_DOBJ_GET_BONE_MATRICES, (intptr_t)self, 0);
+    DObjSkelMat *boneMatrixTable = trap_DObjGetBoneMatrices(self);
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (boneMatrixTable == NULL) {

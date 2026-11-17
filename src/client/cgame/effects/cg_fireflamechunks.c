@@ -1101,7 +1101,7 @@ finalize_child:
     }
 
     /* 0x30029192..0x300291a1: report this frame's flame-damage-taken flag. */
-    cgame_syscall(0x58, cg_flameDamageTakenThisFrame);
+    trap_SetUserCmdFlameDamage(cg_flameDamageTakenThisFrame);
 
     /* 0x300291a4: CG_UpdateFlamethrowerSounds(). */
     CG_UpdateFlamethrowerSounds();

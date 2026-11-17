@@ -123,17 +123,11 @@ void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs,
         return;
     }
 
-    handle42 = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_CM_TEMP_CAPSULE_MODEL,
-        (intptr_t)cg.snap->ps.playerMins,
-        (intptr_t)cg.snap->ps.playerMaxs,
-        (int32_t)CONTENTS_BODY));
+    handle42 = coduo_int32_from_bits((uint32_t)trap_CM_TempCapsuleModel(
+        cg.snap->ps.playerMins, cg.snap->ps.playerMaxs, (int32_t)CONTENTS_BODY));
 
-    cgame_syscall(CG_CM_TRANSFORMED_CAPSULE_TRACE, (intptr_t)&result,
-                  (intptr_t)start, (intptr_t)end, (intptr_t)mins,
-                  (intptr_t)maxs, handle42, contentMask,
-                  (intptr_t)&cg.snap->ps.psOrigin,
-                  (intptr_t)&vec3_origin);
+    trap_CM_TransformedCapsuleTrace(&result, start, end, mins, maxs, handle42, contentMask,
+                                    cg.snap->ps.psOrigin, vec3_origin);
 
     /* Keep the body result when it actually hit, or when it came back nearer than
      * the world trace. Otherwise leave the world result in *out. */

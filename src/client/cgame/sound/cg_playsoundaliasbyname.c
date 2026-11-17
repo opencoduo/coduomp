@@ -104,11 +104,7 @@ static int cgame_compat_play_selected_sound_alias(snd_alias_t *alias, int32_t en
         }
 
         /* 3002cb21: sound-update trap. */
-        cgame_syscall(
-            CG_SUBTITLE,
-            (intptr_t)alias->subtitle,
-            clamped,
-            (int32_t)cg_subtitleWidth_vmCvar.integer);
+        trap_Subtitle(alias->subtitle, clamped, (int32_t)cg_subtitleWidth_vmCvar.integer);
     }
 
     /* 3002cb38: return the playback duration (EDI). */

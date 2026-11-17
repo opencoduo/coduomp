@@ -31,7 +31,7 @@ qboolean CG_DrawIntermission(void)
     /* Force the scoreboard on for the intermission screen, timestamped at cg.time.
      * cg.time is read only after the trap returns (MOV EAX,[cg.time] follows the
      * CALL), matching the instruction order. */
-    cgame_syscall(CG_MAP_RESTART_RESET_RENDERER);          /* PUSH 0x7e; CALL *cgame_syscall */
+    trap_MapRestartResetRenderer();          /* PUSH 0x7e; CALL *cgame_syscall */
     cg.scoreFadeTime = cg.time;     /* MOV [0x3048a55c],EAX (EAX = cg.time) */
     cg.showScores = qtrue;        /* MOV dword [0x3048a554],1 */
 

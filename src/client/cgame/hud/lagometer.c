@@ -129,8 +129,7 @@ void CG_DrawLagometer(void)
             if (valueRaw > 0.0L) {
                 if (currentColorState != LAG_COLOR_STATE_FRAME_POSITIVE) {
                     currentColorState = LAG_COLOR_STATE_FRAME_POSITIVE;
-                    cgame_syscall(CG_CL_LOOKUP_COLOR, LAG_COLOR_YELLOW,
-                                  (intptr_t)&color[0]);
+                    trap_CL_LookupColor(LAG_COLOR_YELLOW, &color[0]);
                     trap_R_SetColor(color);
                 }
                 if (value > range) {
@@ -152,8 +151,7 @@ void CG_DrawLagometer(void)
                 value = -value;
                 if (currentColorState != LAG_COLOR_STATE_FRAME_NEGATIVE) {
                     currentColorState = LAG_COLOR_STATE_FRAME_NEGATIVE;
-                    cgame_syscall(CG_CL_LOOKUP_COLOR, LAG_COLOR_BLUE,
-                                  (intptr_t)&color[0]);
+                    trap_CL_LookupColor(LAG_COLOR_BLUE, &color[0]);
                     trap_R_SetColor(color);
                 }
                 if (value > range) {
@@ -206,10 +204,9 @@ void CG_DrawLagometer(void)
                         : LAG_COLOR_STATE_SNAPSHOT_GOOD;
                 if (currentColorState != wantedColorState) {
                     currentColorState = wantedColorState;
-                    cgame_syscall(CG_CL_LOOKUP_COLOR,
-                                  wantedColorState == LAG_COLOR_STATE_SNAPSHOT_DELAYED
-                                      ? LAG_COLOR_YELLOW : LAG_COLOR_GREEN,
-                                  (intptr_t)&color[0]);
+                    trap_CL_LookupColor(wantedColorState == LAG_COLOR_STATE_SNAPSHOT_DELAYED
+                                            ? LAG_COLOR_YELLOW : LAG_COLOR_GREEN,
+                                        &color[0]);
                     trap_R_SetColor(color);
                 }
                 /* 0x30018e7f FMUL then 0x30018e83 FCOM vs range: the clamp compares
@@ -237,8 +234,7 @@ void CG_DrawLagometer(void)
             } else if (value < 0.0f) {
                 if (currentColorState != LAG_COLOR_STATE_SNAPSHOT_DROPPED) {
                     currentColorState = LAG_COLOR_STATE_SNAPSHOT_DROPPED;
-                    cgame_syscall(CG_CL_LOOKUP_COLOR, LAG_COLOR_RED,
-                                  (intptr_t)&color[0]);
+                    trap_CL_LookupColor(LAG_COLOR_RED, &color[0]);
                     trap_R_SetColor(color);
                 }
                 float drawY = (float)((long double)ah + (long double)ay -

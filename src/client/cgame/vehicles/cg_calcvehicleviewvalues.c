@@ -235,7 +235,7 @@ void CG_CalcVehicleViewValues(void)
     AnglesSubtract(angleDelta, cg.adsViewErrorAngles, angleDelta);
 
     /* 0x3004075d: hand the adjusted angle triple to the engine. */
-    cgame_syscall(CG_VEH_VIEW_ANGLE_DELTA, (intptr_t)angleDelta);
+    trap_VehViewAngleDelta(angleDelta);
 
     /* 0x3004076c: finalAxis = viewAxis * cg.vehicleViewPrevAxis (the just-latched
      * transposed tag basis), then recover its Euler angles. AxisToAngles writes into

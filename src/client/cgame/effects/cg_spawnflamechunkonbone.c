@@ -151,9 +151,7 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos,
             CG_DObjCalcBone(dobjSelf, calcBoneIndex, ent);
 
             /* 0x30023e5f..0x30023e78: fetch the entity's per-bone matrix table. */
-            DObjSkelMat *boneTable = (DObjSkelMat *)(intptr_t)
-                cgame_syscall(CG_DOBJ_GET_BONE_MATRICES,
-                              (intptr_t)dobjSelf, 0);
+            DObjSkelMat *boneTable = trap_DObjGetBoneMatrices(dobjSelf);
             if (boneTable == NULL) {
                 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
                 chunk->boneHandle = 0;

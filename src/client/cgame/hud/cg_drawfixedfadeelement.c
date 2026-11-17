@@ -40,7 +40,7 @@
 
 void CG_DrawFixedFadeElement(void)
 {
-    int32_t alphaBits;
+    float alpha;
     int32_t x;
     int32_t y;
 
@@ -53,13 +53,13 @@ void CG_DrawFixedFadeElement(void)
     y = CG_RoundToNearest(425.0f);
     x = CG_RoundToNearest(135.0f);
     /* 0x3001b138: the alpha word is not read until both FISTP stores finish. */
-    alphaBits = CG_FloatBits(cg_hudAlpha_vmCvar.value);
+    alpha = cg_hudAlpha_vmCvar.value;
 
     /*
      * trap(0x1d, x, y, cg_hudAlpha_vmCvar.value bits, 2). The fade-alpha scale (a float
      * global) is copied into the variadic trap argument as its raw 4-byte word
      * (MOV EAX,[0x304583c8]; PUSH EAX), i.e. by bit pattern, not promoted to
-     * double; CG_FloatBits reproduces that exactly.
+     * double; the trap's CG_FloatBits reproduces that exactly.
      */
-    cgame_syscall(CG_DRAW_FIXED_FADE_ELEMENT, x, y, alphaBits, 2);
+    trap_DrawFixedFadeElement(x, y, alpha, 2);
 }

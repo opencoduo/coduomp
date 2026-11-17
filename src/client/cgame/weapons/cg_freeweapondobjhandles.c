@@ -65,7 +65,7 @@ void CG_FreeWeaponDObjHandles(void)
         /* 0x30044a90..0x30044aa3: PUSH 1; LEA EAX,[i+0x400]; PUSH EAX; PUSH 0xa8;
          * CALL [cgame_syscall]; ADD ESP,0xc. Release the DObj registration keyed
          * by (i + 0x400) for weapon i, with flag 1. */
-        cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE, key, 1);
+        trap_SafeClientDObjFree(key, 1);
         indexBits += 1u;
     } while (coduo_int32_from_bits(indexBits) <= bg_numWeapons);
 }

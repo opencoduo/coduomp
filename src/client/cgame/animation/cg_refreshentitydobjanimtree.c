@@ -85,7 +85,7 @@ struct DObj_s *CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
             /* 30021ee8 PUSH 0x1 / PUSH ESI / PUSH 0xa8 / CALL -> release the stale
              *   DObj registration for this index (flag 1). ADD ESP,0xc.
              * 30021ef9 XOR EBX,EBX ; store 0 into both cached table slots. */
-            cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE, entityNum, 1);
+            trap_SafeClientDObjFree(entityNum, 1);
             dObjHandle = 0;
             cg.dObjInfoKeys[entityNum] = 0;
             cg.dObjInfoHandles[entityNum] = 0;
@@ -106,7 +106,7 @@ struct DObj_s *CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
 
     /* 30021f11 MOV EBX,[ESP+0x20] -> reload arg0 (eType), reused as the cached key
      *   and (for eType 11) the MG42 branch selector. */
-    intptr_t animTreeInstance = 0; /* 30021f41 XOR EAX,EAX default */
+    XAnimTree *animTreeInstance = NULL; /* 30021f41 XOR EAX,EAX default */
 
     /* 30021f15 CMP EBX,0xb / JNZ 0x30021f41: only the turret/MG42 eType (11)
      *   builds a weapon anim tree. */
@@ -115,14 +115,14 @@ struct DObj_s *CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
          *   &cg_effectSlots[entityNum] (centity_t, stride 0x288), passed in
          *   EAX (register argument) to CG_CreateMG42WeaponAnimTree. Index the typed
          *   cg_entities[] base by entity number, matching the other centity consumers. */
-        intptr_t masterTree = CG_CreateMG42WeaponAnimTree(
+        XAnim *masterTree = CG_CreateMG42WeaponAnimTree(
             cg_entities + entityNum);
 
         /* 30021f2c TEST EAX,EAX / JZ 0x30021f41: only instantiate a non-zero tree.
          * 30021f30 PUSH EAX / PUSH 0x86 / CALL -> CG_XANIM_CREATE_TREE(masterTree)
          *   -> per-entity tree instance handle (kept in EAX). ADD ESP,8. */
-        if (masterTree != 0) {
-            animTreeInstance = cgame_syscall(CG_XANIM_CREATE_TREE, masterTree);
+        if (masterTree != NULL) {
+            animTreeInstance = trap_XAnimCreateTree(masterTree);
         }
     }
 
@@ -140,8 +140,7 @@ struct DObj_s *CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
     /* 30021f43 PUSH ESI / PUSH EAX / PUSH 0x1 / LEA ECX,[ESP+0x18] / PUSH ECX /
      *   PUSH 0xa7 / CALL -> CG_CLIENT_DOBJ_CREATE(&element, 1, animTreeInstance,
      *   entityNum). ADD ESP shared with the following syscall's cleanup. */
-    cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)&element, 1,
-                  animTreeInstance, entityNum);
+    trap_ClientDObjCreate(&element, 1, animTreeInstance, entityNum);
 
     /* 30021f70..0x30021f84 publishes both cache words between pushing the
      * entity-number argument and invoking CG_DOBJ_GET_HANDLE. In logical source

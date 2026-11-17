@@ -75,8 +75,8 @@ void CG_InterpolatePlayerState(qboolean grabAngles)
     if (grabAngles) {
         usercmd_t cmd;
         int32_t cmdNumber = coduo_int32_from_bits(
-            (uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER));
-        cgame_syscall(CG_GET_USER_CMD, cmdNumber, &cmd);
+            (uint32_t)trap_GetCurrentCmdNumber());
+        trap_GetUserCmd(cmdNumber, &cmd);
         /* ctx = CG_TraceCapsule (0x30035390), the capsule-trace callback. */
         PM_UpdateViewAngles(out, &cmd, CG_TraceCapsule);
     }

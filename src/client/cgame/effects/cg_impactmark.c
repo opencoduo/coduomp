@@ -110,13 +110,12 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
      * fragment count. Args transcribed in exact push order (reversed to C order):
      * (id, numPoints=4, points, origin, axis, radius, maxPoints=1024, pointBuffer,
      * maxFragments=384, fragmentBuffer, markShader). */
-    numFragments = coduo_int32_from_bits((uint32_t)cgame_syscall(
-                                          CG_CM_MARKFRAGMENTS,
+    numFragments = coduo_int32_from_bits((uint32_t)trap_CM_MarkFragments(
                                           4,                    /* numPoints     */
                                           markPoints,           /* source quad   */
                                           origin,               /* projection origin */
                                           projectionAxis,       /* contiguous basis  */
-                                          CG_FloatBits(radius), /* radius bits   */
+                                          radius,               /* radius        */
                                           1024,                 /* maxPoints     */
                                           projectedPoints,      /* point buffer  */
                                           384,                  /* maxFragments  */
@@ -164,7 +163,7 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 
         if (temporary) {
             /* 3002e80a-3002e818: draw immediately as a transient scene poly. */
-            cgame_syscall(CG_R_ADDPOLYTOSCENE, frag->shaderHandle, numPoints, verts);
+            trap_R_AddPolyToScene(frag->shaderHandle, numPoints, verts);
         } else {
             /* 3002e81d-3002e88f: persist as a mark for CG_AddMarks. */
             markPoly_t *mark = CG_AllocMark();

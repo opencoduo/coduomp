@@ -116,7 +116,7 @@ void CG_TransitionSnapshot(void)
             anim->animTree = savedAnimTree;
 
             /* Release this client's DObj registration and clear its cached slot. */
-            cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE, clientNum, 1);
+            trap_SafeClientDObjFree(clientNum, 1);
             cg.dObjInfoKeys[clientNum] = 0;
             cg.dObjInfoHandles[clientNum] = 0;
         }

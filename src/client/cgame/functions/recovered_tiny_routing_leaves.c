@@ -26,10 +26,10 @@ void CG_AddCEntityIfValid(centity_t *cent) /* 0x3001f6f0 */
     }
 }
 
-intptr_t CG_CreateTurretAnimTree(int32_t eType, int32_t entityNum) /* 0x30021e80 */
+XAnim *CG_CreateTurretAnimTree(int32_t eType, int32_t entityNum) /* 0x30021e80 */
 {
     if (eType != ET_TURRET) {
-        return 0;
+        return NULL;
     }
     /* 0x30021e8c IMUL and 0x30021e92 ADD are target-dword effective-address
      * arithmetic. Use the native element stride while retaining the wrapped

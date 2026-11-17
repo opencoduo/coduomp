@@ -95,11 +95,11 @@ void CG_ServerCommand(void)
     case 'n': CG_MapRestart(qtrue); return;   /* 0x3003af79 */
     case 'o': {  /* 0x3003af98 */
         snd_alias_t *alias = trap_Com_PickSoundAlias(CG_Argv(1), vec3_origin);
-        cgame_syscall(CG_MSS_PLAY_MUSIC_ALIAS, (intptr_t)alias);
+        trap_MSS_PlayMusicAlias(alias);
         return;
     }
     case 'p':   /* 0x3003afda */
-        cgame_syscall(CG_MSS_STOP_MUSIC, coduo_crt_atoi(CG_Argv(1)));
+        trap_MSS_StopMusic(coduo_crt_atoi(CG_Argv(1)));
         return;
     case 'q':   /* 0x3003b011 */
         value = coduo_crt_atoi(CG_Argv(2));
@@ -124,13 +124,12 @@ void CG_ServerCommand(void)
         /* 0x3003b195..0x3003b1a8: the name pointer pushed for the (no-argument)
          * trap_DateTimeStamp stays on the stack as va's THIRD argument:
          * va("record %s-%s", stamp, name). */
-        cgame_syscall(CG_EXECUTE_COMMAND,
-                      (intptr_t)va("record %s-%s", text, name));
+        trap_ExecuteCommand(va("record %s-%s", text, name));
         return;
     case 'D':   /* 0x3003b1cf */
         trap_Cvar_VariableStringBuffer("cg_autodemo", name, 2);
         if (coduo_crt_atoi(name) == 1)
-            cgame_syscall(CG_EXECUTE_COMMAND, (intptr_t)"stoprecord");
+            trap_ExecuteCommand("stoprecord");
         return;
     case 'E':   /* 0x3003b221 */
         trap_Cvar_VariableStringBuffer("cg_autoscreenshot", name, 2);
@@ -139,11 +138,10 @@ void CG_ServerCommand(void)
         Q_StripToAlphanumeric(name);
         text = trap_DateTimeStamp();
         /* 0x3003b26b..0x3003b27e: same stamp-then-name order as the 'C' leg. */
-        cgame_syscall(CG_EXECUTE_COMMAND,
-                      (intptr_t)va("screenshotJPEG %s-%s", text, name));
+        trap_ExecuteCommand(va("screenshotJPEG %s-%s", text, name));
         return;
     case 'F':   /* 0x3003b2a5 */
-        cgame_syscall(CG_FX_REWIND_TIME, coduo_crt_atoi(CG_Argv(1)));
+        trap_FX_RewindTime(coduo_crt_atoi(CG_Argv(1)));
         return;
     case 'S': CG_LocalSound_f(); return;      /* 0x3003b08c */
     default:    /* 0x3003b2dc */

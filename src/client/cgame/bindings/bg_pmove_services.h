@@ -4,10 +4,10 @@
 #include "client/cgame/client_recovered.h"
 
 /* The original cgame PmoveSingle body inlines its trap_SnapVector boundary as
- * cgame syscall 102. Keep the canonical shared-source spelling while retaining
- * that exact direct call in this module. */
+ * cgame syscall 102 (trap_PM_NotifyVelocity). Keep the canonical shared-source
+ * spelling and route it through that wrapper in this module. */
 #define trap_SnapVector(vector) \
-    ((void)cgame_syscall(CG_PM_NOTIFY_VELOCITY, (vector)))
+    trap_PM_NotifyVelocity((vector))
 
 /* The common BG source uses one role name for the module-owned prone-debug
  * cvar.  The cgame binary's original registration keeps its cg_ spelling. */

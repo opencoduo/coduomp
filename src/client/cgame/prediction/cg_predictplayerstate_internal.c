@@ -24,6 +24,15 @@ enum {
 
 #define ANGLE2SHORT_SCALE 182.04445f   /* .rdata 0x3007bd60 == 65536/360 (0x43360b61) */
 
+// Source RVA: 0x300357f0
+/* A file-local copy of the match-timeout query. The original pushes only
+ * syscall 0x82 (CG_IS_IN_MATCH_TIMEOUT); the result feeds
+ * cg_pmove.adsInputBlocked. */
+static int32_t UnresolvedFunction_300357f0(void)
+{
+    return (int32_t)cgame_syscall(CG_IS_IN_MATCH_TIMEOUT);
+}
+
 void CG_PredictPlayerState_Internal(void)
 {
     if (cg.demoPlayback != 0 ||
@@ -46,7 +55,7 @@ void CG_PredictPlayerState_Internal(void)
     cg_pmove.pointContents = CG_PointContents;
     cg_pmove.entityType = GetEntityTypeIfModelLoaded;
     cg_pmove.adsInputBlocked = coduo_int32_from_bits(
-        (uint32_t)cgame_syscall(CG_IS_IN_MATCH_TIMEOUT));
+        (uint32_t)UnresolvedFunction_300357f0());
 
     cg_pmove.traceMask = cg.predictedPlayerState.pmType < PM_TYPE_DEAD
                              ? MASK_PLAYERSOLID
@@ -56,11 +65,11 @@ void CG_PredictPlayerState_Internal(void)
     }
 
     const int32_t currentCmdNumber =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER));
+        coduo_int32_from_bits((uint32_t)trap_GetCurrentCmdNumber());
     const int32_t oldestCmdNumber = coduo_int32_from_bits(
         (uint32_t)currentCmdNumber - (uint32_t)(CG_PREDICTED_COMMAND_BACKUP - 1));
     usercmd_t oldestCmd;
-    if (cgame_syscall(CG_GET_USER_CMD, oldestCmdNumber, &oldestCmd) == 0) {
+    if (trap_GetUserCmd(oldestCmdNumber, &oldestCmd) == 0) {
         if (cg_showmiss_vmCvar.integer != 0) {
             Com_PrintMessage("exceeded PACKET_BACKUP on commands\n");
         }
@@ -71,7 +80,7 @@ void CG_PredictPlayerState_Internal(void)
      * latest-command trap arguments but before calling the trap. */
     playerState_t oldPlayerState = cg.predictedPlayerState;
     usercmd_t latestCmd;
-    (void)cgame_syscall(CG_GET_USER_CMD, currentCmdNumber, &latestCmd);
+    (void)trap_GetUserCmd(currentCmdNumber, &latestCmd);
 
     memcpy(&cg.predictedPlayerState, &cg.nextSnap->ps,
            sizeof(cg.predictedPlayerState));
@@ -136,7 +145,7 @@ void CG_PredictPlayerState_Internal(void)
     qboolean predictionRan = qfalse;
     int32_t cmdNumber = oldestCmdNumber;
     while (cmdNumber <= currentCmdNumber) {
-        (void)cgame_syscall(CG_GET_USER_CMD, cmdNumber, cmd);
+        (void)trap_GetUserCmd(cmdNumber, cmd);
 
         /* 0x30035ab0: reads the pmove_fixed value CACHED into cg_pmove (+0xf8)
          * at 0x30035a7e, not the cvar itself. */
@@ -151,7 +160,7 @@ void CG_PredictPlayerState_Internal(void)
         }
         int32_t previousCmdNumber = coduo_int32_from_bits(
             (uint32_t)cmdNumber - 1u);
-        if (cgame_syscall(CG_GET_USER_CMD, previousCmdNumber, oldCmd) == 0) {
+        if (trap_GetUserCmd(previousCmdNumber, oldCmd) == 0) {
             goto next_command;
         }
 

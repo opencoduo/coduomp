@@ -60,9 +60,7 @@ void CG_DrawExpiringIconGrid(void)
      * id last; caller cleans them with the same ADD ESP,0x10. */
     const statmon_entry_t *list;
     int32_t count;
-    cgame_syscall(CG_GET_EXPIRING_ICON_LIST,
-                  (intptr_t)&list,
-                  (intptr_t)&count);
+    trap_GetExpiringIconList(&list, &count);
 
     /* Grid cursor in virtual 640x480 space (MOV [esp+8]=2.0f, [esp+0xc]=200.0f). */
     float x = 2.0f;

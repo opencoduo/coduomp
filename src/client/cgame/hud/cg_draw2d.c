@@ -171,7 +171,7 @@ void CG_Draw2D(void)
         CG_DrawScoreboardFadeElement();
         CG_DrawDebugFadeElement();
         CG_DrawFixedFadeElement();
-        cgame_syscall(CG_NOTIFY_PLAYER_SPAWNED, 100); /* trap(0x1e, 100) at 0x3001c0e4 */
+        trap_NotifyPlayerSpawned(100); /* trap(0x1e, 100) at 0x3001c0e4 */
     }
 
     CG_ScreenFade(); /* fade-overlay tail at 0x3001c0f1 */

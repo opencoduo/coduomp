@@ -79,7 +79,7 @@ void CG_RegisterGraphics(void)
 
     /* "^5---------- Fx System Initialization ---------\n" then begin the Fx system. */
     Com_Printf("^5---------- Fx System Initialization ---------\n");
-    cgame_syscall(CG_FX_INIT_SYSTEM);                       /* trap 0xeb: begin/reset Fx system */
+    trap_FX_InitSystem();                       /* trap 0xeb: begin/reset Fx system */
     Com_Printf("^5----- Fx System Initialization Complete -----\n");
 
     /* Textures phase banner: the opening CG_LoadingString(" - textures"). */
@@ -235,7 +235,7 @@ void CG_RegisterGraphics(void)
     /* Inline "*N" brush models: for each of trap_CM_NumInlineModels() models present,
      * register "*i" and store its midpoint. */
     cgs.numInlineModels = coduo_int32_from_bits(
-        (uint32_t)cgame_syscall(CG_CM_NUM_INLINE_MODELS));
+        (uint32_t)trap_CM_NumInlineModels());
     if (cgs.numInlineModels > 1) {
         for (i = 1; i < cgs.numInlineModels; i++) {
             char name[10];
@@ -294,8 +294,7 @@ void CG_RegisterGraphics(void)
              * jumping to the shellshock-loop setup. */
             break;
         }
-        cgs.effectDefs[i] =
-            (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)cs);
+        cgs.effectDefs[i] = (uint32_t)trap_FX_RegisterEffect(cs);
     }
 
     /* Precache the CS_SHELLSHOCKS config strings into cgs.shellshocks[0..14 + 1]. */
@@ -327,44 +326,31 @@ void CG_RegisterGraphics(void)
      * string twice, so both stores are preserved deliberately — not a reconstruction error.
      */
     CG_RegisterImpactEffects();
-    cgs.media.fleshImpactEffect = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_FX_REGISTER_EFFECT, (intptr_t)"fx/impacts/flesh_hit_noblood.efx"));
+    cgs.media.fleshImpactEffect = coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/impacts/flesh_hit_noblood.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_SAND] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_sand.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_tanktread_sand.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_GRASS] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_grass.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_tanktread_grass.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_DIRT] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_dirt.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_tanktread_dirt.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_ROCK] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_rock.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_tanktread_rock.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_SNOW] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_snow.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_tanktread_snow.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_SNOW_ALT] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_snow.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_tanktread_snow.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_SAND] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_sand.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_jeepwheel_sand.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_GRASS] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_grass.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_jeepwheel_grass.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_DIRT] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_dirt.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_jeepwheel_dirt.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_ROCK] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_rock.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_jeepwheel_rock.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_SNOW] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_snow.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_jeepwheel_snow.efx"));
     cgs.media.vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_SNOW_ALT] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_snow.efx"));
+        coduo_int32_from_bits((uint32_t)trap_FX_RegisterEffect("fx/map_mp/mp_jeepwheel_snow.efx"));
 
     /* " - game media done" phase banner (final CG_LoadingString + trap_UpdateScreen). */
     CG_LoadingString(" - game media done");

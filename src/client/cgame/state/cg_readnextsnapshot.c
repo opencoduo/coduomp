@@ -69,8 +69,7 @@ snapshot_t *CG_ReadNextSnapshot(void)
 
         /* 0x3003d277..0x3003d286: trap_GetSnapshot(processedSnapshotNum, dest).
          * Three dwords pushed (id, number, dest), caller-cleaned (ADD ESP,0xc). */
-        int32_t got = (int32_t)cgame_syscall(CG_GET_SNAPSHOT, processed,
-                                    (intptr_t)dest);
+        int32_t got = (int32_t)trap_GetSnapshot(processed, dest);
 
         /* 0x3003d289/0x3003d28b: nonzero => the snapshot was delivered. */
         if (got != 0) {

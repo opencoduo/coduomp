@@ -99,9 +99,7 @@ qboolean CG_DObjGetViewModelTagMatrix(struct DObj_s *self,
     /* 3001ff2f: ECX = trap(0xa0, self, 0) -> base of the per-bone matrix table;
      * 3001ffa6/ffb8: index it by boneHandle*0x40 (SHL 6) to select this bone.
      * Unlike the 0x3001fdf0 sibling, this variant does not NULL-check the result. */
-    DObjSkelMat *boneMatrixTable =
-        (DObjSkelMat *)(intptr_t)cgame_syscall(
-            CG_DOBJ_GET_BONE_MATRICES, (intptr_t)self, 0);
+    DObjSkelMat *boneMatrixTable = trap_DObjGetBoneMatrices(self);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (boneMatrixTable == NULL) {
         return qfalse;

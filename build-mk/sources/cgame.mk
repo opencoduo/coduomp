@@ -307,40 +307,158 @@ CGAME_C_SOURCES := \
 	src/client/cgame/module/com_printf.c \
 	src/client/cgame/module/com_printmessage.c \
 	src/client/cgame/module/console_command_leaves.c \
+	src/client/cgame/module/trap_addcommand.c \
+	src/client/cgame/module/trap_args.c \
+	src/client/cgame/module/trap_boldgamemessage.c \
+	src/client/cgame/module/trap_cl_getserveripaddress.c \
+	src/client/cgame/module/trap_cl_lookupcolor.c \
+	src/client/cgame/module/trap_clientdobjcreate.c \
+	src/client/cgame/module/trap_cm_inlinemodel.c \
+	src/client/cgame/module/trap_cm_loadmap.c \
+	src/client/cgame/module/trap_cm_markfragments.c \
+	src/client/cgame/module/trap_cm_numinlinemodels.c \
+	src/client/cgame/module/trap_cm_pointcontents.c \
+	src/client/cgame/module/trap_cm_tempboxmodel.c \
+	src/client/cgame/module/trap_cm_tempcapsulemodel.c \
+	src/client/cgame/module/trap_cm_transformedboxtrace.c \
+	src/client/cgame/module/trap_cm_transformedcapsuletrace.c \
+	src/client/cgame/module/trap_cm_transformedpointcontents.c \
+	src/client/cgame/module/trap_com_getsoundalias.c \
+	src/client/cgame/module/trap_com_loadcvarsfrombuffer.c \
+	src/client/cgame/module/trap_com_loadsoundaliases.c \
 	src/client/cgame/module/trap_com_picksoundalias.c \
+	src/client/cgame/module/trap_com_savecvarstobuffer.c \
 	src/client/cgame/module/trap_com_soundaliasstring.c \
 	src/client/cgame/module/trap_cvar_set.c \
 	src/client/cgame/module/trap_datetimestamp.c \
+	src/client/cgame/module/trap_deathmessage.c \
+	src/client/cgame/module/trap_dobjadvanceservertime.c \
+	src/client/cgame/module/trap_dobjbuildpartcollisiontable.c \
+	src/client/cgame/module/trap_dobjdestroy.c \
+	src/client/cgame/module/trap_dobjgetallocskelsize.c \
+	src/client/cgame/module/trap_dobjgetbonematrices.c \
+	src/client/cgame/module/trap_dobjgetbonename.c \
+	src/client/cgame/module/trap_dobjinvalidateskels.c \
+	src/client/cgame/module/trap_drawdebugfadeelement.c \
+	src/client/cgame/module/trap_drawfixedfadeelement.c \
+	src/client/cgame/module/trap_drawscoreboardfadeelement.c \
+	src/client/cgame/module/trap_drawslidingfadeelement.c \
+	src/client/cgame/module/trap_executecommand.c \
+	src/client/cgame/module/trap_fx_addscheduledeffects.c \
+	src/client/cgame/module/trap_fx_adjustcamera.c \
 	src/client/cgame/module/trap_fx_adjusttime.c \
+	src/client/cgame/module/trap_fx_freeactive.c \
+	src/client/cgame/module/trap_fx_freesystem.c \
 	src/client/cgame/module/trap_fx_getboneindex.c \
+	src/client/cgame/module/trap_fx_initsystem.c \
+	src/client/cgame/module/trap_fx_playeffect.c \
 	src/client/cgame/module/trap_fx_playeffectid.c \
+	src/client/cgame/module/trap_fx_playentityeffect.c \
 	src/client/cgame/module/trap_fx_playentityeffectid.c \
+	src/client/cgame/module/trap_fx_playsimpleeffect.c \
+	src/client/cgame/module/trap_fx_registereffect.c \
+	src/client/cgame/module/trap_fx_rewindtime.c \
 	src/client/cgame/module/trap_fx_setwind.c \
+	src/client/cgame/module/trap_gamemessage.c \
+	src/client/cgame/module/trap_getcurrentcmdnumber.c \
+	src/client/cgame/module/trap_getcurrentsnapshotnumber.c \
 	src/client/cgame/module/trap_getdobj.c \
+	src/client/cgame/module/trap_getexpiringiconlist.c \
+	src/client/cgame/module/trap_getgamestate.c \
+	src/client/cgame/module/trap_getnumscriptthreads.c \
+	src/client/cgame/module/trap_getnumscriptvars.c \
+	src/client/cgame/module/trap_getservercommand.c \
+	src/client/cgame/module/trap_getsnapshot.c \
+	src/client/cgame/module/trap_getstringusage.c \
+	src/client/cgame/module/trap_getusercmd.c \
+	src/client/cgame/module/trap_getviewinfo.c \
+	src/client/cgame/module/trap_hunk_used.c \
+	src/client/cgame/module/trap_isinmatchtimeout.c \
+	src/client/cgame/module/trap_key_getkey.c \
+	src/client/cgame/module/trap_key_isdown.c \
+	src/client/cgame/module/trap_maprestartresetrenderer.c \
+	src/client/cgame/module/trap_memoryremaining.c \
+	src/client/cgame/module/trap_mss_fadeallsounds.c \
+	src/client/cgame/module/trap_mss_fadeselectsounds.c \
+	src/client/cgame/module/trap_mss_getsoundoverlay.c \
+	src/client/cgame/module/trap_mss_playambientalias.c \
 	src/client/cgame/module/trap_mss_playblendedsoundaliases.c \
+	src/client/cgame/module/trap_mss_playmusicalias.c \
 	src/client/cgame/module/trap_mss_playsoundalias.c \
+	src/client/cgame/module/trap_mss_setenvironmenteffects.c \
+	src/client/cgame/module/trap_mss_setlistener.c \
+	src/client/cgame/module/trap_mss_stopmusic.c \
+	src/client/cgame/module/trap_mss_stopsounds.c \
+	src/client/cgame/module/trap_mss_updateloopingsounds.c \
+	src/client/cgame/module/trap_notifyplayerspawned.c \
+	src/client/cgame/module/trap_pc_addglobaldefine.c \
+	src/client/cgame/module/trap_playeffectorigin.c \
+	src/client/cgame/module/trap_pm_notifyvelocity.c \
+	src/client/cgame/module/trap_r_addcoronatoscene.c \
 	src/client/cgame/module/trap_r_addlighttoscene.c \
+	src/client/cgame/module/trap_r_addpolystoscene.c \
+	src/client/cgame/module/trap_r_addpolytoscene.c \
+	src/client/cgame/module/trap_r_blendsavedscreen.c \
 	src/client/cgame/module/trap_r_drawquadpic.c \
+	src/client/cgame/module/trap_r_drawrotatedquad.c \
 	src/client/cgame/module/trap_r_drawstretchpic.c \
+	src/client/cgame/module/trap_r_drawstretchpicrotate.c \
+	src/client/cgame/module/trap_r_finishloadingmodels.c \
+	src/client/cgame/module/trap_r_getshaderfrommodel.c \
+	src/client/cgame/module/trap_r_loadworldmap.c \
 	src/client/cgame/module/trap_r_registerfont.c \
+	src/client/cgame/module/trap_r_registermenu.c \
 	src/client/cgame/module/trap_r_registershadernomip.c \
+	src/client/cgame/module/trap_r_savescreen.c \
 	src/client/cgame/module/trap_r_setcolor.c \
 	src/client/cgame/module/trap_r_setfog.c \
+	src/client/cgame/module/trap_r_setignoreprecacheerrors.c \
 	src/client/cgame/module/trap_r_text_height.c \
 	src/client/cgame/module/trap_r_text_paint_with_cursor.c \
 	src/client/cgame/module/trap_r_text_paint.c \
 	src/client/cgame/module/trap_r_text_width.c \
+	src/client/cgame/module/trap_r_trackstatistics.c \
+	src/client/cgame/module/trap_safeclientdobjfree.c \
+	src/client/cgame/module/trap_se_printstrlen.c \
+	src/client/cgame/module/trap_se_readcharfromstring.c \
+	src/client/cgame/module/trap_sendclientcommand.c \
+	src/client/cgame/module/trap_setclientlerporigin.c \
+	src/client/cgame/module/trap_setshellshockmouselimits.c \
+	src/client/cgame/module/trap_setshellshockscreenblur.c \
+	src/client/cgame/module/trap_setusercmdaimvalues.c \
+	src/client/cgame/module/trap_setusercmdflamedamage.c \
+	src/client/cgame/module/trap_setusercmdvalue.c \
+	src/client/cgame/module/trap_statmon_warning.c \
+	src/client/cgame/module/trap_subtitle.c \
+	src/client/cgame/module/trap_synctimes.c \
+	src/client/cgame/module/trap_testprintfloat.c \
+	src/client/cgame/module/trap_testprintint.c \
+	src/client/cgame/module/trap_ui_getgametypedisplayname.c \
+	src/client/cgame/module/trap_ui_getmapdisplayname.c \
+	src/client/cgame/module/trap_vehviewangledelta.c \
+	src/client/cgame/module/trap_xanimblend.c \
+	src/client/cgame/module/trap_xanimclearchildgoalweights.c \
 	src/client/cgame/module/trap_xanimcleartreegoalweightsstrict.c \
+	src/client/cgame/module/trap_xanimcreate.c \
+	src/client/cgame/module/trap_xanimcreateanims.c \
 	src/client/cgame/module/trap_xanimgetanimname.c \
 	src/client/cgame/module/trap_xanimgetchildat.c \
 	src/client/cgame/module/trap_xanimgetnumchildren.c \
 	src/client/cgame/module/trap_xanimgettime.c \
 	src/client/cgame/module/trap_xanimgetweight.c \
 	src/client/cgame/module/trap_xanimislooped.c \
+	src/client/cgame/module/trap_xanimislooping.c \
+	src/client/cgame/module/trap_xanimprecache.c \
 	src/client/cgame/module/trap_xanimsetcompletegoalweight.c \
 	src/client/cgame/module/trap_xanimsetcompletegoalweightknoball.c \
 	src/client/cgame/module/trap_xanimsetgoalweight.c \
+	src/client/cgame/module/trap_xmodelgetbasepose.c \
 	src/client/cgame/module/ui_display_context_traps.c \
+	src/client/cgame/module/unresolvedfunction_3003f230.c \
+	src/client/cgame/module/unresolvedfunction_3003f2f0.c \
+	src/client/cgame/module/unresolvedfunction_3003f300.c \
+	src/client/cgame/module/unresolvedfunction_3003f310.c \
+	src/client/cgame/module/unresolvedfunction_3003f320.c \
 	src/client/cgame/platform/native_ui_callback_adapters.c \
 	src/client/cgame/prediction/cg_buildsolidlist.c \
 	src/client/cgame/prediction/cg_clipmovetoentities.c \

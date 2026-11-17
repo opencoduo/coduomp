@@ -131,8 +131,5 @@ void CG_DrawRotatedPic(float x, float y, float w, float h, float angle, int32_t 
     verts[7] = (cx_hh + negSxHh) + cy;              /* v3.y  [0x40] 0x3001cce1 */
 
     /* cgame_syscall(76, &verts[0], cg_rotatedPicShaderParams, hShader). */
-    cgame_syscall(CG_R_DRAW_ROTATED_QUAD,
-                  (intptr_t)&verts[0],
-                  (intptr_t)cg_rotatedPicShaderParams,
-                  hShader);
+    trap_R_DrawRotatedQuad(&verts[0], cg_rotatedPicShaderParams, hShader);
 }

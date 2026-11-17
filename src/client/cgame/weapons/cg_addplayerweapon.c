@@ -141,9 +141,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
             float frameTime = (float)(long double)cg.frametime;
             float dtSeconds = (float)(
                 (long double)frameTime * (long double)0.001f);
-            cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME,
-                          (intptr_t)registered->viewDObjSelf,
-                          CG_FloatBits(dtSeconds));
+            trap_DObjAdvanceServerTime(registered->viewDObjSelf, dtSeconds);
         }
 
         /* 30045eb5..30045f14: calculate every view-weapon DObj bone using a
@@ -221,9 +219,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
                 /* 30046164..30046172: bone-matrix table = trap(0xa0, self, 0);
                  * 300461f6/30046204: entry at table + (bone << 6) — a 0x40-byte
                  * (16-float) stride. */
-                DObjSkelMat *boneMatrixTable = (DObjSkelMat *)(intptr_t)cgame_syscall(
-                    CG_DOBJ_GET_BONE_MATRICES,
-                    (intptr_t)registered->viewDObjSelf, 0);
+                DObjSkelMat *boneMatrixTable = trap_DObjGetBoneMatrices(registered->viewDObjSelf);
                 matrix43_t placement;
                 DObjSkelMat worldMatrix;
 
@@ -257,9 +253,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
             if (flashBone > -1) {
                 /* 3004627a..30046324: same bone-matrix composition as the
                  * tag_brass block, on the tag_flash bone. */
-                DObjSkelMat *boneMatrixTable = (DObjSkelMat *)(intptr_t)cgame_syscall(
-                    CG_DOBJ_GET_BONE_MATRICES,
-                    (intptr_t)registered->viewDObjSelf, 0);
+                DObjSkelMat *boneMatrixTable = trap_DObjGetBoneMatrices(registered->viewDObjSelf);
                 matrix43_t placement;
                 DObjSkelMat worldMatrix;
                 vec3_t flameViewAngles;

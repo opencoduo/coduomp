@@ -128,7 +128,7 @@ void CG_CalcTurretViewValues(void)
     adjustedAngles[0] = AngleSubtract(adjustedAngles[0], cg.adsViewErrorAngles[0]);
     adjustedAngles[1] = AngleSubtract(adjustedAngles[1], cg.adsViewErrorAngles[1]);
     adjustedAngles[2] = AngleSubtract(adjustedAngles[2], cg.adsViewErrorAngles[2]);
-    cgame_syscall(CG_VEH_VIEW_ANGLE_DELTA, (intptr_t)adjustedAngles);
+    trap_VehViewAngleDelta(adjustedAngles);
 
     playerState_t swayState;
     memcpy(&swayState, &cg.predictedPlayerState, sizeof(swayState));

@@ -67,7 +67,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
      * select the proportional centered-canvas scale for native widescreen. */
     cgame_compat_configure_screen_scales();
 
-    cgame_syscall(CG_GET_GAME_STATE, &cgs.gameState);
+    trap_GetGameState(&cgs.gameState);
 
     {
         const char *serverGame =
@@ -94,7 +94,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     CGScr_LoadAnimTrees();
 
     CG_LoadingString("collision map");
-    cgame_syscall(CG_CM_LOAD_MAP, cgs.mapname);
+    trap_CM_LoadMap(cgs.mapname);
 
     String_Init();
 
@@ -103,10 +103,10 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     cgame_syscall(CG_R_CLEAR_SCENE);
 
     CG_LoadingString(cgs.mapname);
-    cgame_syscall(CG_R_LOAD_WORLD_MAP, cgs.mapname);
+    trap_R_LoadWorldMap(cgs.mapname);
 
     CG_LoadingString("sound aliases");
-    cgame_syscall(CG_COM_LOAD_SOUND_ALIASES, cgs.mapname);
+    trap_Com_LoadSoundAliases(cgs.mapname);
 
     CG_LoadingString("sounds");
     CG_RegisterSounds();
@@ -131,8 +131,8 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     cg.hudSpinBaseTime = (float)coduo_compat_atof(
         &cgs.gameState.stringData[cgs.gameState.stringOffsets[11]]);
 
-    cgame_syscall(CG_R_FINISH_LOADING_MODELS);
-    cgame_syscall(CG_MSS_STOP_SOUNDS, 0);
+    trap_R_FinishLoadingModels();
+    trap_MSS_StopSounds(0);
     CG_StartAmbient();
     CG_BuildVoteHudStrings();
     CG_BuildTimeoutHudStrings();

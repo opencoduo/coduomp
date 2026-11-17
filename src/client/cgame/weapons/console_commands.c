@@ -63,7 +63,7 @@ void CG_NextWeapon_f(void) /* 0x300474c0 */
     }
     if ((cg.predictedPlayerState.playerStateFlags & PMF_FOLLOW) != 0) return;
     if (cg.predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) {
-        cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"nextvehslot");
+        trap_SendClientCommand("nextvehslot");
         return;
     }
     if ((cg.snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) return;
@@ -100,7 +100,7 @@ void CG_PrevWeapon_f(void) /* 0x30047550 */
     }
     if ((cg.predictedPlayerState.playerStateFlags & PMF_FOLLOW) != 0) return;
     if (cg.predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) {
-        cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"prevvehslot");
+        trap_SendClientCommand("prevvehslot");
         return;
     }
     if ((cg.snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) return;

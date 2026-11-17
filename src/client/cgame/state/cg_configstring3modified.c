@@ -80,5 +80,5 @@ void CG_StartAmbient(void)
     if (delta < 0 || currentTime == 0)
         delta = 0;
 
-    cgame_syscall(CG_MSS_PLAY_AMBIENT_ALIAS, (intptr_t)alias, delta);
+    trap_MSS_PlayAmbientAlias(alias, delta);
 }

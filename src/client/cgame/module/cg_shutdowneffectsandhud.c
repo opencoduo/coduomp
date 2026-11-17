@@ -41,13 +41,13 @@
 void CG_ShutdownEffectsAndHud(void)
 {
     /* trap(0x6d, 0). */
-    cgame_syscall(CG_R_TRACK_STATISTICS, 0);
+    trap_R_TrackStatistics(NULL);
 
     /* trap(0xdb, 1.0f_bits, 0): restore full master volume immediately. */
     cgame_syscall(CG_MSS_FADE_ALL_SOUNDS, CG_FloatBits(1.0f), 0);
 
     /* trap(0xec): no arguments. */
-    cgame_syscall(CG_FX_FREE_ACTIVE);
+    trap_FX_FreeActive();
 
     /* trap(0xc1, buffer): hand the flame-chunk pool buffer back to the engine,
      * then null the pointer. (0x30134ce8 resolved to cg_flameChunks by the

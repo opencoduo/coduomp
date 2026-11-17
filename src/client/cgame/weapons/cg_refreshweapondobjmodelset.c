@@ -73,8 +73,8 @@ void CG_RefreshWeaponDObjModelSet(int weaponIndex, const char *configName)
     /* 0x300448dd..0x300448f6: resolve this weapon view DObj's runtime tree before
      * rebuilding the model set. The returned tree is retained and later forwarded
      * to CG_CLIENT_DOBJ_CREATE. */
-    intptr_t runtimeTree =
-        cgame_syscall(CG_DOBJ_GET_TREE, (intptr_t)info->viewDObjSelf);
+    XAnimTree *runtimeTree = (XAnimTree *)(intptr_t)cgame_syscall(
+        CG_DOBJ_GET_TREE, (intptr_t)info->viewDObjSelf);
 
     /* 0x300448ea ADD EDI,0x400: preserve the target dword result once and use
      * that exact handle for release, rebuild, and reacquisition. */
@@ -83,8 +83,7 @@ void CG_RefreshWeaponDObjModelSet(int weaponIndex, const char *configName)
 
     /* 0x300448e9..0x300448fa: release the weapon's existing DObj model registration
      * (keyed by weaponIndex + the handle band base), flag 0. */
-    (void)cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE,
-                        dobjHandle, 0);
+    (void)trap_SafeClientDObjFree(dobjHandle, 0);
 
     /* The two-element model set assembled on the stack and handed to
      * CG_CLIENT_DOBJ_CREATE below. */
@@ -145,9 +144,7 @@ void CG_RefreshWeaponDObjModelSet(int weaponIndex, const char *configName)
     /* 0x300449a3..0x300449c0: commit the rebuilt two-element model set to the
      * engine, forwarding the tag-setup state token captured above. (The 0xa7 return
      * is discarded.) */
-    (void)cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)modelSet,
-                        CG_WEAPON_DOBJ_MODEL_SET_COUNT, runtimeTree,
-                        dobjHandle);
+    (void)trap_ClientDObjCreate(modelSet, CG_WEAPON_DOBJ_MODEL_SET_COUNT, runtimeTree, dobjHandle);
 
     /* 0x300449c9..0x300449de: re-acquire the weapon's DObj self handle for the
      * refreshed registration and cache it back into the record. */

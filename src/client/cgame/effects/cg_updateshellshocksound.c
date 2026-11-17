@@ -60,20 +60,15 @@ void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed,
         mixedVolume[i] = (params->soundVolume[i] - 1.0f) * fade + 1.0f;
     }
 
-    cgame_syscall(CG_MSS_FADE_SELECT_SOUNDS,
-                  (intptr_t)mixedVolume, 0);
+    trap_MSS_FadeSelectSounds(mixedVolume, 0);
 
     if (fade != 0.0f) {
         /* 0x3003c39f: FLD float [ESP+0x10] with one PUSH live = frame slot
          * [E-0x34] = fade (the wet level scales with the fade envelope), not
          * the modifierRemaining int at [E-0x30]. */
-        cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS,
-                      (intptr_t)params->soundRoomType,
-                      CG_FloatBits(fade * params->soundWetLevel),
-                      0);
+        trap_MSS_SetEnvironmentEffects(params->soundRoomType, fade * params->soundWetLevel, 0);
     } else {
-        cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS,
-                      (intptr_t)cg_genericShellshockAliasName, 0, 0);
+        trap_MSS_SetEnvironmentEffects(cg_genericShellshockAliasName, 0.0f, 0);
     }
 
     loopRemaining = (int32_t)((uint32_t)params->soundLoopEndDelay

@@ -50,34 +50,34 @@ void CG_InitConsoleCommands(void)
      * NULL-name terminator ends the walk; the leading TEST short-circuits an empty
      * table. The "mr" table entry (NULL function) still has its name registered. */
     for (cmd = cg_consoleCommands; cmd->name != NULL; cmd++) {
-        cgame_syscall(CG_ADD_COMMAND, cmd->name);
+        trap_AddCommand(cmd->name);
     }
 
     /* Phase 2 (0x30017947..0x30017a98): register the fixed server-forwarded
      * command names, in the exact emission order from the .text (push order). */
-    cgame_syscall(CG_ADD_COMMAND, "kill");
-    cgame_syscall(CG_ADD_COMMAND, "give");
-    cgame_syscall(CG_ADD_COMMAND, "take");
-    cgame_syscall(CG_ADD_COMMAND, "god");
-    cgame_syscall(CG_ADD_COMMAND, "notarget");
-    cgame_syscall(CG_ADD_COMMAND, "noclip");
-    cgame_syscall(CG_ADD_COMMAND, "ufo");
-    cgame_syscall(CG_ADD_COMMAND, "levelshot");
-    cgame_syscall(CG_ADD_COMMAND, "setviewpos");
-    cgame_syscall(CG_ADD_COMMAND, "jumptonode");
-    cgame_syscall(CG_ADD_COMMAND, "stats");
-    cgame_syscall(CG_ADD_COMMAND, "say");
-    cgame_syscall(CG_ADD_COMMAND, "say_team");
-    cgame_syscall(CG_ADD_COMMAND, "say_squad");
-    cgame_syscall(CG_ADD_COMMAND, "tell");
-    cgame_syscall(CG_ADD_COMMAND, "voice");
-    cgame_syscall(CG_ADD_COMMAND, "team");
-    cgame_syscall(CG_ADD_COMMAND, "follow");
-    cgame_syscall(CG_ADD_COMMAND, "callvote");
-    cgame_syscall(CG_ADD_COMMAND, "vote");
-    cgame_syscall(CG_ADD_COMMAND, "follownext");
-    cgame_syscall(CG_ADD_COMMAND, "followprev");
-    cgame_syscall(CG_ADD_COMMAND, "matchtimeout");
-    cgame_syscall(CG_ADD_COMMAND, "matchtimein");
-    cgame_syscall(CG_ADD_COMMAND, "killcam");
+    trap_AddCommand("kill");
+    trap_AddCommand("give");
+    trap_AddCommand("take");
+    trap_AddCommand("god");
+    trap_AddCommand("notarget");
+    trap_AddCommand("noclip");
+    trap_AddCommand("ufo");
+    trap_AddCommand("levelshot");
+    trap_AddCommand("setviewpos");
+    trap_AddCommand("jumptonode");
+    trap_AddCommand("stats");
+    trap_AddCommand("say");
+    trap_AddCommand("say_team");
+    trap_AddCommand("say_squad");
+    trap_AddCommand("tell");
+    trap_AddCommand("voice");
+    trap_AddCommand("team");
+    trap_AddCommand("follow");
+    trap_AddCommand("callvote");
+    trap_AddCommand("vote");
+    trap_AddCommand("follownext");
+    trap_AddCommand("followprev");
+    trap_AddCommand("matchtimeout");
+    trap_AddCommand("matchtimein");
+    trap_AddCommand("killcam");
 }

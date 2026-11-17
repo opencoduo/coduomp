@@ -192,7 +192,7 @@ void CG_DrawActive(int32_t stereoView)
 
         if (expectedHunkUsage > 0) {                       /* 0x3001c29b TEST + 0x3001c2c1 JLE */
             int32_t currentHunkUsage = coduo_int32_from_bits(
-                (uint32_t)cgame_syscall(CG_HUNK_USED));    /* 0x3001c2c3 trap(0x3f) */
+                (uint32_t)trap_Hunk_Used());    /* 0x3001c2c3 trap(0x3f) */
             /* frac = currentHunkUsage / expectedHunkUsage, computed entirely in
              * integer-sourced x87: FILD [ESP+0xc] (0x3001c2cf) then FIDIV
              * [ESP+0x1c] (0x3001c2d6) -- NEITHER operand is rounded to float

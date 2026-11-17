@@ -78,5 +78,5 @@ void CG_UpdateShellShock(int32_t startTime, shellshock_t *params, int32_t durati
     CG_ShellShockCalcVibrate(duration, params, elapsed);
 
     /* qtrue while still inside the active window, qfalse the frame it expires. */
-    cgame_syscall(CG_SET_SHELLSHOCK_SCREEN_BLUR, (elapsed < duration) ? qtrue : qfalse);
+    trap_SetShellshockScreenBlur((elapsed < duration) ? qtrue : qfalse);
 }

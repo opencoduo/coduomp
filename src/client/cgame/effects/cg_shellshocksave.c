@@ -61,11 +61,7 @@ int CG_ShellShockSave(const char *name)
     // 0x3003b88f..0x3003b8b4: serialize the 27 cg_shock_* cvars into `buf`.
     //   PUSH 0x10000 (bufferSize); LEA &buf; PUSH 27; PUSH cg_shockParamNames; PUSH 0x14
     //   ADD ESP,0x14 (5 dwords); TEST EAX,EAX; JZ fail.
-    if (cgame_syscall(CG_COM_SAVE_CVARS_TO_BUFFER,
-                      (intptr_t)cg_shockParamNames,
-                      CG_SHOCK_PARAM_COUNT,
-                      (intptr_t)buf,
-                      sizeof(buf)) == 0) {
+    if (trap_Com_SaveCvarsToBuffer(cg_shockParamNames, CG_SHOCK_PARAM_COUNT, buf, sizeof(buf)) == 0) {
         return 0; // 0x3003b8df XOR EAX,EAX ; RET
     }
 

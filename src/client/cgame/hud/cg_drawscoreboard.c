@@ -61,7 +61,7 @@ qboolean CG_DrawScoreboard(void)
      * request, i.e. request only when cg.time - cg.scoresRequestTime > 2000. */
     if (coduo_wrap_add_i32(cg.scoresRequestTime, 2000) < cg.time) {
         cg.scoresRequestTime = cg.time;
-        cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"score");
+        trap_SendClientCommand("score");
     }
 
     /* 0x30037e01: draw the scoreboard, header first then body, both scaled by the

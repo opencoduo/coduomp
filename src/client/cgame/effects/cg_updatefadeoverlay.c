@@ -80,12 +80,12 @@ qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime,
      * the previous frame (the first visible frame issues CG_R_SAVE_SCREEN alone). */
     if (cg.fadeOverlayActive != 0) {
         /* 3003b83c PUSH EDX(level) ; PUSH 0x47 ; CALL cgame_syscall ; ADD ESP,8 */
-        cgame_syscall(CG_R_BLEND_SAVED_SCREEN, level);
+        trap_R_BlendSavedScreen(level);
     }
 
     /* 3003b848 PUSH 0x46 ; CALL cgame_syscall ; ADD ESP,4 : issued every visible
      * frame (the zero-argument begin/commit-overlay trap). */
-    cgame_syscall(CG_R_SAVE_SCREEN);
+    trap_R_SaveScreen();
 
     /* 3003b850 MOV EAX,1 / 3003b858 MOV [cg.fadeOverlayActive],EAX / RET */
     cg.fadeOverlayActive = 1;

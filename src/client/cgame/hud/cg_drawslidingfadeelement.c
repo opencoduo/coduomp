@@ -122,14 +122,12 @@ void CG_DrawSlidingFadeElement(void)
      * 0x3001af9c..0x3001afba: trap(0x1a, yInt, xInt, alpha bits, 2). The alpha float
      * is forwarded to the variadic trap by its raw 4-byte word (the machine code
      * stores it via FSTP/MOV and forwards the dword, never promoting to double);
-     * CG_FloatBits reproduces that bit-exact forwarding. Push order gives the y
+     * the trap's CG_FloatBits reproduces that bit-exact forwarding. Push order gives the y
      * coordinate as the first coordinate argument and x as the second.
      */
-    int32_t alphaBits = CG_FloatBits(alpha);
     int32_t xArg = x;
-    int32_t deadAlphaCopy = alphaBits;
+    float deadAlphaCopy = alpha;
     int32_t yArg = y;
     (void)deadAlphaCopy;
-    cgame_syscall(CG_DRAW_SLIDING_FADE_ELEMENT, yArg, xArg, alphaBits,
-                  CG_SLIDING_FADE_DRAW_MODE);
+    trap_DrawSlidingFadeElement(yArg, xArg, alpha, CG_SLIDING_FADE_DRAW_MODE);
 }

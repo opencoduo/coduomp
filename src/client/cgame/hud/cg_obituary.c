@@ -165,13 +165,6 @@ void CG_Obituary(centity_t *self)
                                CG_OBITUARY_CENTERPRINT_PRIORITY);
     }
 
-    cgame_syscall(CG_DEATH_MESSAGE,
-                  (intptr_t)attackerName,
-                  (intptr_t)attackerColor,
-                  (intptr_t)targetName,
-                  (intptr_t)targetColor,
-                  (intptr_t)killIcon,
-                  CG_FloatBits(killIconScale),
-                  CG_FloatBits(CG_OBITUARY_ICON_SCALE),
-                  (intptr_t)iconColor);
+    trap_DeathMessage(attackerName, attackerColor, targetName, targetColor, killIcon, killIconScale,
+                      CG_OBITUARY_ICON_SCALE, iconColor);
 }

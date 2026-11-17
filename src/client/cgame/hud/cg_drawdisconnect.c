@@ -68,15 +68,12 @@ void CG_DrawDisconnect(void)
 
     /* 0x30018a93..0x30018ab5: EAX = trap_GetCurrentCmdNumber(). */
     int32_t currentCmdNumber = coduo_int32_from_bits(
-        (uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER));
+        (uint32_t)trap_GetCurrentCmdNumber());
 
     /* 0x30018abb..0x30018ac6: fetch the oldest still-buffered usercmd into `cmd`.
      * The buffer's first dword is the cmd's commandTime. */
     usercmd_t cmd;
-    cgame_syscall(CG_GET_USER_CMD,
-                  coduo_int32_from_bits(
-                      (uint32_t)currentCmdNumber - (uint32_t)(CMD_BACKUP - 1)),
-                  (intptr_t)&cmd);
+    trap_GetUserCmd(coduo_int32_from_bits((uint32_t)currentCmdNumber - (uint32_t)(CMD_BACKUP - 1)), &cmd);
     int32_t cmdServerTime = cmd.commandTime; /* [ESP+0x30] = &cmd.commandTime */
 
     /* 0x30018acc..0x30018aea: draw only when the oldest buffered cmd is newer than the

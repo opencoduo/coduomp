@@ -27,12 +27,9 @@ void CG_FxTest(void)
     Q_strncpyz(cg.periodicEffectName, g_textScratchBuffer, sizeof(cg.periodicEffectName));
     cg.periodicEffectName[63] = '\0';
 
-    effect = (qhandle_t)cgame_syscall(
-        CG_FX_REGISTER_EFFECT, (intptr_t)cg.periodicEffectName);
+    effect = (qhandle_t)trap_FX_RegisterEffect(cg.periodicEffectName);
     Com_Printf("Spawning Fx %s with ID: %d\n", cg.periodicEffectName, effect);
-    cgame_syscall(CG_PLAY_EFFECT_ORIGIN,
-                  (int32_t)effect,
-                  (intptr_t)cg.periodicEffectOrigin);
+    trap_PlayEffectOrigin((int32_t)effect, cg.periodicEffectOrigin);
     cg.periodicEffectLastTime = cg.time;
 
     if (cgame_syscall(CG_ARGC) == 3) {

@@ -26,6 +26,7 @@
 #include "qcommon/q_shared_types.h"
 #include "qcommon/q_string.h"
 #include "qcommon/sound_types.h"
+#include "qcommon/statmon_types.h"
 #include "client/menu/ui_display_context_types.h"
 #include "client/menu/ui_memory.h"
 #include "client/menu/ui_menu_types.h"
@@ -854,6 +855,136 @@ struct DObj_s *trap_GetDObj(int32_t handle);
 int32_t trap_FX_GetBoneIndex(int32_t objId, const char *tagName);
 void trap_FX_PlayEffectID(int32_t effect, const vec3_t origin, const vec3_t dir);
 void trap_FX_PlayEntityEffectID(int32_t effect, const vec3_t origin, vec3_t axis[3], const sfx_bolt_info_t *bolt);
+void trap_AddCommand(const char *cmdName);
+void trap_Args(char *buffer, int32_t bufferLength);
+int32_t trap_BoldGameMessage(const char *message, int32_t lineWidth);
+const char *trap_CL_GetServerIPAddress(void);
+void trap_CL_LookupColor(uint8_t colorCode, vec4_t color);
+void trap_ClientDObjCreate(const DObjModel *models, uint16_t numModels, XAnimTree *tree, int32_t handle);
+int32_t trap_CM_InlineModel(int32_t index);
+void trap_CM_LoadMap(const char *mapname);
+int32_t trap_CM_MarkFragments(int32_t numPoints, const vec3_t *points, const vec3_t projection,
+                              const vec3_t *axis, float radius, int32_t maxPoints, polyVert_t *pointBuffer,
+                              int32_t maxFragments, markFragment_t *fragmentBuffer, qhandle_t markShader);
+int32_t trap_CM_NumInlineModels(void);
+int32_t trap_CM_PointContents(const vec3_t point, int32_t model);
+int32_t trap_CM_TempBoxModel(const vec3_t mins, const vec3_t maxs, int32_t contents);
+int32_t trap_CM_TempCapsuleModel(const vec3_t mins, const vec3_t maxs, int32_t contents);
+void trap_CM_TransformedBoxTrace(trace_t *results, const vec3_t start, const vec3_t end, const vec3_t mins,
+                                 const vec3_t maxs, int32_t model, int32_t brushmask, const vec3_t origin,
+                                 const vec3_t angles);
+void trap_CM_TransformedCapsuleTrace(trace_t *results, const vec3_t start, const vec3_t end,
+                                     const vec3_t mins, const vec3_t maxs, int32_t model, int32_t brushmask,
+                                     const vec3_t origin, const vec3_t angles);
+int32_t trap_CM_TransformedPointContents(const vec3_t point, int32_t model, const vec3_t origin, const vec3_t angles);
+snd_alias_t *trap_Com_GetSoundAlias(int32_t aliasIndex);
+int32_t trap_Com_LoadCvarsFromBuffer(const char *const *cvarNames, int32_t numCvars, char *buffer,
+                                     const char *sourceName);
+void trap_Com_LoadSoundAliases(const char *loadspec);
+int32_t trap_Com_SaveCvarsToBuffer(const char *const *cvarNames, int32_t numCvars, char *buffer, int32_t bufferSize);
+void trap_DeathMessage(const char *attackerName, const float *attackerColor, const char *targetName,
+                       const float *targetColor, const char *killIcon, float iconWidth, float iconScale,
+                       const float *iconColor);
+void trap_DObjAdvanceServerTime(struct DObj_s *obj, float dtime);
+void trap_DObjBuildPartCollisionTable(struct DObj_s *obj, XModelPartColl **table);
+void trap_DObjDestroy(struct DObj_s *obj);
+int32_t trap_DObjGetAllocSkelSize(struct DObj_s *obj);
+DObjSkelMat *trap_DObjGetBoneMatrices(struct DObj_s *obj);
+const char *trap_DObjGetBoneName(struct DObj_s *obj, int32_t boneIndex);
+void trap_DObjInvalidateSkels(void);
+void trap_DrawDebugFadeElement(int32_t x, int32_t y, float alpha);
+void trap_DrawFixedFadeElement(int32_t x, int32_t y, float alpha, int32_t mode);
+void trap_DrawScoreboardFadeElement(int32_t x, int32_t y, float alpha, int32_t mode);
+void trap_DrawSlidingFadeElement(int32_t x, int32_t y, float alpha, int32_t mode);
+void trap_ExecuteCommand(const char *command);
+void trap_FX_AddScheduledEffects(void);
+void trap_FX_AdjustCamera(refdef_t *refdef);
+void trap_FX_AdjustTime(int32_t time);
+int32_t trap_FX_FreeActive(void);
+int32_t trap_FX_FreeSystem(void);
+int32_t trap_FX_InitSystem(void);
+void trap_FX_PlayEffect(const char *name, const vec3_t origin, vec3_t axis[3]);
+void trap_FX_PlayEntityEffect(const char *name, const vec3_t origin, vec3_t axis[3], const sfx_bolt_info_t *bolt);
+void trap_FX_PlaySimpleEffect(const char *name, const vec3_t origin);
+qhandle_t trap_FX_RegisterEffect(const char *name);
+void trap_FX_RewindTime(int32_t time);
+void trap_GameMessage(const char *message, int32_t lineWidth);
+int32_t trap_GetCurrentCmdNumber(void);
+void trap_GetCurrentSnapshotNumber(int32_t *snapshotNumber, int32_t *serverTime);
+void trap_GetExpiringIconList(const statmon_entry_t **list, int32_t *count);
+void trap_GetGameState(gameState_t *gameState);
+int32_t trap_GetNumScriptThreads(void);
+int32_t trap_GetNumScriptVars(void);
+qboolean trap_GetServerCommand(int32_t serverCommandNumber);
+qboolean trap_GetSnapshot(int32_t snapshotNumber, snapshot_t *snapshot);
+int32_t trap_GetStringUsage(void);
+qboolean trap_GetUserCmd(int32_t cmdNumber, usercmd_t *ucmd);
+int32_t trap_GetViewInfo(const vec3_t origin, const vec3_t direction, char *materialName, char *surfaceFlags,
+                         char *contents, int32_t size);
+int32_t trap_Hunk_Used(void);
+int32_t trap_IsInMatchTimeout(void);
+int32_t trap_Key_GetKey(const char *binding);
+qboolean trap_Key_IsDown(int32_t keynum);
+void trap_MapRestartResetRenderer(void);
+int32_t trap_MemoryRemaining(void);
+void trap_MSS_FadeSelectSounds(const float *channelVolumes, int32_t fadeTime);
+int32_t trap_MSS_GetSoundOverlay(int32_t mode, mss_sound_overlay_t *overlays, int32_t maxOverlays, int32_t *cpuUsage);
+void trap_MSS_PlayAmbientAlias(snd_alias_t *alias, int32_t fadeTime);
+void trap_MSS_PlayMusicAlias(snd_alias_t *alias);
+void trap_MSS_SetEnvironmentEffects(const char *roomType, float reverbLevel, int32_t fadeTime);
+void trap_MSS_SetListener(int32_t clientNum, const vec3_t origin, vec3_t axis[3]);
+void trap_MSS_StopMusic(int32_t fadeTime);
+void trap_MSS_StopSounds(int32_t fadeTime);
+void trap_MSS_UpdateLoopingSounds(void);
+void trap_NotifyPlayerSpawned(int32_t value);
+int32_t trap_PC_AddGlobalDefine(const char *define);
+void trap_PlayEffectOrigin(int32_t effect, const vec3_t origin);
+void trap_PM_NotifyVelocity(vec3_t velocity);
+void trap_R_AddCoronaToScene(const vec3_t org, float r, float g, float b, float scale, int32_t id, qboolean visible);
+void trap_R_AddPolysToScene(qhandle_t hShader, int32_t numVerts, const polyVert_t *verts, int32_t numPolys);
+void trap_R_AddPolyToScene(qhandle_t hShader, int32_t numVerts, const polyVert_t *verts);
+void trap_R_BlendSavedScreen(int32_t level);
+void trap_R_DrawRotatedQuad(const float *verts, const float *shaderParams, qhandle_t hShader);
+void trap_R_DrawStretchPicRotate(float x, float y, float w, float h, float s1, float t1, float s2, float t2,
+                                 qhandle_t hShader, int32_t rotation, int32_t pivot);
+void trap_R_FinishLoadingModels(void);
+qhandle_t trap_R_GetShaderFromModel(qhandle_t model, int32_t surfaceIndex);
+void trap_R_LoadWorldMap(const char *mapname);
+int32_t trap_R_RegisterMenu(const char *menuFile);
+void trap_R_SaveScreen(void);
+void trap_R_SetIgnorePrecacheErrors(int32_t ignore);
+void trap_R_TrackStatistics(renderer_frame_statistics_t *stats);
+void trap_SafeClientDObjFree(int32_t handle, qboolean releaseRuntimeTree);
+int32_t trap_SE_PrintStrlen(const char *string);
+int32_t trap_SE_ReadCharFromString(char **text, qboolean *isTrailingPunctuation);
+void trap_SendClientCommand(const char *command);
+void trap_SetClientLerpOrigin(float x, float y, float z);
+void trap_SetShellshockMouseLimits(float maxPitchSpeed, float maxYawSpeed);
+void trap_SetShellshockScreenBlur(int32_t blur);
+void trap_SetUserCmdAimValues(const vec3_t angles);
+void trap_SetUserCmdFlameDamage(int32_t damage);
+void trap_SetUserCmdValue(int32_t stateValue, float sensitivityScale);
+void trap_StatMon_Warning(int32_t type, int32_t duration, const char *material);
+void trap_Subtitle(const char *reference, int32_t duration, int32_t lineWidth);
+void trap_SyncTimes(void);
+void trap_TestPrintFloat(const char *string, float value);
+void trap_TestPrintInt(const char *string, int32_t value);
+const char *trap_UI_GetGameTypeDisplayName(const char *gameType);
+const char *trap_UI_GetMapDisplayName(const char *mapName);
+void trap_VehViewAngleDelta(const vec3_t angles);
+void trap_XAnimBlend(XAnim *anims, uint16_t animIndex, const char *name, uint16_t children,
+                     uint16_t numChildren, uint16_t flags);
+void trap_XAnimClearChildGoalWeights(XAnimTree *tree, uint16_t animIndex, float blendTime);
+void trap_XAnimCreate(XAnim *anims, uint16_t animIndex, const char *name);
+XAnim *trap_XAnimCreateAnims(const char *debugName, int32_t size);
+qboolean trap_XAnimIsLooping(XAnim *anims, uint16_t animIndex);
+void trap_XAnimPrecache(const char *name);
+void trap_XModelGetBasePose(struct DObj_s *obj, int32_t modelIndex, DObjSkelMat *basePose);
+void UnresolvedFunction_3003f230(int32_t effect);
+void UnresolvedFunction_3003f2f0(int32_t arg);
+void UnresolvedFunction_3003f300(int32_t arg);
+void UnresolvedFunction_3003f310(int32_t arg);
+void UnresolvedFunction_3003f320(int32_t arg);
 int32_t trap_MSS_PlaySoundAlias(snd_alias_t *alias, int32_t entityNum,
                                 const void *soundPosition,
                                 int32_t timeShift);
@@ -6107,7 +6238,7 @@ void CG_DrawSpinningPic(const rectDef_t *rect, qhandle_t hShader,
  * (MG42 + XAnim tree construction); the mechanical .mcode header name
  * "ObjectiveStateIndexFromString" was a size-only guess and is rejected — this
  * function parses no string and returns a tree handle, not a state index. */
-intptr_t CG_CreateMG42WeaponAnimTree(centity_t *slot);
+XAnim *CG_CreateMG42WeaponAnimTree(centity_t *slot);
 
 /*
  * CG_SpawnFlameChunkOnBone (0x30023d50, provisional name) — allocate a flame

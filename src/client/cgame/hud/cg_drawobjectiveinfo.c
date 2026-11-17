@@ -229,7 +229,7 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx,
              * the single rounding and the unrounded compare. (Same shape as
              * cg_drawinformation.c.) */
             int32_t hunkUsed = coduo_int32_from_bits(
-                (uint32_t)cgame_syscall(CG_HUNK_USED));
+                (uint32_t)trap_Hunk_Used());
             long double progressRaw =
                 (long double)hunkUsed / (long double)expectedHunkUsage;
             float progress = (float)progressRaw; /* 0x30036c7b FST DWORD [0x10] */
