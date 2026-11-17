@@ -41,3 +41,14 @@ int32_t CG_BoldGameMessage(const char *message /* ECX */)
 {
     return coduo_int32_from_bits((uint32_t)trap_BoldGameMessage(message, cg_gameBoldMessageWidth_vmCvar.integer));
 }
+
+/* 0x3002b390 (Mac symbol CG_DeathMessage): print an obituary line with its
+ * kill icon. The original keeps this wrapper although nothing calls it; the
+ * obituary code reaches the same service through trap_DeathMessage. */
+void CG_DeathMessage(const char *attackerName, const float *attackerColor, const char *targetName,
+                     const float *targetColor, const char *killIcon, float iconWidth, float iconScale,
+                     const float *iconColor)
+{
+    trap_DeathMessage(attackerName, attackerColor, targetName, targetColor, killIcon, iconWidth, iconScale,
+                      iconColor);
+}

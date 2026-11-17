@@ -33,7 +33,7 @@ void CG_QuickMessage_f(void) /* 0x300176f0 */
 }
 
 // Source RVA: 0x30031a60
-const char *FraggedByText(void)
+const char *CG_GetKillerText(void)
 {
     if (cg.killerName[0] == '\0')
         return "";

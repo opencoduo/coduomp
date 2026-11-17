@@ -53,3 +53,10 @@ void CG_PlayFx(centity_t *self, const vec_t *dir)
         trap_PlayEffectOrigin(coduo_int32_from_bits(handle), self->lerpOrigin);
     }
 }
+
+/* 0x30022710 (Mac symbol CG_RewindFx): rewind the effect system's clock. The
+ * original keeps this wrapper although nothing calls it. */
+void CG_RewindFx(int32_t time)
+{
+    trap_FX_RewindTime(time);
+}

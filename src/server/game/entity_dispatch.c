@@ -373,6 +373,8 @@ int G_SpawnVector(const char *key, const char *defaultValue, float *out);
 void SetMoverState(gentity_t *ent, int moverState, int time);
 void Reached_BinaryMover(gentity_t *ent);
 void ReturnToPos1(gentity_t *ent);
+void ReturnToPos2(gentity_t *ent);
+void GotoPos3(gentity_t *ent);
 void ReturnToPos1Rotate(gentity_t *ent);
 void InitMover(gentity_t *ent);
 void Use_BinaryMover(gentity_t *ent, gentity_t *other,
@@ -1547,6 +1549,24 @@ void ReturnToPos1(gentity_t *ent)
     MatchTeam(ent, MOVER_STATE_DOOR_MOVING_TO_POS1, level.time);
     G_PlaySoundAlias(ent, ent->doorSoundClosing);
     ent->s.clientSound = ent->doorSoundCloseLoop;
+}
+
+/* Original RVA 0x32f50 (Linux symbol ReturnToPos2). The original keeps this
+ * three-position door helper although nothing references it. */
+void ReturnToPos2(gentity_t *ent)
+{
+    MatchTeam(ent, MOVER_STATE_DOOR_MOVING_TO_POS2_FROM_POS3, level.time);
+    ent->s.clientSound = ent->doorMovingClientSound;
+    G_PlaySoundAlias(ent, ent->doorSoundCloseLoop);
+}
+
+/* Original RVA 0x32f90 (Linux symbol GotoPos3); retained and unreferenced,
+ * like ReturnToPos2. */
+void GotoPos3(gentity_t *ent)
+{
+    MatchTeam(ent, MOVER_STATE_DOOR_MOVING_TO_POS3, level.time);
+    ent->s.clientSound = ent->doorMovingClientSound;
+    G_PlaySoundAlias(ent, ent->doorSoundOpenLoop);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: PVS sound gate extracted from rotate-door return; extracted during reconstruction of 0x620c3. */

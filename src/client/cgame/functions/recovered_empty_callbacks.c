@@ -34,12 +34,13 @@ void CG_FeederSelection(float feederID, int32_t index)
 }
 
 /* These seven bare-RET functions have no code or data xrefs in the DLL and no
- * callback-table installation that distinguishes their roles. Keep the agreed
- * irreducible-function spelling: the RVA is the only honest identity evidence. */
+ * callback-table installation that distinguishes their roles. The first two
+ * sit where Quake 3 cg_newdraw.c has CG_InitTeamChat and CG_CheckOrderPending
+ * (around CG_SetPrintString) and take those names. */
 // Source RVA: 0x3002ea20
-void UnresolvedFunction_3002ea20(void) {}
+void CG_InitTeamChat(void) {}
 // Source RVA: 0x3002ea80
-void UnresolvedFunction_3002ea80(void) {}
+void CG_CheckOrderPending(void) {}
 // Source RVA: 0x30031700
 void CG_DrawAreaHoldable(void) {}
 // Source RVA: 0x30031710
