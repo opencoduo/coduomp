@@ -1,20 +1,20 @@
 // Source: uo_cgame_mp_x86.dll 0x30048a00..0x30048b5f
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30048a00_30048b5f.mcode
 //
-// CG_SpawnMovingTracer — build the moving/animated bullet-tracer geometry for one
+// CG_Tracer — build the moving/animated bullet-tracer geometry for one
 // shot, from the muzzle point (startOrigin, register EDI/EAX) toward the bullet
 // impact point (endOrigin, register ECX), and hand two computed vec3 endpoints plus
 // a width to the tracer polygon builder CG_DrawMovingTracerPoly (0x30048460).
 //
 // NAME ADJUDICATION: the .mcode's mechanical `# name G_RunItem` is a broad-corpus
 // SIZE-GUESS (win 0x15f ~ matched 0x160 from game_mp.dll) and is REJECTED — this is a
-// cgame client tracer builder, not a server item-run entity think. The name
-// CG_SpawnMovingTracer comes from its sole caller CG_BulletTrajectoryEffects (0x30048d60, already
+// cgame client tracer builder, not a server item-run entity think. Its role
+// comes from its sole caller CG_BulletTrajectoryEffects (0x30048d60, already
 // reconstructed) — the direct-surface branch of that function calls this at 0x30048e28 —
 // and is corroborated by the behavior: it reuses the same tracer-mode selection
 // (bg_weaponInfos[idx]->ammoType in {3,4,5} -> mode A) and the same
 // width/length twins as CG_AddMovingTracer, and it feeds CG_DrawMovingTracerPoly.
-// Exact original CoD symbol unproven; role name kept.
+// The name is the Mac PowerPC traceback symbol (Q3 CG_Tracer).
 //
 // ABI (proven from this body + the caller's call site 0x30048e20..0x30048e2b, which is
 // `XOR EDX,EDX; MOV ECX,impactOrigin; LEA EAX,&muzzle; PUSH weaponIndex; CALL; ADD ESP,4`):
@@ -44,7 +44,7 @@
  * with the source address noted, per the constant-form rules.
  */
 
-void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
+void CG_Tracer(vec3_t startOrigin, vec3_t endOrigin,
                           int32_t weaponInfoIndex, int32_t weaponIndex)
 {
     /* 30048a06..30048a44: select the tracer width/length pair by the weapon's

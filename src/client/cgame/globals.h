@@ -2639,13 +2639,13 @@ typedef struct cgMedia_s {
      * One canonical "bullet_small_<surfaceName>" alias-name pointer per
      * surface type (0..22). Filled once by CG_RegisterSurfaceTypeSounds(table, "bullet_small")
      * at 0x3002b7ff; consumed indexed by surface type at 0x30048f11 and by
-     * CG_ModelEventFireWeapon (0x3004906b). */
+     * CG_BulletHitClientEvent (0x3004906b). */
     const char *bulletSmallSurfaceSounds[23];
     /* 0x3044bf6c .data refs=3 width=4 first=0x3002b80e owner=playercmd_finishplayerdamage.
      * One canonical "bullet_large_<surfaceName>" alias-name pointer per
      * surface type (0..22). Filled once by CG_RegisterSurfaceTypeSounds(table, "bullet_large")
      * at 0x3002b80e; consumed indexed by surface type at 0x30048f04 and by
-     * CG_ModelEventFireWeapon (0x30049074). */
+     * CG_BulletHitClientEvent (0x30049074). */
     const char *bulletLargeSurfaceSounds[23];
     /* 0x3044bfc8 .data refs=1 width=imm first=0x3002b81d owner=playercmd_finishplayerdamage */
     const char *stepSprintSurfaceSounds[23];
