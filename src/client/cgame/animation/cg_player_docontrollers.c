@@ -36,7 +36,7 @@ void CG_Player_DoControllers(centity_t *part, uint32_t *partBits)
 {
     // 0x30021fa0 MOV EAX,[ESI]; PUSH EAX; PUSH 0xa5; CALL cgame_syscall; MOV EDI,EAX:
     // resolve this part's DObj into an engine handle (trap CG_DOBJ_GET_HANDLE).
-    intptr_t dobjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, part->currentState.number);
+    struct DObj_s *dobjHandle = trap_GetDObj(part->currentState.number);
 
     // 0x30021fb1 MOV EAX,[ESI+0x94]; IMUL EAX,EAX,0x4d0; ADD EAX,0x305e1f34: index the
     // per-client model-part table by part->currentState.clientNum. bgs.clientinfo[] is the
@@ -58,7 +58,7 @@ void CG_Player_DoControllers(centity_t *part, uint32_t *partBits)
         // (part); CALL 0x30005730; ADD ESP,8. The original callee takes part in EAX,
         // dobjHandle in EDI, partBits as arg, and the record as its final arg; the
         // maintained shared C boundary names the equivalent owner/state values.
-        BG_Player_DoControllers((void *)dobjHandle, &part->currentState,
+        BG_Player_DoControllers(dobjHandle, &part->currentState,
                                 partBits, clientInfo);
     }
 

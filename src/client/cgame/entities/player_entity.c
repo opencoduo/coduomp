@@ -102,7 +102,7 @@ void CG_Player(centity_t *cent)
 
     /* 0x3003441b handle = trap(0xa5, modelPartIndex) — DObj skeleton handle. A zero
      * handle means this player has no live DObj this frame; draw nothing. */
-    intptr_t dobjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, (int32_t)modelPartIndex);
+    struct DObj_s *dobjHandle = trap_GetDObj((int32_t)modelPartIndex);
     if (dobjHandle == 0)
         return;
 
@@ -222,7 +222,7 @@ void CG_Player(centity_t *cent)
 
     /* 0x300345ac..0x300345ce fill the remaining refEntity fields. */
     re.reType = RT_MODEL;              /* EBX = 1 */
-    re.dobj = (struct DObj_s *)(uintptr_t)dobjHandle; /* [ESP+0x14] */
+    re.dobj = dobjHandle; /* [ESP+0x14] */
     re.owner = cent;                   /* ESI */
 
     /* 0x300345dc submit the player model to the current render scene. */
@@ -274,15 +274,15 @@ void CG_Player(centity_t *cent)
 
     /* 0x30034641 re-query the DObj handle for the model part; a zero handle means no live
      * skeleton to attach the flame to. */
-    intptr_t flameDobjHandle =
-        cgame_syscall(CG_DOBJ_GET_HANDLE, (int32_t)modelInfo->numberBits);
+    struct DObj_s *flameDobjHandle =
+        trap_GetDObj((int32_t)modelInfo->numberBits);
     if (flameDobjHandle == 0)
         return;
 
     /* 0x30034659 resolve the "tag_flash" bone world matrix on the player DObj. A zero
      * (qfalse) return means the tag could not be resolved; skip the emission. */
     DObjSkelMat tagFlashMatrix;
-    if (CG_DObjGetWorldTagMatrix((void *)flameDobjHandle,
+    if (CG_DObjGetWorldTagMatrix(flameDobjHandle,
                                         cg_muzzleFlashTagName,
                                         cent, &tagFlashMatrix) == qfalse)
         return;

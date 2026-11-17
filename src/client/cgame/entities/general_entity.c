@@ -80,7 +80,7 @@ void CG_General(centity_t *cent /* EBX */)
 
     /* 0x3001e46e: handle = (int32_t)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number). */
     entityNum = cent->currentState.number;
-    dobj = (struct DObj_s *)cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
+    dobj = trap_GetDObj(entityNum);
     /* 0x3001e481: TEST ESI,ESI; JZ -> no DObj skeleton, nothing to draw. */
     if (dobj == NULL)
         return;

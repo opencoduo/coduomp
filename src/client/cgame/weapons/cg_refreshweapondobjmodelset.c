@@ -151,8 +151,7 @@ void CG_RefreshWeaponDObjModelSet(int weaponIndex, const char *configName)
 
     /* 0x300449c9..0x300449de: re-acquire the weapon's DObj self handle for the
      * refreshed registration and cache it back into the record. */
-    info->viewDObjSelf = (struct DObj_s *)(intptr_t)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, dobjHandle);
+    info->viewDObjSelf = trap_GetDObj(dobjHandle);
 
     /* 0x300449d5..0x300449ed: cache the new config name in the full 64-byte
      * name buffer: strncpy of 63 bytes (PUSH 0x3f), then a NUL at name[63]. */

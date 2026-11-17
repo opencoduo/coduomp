@@ -104,8 +104,7 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent)
         }
     } else {
         /* 0x3004913c-0x30049148: query this entity's engine DObj handle. */
-        struct DObj_s *self = (struct DObj_s *)(intptr_t)cgame_syscall(
-            CG_DOBJ_GET_HANDLE, cent->currentState.number);
+        struct DObj_s *self = trap_GetDObj(cent->currentState.number);
         if (self != NULL) {
             /* 0x3004915c: CG_DObjGetWorldTagMatrix(self=handle,
              * tagName="tag_flash", entity=cent, out=&tagMatrix) — ECX=handle,

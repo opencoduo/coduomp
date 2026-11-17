@@ -557,7 +557,7 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
 
     /* ---- 0x300339b4: resolve the vehicle DObj + rider seat tag, build bone matrix ---- */
     {
-        intptr_t dObjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, vehicle->currentState.number);
+        struct DObj_s *dObjHandle = trap_GetDObj(vehicle->currentState.number);
         if (dObjHandle == 0) {                           /* TEST ECX,ECX / JZ 0x30033965 */
             return qfalse;
         }
@@ -566,7 +566,7 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
             rider->currentState.stateFilter & CG_VEHICLE_SEAT_ROLE_MASK); /* 0x300339d5 */
 
         DObjSkelMat worldMatrix;                         /* [ESP+0x2c] */
-        if (CG_DObjGetWorldTagMatrix((void *)dObjHandle, tagName,
+        if (CG_DObjGetWorldTagMatrix(dObjHandle, tagName,
                                             vehicle, &worldMatrix) == 0) {  /* 0x300339e4 */
             /* 0x300339f0: tag bone does not exist — warn and abort. */
             Com_Printf(cg_missingTurretTagWarning, tagName);

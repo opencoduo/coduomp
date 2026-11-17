@@ -766,10 +766,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
         if (flashHandle == 0) {
             return;
         }
-        cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                      coduo_int32_from_bits(flashHandle),
-                      (intptr_t)&self->lerpOrigin,
-                      (intptr_t)evOrigin);
+        trap_FX_PlayEffectID(coduo_int32_from_bits(flashHandle), self->lerpOrigin, evOrigin);
         return;
     }
 
@@ -881,8 +878,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
              * CG_RESOLVE_TAG result to the adjacent second word. */
             sfx_bolt_info_t boltInfo;
             boltInfo.entityNum = self->currentState.number;
-            boltInfo.boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
-                CG_RESOLVE_TAG, self->currentState.number, (intptr_t)"g_body"));
+            boltInfo.boneIndex = trap_FX_GetBoneIndex(self->currentState.number, "g_body");
             if (boltInfo.boneIndex >= 0) {
                 /* Row 14 of cgs.media.impactEffects
                  * (0x3044c7b4 == &cgs.media.impactEffects[14][0]) is the
@@ -893,11 +889,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
                         coduo_int32_from_bits(
                             14u * CG_IMPACT_SURFACE_TYPES +
                             (uint32_t)surfaceType));
-                cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
-                              coduo_int32_from_bits(handle),
-                              (intptr_t)&self->lerpOrigin,
-                              0,
-                              (intptr_t)&boltInfo);
+                trap_FX_PlayEntityEffectID(coduo_int32_from_bits(handle), self->lerpOrigin, 0, &boltInfo);
             }
         } else if (explosionType != PROJECTILE_EXPLOSION_NONE) {
             int handled = 0;
@@ -913,10 +905,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
                         &cgs.media.impactEffects[0][0],
                         coduo_int32_from_bits(flatIndex));
                 if (handle != 0) {
-                    cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                                  coduo_int32_from_bits(handle),
-                                  (intptr_t)&self->lerpOrigin,
-                                  (intptr_t)&evOrigin);
+                    trap_FX_PlayEffectID(coduo_int32_from_bits(handle), self->lerpOrigin, evOrigin);
                     handled = 1;
                 }
             }
@@ -933,10 +922,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
                         &cgs.media.impactEffects[0][0],
                         coduo_int32_from_bits(flatIndex));
                 if (handle != 0) {
-                    cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                                  coduo_int32_from_bits(handle),
-                                  (intptr_t)&self->lerpOrigin,
-                                  (intptr_t)&evOrigin);
+                    trap_FX_PlayEffectID(coduo_int32_from_bits(handle), self->lerpOrigin, evOrigin);
                 }
             }
         }
@@ -954,10 +940,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted, qboolean presentW
         /* per-weapon-model gate effect + impact name sound. */
         w = &cg_weaponInfos[self->currentState.weapon];
         if (w->projectileExplosionEffect != 0) {
-            cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                          coduo_int32_from_bits(w->projectileExplosionEffect),
-                          (intptr_t)&self->lerpOrigin,
-                          (intptr_t)&evOrigin);
+            trap_FX_PlayEffectID(coduo_int32_from_bits(w->projectileExplosionEffect), self->lerpOrigin, evOrigin);
         }
         {
             cgWeaponInfo_t *w2 = &cg_weaponInfos[self->currentState.weapon];

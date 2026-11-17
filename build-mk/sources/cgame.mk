@@ -312,7 +312,11 @@ CGAME_C_SOURCES := \
 	src/client/cgame/module/trap_cvar_set.c \
 	src/client/cgame/module/trap_datetimestamp.c \
 	src/client/cgame/module/trap_fx_adjusttime.c \
+	src/client/cgame/module/trap_fx_getboneindex.c \
+	src/client/cgame/module/trap_fx_playeffectid.c \
+	src/client/cgame/module/trap_fx_playentityeffectid.c \
 	src/client/cgame/module/trap_fx_setwind.c \
+	src/client/cgame/module/trap_getdobj.c \
 	src/client/cgame/module/trap_mss_playblendedsoundaliases.c \
 	src/client/cgame/module/trap_mss_playsoundalias.c \
 	src/client/cgame/module/trap_r_addlighttoscene.c \

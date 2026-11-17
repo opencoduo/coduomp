@@ -89,9 +89,5 @@ void CG_PlaySpinningViewEffect(int effectId)
      * 0x30016559: fire the effect. cgs.effectDefs[effectId] is the engine handle
      * (EAX*4 + 0x304484e4). Trailing argument is a literal 0.
      */
-    cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
-                  coduo_int32_from_bits(effectHandle),
-                  (intptr_t)origin,
-                  (intptr_t)axis,
-                  0);
+    trap_FX_PlayEntityEffectID(coduo_int32_from_bits(effectHandle), origin, axis, 0);
 }

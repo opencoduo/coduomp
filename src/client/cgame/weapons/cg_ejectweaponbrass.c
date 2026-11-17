@@ -118,8 +118,7 @@ void CG_EjectWeaponBrass(entityState_t *self, int eventId)
     }
 
     boltInfo.entityNum = objId;
-    tagIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_RESOLVE_TAG, objId, (intptr_t)cg_brassEjectTagName));
+    tagIndex = trap_FX_GetBoneIndex(objId, cg_brassEjectTagName);
     boltInfo.boneIndex = tagIndex;
     if (tagIndex < 0) {
         return;
@@ -130,9 +129,5 @@ void CG_EjectWeaponBrass(entityState_t *self, int eventId)
      * not retain its pre-syscall value across that call. The origin is the shared
      * brass-effect origin global at 0x301698c0 (the effect is tag-relative),
      * dir is NULL, and &boltInfo is the trailing SFxBoltInfo record. */
-    cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
-                  coduo_int32_from_bits(*effectHandleSlot),
-                  (intptr_t)cg_brassEffectOrigin,
-                  0,
-                        (intptr_t)&boltInfo);
+    trap_FX_PlayEntityEffectID(coduo_int32_from_bits(*effectHandleSlot), cg_brassEffectOrigin, 0, &boltInfo);
 }

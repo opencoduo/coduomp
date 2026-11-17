@@ -193,8 +193,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
                         "tag_flash", &tagMatrix);
                 }
             } else {
-                void *self = (void *)(intptr_t)cgame_syscall(
-                    CG_DOBJ_GET_HANDLE, model->numberBits);
+                void *self = trap_GetDObj(model->numberBits);
                 if (self != NULL) {
                     haveTagOrigin = CG_DObjGetWorldTagMatrix(
                         self, "tag_flash", cent, &tagMatrix);

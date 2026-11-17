@@ -74,7 +74,7 @@ void CG_CalcVehicleViewPos(void)
     centity_t *cent = &cg_entities[entnum];
 
     /* dobj = (int32_t)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number). */
-    void *dobj = (void *)(intptr_t)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number);
+    void *dobj = trap_GetDObj(cent->currentState.number);
     if (dobj == NULL) {
         return;
     }

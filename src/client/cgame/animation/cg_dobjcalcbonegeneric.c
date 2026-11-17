@@ -36,8 +36,7 @@ void CG_DObjCalcBoneGeneric(int32_t index, int32_t boneIndex)
     // syscall 0xa5. Thus the original variadic i386 syscall observes saved EDI
     // as argument 1. Make that implicit stack argument explicit for the native
     // ABI. 0x300220f0 MOV ESI,EAX: `self` for the remaining traps.
-    struct DObj_s *self = (struct DObj_s *)(intptr_t)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, index);
+    struct DObj_s *self = trap_GetDObj(index);
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     int32_t boneCount = coduo_int32_from_bits((uint32_t)cgame_syscall(

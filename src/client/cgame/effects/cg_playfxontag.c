@@ -115,8 +115,7 @@ void CG_PlayFxOnTag(centity_t *self, int fxId)
     boltInfo.entityNum = self->currentState.number;
 
     /* Resolve the named tag on the owning object; negative means "no such tag". */
-    boltInfo.boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_RESOLVE_TAG, self->currentState.number, (intptr_t)tagName));
+    boltInfo.boneIndex = trap_FX_GetBoneIndex(self->currentState.number, tagName);
     if (boltInfo.boneIndex < 0) {
         return;
     }
@@ -124,9 +123,5 @@ void CG_PlayFxOnTag(centity_t *self, int fxId)
     /* Play the tag-bound effect at the spawner's origin. The trailing by-address
      * argument is the 8-byte { entityNum, boneIndex } record at [ESP+8]; the
      * engine consumes both words. */
-    cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
-                  coduo_int32_from_bits(handle),
-                  (intptr_t)self->lerpOrigin,
-                  0,
-                  (intptr_t)&boltInfo);
+    trap_FX_PlayEntityEffectID(coduo_int32_from_bits(handle), self->lerpOrigin, 0, &boltInfo);
 }

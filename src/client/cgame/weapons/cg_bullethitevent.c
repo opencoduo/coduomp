@@ -194,16 +194,12 @@ void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
 
     /* 30048f55..30048f6f: primary oriented impact effect. */
     if (primaryEffect != 0) {
-        cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                      coduo_int32_from_bits((uint32_t)primaryEffect),
-                      (intptr_t)origin, (intptr_t)effectDir1);
+        trap_FX_PlayEffectID(coduo_int32_from_bits((uint32_t)primaryEffect), origin, effectDir1);
     }
 
     /* 30048f72..30048f8c: secondary oriented impact effect. */
     if (secondaryEffect != 0) {
-        cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                      coduo_int32_from_bits((uint32_t)secondaryEffect),
-                      (intptr_t)origin, (intptr_t)effectDir2);
+        trap_FX_PlayEffectID(coduo_int32_from_bits((uint32_t)secondaryEffect), origin, effectDir2);
     }
 
     /* 30048f8f..30049025: vehicle-mounted-weapon tracer. Only when a linked vehicle

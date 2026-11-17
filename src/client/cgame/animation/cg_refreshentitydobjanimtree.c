@@ -40,7 +40,7 @@
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
 
-intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
+struct DObj_s *CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
                                       int32_t animTreeParam)
 {
     /* One DObjModel descriptor handed to CG_CLIENT_DOBJ_CREATE. Recovered
@@ -59,8 +59,8 @@ intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
      * at this call site. Spell out the implicit stack argument in portable
      * source; otherwise a native 64-bit build passes unrelated stack contents
      * to CG_DOBJ_GET_HANDLE. 30021eb9 then saves the returned handle in EBX. */
-    intptr_t dObjHandle =
-        cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
+    struct DObj_s *dObjHandle =
+        trap_GetDObj(entityNum);
 
     /* 30021eb6 PUSH EBP / PUSH 0x32 / CALL -> CG_DOBJ_WRAP_MODEL(modelHandle);
      *   30021ec6 MOV EDI,EAX. Both syscall arg blocks cleaned by ADD ESP,0x10. */
@@ -148,7 +148,7 @@ intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
      * order, both stores therefore precede the re-acquisition callback. */
     cg.dObjInfoKeys[entityNum] = (uint32_t)eType;
     cg.dObjInfoHandles[entityNum] = wrappedModel;
-    intptr_t reacquired = cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
+    struct DObj_s *reacquired = trap_GetDObj(entityNum);
 
     /* 30021f8d.. epilogue: the build path returns via 0x30021f93 (RET) WITHOUT the
      *   `MOV EAX,EBX` that the 0x30021f94 early-return path uses, so EAX still holds

@@ -12,8 +12,7 @@ void CG_UpdatePlayerDObj(centity_t *cent)
         return;
     }
 
-    intptr_t handle = cgame_syscall(CG_DOBJ_GET_HANDLE,
-                                    cent->nextState.clientNum);
+    struct DObj_s *handle = trap_GetDObj(cent->nextState.clientNum);
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     const int32_t clientNum =
         coduo_int32_from_bits(cent->corpseModelInfo.clientNumBits);
