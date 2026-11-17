@@ -46,7 +46,7 @@ void CG_FreeRegisteredHandlesLow(void)
     for (i = 0; i < CG_DOBJINFO_LOW_COUNT; i++) {
         /* 0x300163d6..0x300163eb: PUSH 1; PUSH i; PUSH 0xa8; CALL [cgame_syscall];
          * ADD ESP,0xc. Release the registration keyed by table index i. */
-        cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE, i, 1);
+        trap_SafeClientDObjFree(i, 1);
 
         /* 0x300163e4 / 0x300163ee: both arrays zeroed for this slot (EDI == 0). */
         cg.dObjInfoKeys[i] = 0;

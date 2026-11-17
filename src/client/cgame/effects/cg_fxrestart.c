@@ -7,6 +7,6 @@
 void CG_FxRestart(void)
 {
     Com_Printf("FX Restarting so off-line changes are loaded.\n");
-    cgame_syscall(CG_FX_FREE_ACTIVE);
-    cgame_syscall(CG_FX_INIT_SYSTEM);
+    trap_FX_FreeActive();
+    trap_FX_InitSystem();
 }

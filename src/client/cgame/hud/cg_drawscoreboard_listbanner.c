@@ -156,8 +156,7 @@ void CG_DrawScoreboard_Backdrop(float fade)
      * FILDed straight into its FMUL/FSUBR (e.g. 0x300363c8 FILD; 0x300363d7 FMUL 0.5f;
      * 0x30036666 FILD; 0x3003666f FSUBR 511.0f) with no float store, so it stays exact
      * in 80-bit -- do NOT re-add a (float) cast, which would round the integer. */
-    gametypeToken = (const char *)(intptr_t)cgame_syscall(CG_UI_GET_GAMETYPE_DISPLAY_NAME,
-                                    (intptr_t)cgs.gametype);
+    gametypeToken = trap_UI_GetGameTypeDisplayName(cgs.gametype);
     gametypeText = (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE,
                                     (intptr_t)gametypeToken,
                                     (intptr_t)"scoreboard gametype display");
@@ -272,7 +271,7 @@ void CG_DrawScoreboard_Backdrop(float fade)
                   0, 0, 3);
 
     /* --- host name line: query the server address, substitute local-listen text. */
-    serverAddr = (const char *)(intptr_t)cgame_syscall(CG_CL_GET_SERVER_IP_ADDRESS);
+    serverAddr = trap_CL_GetServerIPAddress();
     if (serverAddr != 0 &&
         Q_stricmpn("0.0.0.0:0", serverAddr, BANNER_STRICMP_UNBOUNDED) == 0) {
         serverAddr = CG_SafeTranslateString_Internal("cgame", "CGAME_LISTENSERVER");

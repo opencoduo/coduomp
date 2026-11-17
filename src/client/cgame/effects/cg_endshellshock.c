@@ -47,10 +47,10 @@ void CG_EndShellShock(void)
 
     /* Restore neutral mouse sensitivity and clear the pitch/yaw speed limits. */
     cg.shellshockMouseSensitivityScale = 1.0f;
-    cgame_syscall(CG_SET_SHELLSHOCK_MOUSE_LIMITS, 0, 0);
+    trap_SetShellshockMouseLimits(0.0f, 0.0f);
 
     /* Clear the screen blur: both components 0, push the cleared amount. */
     cg.shellshockScreenBlurX = 0.0f;
     cg.shellshockScreenBlurY = 0.0f;
-    cgame_syscall(CG_SET_SHELLSHOCK_SCREEN_BLUR, 0);
+    trap_SetShellshockScreenBlur(0);
 }

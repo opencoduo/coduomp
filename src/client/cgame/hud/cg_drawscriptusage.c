@@ -74,7 +74,7 @@ enum {
 void CG_DrawScriptUsage(void)
 {
     int32_t numVars = coduo_int32_from_bits(
-        (uint32_t)cgame_syscall(CG_GET_NUM_SCRIPT_VARS));
+        (uint32_t)trap_GetNumScriptVars());
     const char *text = va(cg_scriptNumVarsDebugFormat, numVars);
     cgame_syscall(CG_R_TEXT_PAINT,
                   CG_FloatBits(CG_SCRIPTSTAT_X),
@@ -88,7 +88,7 @@ void CG_DrawScriptUsage(void)
                   CG_SCRIPTSTAT_MODE);
 
     int32_t numThreads = coduo_int32_from_bits(
-        (uint32_t)cgame_syscall(CG_GET_NUM_SCRIPT_THREADS));
+        (uint32_t)trap_GetNumScriptThreads());
     text = va(cg_scriptNumThreadsDebugFormat, numThreads);
     cgame_syscall(CG_R_TEXT_PAINT,
                   CG_FloatBits(CG_SCRIPTSTAT_X),
@@ -102,7 +102,7 @@ void CG_DrawScriptUsage(void)
                   CG_SCRIPTSTAT_MODE);
 
     int32_t stringUsage = coduo_int32_from_bits(
-        (uint32_t)cgame_syscall(CG_GET_STRING_USAGE));
+        (uint32_t)trap_GetStringUsage());
     text = va(cg_scriptStringUsageDebugFormat, stringUsage);
     cgame_syscall(CG_R_TEXT_PAINT,
                   CG_FloatBits(CG_SCRIPTSTAT_X),

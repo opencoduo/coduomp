@@ -275,8 +275,7 @@ void CG_CalcVehicleViewPos(void)
                 viewAngles[2] = (float)(-
                     ((long double)coduo_int32_from_bits(cg.predictedPlayerState.deltaAngles[2]) *
                      (long double)bams)); /* bare FILD @0x30040cb5; FCHS @0x30040cc1 */
-                cgame_syscall(CG_VEH_VIEW_ANGLE_DELTA,
-                              (intptr_t)viewAngles);
+                trap_VehViewAngleDelta(viewAngles);
             }
         }
 

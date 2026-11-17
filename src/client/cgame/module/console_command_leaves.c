@@ -25,7 +25,7 @@ void CG_ScoresDown_f(void) /* 0x30017330 */
         (uint32_t)cg.scoresRequestTime + 2000u);
     if (refreshDeadline < cg.time) {
         cg.scoresRequestTime = cg.time;
-        cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"score");
+        trap_SendClientCommand("score");
         if (!cg.showScores) {
             cg.numScores = 0;
             cg.scoreboardScrollPos = 0;
@@ -65,9 +65,9 @@ void CG_TellTarget_f(void) /* 0x30017660 */
     if (currentTime > expiry || cg.crosshairClientNum == -1) return;
     char args[128];
     char command[128];
-    cgame_syscall(CG_ARGS, (intptr_t)args, sizeof(args));
+    trap_Args(args, sizeof(args));
     Com_sprintf(command, sizeof(command), "tell %i \"\x15%s\"", cg.crosshairClientNum, args);
-    cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)command);
+    trap_SendClientCommand(command);
 }
 
 void CG_TeamVoiceChat_f(void) /* 0x30017820 */

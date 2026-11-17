@@ -15,7 +15,7 @@
 void CG_SetNextSnap(snapshot_t *snap)
 {
     cg.nextSnap = snap;
-    cgame_syscall(CG_DOBJ_INVALIDATE_SKELS);
+    trap_DObjInvalidateSkels();
 
     if (snap->serverTime == cg.snap->serverTime) {
         cg.frameInterpolation = 0.0f;
@@ -55,8 +55,7 @@ void CG_SetNextSnap(snapshot_t *snap)
                 const char *renamed = CG_SafeTranslateString_Internal("cgame", "CGAME_PLAYERRENAMES");
                 const char *message = va("%s^7 %s %s", state->name,
                                          renamed, client->name);
-                cgame_syscall(CG_GAME_MESSAGE, (intptr_t)message,
-                              cg_gameMessageWidth_vmCvar.integer);
+                trap_GameMessage(message, cg_gameMessageWidth_vmCvar.integer);
             }
             Q_strncpyz(state->name, client->name,
                        sizeof(state->name));

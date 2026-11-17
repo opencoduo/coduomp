@@ -61,8 +61,8 @@ void CG_DrawInformation(qboolean force)
         CG_CloseScriptMenu();
         CG_CloseScriptMenu();
         trap_Cvar_Set(ui_scriptMenuAllowResponseCvarName, "1");
-        cgame_syscall(CG_MAP_RESTART_RESET_RENDERER);
-        cgame_syscall(CG_MSS_STOP_SOUNDS, 0);
+        trap_MapRestartResetRenderer();
+        trap_MSS_StopSounds(0);
         trap_Cvar_Set("cl_serverloadwaiting", "1");
     }
 
@@ -130,9 +130,7 @@ void CG_DrawInformation(qboolean force)
         float textX;
         int32_t dotPhase;
 
-        gametypeToken = (const char *)(intptr_t)cgame_syscall(
-            CG_UI_GET_GAMETYPE_DISPLAY_NAME,
-            (intptr_t)cl_serverloadgametype.string);
+        gametypeToken = trap_UI_GetGameTypeDisplayName(cl_serverloadgametype.string);
         gametypeText = CG_SafeTranslateString_Internal("cgame", gametypeToken);
         textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(
             CG_R_TEXT_WIDTH,
@@ -157,9 +155,7 @@ void CG_DrawInformation(qboolean force)
                   0,
                   LOADING_TEXT_DRAW_MODE);
 
-        mapText = (const char *)(intptr_t)cgame_syscall(
-            CG_UI_GET_MAP_DISPLAY_NAME,
-            (intptr_t)cl_serverloadmap.string);
+        mapText = trap_UI_GetMapDisplayName(cl_serverloadmap.string);
         textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(
             CG_R_TEXT_WIDTH,
             (intptr_t)mapText,
@@ -252,7 +248,7 @@ void CG_DrawInformation(qboolean force)
              * preserves both the single rounding and the unrounded compare. */
             long double progressRaw =
                 (long double)coduo_int32_from_bits(
-                    (uint32_t)cgame_syscall(CG_HUNK_USED)) /
+                    (uint32_t)trap_Hunk_Used()) /
                 expectedHunkUsage;
             float progress = (float)progressRaw; /* 0x3002a973 FST DWORD [0x8] */
 

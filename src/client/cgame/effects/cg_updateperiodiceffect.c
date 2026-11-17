@@ -60,12 +60,9 @@ void CG_UpdatePeriodicEffect(void)
         return;
     }
 
-    qhandle_t effect = (qhandle_t)cgame_syscall(
-        CG_FX_REGISTER_EFFECT, (intptr_t)cg.periodicEffectName);
+    qhandle_t effect = (qhandle_t)trap_FX_RegisterEffect(cg.periodicEffectName);
 
-    cgame_syscall(CG_PLAY_EFFECT_ORIGIN,
-                  (int32_t)effect,
-                  (intptr_t)&cg.periodicEffectOrigin);
+    trap_PlayEffectOrigin((int32_t)effect, cg.periodicEffectOrigin);
 
     cg.periodicEffectLastTime = cg.time;
 }

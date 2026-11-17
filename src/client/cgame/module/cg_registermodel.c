@@ -164,7 +164,7 @@ qhandle_t CG_RegisterModel(const char *name, int category)
         loadFraction = 0.8f;
 
         if (expectedHunkUsage > 0) {                   /* 0x3003dab2 TEST + 0x3003dada JLE */
-            int32_t currentHunkUsage = (int32_t)cgame_syscall(CG_HUNK_USED);  /* 0x3003dadc trap(0x3f) */
+            int32_t currentHunkUsage = (int32_t)trap_Hunk_Used();  /* 0x3003dadc trap(0x3f) */
             /* Both integers are loaded with FILD and divided in x87 extended
              * precision.  0x3003daf3 stores the rounded drawing argument but
              * leaves the quotient live for the following comparison. */

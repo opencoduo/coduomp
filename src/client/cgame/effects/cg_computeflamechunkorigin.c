@@ -99,8 +99,7 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
                        (centity_t *)entity);
 
         /* 0x30025a31: boneTable = trap(CG_DOBJ_GET_BONE_MATRICES, self, 0). */
-        DObjSkelMat *boneTable = (DObjSkelMat *)(intptr_t)
-            cgame_syscall(CG_DOBJ_GET_BONE_MATRICES, self, 0);
+        DObjSkelMat *boneTable = trap_DObjGetBoneMatrices(self);
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (boneTable == NULL) {
             return;

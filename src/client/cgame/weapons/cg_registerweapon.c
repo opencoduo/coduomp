@@ -24,8 +24,8 @@ void CG_RegisterWeapon(int weaponIndex)
     cgWeaponInfo_t *weaponInfo;
     const gitem_t *item;
     itemInfo_t *itemInfo;
-    intptr_t xanimDefinition = 0;
-    intptr_t xanimTree = 0;
+    XAnim *xanimDefinition = NULL;
+    XAnimTree *xanimTree = NULL;
 
     if (weaponIndex == 0) {
         return;
@@ -76,24 +76,19 @@ void CG_RegisterWeapon(int weaponIndex)
                 weapon->displayName);
         }
 
-        xanimDefinition = cgame_syscall(CG_XANIM_CREATE_ANIMS,
-                                        (intptr_t)"VIEWMODEL",
-                                        WEAPON_XANIM_COUNT);
-        cgame_syscall(CG_XANIM_BLEND, xanimDefinition, 0,
-                      (intptr_t)"root", 1,
-                      WEAPON_XANIM_COUNT - 1, 0);
+        xanimDefinition = trap_XAnimCreateAnims("VIEWMODEL", WEAPON_XANIM_COUNT);
+        trap_XAnimBlend(xanimDefinition, 0, "root", 1, WEAPON_XANIM_COUNT - 1, 0);
 
         for (animIndex = 1; animIndex < WEAPON_XANIM_COUNT; ++animIndex) {
             const char *animName = animNames[animIndex - 1];
             if (animName[0] == '\0') {
                 animName = weapon->idleAnim;
             }
-            cgame_syscall(CG_XANIM_PRECACHE, (intptr_t)animName);
-            cgame_syscall(CG_XANIM_CREATE, xanimDefinition, animIndex,
-                          (intptr_t)animName);
+            trap_XAnimPrecache(animName);
+            trap_XAnimCreate(xanimDefinition, animIndex, animName);
         }
 
-        xanimTree = cgame_syscall(CG_XANIM_CREATE_TREE, xanimDefinition);
+        xanimTree = trap_XAnimCreateTree(xanimDefinition);
         for (animIndex = 0; animIndex < WEAPON_XANIM_COUNT; ++animIndex) {
             weaponInfo->animRates[animIndex] = 1.0f;
         }
@@ -137,16 +132,14 @@ void CG_RegisterWeapon(int weaponIndex)
                       CG_FloatBits(weaponInfo->animRates[0]), 1, 0);
 
         if (weapon->adsUpAnim[0] != '\0' &&
-            cgame_syscall(CG_XANIM_IS_LOOPING, xanimDefinition,
-                          WEAPON_XANIM_ADS_UP) != 0) {
+            trap_XAnimIsLooping(xanimDefinition, WEAPON_XANIM_ADS_UP) != 0) {
             Com_Error(
                 ERR_DROP,
                 cg_registerWeaponLoopingAdsError,
                 weapon->adsUpAnim);
         }
         if (weapon->adsDownAnim[0] != '\0' &&
-            cgame_syscall(CG_XANIM_IS_LOOPING, xanimDefinition,
-                          WEAPON_XANIM_ADS_DOWN) != 0) {
+            trap_XAnimIsLooping(xanimDefinition, WEAPON_XANIM_ADS_DOWN) != 0) {
             Com_Error(
                 ERR_DROP,
                 cg_registerWeaponLoopingAdsError,
@@ -180,9 +173,8 @@ void CG_RegisterWeapon(int weaponIndex)
         models[1].tagName = "tag_weapon";
         models[1].ignoreCollision = 0;
 
-        cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)models,
-                      CG_WEAPON_DOBJ_MODEL_COUNT, xanimTree,
-                      weaponIndex + CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
+        trap_ClientDObjCreate(models, CG_WEAPON_DOBJ_MODEL_COUNT, xanimTree,
+                              weaponIndex + CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
         weaponInfo->viewDObjSelf = trap_GetDObj(weaponIndex + CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
         /* 0x30043ba0..0x30043bb6: strncpy of 63 bytes (PUSH 0x3f) into the
          * 64-byte name buffer, then a NUL at name[63]. */
@@ -276,7 +268,7 @@ void CG_RegisterWeapon(int weaponIndex)
             if (expectedUsage > 0) {
                 long double fractionRaw =
                     (long double)coduo_int32_from_bits(
-                        (uint32_t)cgame_syscall(CG_HUNK_USED)) /
+                        (uint32_t)trap_Hunk_Used()) /
                     (long double)expectedUsage;
                 float fraction = (float)fractionRaw;
                 if (fractionRaw > 1.0f) {
@@ -347,7 +339,7 @@ void CG_RegisterWeapon(int weaponIndex)
             if (expectedUsage > 0) {
                 long double fractionRaw =
                     (long double)coduo_int32_from_bits(
-                        (uint32_t)cgame_syscall(CG_HUNK_USED)) /
+                        (uint32_t)trap_Hunk_Used()) /
                     (long double)expectedUsage;
                 float fraction = (float)fractionRaw;
                 if (fractionRaw > 1.0f) {
@@ -418,7 +410,7 @@ void CG_RegisterWeapon(int weaponIndex)
             if (expectedUsage > 0) {
                 long double fractionRaw =
                     (long double)coduo_int32_from_bits(
-                        (uint32_t)cgame_syscall(CG_HUNK_USED)) /
+                        (uint32_t)trap_Hunk_Used()) /
                     (long double)expectedUsage;
                 float fraction = (float)fractionRaw;
                 if (fractionRaw > 1.0f) {
@@ -439,12 +431,10 @@ void CG_RegisterWeapon(int weaponIndex)
     }
 
     if (weapon->viewFlashEffect[0] != '\0') {
-        weaponInfo->viewFlashEffect = (uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)weapon->viewFlashEffect);
+        weaponInfo->viewFlashEffect = (uint32_t)trap_FX_RegisterEffect(weapon->viewFlashEffect);
     }
     if (weapon->worldFlashEffect[0] != '\0') {
-        weaponInfo->worldFlashEffect = (uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)weapon->worldFlashEffect);
+        weaponInfo->worldFlashEffect = (uint32_t)trap_FX_RegisterEffect(weapon->worldFlashEffect);
     }
 
     weaponInfo->projectileSound = trap_Com_SoundAliasString(weapon->projectileSound);
@@ -485,12 +475,10 @@ void CG_RegisterWeapon(int weaponIndex)
         itemInfo->pickupSoundAlt = trap_Com_SoundAliasString("weap_ammo_pickup");
     }
     if (weapon->shellEjectEffect[0] != '\0') {
-        weaponInfo->shellEjectEffect = (uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)weapon->shellEjectEffect);
+        weaponInfo->shellEjectEffect = (uint32_t)trap_FX_RegisterEffect(weapon->shellEjectEffect);
     }
     if (weapon->lastShotEjectEffect[0] != '\0') {
-        weaponInfo->lastShotEjectEffect = (uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)weapon->lastShotEjectEffect);
+        weaponInfo->lastShotEjectEffect = (uint32_t)trap_FX_RegisterEffect(weapon->lastShotEjectEffect);
     } else {
         weaponInfo->lastShotEjectEffect = weaponInfo->shellEjectEffect;
     }
@@ -505,15 +493,12 @@ void CG_RegisterWeapon(int weaponIndex)
         }
     }
     if (weapon->projectileExplosionEffect[0] != '\0') {
-        weaponInfo->projectileExplosionEffect = (uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT,
-            (intptr_t)weapon->projectileExplosionEffect);
+        weaponInfo->projectileExplosionEffect = (uint32_t)trap_FX_RegisterEffect(weapon->projectileExplosionEffect);
     }
     weaponInfo->projectileExplosionSound =
         trap_Com_SoundAliasString(weapon->projectileExplosionSound);
     if (weapon->projectileTrailEffect[0] != '\0') {
-        weaponInfo->projectileTrailEffect = (uint32_t)cgame_syscall(
-            CG_FX_REGISTER_EFFECT, (intptr_t)weapon->projectileTrailEffect);
+        weaponInfo->projectileTrailEffect = (uint32_t)trap_FX_RegisterEffect(weapon->projectileTrailEffect);
     }
     weaponInfo->projectileDLight =
         (float)(long double)coduo_int32_from_bits((uint32_t)weapon->projectileDLight);

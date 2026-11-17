@@ -74,7 +74,7 @@ void CG_PrecacheScriptMenu(int index)
     if (name[0] != '\0') {
         /* 0x300387c2: cgame_syscall(CG_R_REGISTERMENU, name) -> nonzero on success.
          * 0x300387cb..0x300387d5: on a zero (failed) return, report the failure. */
-        if (cgame_syscall(CG_R_REGISTERMENU, name) == 0) {
+        if (trap_R_RegisterMenu(name) == 0) {
             CG_Error(cg_couldNotLoadScriptMenuFmt, name);
         }
     }

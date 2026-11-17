@@ -142,9 +142,6 @@ void CG_DrawRotatedQuadPic(float *cornerOffsets, float x, float y,
      * 0x3001ce1e..ce2b: cgame_syscall(76, &verts[0], shaderParams, hShader).
      * Push order proves the argument order: PUSH hShader; PUSH shaderParams;
      * PUSH &verts; PUSH 0x4c; CALL. */
-    cgame_syscall(CG_R_DRAW_ROTATED_QUAD,
-                  (intptr_t)&verts[0],
-                  (intptr_t)drawShaderParams,
-                  drawShader);
+    trap_R_DrawRotatedQuad(&verts[0], drawShaderParams, drawShader);
     /* 0x3001ce31 ADD ESP,0x54 ; 0x3001ce34 RET (bare) — void return. */
 }

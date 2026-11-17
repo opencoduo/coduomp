@@ -122,8 +122,6 @@ void CG_AddCEntity_LoopedFx(centity_t *cent)
     if (dirLen2 != 0.0f) {
         trap_FX_PlayEffectID(coduo_int32_from_bits(handle), cent->lerpOrigin, cent->currentState.effectEndOrigin);
     } else {
-        cgame_syscall(CG_PLAY_EFFECT_ORIGIN,
-                      coduo_int32_from_bits(handle),
-                      (intptr_t)cent->lerpOrigin);
+        trap_PlayEffectOrigin(coduo_int32_from_bits(handle), cent->lerpOrigin);
     }
 }

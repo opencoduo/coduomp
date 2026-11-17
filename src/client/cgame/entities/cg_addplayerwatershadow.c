@@ -94,8 +94,7 @@ void CG_PlayerSplash(centity_t *cent)
     probeBelow[0] = cent->lerpOrigin[0];
     probeBelow[1] = cent->lerpOrigin[1];
     probeBelow[2] = cent->lerpOrigin[2] - 24.0f;
-    contentsBelow = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_CM_POINT_CONTENTS, (intptr_t)probeBelow, 0));
+    contentsBelow = coduo_int32_from_bits((uint32_t)trap_CM_PointContents(probeBelow, 0));
     if ((contentsBelow & (int32_t)CONTENTS_WATER) == 0)
         return;
 
@@ -103,8 +102,7 @@ void CG_PlayerSplash(centity_t *cent)
     probeAbove[0] = cent->lerpOrigin[0];
     probeAbove[1] = cent->lerpOrigin[1];
     probeAbove[2] = cent->lerpOrigin[2] + 32.0f;
-    contentsAbove = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_CM_POINT_CONTENTS, (intptr_t)probeAbove, 0));
+    contentsAbove = coduo_int32_from_bits((uint32_t)trap_CM_PointContents(probeAbove, 0));
     if ((contentsAbove &
          (int32_t)(CONTENTS_WATER | CG_WATER_SHADOW_CONTENTS_SOLID)) != 0)
         return;
@@ -152,7 +150,5 @@ void CG_PlayerSplash(centity_t *cent)
         verts[i].modulate[3] = 0xff;
     }
 
-    cgame_syscall(CG_R_ADDPOLYTOSCENE,
-                  (int32_t)cgs.media.wakeMarkShader, 4,
-                  (intptr_t)verts);
+    trap_R_AddPolyToScene((int32_t)cgs.media.wakeMarkShader, 4, verts);
 }

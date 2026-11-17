@@ -223,7 +223,7 @@ float CG_DrawFPS(float y)
     }
 
     /* Fetch the renderer performance counters for this pass. */
-    cgame_syscall(CG_R_TRACK_STATISTICS, (intptr_t)&cg_rendererStats);
+    trap_R_TrackStatistics(&cg_rendererStats);
 
     /* --- "%i/%i tris" -------------------------------------------------------- */
     /* Push order (0x3001835b push [c8]/3, 0x30018370 push [c4]/3, then fmt) makes

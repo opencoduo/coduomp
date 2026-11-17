@@ -106,11 +106,7 @@ int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition,
         }
 
         /* 3002cb21: sound-update trap. */
-        cgame_syscall(
-            CG_SUBTITLE,
-            (intptr_t)alias->subtitle,
-            clamped,
-            (int32_t)cg_subtitleWidth_vmCvar.integer);
+        trap_Subtitle(alias->subtitle, clamped, (int32_t)cg_subtitleWidth_vmCvar.integer);
     }
 
     /* 3002cb38: return the playback duration (EDI). */

@@ -214,8 +214,8 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
             cg.demoPlayback == qfalse) {
             usercmd_t cmd;
             int32_t cmdNumber = coduo_int32_from_bits(
-                (uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER));
-            cgame_syscall(CG_GET_USER_CMD, cmdNumber, (intptr_t)&cmd);
+                (uint32_t)trap_GetCurrentCmdNumber());
+            trap_GetUserCmd(cmdNumber, &cmd);
             PM_UpdateViewAngles(&localPs, &cmd, CG_TraceCapsule);
         }
 
@@ -389,9 +389,7 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
         placement.axis[1][2] = 0.0f - right[2];
         memcpy(&placement.origin, &veh->lerpOrigin, sizeof(placement.origin));
 
-        cgame_syscall(CG_XMODEL_GET_BASE_POSE, (intptr_t)self,
-                      VEH_DOBJ_PLACEMENT_DEFAULT,
-                      (intptr_t)boneMatrices);
+        trap_XModelGetBasePose(self, VEH_DOBJ_PLACEMENT_DEFAULT, boneMatrices);
 
         for (int w = 0; w < VEHICLE_WHEEL_COUNT; ++w) {
             const char *tagName = cg_vehicleWheelTags[w];

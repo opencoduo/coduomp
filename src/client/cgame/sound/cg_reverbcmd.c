@@ -90,8 +90,5 @@ void CG_ReverbCmd(void)
     /* MOV ECX,[frame+0xc] (argv[2]'s float bits) ; PUSH roundedGain ; PUSH ECX ;
      * PUSH g_textScratchBuffer ; PUSH 0xdd ; CALL *cgame_syscall ; ADD ESP,0x10.
      * The engine reads arg 2 as a float, so we forward argv[2]'s bit pattern. */
-    cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS,
-                  (intptr_t)g_textScratchBuffer,
-                  CG_FloatBits(reverbParam),
-                  roundedGain);
+    trap_MSS_SetEnvironmentEffects(g_textScratchBuffer, reverbParam, roundedGain);
 }

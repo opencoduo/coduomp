@@ -69,7 +69,7 @@ void CG_ExecuteNewServerCommands(int32_t latestSequence)
 
         /* 0x3003b489: fetch this reliable command into the engine's argv buffer;
          * nonzero means the command is present and ready to dispatch. */
-        if (cgame_syscall(CG_GET_SERVER_COMMAND, cgs.serverCommandSequence)) {
+        if (trap_GetServerCommand(cgs.serverCommandSequence)) {
             /* 0x3003b496: dispatch the fetched command. */
             CG_ServerCommand();
         }

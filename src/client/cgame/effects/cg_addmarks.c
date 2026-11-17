@@ -155,7 +155,6 @@ void CG_AddMarks(void)
             }
         }
 
-        cgame_syscall(CG_R_ADDPOLYTOSCENE, mp->markShader, mp->numVerts,
-                      mp->verts);
+        trap_R_AddPolyToScene(mp->markShader, mp->numVerts, mp->verts);
     }
 }

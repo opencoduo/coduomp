@@ -98,11 +98,10 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
         cl_serverloadgametype.string[0] != '\0') {
         usercmd_t oldestCmd;
         int32_t oldestCmdNumber = coduo_int32_from_bits(
-            (uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER) -
+            (uint32_t)trap_GetCurrentCmdNumber() -
             (uint32_t)(CMD_BACKUP - 1));
 
-        cgame_syscall(CG_GET_USER_CMD, oldestCmdNumber,
-                      (intptr_t)&oldestCmd);
+        trap_GetUserCmd(oldestCmdNumber, &oldestCmd);
         if (oldestCmd.commandTime > cg.snap->ps.commandTime &&
             oldestCmd.commandTime <= serverTime) {
             CG_DrawInformation(qtrue);
@@ -162,8 +161,8 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
     }
 
     CG_DrawSkyBoxPortal();
-    cgame_syscall(CG_FX_ADJUST_TIME, cg.time);
-    cgame_syscall(CG_FX_ADJUST_CAMERA, (intptr_t)&cg.refdef);
+    trap_FX_AdjustTime(cg.time);
+    trap_FX_AdjustCamera(&cg.refdef);
 
     CG_UpdatePeriodicEffect();
     CG_AddPacketEntities();
@@ -174,7 +173,7 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
     }
     CG_AddFlameChunks();
 
-    cgame_syscall(CG_FX_ADD_SCHEDULED_EFFECTS);
+    trap_FX_AddScheduledEffects();
     cg.refdef.time = cg.time;
 
     if (cg_weaponSelect_vmCvar.integer < 0 || cg_weaponSelect_vmCvar.integer > bg_numWeapons) {
@@ -214,22 +213,14 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
     viewAngleOffset[2] = (float)((long double)cg.adsViewErrorAngles[2] +
                                  (long double)cg.viewKickAngles[2]);
 
-    cgame_syscall(CG_SET_USER_CMD_AIM_VALUES,
-                  (intptr_t)viewAngleOffset);
-    cgame_syscall(CG_SET_USER_CMD_VALUE,
-                  cg_weaponSelect_vmCvar.integer, CG_FloatBits(shellshockBlend));
-    cgame_syscall(CG_SET_CLIENT_LERP_ORIGIN,
-                  CG_FloatBits(cg.refdef.vieworg[0]),
-                  CG_FloatBits(cg.refdef.vieworg[1]),
-                  CG_FloatBits(cg.refdef.vieworg[2]));
+    trap_SetUserCmdAimValues(viewAngleOffset);
+    trap_SetUserCmdValue(cg_weaponSelect_vmCvar.integer, shellshockBlend);
+    trap_SetClientLerpOrigin(cg.refdef.vieworg[0], cg.refdef.vieworg[1], cg.refdef.vieworg[2]);
 
     CG_DrawActive(stereoView);
 
-    cgame_syscall(CG_MSS_SET_LISTENER,
-                  cg.snap->ps.psClientNum,
-                  (intptr_t)cg.refdef.vieworg,
-                  (intptr_t)cg.refdef.viewaxis[0]);
-    cgame_syscall(CG_MSS_UPDATE_LOOPING_SOUNDS);
+    trap_MSS_SetListener(cg.snap->ps.psClientNum, cg.refdef.vieworg, cg.refdef.viewaxis);
+    trap_MSS_UpdateLoopingSounds();
 
     if (cg_stats_vmCvar.integer != qfalse) {
         Com_PrintMessage(cg_clientFrameDiagnostic, cg.clientFrame);

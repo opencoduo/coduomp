@@ -51,7 +51,7 @@ void CG_ProcessSnapshots(void)
     /* 3003d2d0..3003d2e6: cgame_syscall(CG_GET_CURRENT_SNAPSHOT_NUMBER, &n,
      * &cg.latestSnapshotTime). &n is a stack local (ESP+8); the second out is
      * the .data global. */
-    cgame_syscall(CG_GET_CURRENT_SNAPSHOT_NUMBER, &n, &cg.latestSnapshotTime);
+    trap_GetCurrentSnapshotNumber(&n, &cg.latestSnapshotTime);
 
     /* 3003d2ea..3003d30a: advance cg.latestSnapshotNum toward n.
      *   n == latestSnapshotNum -> nothing;

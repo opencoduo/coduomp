@@ -55,7 +55,7 @@
 void CG_DrawDebugFadeElement(void)
 {
     int32_t gate = con_minicon_vmCvar.integer;
-    int32_t alphaBits;
+    float alpha;
     int32_t a;
     int32_t b;
 
@@ -72,7 +72,7 @@ void CG_DrawDebugFadeElement(void)
     }
 
     /* 0x3001b08a: snapshot the raw alpha word before either x87 conversion. */
-    alphaBits = CG_FloatBits(cg_hudAlpha_vmCvar.value);
+    alpha = cg_hudAlpha_vmCvar.value;
 
     /* Screen coordinates via the x87 float->int idiom (both land on integers). */
     b = CG_RoundToNearest(4.0f);
@@ -81,8 +81,8 @@ void CG_DrawDebugFadeElement(void)
     /*
      * trap(0x1c, a, b, cg_hudAlpha_vmCvar.value bits). The fade-alpha scale is forwarded
      * as its raw 4-byte word (MOV EAX,[0x304583c8]; PUSH EAX), by bit pattern, not
-     * promoted to double; CG_FloatBits reproduces that exactly. Exactly four
+     * promoted to double; the trap's CG_FloatBits reproduces that exactly. Exactly four
      * dwords are pushed (id + three args) and cleaned by ADD ESP,0x10.
      */
-    cgame_syscall(CG_DRAW_DEBUG_FADE_ELEMENT, a, b, alphaBits);
+    trap_DrawDebugFadeElement(a, b, alpha);
 }

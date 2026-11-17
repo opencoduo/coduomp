@@ -90,11 +90,7 @@ void CG_DrawSoundOverlay(void)
     /* Query the sound system: fills `channels` + `cpuValue`, returns active count.
      * The query selector is the overlay's own enable dword (forwarded verbatim). */
     int32_t overlayType = cg_drawSoundOverlay_vmCvar.integer;
-    int32_t count = (int32_t)cgame_syscall(CG_MSS_GET_SOUND_OVERLAY,
-                                  overlayType,
-                                  (intptr_t)channels,
-                                  CG_SNDINFO_MAX_CHANNELS,
-                                  (intptr_t)&cpuValue);
+    int32_t count = (int32_t)trap_MSS_GetSoundOverlay(overlayType, channels, CG_SNDINFO_MAX_CHANNELS, &cpuValue);
     if (count <= 0) {
         return;
     }

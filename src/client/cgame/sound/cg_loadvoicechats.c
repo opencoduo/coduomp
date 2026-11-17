@@ -7,7 +7,7 @@
 void CG_LoadVoiceChats(void)
 {
     int32_t memoryBefore = coduo_int32_from_bits(
-        (uint32_t)cgame_syscall(CG_MEMORY_REMAINING));
+        (uint32_t)trap_MemoryRemaining());
 
     CG_ParseVoiceChats("mp/axis_chat.voice",
                        &cg_voiceChatTables[0],
@@ -17,7 +17,7 @@ void CG_LoadVoiceChats(void)
                        CG_MAX_VOICE_CHATS);
 
     int32_t memoryAfter = coduo_int32_from_bits(
-        (uint32_t)cgame_syscall(CG_MEMORY_REMAINING));
+        (uint32_t)trap_MemoryRemaining());
     Com_PrintMessage("voice chat memory size = %d\n",
                      coduo_int32_from_bits((uint32_t)memoryBefore -
                                       (uint32_t)memoryAfter));

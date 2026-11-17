@@ -42,7 +42,7 @@ void CG_ShutdownFlameChunks(void) /* 0x30027ab0 */
 }
 
 // Source RVA: 0x3001fb80
-void SetEffectFrameTime(int32_t effectContext)
+void SetEffectFrameTime(struct DObj_s *effectContext)
 {
     /* 0x3001fb81: FILD cg.frametime straight into FMUL 0.001f (0x3007bd94) with NO
      * intermediate float store, then one FSTP (0x3001fb8d). So cg.frametime is not
@@ -52,8 +52,7 @@ void SetEffectFrameTime(int32_t effectContext)
      * host compiler would materialize the float constant as an m80 value. */
     float seconds;
     cgame_compat_effect_seconds(cg.frametime, &seconds);
-    (void)cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME, effectContext,
-                        CG_FloatBits(seconds));
+    (void)trap_DObjAdvanceServerTime(effectContext, seconds);
 }
 
 // Source RVA: 0x30016400
@@ -77,7 +76,7 @@ qboolean CG_CheckDObjInfoMatches(int32_t entityNum, uint32_t key,
 // Source RVA: 0x30016440
 void CG_FreeClientDObjInfo(int32_t entityNum)
 {
-    (void)cgame_syscall(CG_SAFE_CLIENT_DOBJ_FREE, entityNum, 1);
+    (void)trap_SafeClientDObjFree(entityNum, 1);
     cg.dObjInfoKeys[entityNum] = 0;
     cg.dObjInfoHandles[entityNum] = 0;
 }

@@ -121,8 +121,7 @@ void CG_DrawTeamInfo(void)
             int8_t colorCode = (int8_t)line[1];
             if ((int8_t)line[0] == '^' && colorCode != '\0' &&
                 colorCode != '^' && colorCode >= '0' && colorCode <= '9') { /* 0x3001883d..0x30018853 */
-                cgame_syscall(CG_CL_LOOKUP_COLOR, (int32_t)(uint8_t)colorCode,
-                              (intptr_t)&lineColor[0]);   /* 0x30018855..0x30018866 */
+                trap_CL_LookupColor((int32_t)(uint8_t)colorCode, &lineColor[0]);   /* 0x30018855..0x30018866 */
             }
         }
 

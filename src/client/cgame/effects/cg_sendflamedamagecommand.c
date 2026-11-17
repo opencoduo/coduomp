@@ -57,6 +57,5 @@ void CG_FlameUpdateClientDamageClient(int32_t clientNum, int32_t painId)
     /* 0x300291e1 PUSH "fdc %i"; 0x300291e0 PUSH painId; 0x300291f2 CALL va ->
      * 0x300291f8 PUSH 0x18; 0x300291f7 PUSH result; 0x300291fa CALL cgame_syscall.
      * cgame_syscall(CG_SEND_CLIENT_COMMAND, va("fdc %i", painId)); ADD ESP,0x10. */
-    cgame_syscall(CG_SEND_CLIENT_COMMAND,
-                  (intptr_t)va("fdc %i", painId));
+    trap_SendClientCommand(va("fdc %i", painId));
 }

@@ -28,7 +28,7 @@ void CG_ConfigStringModified(void)
 
     trap_Argv(1, g_textScratchBuffer, (int32_t)sizeof(g_textScratchBuffer));
     index = coduo_crt_atoi(g_textScratchBuffer);
-    cgame_syscall(CG_GET_GAME_STATE, (intptr_t)cgs.gameState.stringOffsets);
+    trap_GetGameState(&cgs.gameState);
 
     if (index < 0 || index >= MAX_CONFIGSTRINGS) {
         CG_Error("CG_ConfigString: bad index: %i", index);
@@ -91,8 +91,7 @@ void CG_ConfigStringModified(void)
     } else if (index >= CS_MODELS && index < CS_SOUNDS) {
         cgs.gameModels[index - CS_MODELS] = CG_RegisterModel(value, 7);
     } else if (index >= CS_EFFECTS && index < CS_FX) {
-        cgs.effectDefs[index - CS_EFFECTS] =
-            (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)value);
+        cgs.effectDefs[index - CS_EFFECTS] = (uint32_t)trap_FX_RegisterEffect(value);
     } else if (index >= CS_SHELLSHOCKS &&
                index < CS_SHELLSHOCKS + CS_SHELLSHOCKS_COUNT) {
         shellshock_t *params;

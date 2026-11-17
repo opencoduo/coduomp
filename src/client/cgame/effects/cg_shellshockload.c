@@ -70,11 +70,7 @@ int CG_ShellShockLoad(const char *name)
     // 0x3003b9bf..0x3003b9ca
     //   result = cgame_syscall(CG_COM_LOAD_CVARS_FROM_BUFFER, cg_shockParamNames, 27, fileText, path);
     // EBX still holds `path` here (set at 0x3003b965). EDI = result (MOV EDI,EAX).
-    result = (int32_t)cgame_syscall(CG_COM_LOAD_CVARS_FROM_BUFFER,
-                           (intptr_t)cg_shockParamNames,
-                           CG_SHOCK_PARAM_COUNT,
-                           (intptr_t)fileText,
-                           (intptr_t)path);
+    result = (int32_t)trap_Com_LoadCvarsFromBuffer(cg_shockParamNames, CG_SHOCK_PARAM_COUNT, fileText, path);
 
     // 0x3003b9d0..0x3003b9d8
     //   cgame_syscall(CG_Z_FREE_INTERNAL, fileText);   // free the temp buffer

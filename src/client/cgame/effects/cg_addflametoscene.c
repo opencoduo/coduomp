@@ -336,8 +336,7 @@ void CG_AddFlameSpriteToScene(flameChunk_t *chunk, float animationFraction,
         qhandle_t material = chunk->overrideMaterial != 0
                                  ? (qhandle_t)chunk->overrideMaterial
                                  : cg_flameFireMaterials[frame];
-        cgame_syscall(CG_R_ADDPOLYTOSCENE, material,
-                      FLAME_POLY_VERTEX_COUNT, verts);
+        trap_R_AddPolyToScene(material, FLAME_POLY_VERTEX_COUNT, verts);
         return;
     }
 
@@ -387,8 +386,7 @@ void CG_AddFlameSpriteToScene(flameChunk_t *chunk, float animationFraction,
                 smokeDensity +
                 (long double)verts[i].xyz[2]);
         }
-        cgame_syscall(CG_R_ADDPOLYTOSCENE, cg_flameFireMaterials[smokeFrame],
-                      FLAME_POLY_VERTEX_COUNT, verts);
+        trap_R_AddPolyToScene(cg_flameFireMaterials[smokeFrame], FLAME_POLY_VERTEX_COUNT, verts);
     }
 
     cg_flameLastSpritePos[0] = chunk->worldPos[0];

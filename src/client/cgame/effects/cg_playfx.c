@@ -50,8 +50,6 @@ void CG_PlayFx(centity_t *self, const vec_t *dir)
     if (dir != NULL) {
         trap_FX_PlayEffectID(coduo_int32_from_bits(handle), self->lerpOrigin, dir);
     } else {
-        cgame_syscall(CG_PLAY_EFFECT_ORIGIN,
-                      coduo_int32_from_bits(handle),
-                      (intptr_t)self->lerpOrigin);
+        trap_PlayEffectOrigin(coduo_int32_from_bits(handle), self->lerpOrigin);
     }
 }

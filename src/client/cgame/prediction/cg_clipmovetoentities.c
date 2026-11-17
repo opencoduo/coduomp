@@ -51,7 +51,7 @@ void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
             /* Inline-brush path: resolve the entity's inline collision model and
              * evaluate its angle (+0x30 apos) and origin (+0x0c pos) trajectories
              * directly into the two transformed-trace buffers. */
-            emitHandle = (int32_t)cgame_syscall(CG_CM_INLINE_MODEL, cent->currentState.itemIndex);
+            emitHandle = (int32_t)trap_CM_InlineModel(cent->currentState.itemIndex);
 
             /* BG_EvaluateTrajectory uses the client register ABI (result in ECX,
              * trajectory in EBX, atTime in EAX); modeled here as a normal call.
@@ -109,11 +109,9 @@ void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
 
             /* eFlags bit 0x10 selects a temporary capsule rather than a box. */
             if (cent->currentState.eFlags & EF_CAPSULE)
-                emitHandle = (int32_t)cgame_syscall(CG_CM_TEMP_CAPSULE_MODEL, (intptr_t)mins,
-                                           (intptr_t)maxs, contentFlag);
+                emitHandle = (int32_t)trap_CM_TempCapsuleModel(mins, maxs, contentFlag);
             else
-                emitHandle = (int32_t)cgame_syscall(CG_CM_TEMP_BOX_MODEL, (intptr_t)mins,
-                                           (intptr_t)maxs, contentFlag);
+                emitHandle = (int32_t)trap_CM_TempBoxModel(mins, maxs, contentFlag);
 
             /* Encoded box/capsule solids have no rotation; their transformed-trace
              * origin is the centity's interpolated origin at +0x208. */
@@ -126,16 +124,18 @@ void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
         }
 
         /* Per-entity transformed trace into a local trace_t. arg7 selects the
-         * variant: zero -> CG_CM_TRANSFORMED_BOX_TRACE (0x27), non-zero -> CG_CM_TRANSFORMED_CAPSULE_TRACE (0x29). Both
-         * take the identical nine-argument shape (proven byte-for-byte from the two
-         * mirror push sequences): the forwarded caller args, collision-model
-         * handle, contents mask, origin, and angles. */
+         * variant: non-zero -> trap_CM_TransformedCapsuleTrace (0x29, 0x3003523a),
+         * zero -> trap_CM_TransformedBoxTrace (0x27, 0x3003526f); the two inlined
+         * calls share one CALL at 0x300352a2. Both take the identical nine-argument
+         * shape (proven byte-for-byte from the two mirror push sequences): the
+         * forwarded caller args, collision-model handle, contents mask, origin, and
+         * angles. */
         trace_t local;
-        int32_t emitId = (useVariant != 0) ? CG_CM_TRANSFORMED_CAPSULE_TRACE : CG_CM_TRANSFORMED_BOX_TRACE;
-        cgame_syscall(emitId, (intptr_t)&local, (intptr_t)start,
-                      (intptr_t)end, (intptr_t)mins, (intptr_t)maxs,
-                      emitHandle, flagsMask, (intptr_t)origin,
-                      (intptr_t)angles);
+        if (useVariant != 0) {
+            trap_CM_TransformedCapsuleTrace(&local, start, end, mins, maxs, emitHandle, flagsMask, origin, angles);
+        } else {
+            trap_CM_TransformedBoxTrace(&local, start, end, mins, maxs, emitHandle, flagsMask, origin, angles);
+        }
 
         /* Fold the local result into the caller's running-best buffer *out.
          * Replace *out with the local result when the local trace registered a hit

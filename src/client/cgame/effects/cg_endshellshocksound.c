@@ -71,9 +71,8 @@
 void CG_EndShellShockSound(void)
 {
     /* Restore all ten sound channels and reset the room environment. */
-    cgame_syscall(CG_MSS_FADE_SELECT_SOUNDS,
-                  (intptr_t)cg_soundChannelFullVolumes, 0);
-    cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS, (intptr_t)cg_genericShellshockAliasName, 0, 0);
+    trap_MSS_FadeSelectSounds(cg_soundChannelFullVolumes, 0);
+    trap_MSS_SetEnvironmentEffects(cg_genericShellshockAliasName, 0.0f, 0);
 
     /* Only if a shellshock sound was still scheduled/active: register and play
      * the "shellshock_end_abort" sound, then clear the active-sound state. */

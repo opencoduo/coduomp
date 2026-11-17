@@ -79,8 +79,7 @@ void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
     wrapPending = 0;
     if (cg.centerPrint[0] != '\0') {
         do {
-            c = coduo_int32_from_bits((uint32_t)cgame_syscall(
-                CG_SE_READ_CHAR_FROM_STRING, (intptr_t)&cursor, 0));
+            c = coduo_int32_from_bits((uint32_t)trap_SE_ReadCharFromString(&cursor, NULL));
             if (c == '\n') {
                 wrapPending = 0;
                 charsThisLine = 0;
@@ -120,8 +119,7 @@ void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
     cursor = cg.centerPrint;
     if (cg.centerPrint[0] != '\0') {
         do {
-            c = coduo_int32_from_bits((uint32_t)cgame_syscall(
-                CG_SE_READ_CHAR_FROM_STRING, (intptr_t)&cursor, 0));
+            c = coduo_int32_from_bits((uint32_t)trap_SE_ReadCharFromString(&cursor, NULL));
             if (c == '\n') {
                 cg.centerPrintLines = coduo_int32_from_bits(
                     (uint32_t)cg.centerPrintLines + 1u);

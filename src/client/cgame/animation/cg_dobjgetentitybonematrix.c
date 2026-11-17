@@ -29,9 +29,7 @@ DObjSkelMat *CG_DObjGetLocalTagMatrix(struct DObj_s *self, const char *tagName,
     /* 3001fdc9: EAX = trap(0xa0, self, 0) -> base of the per-bone matrix table;
      * 3001fdd7/3001fddd: index it by handle*0x40 (SHL 6) to select this bone's
      * 64-byte (4x4 float) matrix. No NULL guard in the machine code. */
-    DObjSkelMat *boneMatrixTable =
-        (DObjSkelMat *)(intptr_t)cgame_syscall(
-            CG_DOBJ_GET_BONE_MATRICES, (intptr_t)self, 0);
+    DObjSkelMat *boneMatrixTable = trap_DObjGetBoneMatrices(self);
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (boneMatrixTable == NULL) {

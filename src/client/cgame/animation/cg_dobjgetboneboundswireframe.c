@@ -104,13 +104,10 @@ qboolean CG_DObjGetBoneBoundsWireframe(struct DObj_s *self,
 
     /* 30020067: trap(0xb4, self, partTable) -> fill the table with a per-part
      * pointer (here, a pointer to each part's local {mins,maxs} bounds record). */
-    cgame_syscall(CG_DOBJ_BUILD_PART_COLLISION_TABLE, (intptr_t)self,
-                  (intptr_t)partTable);
+    trap_DObjBuildPartCollisionTable(self, partTable);
 
     /* 30020074: EAX = trap(0xa0, self, 0) -> base of the per-bone matrix table. */
-    DObjSkelMat *matrixTable =
-        (DObjSkelMat *)(intptr_t)cgame_syscall(
-            CG_DOBJ_GET_BONE_MATRICES, (intptr_t)self, 0);
+    DObjSkelMat *matrixTable = trap_DObjGetBoneMatrices(self);
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (matrixTable == NULL || partTable[boneHandle] == NULL) {

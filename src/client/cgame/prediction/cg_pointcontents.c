@@ -69,8 +69,7 @@ int32_t CG_PointContents(const vec3_t point, int32_t passEntityNum,
                          int32_t contentMask)
 {
     /* World contents seed the accumulator before inline-model contributions. */
-    int32_t acc = (int32_t)cgame_syscall(CG_CM_POINT_CONTENTS,
-                                (intptr_t)point, 0);
+    int32_t acc = (int32_t)trap_CM_PointContents(point, 0);
 
     /* Signed loop bound: JLE / JL against cg_numSolidEntities. */
     for (int32_t i = 0; i < cg_numSolidEntities; i++) {
@@ -83,15 +82,12 @@ int32_t CG_PointContents(const vec3_t point, int32_t passEntityNum,
             continue;
         }
 
-        int32_t inlineModel = (int32_t)cgame_syscall(CG_CM_INLINE_MODEL, cent->currentState.itemIndex);
+        int32_t inlineModel = (int32_t)trap_CM_InlineModel(cent->currentState.itemIndex);
         if (inlineModel == 0) {
             continue;
         }
 
-        acc |= (int32_t)cgame_syscall(CG_CM_TRANSFORMED_POINT_CONTENTS,
-                             (intptr_t)point, inlineModel,
-                             (intptr_t)cent->lerpOrigin,
-                             (intptr_t)cent->lerpAngles);
+        acc |= (int32_t)trap_CM_TransformedPointContents(point, inlineModel, cent->lerpOrigin, cent->lerpAngles);
     }
 
     return acc & contentMask;

@@ -156,7 +156,7 @@ qhandle_t CG_RegisterMaterial(const char *name, int param)
             loadFraction = 0.8f;
 
             if (expectedHunkUsage > 0) {                   /* 0x3003dcf2 TEST + 0x3003dd1a JLE */
-                int32_t currentHunkUsage = (int32_t)cgame_syscall(CG_HUNK_USED); /* 0x3003dd1c trap(0x3f) */
+                int32_t currentHunkUsage = (int32_t)trap_Hunk_Used(); /* 0x3003dd1c trap(0x3f) */
                 long double loadFractionWide =
                     (long double)currentHunkUsage /
                     (long double)expectedHunkUsage;
