@@ -1,14 +1,14 @@
 // Source: uo_cgame_mp_x86.dll 0x30038430..0x300384b7
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30038430_300384b7.mcode
 //
-// CG_SetConfigValues — register the "config value" cvars from the gameState
+// CG_ParseWolfinfo — register the "config value" cvars from the gameState
 // config-string table exactly once.
 //
 // Naming: the .mcode header guess PC_Rect_Parse (a broad-corpus size match,
 // win size 0x87 vs 0x88) is REJECTED. The body has nothing to do with a
 // rectangle parse: it loops over config strings and issues trap_Cvar_Set
-// (cgame_syscall id 9) name/value pairs, guarded by an init-once flag. Named by
-// that proven behavior; exact CoD symbol unproven.
+// (cgame_syscall id 9) name/value pairs, guarded by an init-once flag. The name
+// is the Mac PowerPC traceback symbol, whose body makes the same calls.
 //
 // Machine-code shape:
 //   - 0x30038430  guard: MOV EAX,[cgs.localServer]; TEST; JNZ ret.
@@ -33,7 +33,7 @@
 #include "client/cgame/globals.h"
 #include "client/cgame/client_recovered.h"
 
-void CG_SetConfigValues(void)
+void CG_ParseWolfinfo(void)
 {
     int valueIndex;
 

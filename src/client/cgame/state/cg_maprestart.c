@@ -74,7 +74,7 @@ void CG_MapRestart(qboolean restart)
     cgame_syscall(CG_MSS_STOP_SOUNDS, 0);              /* PUSH 0(ESI); PUSH 0xd7; CALL *cgame_syscall */
     /* 0x30039590: re-register config-string 3's sound alias immediately after
      * the engine reset and submit its nonnegative time delta. */
-    CG_ConfigString3Modified();
+    CG_StartAmbient();
 
     /* Reset the sound-overlay pre-hint block (all refs=1, touched only here) and
      * zero the ejected-brass buffer array. EAX is 0 for all of these (XOR EAX,EAX

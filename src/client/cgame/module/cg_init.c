@@ -85,7 +85,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
         (long double)(1.0f / 32768.0f) * 2.0L - 1.0L);
 
     CG_ParseServerinfo();
-    CG_SetConfigValues();
+    CG_ParseWolfinfo();
     InitWeaponInfo();
     CGScr_LoadAnimTrees();
 
@@ -120,7 +120,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
      * begin registering and pumping the screen. This is distinct from the full
      * empty-label CG_LoadingString operation that follows. */
     cg.infoScreenText[0] = '\0';
-    CG_RegisterConfigStringAssets();
+    CG_SetConfigValues();
 
     CG_LoadingString("");
 
@@ -129,7 +129,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
 
     cgame_syscall(CG_R_FINISH_LOADING_MODELS);
     cgame_syscall(CG_MSS_STOP_SOUNDS, 0);
-    CG_ConfigString3Modified();
+    CG_StartAmbient();
     CG_BuildVoteHudStrings();
     CG_BuildTimeoutHudStrings();
 }

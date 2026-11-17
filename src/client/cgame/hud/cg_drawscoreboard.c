@@ -8,7 +8,7 @@
 // vector-math routine; this function reads scoreboard-visibility state, computes a
 // fade via CG_FadeColor, throttles a "score" client-command request, and drives two
 // scoreboard drawers. It sits in the scoreboard cluster (CG_ScoreboardHeight
-// 0x30036e50, CG_SetConfigValues 0x30038430) and is the top-level caller of the
+// 0x30036e50, CG_ParseWolfinfo 0x30038430) and is the top-level caller of the
 // scoreboard body drawer at 0x30037b50 (which CG_ScoreboardHeight's own comment
 // already calls "the CG_DrawScoreboard body"). Behavior matches the stock Quake3/CoD
 // CG_DrawScoreboard: fade-in/out gating plus the every-2000ms trap_SendClientCommand

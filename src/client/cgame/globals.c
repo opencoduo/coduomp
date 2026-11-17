@@ -2463,7 +2463,7 @@ cgs_t cgs;
  * once-guard. Set nonzero in the cgame config/init path (0x3002b20d, from a trap
  * return value used as a sentinel handle), then read as `if (flag != 0) return;`
  * by every config-value setter to make the registration idempotent:
- * CG_SetConfigValues (0x300383cf, 0x30038437), the sibling setter at 0x300383cf,
+ * CG_ParseWolfinfo (0x300383cf, 0x30038437), the sibling setter at 0x300383cf,
  * and 0x30018bd0. Role name; exact CoD symbol unproven. The mechanical
  * owner=cmd_veh_fireturret label is a wrong first-touch guess and is rejected.
  * Example: 30018bd0   a1 b8 7a 44 30               MOV EAX,[0x30447ab8] | 3002b20d   a3 b8 7a 44 30               MOV [0x30447ab8],EAX | 300383c7   a1 b8 7a 44 30               MOV EAX,[0x30447ab8]

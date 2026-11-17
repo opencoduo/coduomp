@@ -648,15 +648,15 @@ _Static_assert(sizeof(cgVoiceChatTable_t) == 0x49148,
 #endif
 qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
                             int32_t maxVoiceChats);
-void CG_RegisterConfigStringAssets(void);
+void CG_SetConfigValues(void);
 void CG_BuildVoteHudStrings(void);
 void CG_BuildTimeoutHudStrings(void);
 /*
- * CG_ConfigString3Modified (0x3002c9c0) — reload the config-string-index-3 asset
+ * CG_StartAmbient (0x3002c9c0) — reload the config-string-index-3 asset
  * after a renderer/asset reset. See the C artifact for full behavior. Its callers
  * (0x3002e373, 0x30038eff, 0x30039590) invoke it right after a reset trap (0xd7)
  * as part of the shutdown-then-reregister flow. */
-void CG_ConfigString3Modified(void);
+void CG_StartAmbient(void);
 void CG_ConfigStringModified(void);
 void CG_ConfigString11Modified(void);
 
@@ -791,7 +791,7 @@ void CG_RefreshWeaponInfosForConfigString(const char *configString);
  * function does no string/obituary work, it is a pure ammo-capacity query. */
 
 /*
- * CG_SetConfigValues (0x30038430) — register the config-value cvars from the
+ * CG_ParseWolfinfo (0x30038430) — register the config-value cvars from the
  * gameState string table, once. Guarded by cgs.localServer: returns
  * immediately if config values are already registered. Otherwise it walks the
  * CS_CONFIGVALUE_COUNT (128) name/value config-string pairs — value config string
@@ -801,7 +801,7 @@ void CG_RefreshWeaponInfosForConfigString(const char *configString);
  * including its out-of-range CG_Error("CG_ConfigString: bad index: %i", n).
  * Role name; exact CoD symbol unproven (mechanical guess PC_Rect_Parse rejected —
  * the body registers cvars, not a rectangle parse). */
-void CG_SetConfigValues(void);
+void CG_ParseWolfinfo(void);
 
 /*
  * CG_PlaySoundAliasByName (0x3002ca80) — choose and play a named sound alias at
@@ -940,7 +940,7 @@ void CG_GameMessage(const char *message);
 void CG_ExecuteNewServerCommands(int32_t latestSequence);
 
 /*
- * CG_SendFlameDamageCommand (0x300291c0) — throttled per-client flame-damage
+ * CG_FlameUpdateClientDamageClient (0x300291c0) — throttled per-client flame-damage
  * notification to the server. clientNum arrives in EAX, painId in ECX (register/
  * fastcall convention). If at least 2000 ms have elapsed since
  * cg_flameInfo[clientNum].lastPainTime (signed compare against cg.time-2000),
@@ -952,7 +952,7 @@ void CG_ExecuteNewServerCommands(int32_t latestSequence);
  * 360.0 constant, no angle wrapping. Exact original symbol unproven (no cgame
  * syscall/symbol table recovered); named by proven role. See the C artifact at
  * src/client/cgame/effects/cg_sendflamedamagecommand.c. */
-void CG_SendFlameDamageCommand(int32_t clientNum, int32_t painId);
+void CG_FlameUpdateClientDamageClient(int32_t clientNum, int32_t painId);
 
 /*
  * CG_ServerShaderName (0x3002fd10) — copy the shader-name config string for

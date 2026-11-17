@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x300291c0..0x30029204
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_300291c0_30029204.mcode
 //
-// CG_SendFlameDamageCommand — throttled per-client flame-damage notification to
+// CG_FlameUpdateClientDamageClient — throttled per-client flame-damage notification to
 // the server. For client `clientNum`, if at least 2000 ms have passed since this
 // client's last flame-damage pain event, latch the current time and send the
 // reliable client command va("fdc %i", painId) via cgame_syscall(0x18).
@@ -13,8 +13,8 @@
 // cg_flameInfo array (stride 0xb8) by clientNum, does a 2000ms throttle on
 // the .lastPainTime field, and forwards a formatted "fdc %i" reliable command to
 // the server through the cgame VM trap (id 0x18 = CG_SEND_CLIENT_COMMAND). Named
-// by proven behavior + call graph; exact original symbol unproven (there is no
-// cgame syscall-id/symbol table recovered), so the name is provisional-by-role.
+// by the Mac PowerPC traceback symbol, whose body has the same throttle, store
+// and command.
 // "fdc" is the reliable-command verb this cgame sends for flame damage.
 //
 // ABI: register (fastcall-style) arguments — clientNum in EAX, painId in ECX; no
@@ -35,7 +35,7 @@
 /* ms between successive flame-damage notifications for one client (LEA cg.time-0x7d0). */
 enum { CG_FLAME_DAMAGE_COMMAND_INTERVAL = 2000 };
 
-void CG_SendFlameDamageCommand(int32_t clientNum, int32_t painId)
+void CG_FlameUpdateClientDamageClient(int32_t clientNum, int32_t painId)
 {
     /* 0x300291c0 MOV EDX,cg.time ; 0x300291d4 LEA ESI,[cg.time-0x7d0] */
     int32_t now = cg.time;

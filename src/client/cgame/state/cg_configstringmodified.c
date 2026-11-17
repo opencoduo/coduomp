@@ -38,12 +38,12 @@ void CG_ConfigStringModified(void)
     if (index == CS_ITEMS) {
         CG_RegisterItems();
     } else if (index == CS_AMBIENT) {
-        CG_ConfigString3Modified();
+        CG_StartAmbient();
     } else if (index == CS_SERVERINFO) {
         CG_ParseServerinfo();
     } else if (index >= CS_CONFIGVALUE_NAMES &&
                index < CS_CONFIGVALUE_VALUES + CS_CONFIGVALUE_COUNT) {
-        CG_SetConfigValues();
+        CG_ParseWolfinfo();
     } else if (index == CS_TEAM_SCORE_AXIS) {
         cgs.scores1 = coduo_crt_atoi(value);
     } else if (index == CS_TEAM_SCORE_ALLIES) {
