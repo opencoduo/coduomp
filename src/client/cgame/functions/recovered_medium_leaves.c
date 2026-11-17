@@ -52,7 +52,7 @@ void CG_LoadingString(const char *text) /* 0x3002a4e0 */
     cgame_syscall(CG_UPDATE_SCREEN);
 }
 
-void VectorLerp(const vec3_t from, const vec3_t to, float fraction,
+void CG_FlameLerpVec(const vec3_t from, const vec3_t to, float fraction,
                 vec3_t out) /* 0x30023b20 */
 {
     /* 0x30023b20: inverse stays unrounded in st(0) across the three

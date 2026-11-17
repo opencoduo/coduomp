@@ -24,13 +24,13 @@ qboolean AlwaysTrue(void)
 }
 
 // Source RVA: 0x3002aee0
-qboolean CG_ReturnFalseStubA(void)
+qboolean CG_SaveState(void)
 {
     return qfalse;
 }
 
 // Source RVA: 0x3002aef0
-qboolean CG_ReturnFalseStubB(void)
+qboolean CG_RestoreState(void)
 {
     return qfalse;
 }

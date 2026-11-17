@@ -885,6 +885,9 @@ int32_t trap_Com_SaveCvarsToBuffer(const char *const *cvarNames, int32_t numCvar
 void trap_DeathMessage(const char *attackerName, const float *attackerColor, const char *targetName,
                        const float *targetColor, const char *killIcon, float iconWidth, float iconScale,
                        const float *iconColor);
+void CG_DeathMessage(const char *attackerName, const float *attackerColor, const char *targetName,
+                     const float *targetColor, const char *killIcon, float iconWidth, float iconScale,
+                     const float *iconColor);
 void trap_DObjAdvanceServerTime(struct DObj_s *obj, float dtime);
 void trap_DObjBuildPartCollisionTable(struct DObj_s *obj, XModelPartColl **table);
 void trap_DObjDestroy(struct DObj_s *obj);
@@ -908,6 +911,7 @@ void trap_FX_PlayEntityEffect(const char *name, const vec3_t origin, vec3_t axis
 void trap_FX_PlaySimpleEffect(const char *name, const vec3_t origin);
 qhandle_t trap_FX_RegisterEffect(const char *name);
 void trap_FX_RewindTime(int32_t time);
+void CG_RewindFx(int32_t time);
 void trap_GameMessage(const char *message, int32_t lineWidth);
 int32_t trap_GetCurrentCmdNumber(void);
 void trap_GetCurrentSnapshotNumber(int32_t *snapshotNumber, int32_t *serverTime);
@@ -937,6 +941,7 @@ void trap_MSS_StopMusic(int32_t fadeTime);
 void trap_MSS_StopSounds(int32_t fadeTime);
 void trap_MSS_UpdateLoopingSounds(void);
 void trap_NotifyPlayerSpawned(int32_t value);
+void CG_DrawSay(void);
 int32_t trap_PC_AddGlobalDefine(const char *define);
 void trap_PlayEffectOrigin(int32_t effect, const vec3_t origin);
 void trap_PM_NotifyVelocity(vec3_t velocity);

@@ -6,6 +6,9 @@
 
 #include <stdint.h>
 
+/* Screen y of the chat-input line drawn by CG_DrawSay. */
+#define CG_DRAW_SAY_Y 100
+
 /*
  * CG_Draw2D (0x3001bfe0) — the cgame per-frame screen/HUD draw
  * dispatcher. Called once per rendered frame from the frame entry at 0x3001c440
@@ -89,6 +92,13 @@
  * calls), so each is modeled as void f(void) except CG_DrawScoreboard (qboolean).
  * The callee identities are documented in client_recovered.h.
  */
+/* 0x3001b160 (Mac symbol CG_DrawSay): draw the engine's chat-input line at
+ * y = 100. CG_Draw2D inlines it. */
+void CG_DrawSay(void)
+{
+    trap_NotifyPlayerSpawned(CG_DRAW_SAY_Y);
+}
+
 void CG_Draw2D(void)
 {
     int32_t pmType;
@@ -171,7 +181,7 @@ void CG_Draw2D(void)
         CG_DrawScoreboardFadeElement();
         CG_DrawDebugFadeElement();
         CG_DrawFixedFadeElement();
-        trap_NotifyPlayerSpawned(100); /* trap(0x1e, 100) at 0x3001c0e4 */
+        CG_DrawSay(); /* inlined: trap(0x1e, 100) at 0x3001c0e4 */
     }
 
     CG_ScreenFade(); /* fade-overlay tail at 0x3001c0f1 */
