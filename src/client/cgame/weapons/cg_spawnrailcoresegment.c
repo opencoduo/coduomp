@@ -44,8 +44,7 @@ void CG_SpawnRailCoreSegment(const vec3_t start, const vec3_t end,
     /* 300430be MOV ECX,[cg_railTrailTime_vmCvar.integer]; 300430c4 MOV EDX,[cg.time];
      * 300430ca ADD EDX,ECX; 300430cc MOV [EAX+0x10],EDX:
      * le->endTime = cg.time + cg_railTrailTime_vmCvar.integer. */
-    le->endTime = coduo_int32_from_bits(
-        (uint32_t)cg.time + (uint32_t)cg_railTrailTime_vmCvar.integer);
+    le->endTime = coduo_wrap_add_i32(cg.time, cg_railTrailTime_vmCvar.integer);
 
     /* 300430cf FILD [cg_railTrailTime_vmCvar.integer]; 300430d5 FSTP [ESP+8] (spill to float);
      * 300430d9 FLD [0x3007bce0](=1.0f); 300430df FDIV [ESP+8];

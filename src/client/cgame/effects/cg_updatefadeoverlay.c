@@ -41,8 +41,7 @@ qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime,
 
     /* 3003b7eb SUB EAX,[cg.time] / 3003b7f1 ADD EAX,ECX : remaining ms in overlay's
      * window = startTime - cg.time + duration. Stored to [ESP] (the FILD source). */
-    int32_t remaining = coduo_int32_from_bits(
-        (uint32_t)startTime - (uint32_t)cg.time + (uint32_t)duration);
+    int32_t remaining = coduo_wrap_add_i32(coduo_wrap_sub_i32(startTime, cg.time), duration);
 
     /* 3003b7f3 TEST EAX,EAX / JLE : overlay expired (remaining <= 0). */
     if (remaining <= 0) {

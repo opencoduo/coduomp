@@ -112,10 +112,8 @@ void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed,
                                          1023, vec3_origin, 0);
     }
 
-    soundEndTime = (int32_t)((uint32_t)params->soundLoopEndDelay
-                           - (uint32_t)elapsed
-                           + (uint32_t)cg.time
-                           + (uint32_t)duration);
+    soundEndTime = coduo_wrap_add_i32(
+        coduo_wrap_add_i32(coduo_wrap_sub_i32(params->soundLoopEndDelay, elapsed), cg.time), duration);
 
     if (cg.time < soundEndTime) {
         if (cg.shellshockSoundEndTime != 0) {
@@ -131,6 +129,6 @@ void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed,
         alias = trap_Com_PickSoundAlias(cg_shellshockEndAliasName, vec3_origin);
         (void)trap_MSS_PlaySoundAlias(
             alias, 1023, vec3_origin,
-            (int32_t)((uint32_t)cg.time - (uint32_t)soundEndTime));
+            coduo_wrap_sub_i32(cg.time, soundEndTime));
     }
 }

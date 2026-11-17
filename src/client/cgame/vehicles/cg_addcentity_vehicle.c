@@ -114,7 +114,7 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
     /* lightingOrigin = entity origin, lifted 32 units in Z (0x300216ff..0x30021742).
      * Instead of CG_General's CG_SetupWeaponLightingOrigin call, the vehicle path fills
      * the lighting origin inline: X/Y from lerpOrigin, Z = lerpOrigin[2] + 32. */
-    uint32_t currentTime = (uint32_t)cg.time;
+    int32_t currentTime = cg.time;
     long double lightingZ =
         (long double)cent->lerpOrigin[2] +
         (long double)CG_VEHICLE_LIGHTING_ORIGIN_ZLIFT;
@@ -126,7 +126,7 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
     /* shaderTime = model age in seconds = (cg.time - cent->miscTime) * 0.001. The
      * subtraction is done in integer ms (SUB EDX,EDI), then FILD/FMUL to float
      * (0x30021705/0x30021723/0x30021731/0x3002173c/0x30021755). */
-    int32_t ageMs = coduo_int32_from_bits(currentTime - (uint32_t)miscTime);
+    int32_t ageMs = coduo_wrap_sub_i32(currentTime, miscTime);
     re.shaderTime = (float)((long double)ageMs * (long double)CG_MS_TO_SECONDS);
 
     /* DObj handle, owning centity, render kind, and flags (0x30021746..0x30021763). */

@@ -45,7 +45,7 @@ enum { CMD_BACKUP = 128 };
 
 /* cg.time blink mask: the net icon is shown only while this bit of the game clock is
  * clear, producing the ~2 Hz flash. (TEST AH,0x2 == cg.time & 0x200.) */
-#define CG_DISCONNECT_BLINK_MASK ((uint32_t)0x200)
+#define CG_DISCONNECT_BLINK_MASK 0x200
 
 /* Text metrics/draw constants proven from the .rdata immediates in this function. */
 enum {
@@ -126,7 +126,7 @@ void CG_DrawDisconnect(void)
                   CG_DISCONNECT_TEXT_STYLE);
 
     /* 0x30018b83..0x30018b8f: blink — hide the icon while cg.time bit 0x200 is set. */
-    if ((uint32_t)cg.time & CG_DISCONNECT_BLINK_MASK) { /* JNZ 0x30018bba */
+    if (cg.time & CG_DISCONNECT_BLINK_MASK) { /* JNZ 0x30018bba */
         return;
     }
 

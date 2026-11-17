@@ -52,8 +52,7 @@ void CG_UpdateFlameTime(void)
 void CG_AddLagometerFrameInfo(void) /* 0x30018a10 */
 {
     lagometer.frameSamples[lagometer.frameCount & (LAG_SAMPLES - 1)] =
-        coduo_int32_from_bits((uint32_t)cg.time -
-                         (uint32_t)cg.latestSnapshotTime);
+        coduo_wrap_sub_i32(cg.time, cg.latestSnapshotTime);
     lagometer.frameCount =
         coduo_int32_from_bits((uint32_t)lagometer.frameCount + 1u);
 }

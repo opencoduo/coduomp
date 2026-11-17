@@ -63,8 +63,7 @@
 
 void CG_UpdateShellShock(int32_t startTime, shellshock_t *params, int32_t duration)
 {
-    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg.time -
-                                       (uint32_t)startTime);
+    int32_t elapsed = coduo_wrap_sub_i32(cg.time, startTime);
 
     /* Not started yet (no start time), or the client clock ran backwards past the
      * start: tear the effect down instead of advancing it. */

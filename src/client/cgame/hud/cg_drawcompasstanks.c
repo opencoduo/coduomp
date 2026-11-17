@@ -125,8 +125,7 @@ void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
         if (blip->updateTime > cg.time) {
             blip->updateTime = 0;
         }
-        if (blip->updateTime < coduo_int32_from_bits(
-                (uint32_t)cg.time - TANK_COMPASS_BLIP_LIFETIME_MS)) {
+        if (blip->updateTime < coduo_wrap_sub_i32(cg.time, TANK_COMPASS_BLIP_LIFETIME_MS)) {
             continue;
         }
 

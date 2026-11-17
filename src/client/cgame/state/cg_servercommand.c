@@ -85,11 +85,11 @@ void CG_ServerCommand(void)
             return;
         }
 
-        cgs.complaintEndTime = coduo_int32_from_bits((uint32_t)cg.time + 20000u);
+        cgs.complaintEndTime = coduo_wrap_add_i32(cg.time, 20000);
         cgs.complaintClientNum = value;
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (cgs.complaintClientNum < 0) {
-            cgs.complaintEndTime = coduo_int32_from_bits((uint32_t)cg.time + 10000u);
+            cgs.complaintEndTime = coduo_wrap_add_i32(cg.time, 10000);
         }
         return;
     case 'n': CG_MapRestart(qtrue); return;   /* 0x3003af79 */

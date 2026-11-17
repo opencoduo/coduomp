@@ -109,7 +109,7 @@ void CG_AddMarks(void)
             continue;
         }
 
-        timeLeft = coduo_int32_from_bits((uint32_t)expiry - (uint32_t)cg.time);
+        timeLeft = coduo_wrap_sub_i32(expiry, cg.time);
         /* 3002e94a FILD duration ; 3002e94e FMUL 0.15f: duration is a raw extended
          * int (no (float) narrowing) and the product is kept on the x87 stack (st1)
          * across the compare and divide below -- it is never stored to a float slot.

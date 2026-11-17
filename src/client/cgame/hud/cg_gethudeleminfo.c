@@ -123,8 +123,7 @@ void CG_GetHudElemInfo(cgAlignedDrawItem *item, hudElem_t *elem,
     {
         const uint8_t *to = (const uint8_t *)&elem->color;
         const uint8_t *from = (const uint8_t *)&elem->fromColor;
-        int32_t elapsed = coduo_int32_from_bits(
-            (uint32_t)cg.time - (uint32_t)elem->fadeStartTime);
+        int32_t elapsed = coduo_wrap_sub_i32(cg.time, elem->fadeStartTime);
 
         /* Float faithfulness (0x30029dfe..0x30029ef3): each component performs
          * exactly ONE rounding -- the FSTP DWORD into item->color[i]. In the fade

@@ -85,8 +85,7 @@ qboolean CG_CalcViewValues(void)
 
         if ((cg.predictedPlayerState.playerStateFlags &
              CG_VIEW_BOB_VERTICAL_SPEED_FLAG) != 0) {
-            int32_t elapsed = coduo_int32_from_bits(
-                (uint32_t)cg.time - (uint32_t)cg.predictedPlayerState.lastJumpCommandTime);
+            int32_t elapsed = coduo_wrap_sub_i32(cg.time, cg.predictedPlayerState.lastJumpCommandTime);
             cg.xyspeed =
                 (elapsed < CG_VIEW_BOB_VERTICAL_DELAY_MS)
                     ? 0.0f
@@ -115,8 +114,7 @@ qboolean CG_CalcViewValues(void)
     /* 0x30041bb0..0x30041c9e: decay the prediction-origin error only for a
      * strictly interior fraction. The timestamp is cleared outside (0,1). */
     if (cg_errordecay_vmCvar.value > 0.0f) {
-        int32_t elapsed = coduo_int32_from_bits(
-            (uint32_t)cg.time - (uint32_t)cg.predictedErrorTime);
+        int32_t elapsed = coduo_wrap_sub_i32(cg.time, cg.predictedErrorTime);
         float elapsedFloat = (float)elapsed;
         float decay = (float)(
             ((long double)cg_errordecay_vmCvar.value -

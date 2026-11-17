@@ -48,8 +48,7 @@
 void CG_StepOffset(void)
 {
     int32_t now = cg.time;
-    int32_t elapsed = coduo_int32_from_bits(
-        (uint32_t)cg.time - (uint32_t)cg.stepTime);
+    int32_t elapsed = coduo_wrap_sub_i32(cg.time, cg.stepTime);
 
     /* Negative delta => the cg.time base moved backward (map restart / rollback):
      * re-baseline the stamp. elapsed is left negative, so the window test below

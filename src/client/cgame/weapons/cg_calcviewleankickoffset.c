@@ -164,8 +164,7 @@ void CG_CalculateWeaponPosition(vec3_t out /* EAX -> EDI: in/out view offset vec
     CG_CalculateWeaponPosition_ToWorldPosition(out);
 
     /* 0x300453f3: elapsed ms since the last impact-event kick was recorded. */
-    const int32_t elapsed = coduo_int32_from_bits(
-        (uint32_t)cg.time - (uint32_t)cg.landTime);
+    const int32_t elapsed = coduo_wrap_sub_i32(cg.time, cg.landTime);
     const float kick = cg.landChange;
 
     if (elapsed < 150) {

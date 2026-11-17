@@ -59,7 +59,7 @@ qboolean CG_DrawScoreboard(void)
      * 2000 ms. cg.scoresRequestTime holds cg.time of the last request; the compare is
      * the signed 32-bit `cmp (scoreboardTime + 2000), cg.time` with JGE skipping the
      * request, i.e. request only when cg.time - cg.scoresRequestTime > 2000. */
-    if (coduo_int32_from_bits((uint32_t)cg.scoresRequestTime + 2000u) < cg.time) {
+    if (coduo_wrap_add_i32(cg.scoresRequestTime, 2000) < cg.time) {
         cg.scoresRequestTime = cg.time;
         cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"score");
     }

@@ -40,19 +40,16 @@
 //     simply: clamp a negative fraction to 0.
 
 #include "client/cgame/globals.h"
+#include "compat/coduo_int32_bits.h"
 
 #include <stdint.h>
-#include <string.h>
 
 void CG_SetFrameInterpolation(void)
 {
-    /* SUB is a modulo-2^32 operation. Interpret the resulting bits as signed
-     * only at the FILD/FIDIV boundary, matching Win32 x86 even when the
-     * mathematical subtraction is outside the int32_t range. */
-    uint32_t snapSpanBits =
-        (uint32_t)cg.nextSnap->serverTime - (uint32_t)cg.snap->serverTime;
-    int32_t snapSpan;
-    memcpy(&snapSpan, &snapSpanBits, sizeof(snapSpan));
+    /* SUB is a modulo-2^32 operation; the signed result feeds FILD/FIDIV,
+     * matching Win32 x86 even when the mathematical subtraction is outside the
+     * int32_t range. */
+    int32_t snapSpan = coduo_wrap_sub_i32(cg.nextSnap->serverTime, cg.snap->serverTime);
 
     if (snapSpan == 0) {
         /* SUB set ZF -> JZ to the zeroing store (MOV [0x304831a8],0). */
@@ -60,10 +57,7 @@ void CG_SetFrameInterpolation(void)
         return;
     }
 
-    uint32_t elapsedBits =
-        (uint32_t)cg.time - (uint32_t)cg.snap->serverTime;
-    int32_t elapsed;
-    memcpy(&elapsed, &elapsedBits, sizeof(elapsed));
+    int32_t elapsed = coduo_wrap_sub_i32(cg.time, cg.snap->serverTime);
 
     /* FILD elapsed / FIDIV snapSpan, then FST (non-popping) into the datum. */
     double fraction = (double)elapsed / (double)snapSpan;

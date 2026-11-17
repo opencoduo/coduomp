@@ -90,8 +90,7 @@ void CG_AddViewWeapon(void)
     state.moveOffset[1] = cg.weaponPosition.weaponPositionPrevAngles[1];
     state.moveOffset[2] = cg.weaponPosition.weaponPositionPrevAngles[2];
     state.idleScale = cg.weaponPosition.weaponPositionMoveScale;
-    state.time = coduo_int32_from_bits(
-        (uint32_t)cg.time - (uint32_t)ps->deltaTime);
+    state.time = coduo_wrap_sub_i32(cg.time, ps->deltaTime);
     state.viewKickStartTime = cg.damageDirLatestServerTime != 0
         ? coduo_int32_from_bits((uint32_t)cg.damageDirLatestServerTime -
                           (uint32_t)ps->deltaTime)
