@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 /*
- * CG_ConfigString3Modified (0x3002c9c0) — re-register the engine asset described
+ * CG_StartAmbient (0x3002c9c0) — re-register the engine asset described
  * by config-string index 3 and submit its handle plus a nonnegative time delta to
  * the engine. Called from the shutdown-then-reregister flow (callers 0x3002e373,
  * 0x30038eff, 0x30039590 each issue the asset-reset trap 0xd7 immediately before).
@@ -31,7 +31,8 @@
  * REJECTED — this function contains no string-length scan and no color-code
  * skipping; it is a config-string-3 reload handler. Named by its proven behavior
  * and call graph (config-string index 3 + asset re-register + time submit). The
- * exact original CoD symbol is unproven. The engine receiver proves traps 0xc4
+ * name is the Mac PowerPC traceback symbol, whose body makes the same calls.
+ * The engine receiver proves traps 0xc4
  * and 0xda are CG_COM_PICK_SOUND_ALIAS and CG_MSS_PLAY_AMBIENT_ALIAS.
  * Info_ValueForKey (0x3004e960) and Q_atoi (0x3005b6ce) are caller-observed
  * provisional callee declarations.
@@ -61,7 +62,7 @@
  *   3002ca1a CALL [0x30085e9c]                       trap(0xda, handle, delta)
  *   3002ca20 ADD  ESP,0xc ; POP EDI/ESI/EBX ; RET
  */
-void CG_ConfigString3Modified(void)
+void CG_StartAmbient(void)
 {
     /* CG_ConfigString(3): the info string at gameState.stringOffsets[3]. */
     const char *cs = &cgs.gameState.stringData[cgs.gameState.stringOffsets[3]];

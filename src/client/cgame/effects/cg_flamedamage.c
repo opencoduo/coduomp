@@ -14,7 +14,7 @@
 // at all. This function does 3D world math over cg.snap (predicted player origin at +0x20,
 // player bounds psFlameTraceA/B at +0x568/+0x574, clientNum at +0xe0), calls VectorDistance
 // (0x300495b0), the CRT sqrt helper sqrt_f (0x3006bee0), the projection trace
-// CG_Trace (0x30035310) and the flame-damage command sender CG_SendFlameDamageCommand
+// CG_Trace (0x30035310) and the flame-damage command sender CG_FlameUpdateClientDamageClient
 // (0x300291c0), and drives cg_flameTime / cg_flameInfo[].activeUntil /
 // cg_flameDamageBestPos / cg_flameDamageTakenThisFrame. The Mac CG_FlameDamage
 // shares the distance and trace callees and performs the corresponding local-client
@@ -23,7 +23,7 @@
 // ABI (proven from the sole call site 0x3002698c):
 //   EDI (register)   = flamePos      -> LEA EDI,[caller+0xd8] : pointer to a vec3 world pos
 //   [ESP+0x64] arg0  = ownerClientNum-> caller pushes [caller+0x38]; kept in EBP; compared to
-//                      cg.snap->ps.psClientNum and forwarded to CG_SendFlameDamageCommand as painId
+//                      cg.snap->ps.psClientNum and forwarded to CG_FlameUpdateClientDamageClient as painId
 //   [ESP+0x68] arg1  = radiusBase    -> caller pushes [caller+0xe4] (a float, FLD [ESP+0x68])
 //   [ESP+0x6c] arg2  = chunk         -> caller pushes its own EBP (a flameChunk_t *); only
 //                      chunk->lifeFraction (+0xe8, a float) is read here (FLD [EAX+0xe8])
@@ -223,9 +223,9 @@ void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum,
             }
 
             /* 0x300268b9..0x300268c6: the local player is taking flame damage. Notify the
-             * server for this client (throttled inside CG_SendFlameDamageCommand) and latch
+             * server for this client (throttled inside CG_FlameUpdateClientDamageClient) and latch
              * the once-per-frame flag so no further command is sent this frame. */
-            CG_SendFlameDamageCommand(snap->ps.psClientNum, ownerClientNum); /* 0x300268c1 */
+            CG_FlameUpdateClientDamageClient(snap->ps.psClientNum, ownerClientNum); /* 0x300268c1 */
             cg_flameDamageTakenThisFrame = 1;            /* 0x300268c6 */
         }
     }

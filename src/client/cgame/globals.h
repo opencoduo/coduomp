@@ -919,7 +919,7 @@ extern const char cg_localizationContext[6];
 /* 0x30077b48 .rdata refs=3 width=1 first=0x3002d751 owner=script_method_scriptbuiltin_sethin */
 /* 0x30077d90 .rdata refs=28 width=imm first=0x3001e85f.
  * The shared "CG_ConfigString: bad index: %i" error format used by the inlined
- * CG_ConfigString bounds check across the cgame (28 sites incl. CG_SetConfigValues
+ * CG_ConfigString bounds check across the cgame (28 sites incl. CG_ParseWolfinfo
  * 0x30038430). Mechanical owner=bg_takeplayerweapon is a wrong first-touch guess. */
 extern const char cg_configStringBadIndexFmt[31];
 /* 0x30078854 .rdata refs=5 width=imm first=0x3002b21d owner=cg_playsoundaliasbyname */
@@ -2853,7 +2853,7 @@ typedef struct cgs_s {
     /* 0x30447ab8 .data refs=5 width=4 first=0x30018bd0.
      * cgs.localServer — cgame "config values already registered" once-guard.
      * Set in the config/init path (0x3002b20d), read as `if (flag != 0) return;` by
-     * every config-value setter (CG_SetConfigValues 0x30038430, sibling 0x30038380,
+     * every config-value setter (CG_ParseWolfinfo 0x30038430, sibling 0x30038380,
      * 0x30018bd0) to make cvar registration idempotent. Role name; exact CoD symbol
      * unproven. Mechanical owner=cmd_veh_fireturret is a wrong first-touch guess. */
     int32_t localServer;

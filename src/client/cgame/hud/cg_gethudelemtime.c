@@ -46,36 +46,33 @@
 //
 // ABI: the element pointer arrives in ECX (thiscall-style register argument),
 // result in EAX; plain `RET`, no stack args. Every use here is a wrapping 32-bit
-// subtraction followed by a signed >= 0 clamp, so the working value is
-// reinterpreted as int32_t.
+// subtraction followed by a signed >= 0 clamp.
 
 int32_t CG_GetHudElemTime(const struct hudElem_s *elem)
 {
-    uint32_t value;
+    int32_t value;
 
     switch (elem->type) {
     case HE_TYPE_TIMER:        /* 4: countdown, whole-second rounding */
-        value = (uint32_t)elem->timerValue - (uint32_t)cg.time + 999u;
+        value = coduo_wrap_add_i32(coduo_wrap_sub_i32(elem->timerValue, cg.time), 999);
         break;
     case HE_TYPE_TENTHS_TIMER: /* 6: countdown, tenth-second rounding */
-        value = (uint32_t)elem->timerValue - (uint32_t)cg.time + 99u;
+        value = coduo_wrap_add_i32(coduo_wrap_sub_i32(elem->timerValue, cg.time), 99);
         break;
     case HE_TYPE_CLOCK:        /* 8: countdown, no rounding */
-        value = (uint32_t)elem->timerValue - (uint32_t)cg.time;
+        value = coduo_wrap_sub_i32(elem->timerValue, cg.time);
         break;
     case HE_TYPE_TIMER_UP:        /* 5 */
     case HE_TYPE_TENTHS_TIMER_UP: /* 7 */
     case HE_TYPE_CLOCK_UP:        /* 9: count-up, elapsed since timerValue */
-        value = (uint32_t)cg.time - (uint32_t)elem->timerValue;
+        value = coduo_wrap_sub_i32(cg.time, elem->timerValue);
         break;
     default:                   /* type < 4 or > 9: JA default */
         return 0;
     }
 
-    /* ADD/SUB are defined modulo 2^32 on the retail Windows/i386 target. The
-     * following TEST/JGE treats that bit pattern as signed and returns only a
-     * nonnegative result, so the final conversion is representable. */
-    if ((value & 0x80000000u) != 0)
+    /* TEST EAX,EAX; JGE: a negative result is clamped to 0. */
+    if (value < 0)
         return 0;
-    return (int32_t)value;
+    return value;
 }

@@ -58,6 +58,20 @@ coduo_int32_sar(uint32_t bits, unsigned int count)
     return coduo_int32_from_bits(coduo_int32_sar_bits(bits, count));
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: i386 ADD/SUB on 32-bit signed values wraps modulo
+ * 2^32, where the plain C signed expression would be undefined on overflow.
+ * Used for millisecond timestamps and other values the original adds or
+ * subtracts as raw dwords. */
+static CODUO_INT32_ALWAYS_INLINE int32_t coduo_wrap_add_i32(int32_t a, int32_t b)
+{
+    return coduo_int32_from_bits((uint32_t)a + (uint32_t)b);
+}
+
+static CODUO_INT32_ALWAYS_INLINE int32_t coduo_wrap_sub_i32(int32_t a, int32_t b)
+{
+    return coduo_int32_from_bits((uint32_t)a - (uint32_t)b);
+}
+
 #undef CODUO_INT32_ALWAYS_INLINE
 
 #endif /* CODUO_INT32_BITS_H */

@@ -12,7 +12,7 @@ static qboolean CG_WeaponCommandReady(void)
     return cg.snap != NULL &&
            (cg.predictedPlayerState.playerStateFlags & PMF_FOLLOW) == 0 &&
            (cg.snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0 &&
-           (int32_t)((uint32_t)cg.time - (uint32_t)cg.weaponSelectTime) >= cg_weaponCycleDelay.integer;
+           coduo_wrap_sub_i32(cg.time, cg.weaponSelectTime) >= cg_weaponCycleDelay.integer;
 }
 
 void CG_AltWeapon_f(void) /* 0x30047400 */
@@ -67,7 +67,7 @@ void CG_NextWeapon_f(void) /* 0x300474c0 */
         return;
     }
     if ((cg.snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) return;
-    if ((int32_t)((uint32_t)cg.time - (uint32_t)cg.weaponSelectTime) <
+    if (coduo_wrap_sub_i32(cg.time, cg.weaponSelectTime) <
         cg_weaponCycleDelay.integer) return;
     cg.weaponSelectTime = cg.time;
     CG_CycleWeap(1, 0);
@@ -104,7 +104,7 @@ void CG_PrevWeapon_f(void) /* 0x30047550 */
         return;
     }
     if ((cg.snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) return;
-    if ((int32_t)((uint32_t)cg.time - (uint32_t)cg.weaponSelectTime) <
+    if (coduo_wrap_sub_i32(cg.time, cg.weaponSelectTime) <
         cg_weaponCycleDelay.integer) return;
     cg.weaponSelectTime = cg.time;
     CG_CycleWeap(0, 0);

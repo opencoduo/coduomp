@@ -54,13 +54,11 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg)
             /* 0x3003a02c..0x3003a072: local player — stamp the cg.* voice-chat state. */
             cg.predictedPlayerEntity.voiceChatIcon = msg->icon;
             if ((uint32_t)msg->icon == cgs.media.voiceChatIcon) {
-                cg.predictedPlayerEntity.voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg.time +
-                    (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
+                cg.predictedPlayerEntity.voiceChatTime = coduo_wrap_add_i32(cg.time, cg_voiceSpriteTime_vmCvar.integer);
             } else {
-                cg.predictedPlayerEntity.voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg.time +
-                    2u * (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
+                const int32_t spriteTime = cg_voiceSpriteTime_vmCvar.integer;
+                cg.predictedPlayerEntity.voiceChatTime =
+                    coduo_wrap_add_i32(cg.time, coduo_wrap_add_i32(spriteTime, spriteTime));
             }
         } else {
             /* 0x3003a074..0x3003a0f9: remote speaker — stamp cg_entities[speaker]. */
@@ -73,13 +71,10 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg)
             cent->lerpOrigin[2] = msg->spriteOrigin[2];
 
             if ((uint32_t)msg->icon == cgs.media.voiceChatIcon) {
-                cent->voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg.time +
-                    (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
+                cent->voiceChatTime = coduo_wrap_add_i32(cg.time, cg_voiceSpriteTime_vmCvar.integer);
             } else {
-                cent->voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg.time +
-                    2u * (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
+                const int32_t spriteTime = cg_voiceSpriteTime_vmCvar.integer;
+                cent->voiceChatTime = coduo_wrap_add_i32(cg.time, coduo_wrap_add_i32(spriteTime, spriteTime));
             }
         }
     }

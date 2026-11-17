@@ -156,10 +156,8 @@ void CG_ProcessSnapshots(void)
         /* 3003d41b..3003d43c: exit the loop once cg.time sits within the window,
          * i.e. cg.time >= cg.snap.serverTime AND cg.time < cg.nextSnap.serverTime.
          * The i386 forms both as signed subtractions and tests the sign bit (JS). */
-        if (coduo_int32_from_bits((uint32_t)cg.time -
-                             (uint32_t)cg.snap->serverTime) >= 0) {
-            if (coduo_int32_from_bits((uint32_t)cg.time -
-                                 (uint32_t)cg.nextSnap->serverTime) < 0) {
+        if (coduo_wrap_sub_i32(cg.time, cg.snap->serverTime) >= 0) {
+            if (coduo_wrap_sub_i32(cg.time, cg.nextSnap->serverTime) < 0) {
                 /* 3003d43c: cg.time is before the next snapshot — window found. */
                 break;
             }
@@ -177,7 +175,7 @@ void CG_ProcessSnapshots(void)
     {
         int32_t snapServerTime = cg.snap->serverTime;
         /* 3003d456..3003d458: JNS -> skip when cg.time >= cg.snap.serverTime. */
-        if (coduo_int32_from_bits((uint32_t)cg.time - (uint32_t)snapServerTime) < 0) {
+        if (coduo_wrap_sub_i32(cg.time, snapServerTime) < 0) {
             cg.time = snapServerTime;
             cg_effectTime = snapServerTime;
         }

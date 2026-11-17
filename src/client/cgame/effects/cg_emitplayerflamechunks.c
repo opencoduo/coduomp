@@ -394,7 +394,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
         } else {
             /* 0x3002431b: if info->lastEmitTime >= cg_flameTime-150, spawnEnabled=1. */
             const int32_t recentCutoff =
-                coduo_int32_from_bits((uint32_t)cg_flameTime - 150u);
+                coduo_wrap_sub_i32(cg_flameTime, 150);
             if (info->lastEmitTime >= recentCutoff) {
                 spawnEnabled = 1;
             }
@@ -439,8 +439,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
             const long double dz =
                 (long double)emitOrigin[2] -
                 (long double)info->prevEmitOrigin[2]; /* +0x18 */
-            const int32_t dt = coduo_int32_from_bits(
-                (uint32_t)cg_flameTime - (uint32_t)info->lastEmitTime); /* +0x54 */
+            const int32_t dt = coduo_wrap_sub_i32(cg_flameTime, info->lastEmitTime); /* +0x54 */
             /* denom = max((double)dt, 20.0) (0x3007c128 = 20.0). */
             const double denom = ((double)dt > 20.0) ? (double)dt : 20.0;
             const long double scale =

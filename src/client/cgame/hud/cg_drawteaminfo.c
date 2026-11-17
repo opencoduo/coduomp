@@ -68,8 +68,7 @@ void CG_DrawTeamInfo(void)
     // 0x300187a1..0x300187c0: scroll the oldest still-visible line out once it has
     // aged past the visible window. cgs.teamChatMsgTimes is indexed by (cursor mod
     // chatHeight); cg_chatTime_vmCvar.integer is the integer visible-window (ms).
-    if ((int32_t)((uint32_t)cg.time -
-                  (uint32_t)cgs.teamChatMsgTimes[lastPos % chatHeight]) >
+    if (coduo_wrap_sub_i32(cg.time, cgs.teamChatMsgTimes[lastPos % chatHeight]) >
         cg_chatTime_vmCvar.integer) {
         lastPos = coduo_int32_from_bits(
             (uint32_t)lastPos + 1u);          /* 0x300187bf INC ECX */
@@ -95,8 +94,7 @@ void CG_DrawTeamInfo(void)
         // 0x30018818 keeps st0 (it is FST, not FSTP), so the <= 0.0 test at
         // 0x3001881c runs on the UNROUNDED product while the float copy in
         // [ESP+0xc] is what the later 0.6f multiply reloads (FLD 0x300188d4).
-        int32_t age = (int32_t)(
-            (uint32_t)cg.time - (uint32_t)cgs.teamChatMsgTimes[ringIndex]);
+        int32_t age = coduo_wrap_sub_i32(cg.time, cgs.teamChatMsgTimes[ringIndex]);
         /* 0x300187e5 FILD age; 0x300187e9 FSUBR cg_chatTime -- age is loaded straight
          * into the FSUBR with no FSTP DWORD, so the implicit int->float conversion
          * stays exact; no (float) cast (it would round age under -std=c11, and age is

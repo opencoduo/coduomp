@@ -143,8 +143,7 @@ void CG_SpawnTracer(const vec3_t endOrigin, const vec3_t startOrigin, int32_t we
      * truncates via _ftol2 (0x3006be3c) into a negative int, then endTime = startTime -
      * that == startTime + span*1000/speed. i.e. the ms at which the TR_LINEAR trajectory
      * (speed units/s) carries the tracer the full `span` from start to newEnd. */
-    int32_t startTime = coduo_int32_from_bits(
-        (uint32_t)cg.time - (uint32_t)startDither); /* 0x304831b0 */
+    int32_t startTime = coduo_wrap_sub_i32(cg.time, startDither); /* 0x304831b0 */
     int32_t travelMs = coduo_fp_to_i32_extended(
         (long double)span * (long double)-1000.0f /
         (long double)cg_tracerSpeed_vmCvar.value); /* 0x3007bff8 / 0x304556c8, trunc 0x3006be3c */

@@ -58,9 +58,8 @@ void CG_WeaponSway_ApplyShellShock(void)
      * TEST EAX,EAX; JLE is a SIGNED test). The operands are subtracted as wrapping
      * 32-bit values and the result is reinterpreted as int32_t, so the <= 0 branch
      * stays signed like the ALU op. */
-    int32_t remaining = coduo_int32_from_bits(
-        ((uint32_t)cg.shellShockSwayDuration - (uint32_t)cg.time) +
-        (uint32_t)cg.shellShockSwayStartTime);
+    int32_t remaining = coduo_wrap_add_i32(
+        coduo_wrap_sub_i32(cg.shellShockSwayDuration, cg.time), cg.shellShockSwayStartTime);
 
     float scale;
 

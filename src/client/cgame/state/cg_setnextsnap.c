@@ -27,8 +27,7 @@ void CG_SetNextSnap(snapshot_t *snap)
          * cg.frameInterpolation while 0x3003cc62 FCOMP tests the UNROUNDED st0
          * against 0.0f -- so the sign test must read the wide quotient, not the
          * float lvalue. */
-        int32_t numerator = coduo_int32_from_bits(
-            (uint32_t)cg.time - (uint32_t)cg.snap->serverTime);
+        int32_t numerator = coduo_wrap_sub_i32(cg.time, cg.snap->serverTime);
         int32_t denominator = coduo_int32_from_bits(
             (uint32_t)snap->serverTime - (uint32_t)cg.snap->serverTime);
         long double frac = (long double)numerator / (long double)denominator;

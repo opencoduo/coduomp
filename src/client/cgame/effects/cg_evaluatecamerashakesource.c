@@ -35,8 +35,7 @@ qboolean CG_EvaluateCameraShakeSource(cg_shakeSource_t *source)
     // 0x3001b393-0x3001b39d: elapsed = cg.time - source->startMsec (signed int32).
     // MOV EAX,[cg.time]; SUB EAX,[ESI]; MOV [ESP],EAX; JS -> return 0.
     // A negative elapsed (shake in the future) yields qfalse.
-    int32_t elapsedMsec = coduo_int32_from_bits(
-        (uint32_t)cg.time - (uint32_t)source->startMsec);
+    int32_t elapsedMsec = coduo_wrap_sub_i32(cg.time, source->startMsec);
     if (elapsedMsec < 0) {
         return qfalse; // 0x3001b40e: XOR EAX,EAX; RET
     }

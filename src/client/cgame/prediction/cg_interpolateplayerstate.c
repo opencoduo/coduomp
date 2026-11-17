@@ -88,8 +88,7 @@ void CG_InterpolatePlayerState(qboolean grabAngles)
 
     /* The machine forms both operands as 32-bit integer differences and FILDs them
      * (signed): numerator (cg.time - snap.serverTime), denominator (next - snap). */
-    int32_t sinceSnap = coduo_int32_from_bits(
-        (uint32_t)cg.time - (uint32_t)snap->serverTime);
+    int32_t sinceSnap = coduo_wrap_sub_i32(cg.time, snap->serverTime);
     int32_t snapSpan = coduo_int32_from_bits(
         (uint32_t)next->serverTime - (uint32_t)snap->serverTime);
     float t = (float)((long double)sinceSnap / (long double)snapSpan);

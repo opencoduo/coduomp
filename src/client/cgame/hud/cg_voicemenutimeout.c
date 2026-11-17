@@ -34,8 +34,7 @@ void CG_VoiceMenuTimeout(void)
      * signed against 2500 (0x9c4). JLE returns, so work runs only when the
      * signed elapsed value is strictly greater than 2500 ms.
      */
-    int32_t elapsed = coduo_int32_from_bits(
-        (uint32_t)cg.time - (uint32_t)startTime);
+    int32_t elapsed = coduo_wrap_sub_i32(cg.time, startTime);
     if (elapsed <= CG_VOICE_MENU_TIMEOUT_MS) {
         return;
     }

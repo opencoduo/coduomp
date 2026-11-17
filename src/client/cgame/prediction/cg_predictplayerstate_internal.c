@@ -216,8 +216,7 @@ void CG_PredictPlayerState_Internal(void)
 
                 if (cg_errordecay_vmCvar.integer != 0) {
                     const int32_t elapsed =
-                        coduo_int32_from_bits(
-                            (uint32_t)cg.time - (uint32_t)cg.predictedErrorTime);
+                        coduo_wrap_sub_i32(cg.time, cg.predictedErrorTime);
                     /* elapsed enters via bare FILD (0x30035c52) -- no (float) cast;
                      * cg.time deltas exceed 2^24 and an explicit cast would round
                      * (Class 4). */

@@ -90,16 +90,16 @@ void CG_AddPacketEntities(void)
      * 0x168 (=360) IMUL runs on the masked integer, which is then FILD'd and FDIV'd
      * by the (float) divisor. pitch and roll are 0 (EBP). */
     {
-        uint32_t t = (uint32_t)cg.time;
+        int32_t t = cg.time;
         cgDObjPreviewOrientation_t *o0 = &cg.dobjPreviewOrientations[0];
         cgDObjPreviewOrientation_t *o1 = &cg.dobjPreviewOrientations[1];
         cgDObjPreviewOrientation_t *o2 = &cg.dobjPreviewOrientations[2];
 
         /* Integer masked-and-scaled products (0x168 == 360). Written before the
          * FILD/FDIV so the exact 32-bit multiply is preserved. */
-        int32_t spin0 = (int32_t)(t & 0xfffu) * 360;
-        int32_t spin1 = (int32_t)(t & 0x7ffu) * 360;
-        int32_t spin2 = (int32_t)(t & 0x3ffu) * 360;
+        int32_t spin0 = (t & 0xfff) * 360;
+        int32_t spin1 = (t & 0x7ff) * 360;
+        int32_t spin2 = (t & 0x3ff) * 360;
 
         /* Each FILD result is first rounded through the shared float scratch.
          * The first FDIV result remains live on x87 through the six zero stores. */

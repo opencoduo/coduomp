@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x30038830..0x30038e69
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30038830_30038e69.mcode
 //
-// CG_RegisterConfigStringAssets — precache the config-string-backed HUD assets at
+// CG_SetConfigValues — precache the config-string-backed HUD assets at
 // map load: seed three signed HUD-stat integers from config strings, parse the fog
 // config, register the script-menu files, then register the HUD shader, HUD
 // material, and server shader config-string ranges. Every shader-range entry is
@@ -37,7 +37,7 @@
 //     0x30440a00, data base 0x30442a00), carrying CG_ConfigString's out-of-range
 //     CG_Error("CG_ConfigString: bad index: %i", cfg) diagnostic (bounds
 //     [0, MAX_CONFIGSTRINGS); the error is emitted but the lookup still proceeds).
-//     Same inline idiom as sibling CG_SetConfigValues (0x30038430).
+//     Same inline idiom as sibling CG_ParseWolfinfo (0x30038430).
 //   * The HUD-stat seeds store into the parallel signed-int trio
 //     cgs.scores1/cgs.scores2/cgs.levelStartTime from config strings
 //     5, 6, 14.
@@ -87,7 +87,7 @@ enum {
  * machine's inlined bounds check at every config-string reference in this function.
  */
 /* NOT_FROM_ORIGINAL_SOURCE: readable factoring of the repeated inlined
- * config-string lookup graph in CG_RegisterConfigStringAssets. */
+ * config-string lookup graph in CG_SetConfigValues. */
 static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE const char *
 cgame_compat_config_string_inline(int32_t cfg)
 {
@@ -104,7 +104,7 @@ cgame_compat_config_string_inline(int32_t cfg)
  * installed and no synchronous redraw is already in progress.
  */
 /* NOT_FROM_ORIGINAL_SOURCE: readable factoring of the two duplicated loading
- * pump instruction regions in CG_RegisterConfigStringAssets. */
+ * pump instruction regions in CG_SetConfigValues. */
 static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE void
 cgame_compat_register_assets_loading_pump(void)
 {
@@ -214,7 +214,7 @@ cgame_compat_register_assets_loading_pump(void)
         (uint32_t)cg_updateScreenActive - 1u);
 }
 
-void CG_RegisterConfigStringAssets(void)
+void CG_SetConfigValues(void)
 {
     int32_t index;
 

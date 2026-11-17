@@ -61,8 +61,7 @@ long double CG_HudElemY(const hudElem_t *node,
          * SUB, [0x304831b0] - [EAX+0x54]). If elapsed >= duration the window has
          * fully elapsed (signed JGE at 0x30029b1a): use the settled value.
          */
-        elapsed = coduo_int32_from_bits((uint32_t)cg.time -
-                                   (uint32_t)node->moveStartTime);
+        elapsed = coduo_wrap_sub_i32(cg.time, node->moveStartTime);
         if (elapsed < duration) {
             interpolating = qtrue;
         }

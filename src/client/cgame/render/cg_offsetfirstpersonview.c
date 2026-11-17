@@ -54,8 +54,7 @@ void CG_OffsetFirstPersonView(void)
                         (uint32_t)cg.predictedPlayerState.deltaTime)
             : 0;
     state.time =
-        (int32_t)((uint32_t)cg.time -
-                  (uint32_t)cg.predictedPlayerState.deltaTime);
+        coduo_wrap_sub_i32(cg.time, cg.predictedPlayerState.deltaTime);
     state.viewKickPitch = cg.v_dmg_pitch;
     state.viewKickRoll = cg.v_dmg_roll;
     state.speed = cg.xyspeed;
@@ -171,14 +170,12 @@ void CG_OffsetFirstPersonView(void)
      * while the current evaluation deliberately keeps the original negative
      * elapsed value. */
     {
-        int32_t elapsed = coduo_int32_from_bits(
-            (uint32_t)cg.time - (uint32_t)cg.landTime);
+        int32_t elapsed = coduo_wrap_sub_i32(cg.time, cg.landTime);
         float elapsedFloat = (float)elapsed;
         float phase;
 
         if (elapsedFloat < 0.0f) {
-            cg.landTime = coduo_int32_from_bits(
-                (uint32_t)cg.time - (uint32_t)CG_IMPACT_KICK_TOTAL_MS);
+            cg.landTime = coduo_wrap_sub_i32(cg.time, CG_IMPACT_KICK_TOTAL_MS);
         }
 
         if (elapsedFloat < (float)CG_IMPACT_KICK_RISE_MS) {

@@ -61,8 +61,7 @@ long double CG_HudElemShaderWidth(const hudElem_t *elem,
      * 0x30029940..0x3002994f: elapsed = cg.time - anim->startTime (signed).
      * If elapsed >= duration the animation has completed: return the end value.
      */
-    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg.time -
-                                      (uint32_t)elem->scaleStartTime);
+    int32_t elapsed = coduo_wrap_sub_i32(cg.time, elem->scaleStartTime);
     if (elapsed >= duration) {
         return endValue;
     }

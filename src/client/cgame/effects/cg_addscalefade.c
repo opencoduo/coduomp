@@ -99,8 +99,7 @@ void CG_AddScaleFade(localEntity_t *le)
      * into the FMUL with no FSTP DWORD, so it enters exact. Under -std=c11 an
      * explicit (float) really rounds (fildl/fstps/flds) and would diverge once
      * |endTime - cg.time| exceeds 2^24 ms (~4.66 h of uptime). */
-    int32_t remaining = coduo_int32_from_bits(
-        (uint32_t)le->endTime - (uint32_t)cg.time);
+    int32_t remaining = coduo_wrap_sub_i32(le->endTime, cg.time);
     long double phase =
         (long double)remaining * (long double)le->lifeRate;
 

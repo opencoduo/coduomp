@@ -52,8 +52,7 @@ void CG_DrawWeaponSelect(void)
 
     /* 0x30046bb6..0x30046bd1: milliseconds since the previous carousel frame;
      * latch the new draw time and clamp a backwards clock to zero (JNS). */
-    frameMsec = coduo_int32_from_bits(
-        (uint32_t)cg.time - (uint32_t)cg.weaponSelectLastTime);
+    frameMsec = coduo_wrap_sub_i32(cg.time, cg.weaponSelectLastTime);
     cg.weaponSelectLastTime = cg.time;
     if (frameMsec < 0)
         frameMsec = 0;
