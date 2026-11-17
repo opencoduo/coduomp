@@ -1,7 +1,7 @@
 // Source: uo_cgame_mp_x86.dll 0x30049060..0x300490a2
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30049060_300490a2.mcode
 //
-// CG_ModelEventFireWeapon — the weapon-fire visual/audio side effect for a model
+// CG_BulletHitClientEvent — the weapon-fire visual/audio side effect for a model
 // sub-entity event. Sole caller is CG_EntityPreEvent (0x30023690) on its
 // EV_BULLET_HIT_CLIENT_SMALL / EV_BULLET_HIT_CLIENT_LARGE path (event ids 179/180), which
 // share one handler target. This routine does two things:
@@ -12,9 +12,8 @@
 // size-match guess (win 0x42 == some 0x42-byte PPC routine) and is REJECTED. This
 // body issues NO filesystem trap: there is no CALL [0x30085e9c] with an FS id here —
 // it selects a pre-registered sound handle from a surface-indexed table, calls
-// CG_PlaySoundAliasByName, then CG_BulletTrajectoryEffects. The provisional role name
-// CG_ModelEventFireWeapon (already recorded in client_recovered.h from the caller) is
-// kept; exact CoD symbol unproven.
+// CG_PlaySoundAliasByName, then CG_BulletTrajectoryEffects. The name is the Mac
+// PowerPC traceback symbol, whose body makes the same calls.
 //
 // REGISTER-ARGUMENT ABI (proven from the sole call site 0x30023786 and this body):
 //   EAX   -> event            (179 == EV_BULLET_HIT_CLIENT_SMALL selects the "small" pool;
@@ -81,7 +80,7 @@ _Static_assert(CG_MODEL_EVENT_SURFACE_SOUND_COUNT ==
                        sizeof(cgs.media.bulletLargeSurfaceSounds[0]),
                "model-event bullet sound rows differ in size");
 
-void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIndex,
+void CG_BulletHitClientEvent(int32_t event, uint32_t poseType, uint32_t weaponIndex,
                              vec3_t lerpOrigin, int32_t vehicleEntityNum)
 {
     const char *impactSound;
@@ -93,13 +92,13 @@ void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIn
         weaponIndex > (uint32_t)bg_numWeapons ||
         bg_weaponInfos[weaponIndex] == NULL) {
         Com_Printf(
-            "WARNING: CG_ModelEventFireWeapon: invalid weapon index %u\n",
+            "WARNING: CG_BulletHitClientEvent: invalid weapon index %u\n",
             weaponIndex);
         return;
     }
     if (poseType >= (uint32_t)CG_MODEL_EVENT_SURFACE_SOUND_COUNT) {
         Com_Printf(
-            "WARNING: CG_ModelEventFireWeapon: invalid surface type %u\n",
+            "WARNING: CG_BulletHitClientEvent: invalid surface type %u\n",
             poseType);
         return;
     }

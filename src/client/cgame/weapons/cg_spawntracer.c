@@ -121,9 +121,9 @@ void CG_BulletTrajectoryEffects(vec3_t impactOrigin, int32_t entityNum, int32_t 
         /* 30048e20 XOR EDX,EDX; 30048e22 MOV ECX,impactOrigin;
          * 30048e24 LEA EAX,&muzzle;
          * PUSH EDI(weaponIndex); CALL 0x30048a00; ADD ESP,4.
-         * CG_SpawnMovingTracer consumes EAX as the tracer start and ECX as its
+         * CG_Tracer consumes EAX as the tracer start and ECX as its
          * destination, so this path runs from muzzle to impact. */
-        CG_SpawnMovingTracer(muzzle, impactOrigin, 0, weaponIndex);
+        CG_Tracer(muzzle, impactOrigin, 0, weaponIndex);
     } else {
         /* 30048e40 MOV EAX,impactOrigin; 30048e42 LEA ECX,&muzzle;
          * PUSH EDI(weaponIndex); CALL 0x30048260; ADD ESP,4.

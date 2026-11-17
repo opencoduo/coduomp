@@ -3,7 +3,7 @@
 //
 // CG_SpawnTracer — spawn a moving LINE bullet-tracer as an LE_MOVING_TRACER local
 // entity that travels from the shot START point toward the shot END point. This is the
-// alternate-path twin of CG_SpawnMovingTracer (0x30048a00): where that function builds
+// alternate-path twin of CG_Tracer (0x30048a00): where that function builds
 // tracer polygon endpoints directly for the current frame, this one allocates a
 // self-animating localEntity_t whose TR_LINEAR trajectory carries the tracer along the
 // ray over its lifetime (CG_AddMovingTracer renders it each frame until it expires).
@@ -14,7 +14,7 @@
 // name CG_SpawnTracer is the caller-observed placeholder already carried in
 // client_recovered.h for 0x30048260; it is corroborated here by the body: the same
 // bg_weaponInfos[weapon]->ammoType in {3,4,5} mode select and the same
-// cg_tracerLengthMode{A,B} twins as CG_AddMovingTracer / CG_SpawnMovingTracer, the same
+// cg_tracerLengthMode{A,B} twins as CG_AddMovingTracer / CG_Tracer, the same
 // LEF_TRACER_MODE_A flag, and it hangs a LE_MOVING_TRACER (leType==2) entity on the
 // cg_activeLocalEntities list via CG_AllocLocalEntity. Exact CoD symbol unproven; role
 // name kept.

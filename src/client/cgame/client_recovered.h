@@ -1511,7 +1511,7 @@ void CG_AddMovingTracer(localEntity_t *le);
  * width float reinterpreted through the caller's int slot. Superseded by its own
  * .mcode reconstruction. */
 /*
- * ABI WIDENED from CG_SpawnMovingTracer's proven call site (0x30048b52): the earlier
+ * ABI WIDENED from CG_Tracer's proven call site (0x30048b52): the earlier
  * 2-arg placeholder `(const vec3_t endPoint, float width)` was INCOMPLETE — it dropped
  * the register-passed vec3. The callee's own body (0x30048467..0x30048496) reads a
  * second vec3 through EDI (`[EBP] - [EDI]` component-wise, EBP = first pushed vec3), so
@@ -1543,7 +1543,7 @@ void CG_DrawMovingTracerPoly(const vec3_t tailPoint, const vec3_t headPoint, flo
  * (EAX=tagName, ECX=entityNum, PUSH &muzzle; ADD ESP,4). */
 qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum, vec3_t muzzle);
 
-/* CG_SpawnMovingTracer (0x30048a00) — RECONSTRUCTED in
+/* CG_Tracer (0x30048a00) — RECONSTRUCTED in
  * src/client/cgame/weapons/cg_spawnmovingtracer.c. Builds the moving/animated bullet-tracer
  * geometry for one shot: selects the tracer width/length twins by
  * bg_weaponInfos[weaponInfoIndex]->ammoType (LMG/HMG/UMG -> mode A, else mode B),
@@ -1564,7 +1564,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum, vec3_t mu
  * caller-cleaned. Role name from the caller + behavior; exact CoD symbol unproven. The
  * .mcode's size-matched `G_RunItem` guess is REJECTED (this is a cgame tracer builder,
  * not a server item think). */
-void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
+void CG_Tracer(vec3_t startOrigin, vec3_t endOrigin,
                           int32_t weaponInfoIndex, int32_t weaponIndex);
 
 /* CG_SpawnTracer (0x30048260) — RECONSTRUCTED in
@@ -1585,7 +1585,7 @@ void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
  *   register ECX -> startOrigin (vec3, shot start point; read only)
  *   stack  arg0  -> weapon      (int; index into bg_weaponInfos[] for length/flag select)
  * caller-cleaned. Role name adopted from CG_BulletTrajectoryEffects's call site + behavior (it is the
- * alternate-path twin of CG_SpawnMovingTracer, which builds tracer geometry directly; this
+ * alternate-path twin of CG_Tracer, which builds tracer geometry directly; this
  * one instead spawns a self-moving local entity). The .mcode's size-matched "Menus_Open"
  * guess is REJECTED (this is a cgame tracer/local-entity builder, not a UI menu opener). */
 void CG_SpawnTracer(const vec3_t endOrigin, const vec3_t startOrigin, int32_t weapon);
@@ -3758,12 +3758,12 @@ void CG_WeaponFlash(qboolean selectViewDObj, int32_t weaponIndex,
 void CG_FakeTrajectoryEffects(int32_t entityNum, int32_t weaponIndex,
                               const char *tagName);
 
-/* CG_ModelEventFireWeapon (0x30049060) -- the weapon-fire / tracer spawn for the model
+/* CG_BulletHitClientEvent (0x30049060) -- the weapon-fire / tracer spawn for the model
  * event. Register ABI (0x30023786): event id in EAX, model->poseType (+0x88) in ECX,
  * model->weapon (+0xcc) in EDI, &cent->lerpOrigin (+0x208) in EBX, and
  * model->vehicleEntityNum (+0x74) as one caller-cleaned stack arg. Provisional role
  * name. */
-void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIndex,
+void CG_BulletHitClientEvent(int32_t event, uint32_t poseType, uint32_t weaponIndex,
                              vec3_t lerpOrigin, int32_t vehicleEntityNum);
 
 /* CG_BulletHitEvent (0x30048e60) -- bullet/tracer trail spawner between two

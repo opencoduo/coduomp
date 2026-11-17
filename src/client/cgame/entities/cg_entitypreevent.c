@@ -173,7 +173,7 @@ void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm)
     case EV_BULLET_HIT_CLIENT_SMALL:
     case EV_BULLET_HIT_CLIENT_LARGE:
         /* The model-event consumer validates both selectors before lookup. */
-        CG_ModelEventFireWeapon(event, model->surfTypeBits, model->weaponIndex,
+        CG_BulletHitClientEvent(event, model->surfTypeBits, model->weaponIndex,
                                 cent->lerpOrigin,
                                 (int32_t)model->vehicleEntityNumBits);
         return;
