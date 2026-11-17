@@ -46,8 +46,8 @@
 void CG_CheckForCursorHints(void)
 {
     snapshot_t *snap;
-    uint32_t startTime;
-    uint32_t durationBits;
+    int32_t startTime;
+    int32_t duration;
 
     // 0x3001a5b0: MOV EAX,[0x304831c0] / TEST / JNZ ret.
     // Non-zero "cgame ready to draw" gate: bail out while not ready.
@@ -62,10 +62,10 @@ void CG_CheckForCursorHints(void)
     }
 
     // 0x3001a5c8..0x3001a5da: both inputs are loaded before either output.
-    startTime = (uint32_t)cg.time;
-    durationBits = (uint32_t)cg_hintFadeTime_vmCvar.integer;
+    startTime = cg.time;
+    duration = cg_hintFadeTime_vmCvar.integer;
     cg.overlayFadeStartTime = startTime;
-    cg.overlayFadeDuration = durationBits;
+    cg.overlayFadeDuration = duration;
 
     // 0x3001a5e0..0x3001a5fe: latch the three source fields (re-reads +0x5d0).
     // The three latched source fields are named by their proven consumer roles in

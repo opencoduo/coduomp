@@ -79,7 +79,7 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos,
      * is copied bit-for-bit into +0x58, +0x5c and +0xe4 (field_e4 is the chunk's
      * radius/expansion magnitude). */
     chunk->spawnTimeCopy =
-        (double)coduo_int32_from_bits(cg_flameTime); /* FILD/FSTP QWORD */
+        (double)cg_flameTime; /* FILD/FSTP QWORD */
     chunk->kind = FLAME_CHUNK_KIND_ON_BONE;
     chunk->startSpeed = startSpeed;
     chunk->radius = startSpeed;
@@ -121,7 +121,7 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos,
      * 2*durationMsec (the chunk's end/expire time). Both doubles. */
     chunk->ownerClientNum = chunk->ownerInfoIndex;
     long double spawnTimeWide =
-        (long double)coduo_int32_from_bits(cg_flameTime);
+        (long double)cg_flameTime;
     chunk->spawnTime = (double)spawnTimeWide;
     chunk->endTime = (double)(
         (long double)durationMsec * 2.0L + spawnTimeWide);
@@ -230,8 +230,8 @@ position_ready:
      * drift-start timestamp (field_80). field_138 is the chunk life-rate
      * (2*count) / (field_50 - field_48); field_130 is stamped with cg_flameTime. */
     long double driftStartWide =
-        (long double)coduo_int32_from_bits(cg_flameTime);
-    int32_t originFlameTime = coduo_int32_from_bits(cg_flameTime);
+        (long double)cg_flameTime;
+    int32_t originFlameTime = cg_flameTime;
     chunk->driftStartTime = (double)driftStartWide;    /* 0x30023f77: FST QWORD (non-pop) */
     chunk->soundAmpRate = 1.0f;                       /* 0x30023f85: MOV [EBX+0xb8],0x3f800000 */
     chunk->lifeFraction = 0.0f;                       /* 0x30023f8f: MOV [EBX+0xe8],0 */
@@ -247,5 +247,5 @@ position_ready:
 
     /* 0x30023fb4..0x30023fbe: re-stamp the drift-start timestamp after the origin
      * compute (the compute may have advanced internal state). */
-    chunk->driftStartTime = (double)coduo_int32_from_bits(cg_flameTime);
+    chunk->driftStartTime = (double)cg_flameTime;
 }

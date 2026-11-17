@@ -289,7 +289,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
     {
         double t2 = (double)cg.time;
         t2 = t2 + t2;
-        cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(floor(t2)); /* raw st0 into _ftol2 */
+        cg_flameTime = coduo_fp_to_i32_extended(floor(t2)); /* raw st0 into _ftol2 */
     }
 
     /* frametimeFrac = (float)cg.frametime (0x300240ff FILD; 0x3002410a FST [0x1c]).
@@ -394,7 +394,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
         } else {
             /* 0x3002431b: if info->lastEmitTime >= cg_flameTime-150, spawnEnabled=1. */
             const int32_t recentCutoff =
-                coduo_int32_from_bits(cg_flameTime - 150u);
+                coduo_int32_from_bits((uint32_t)cg_flameTime - 150u);
             if (info->lastEmitTime >= recentCutoff) {
                 spawnEnabled = 1;
             }
@@ -440,7 +440,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
                 (long double)emitOrigin[2] -
                 (long double)info->prevEmitOrigin[2]; /* +0x18 */
             const int32_t dt = coduo_int32_from_bits(
-                cg_flameTime - (uint32_t)info->lastEmitTime); /* +0x54 */
+                (uint32_t)cg_flameTime - (uint32_t)info->lastEmitTime); /* +0x54 */
             /* denom = max((double)dt, 20.0) (0x3007c128 = 20.0). */
             const double denom = ((double)dt > 20.0) ? (double)dt : 20.0;
             const long double scale =
@@ -528,7 +528,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
              * (pushes 0x3e4a9d34=a, 0x3eab20b8=b, t). */
             float n = Q_SwayRand(0.33423399925231934f,
                                  0.1978653073310852f,
-                                 (float)coduo_int32_from_bits(cg_flameTime));
+                                 (float)cg_flameTime);
             /* base (n+1)*0.5 rides st0 raw into _CIpow (ST1; no store); the raw
              * st0 result takes FMUL 0.0f then FADD 1.0f, with a single FSTP float
              * to the alpha slot at 0x300245bc -- powl keeps the base (operand
@@ -613,7 +613,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
         /* delta and nSpans ride the x87 stack (0x3002478e FSUB / 0x30024794
          * FDIVR feed the FCOMP at 0x30024796 directly; nothing is spilled). */
         const long double delta =
-            (long double)coduo_int32_from_bits(cg_flameTime) -
+            (long double)cg_flameTime -
             (long double)prevChunkEnd;
         const long double nSpans = delta / (long double)dblTemp68;
         if (nSpans > 180.0) {                     /* 0x3007bd48 = 180.0 */
@@ -632,7 +632,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
          * quotient, not the double stored to [0x130]. */
         const long double timeStepRaw =
             (long double)dblTemp68 /
-            ((long double)coduo_int32_from_bits(cg_flameTime) -
+            ((long double)cg_flameTime -
              (long double)prevChunkEnd);
         timeStep = (double)timeStepRaw;           /* FST double [0x130] */
         emitTimeDbl = 1.0 - timeStepRaw;          /* 1.0 @0x3007bcf8 */
@@ -641,7 +641,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
          * the loop straight to the info writeback. (0x300247fd FCOMP; 0x3002480a JP) */
         /* JP at 0x3002480a also takes the unordered x87 result. */
         if (!(chunkEndTime <=
-              (double)coduo_int32_from_bits(cg_flameTime))) {
+              (double)cg_flameTime)) {
             goto region_c_infoWriteback;
         }
     }
@@ -1013,7 +1013,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
 
         /* info->lastFlameTime = (double)cg_flameTime (0x300250ee..0x300250f4) */
         info->lastFlameTime =
-            (double)coduo_int32_from_bits(cg_flameTime);   /* +0xb0 */
+            (double)cg_flameTime;   /* +0xb0 */
 
         /* chunk->ownerInfoIndex = field_38 = owner; field_3c = cent->currentState.weapon (+0xcc)
          * (0x300250fa..0x30025108) */
@@ -1068,7 +1068,7 @@ void CG_FireFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
         cursor = cursor - timeStep;
         emitTimeDbl = (double)cursor;                           /* FST double [0xf8] */
         info->ownerChunk = chunk;                               /* 0x300251db */
-        if (!((double)coduo_int32_from_bits(cg_flameTime) >=
+        if (!((double)cg_flameTime >=
               chunkEndTime)) { /* 0x300251eb FCOMP; TEST AH,1 */
             break;                                              /* fall to 0x300251fa normal exit */
         }
@@ -1119,7 +1119,7 @@ region_c_terminalChunk:
             goto region_c_outOfChunks;               /* 0x30025282 JE 0x30025203 */
         }
 
-        const int32_t flameTimeSigned = coduo_int32_from_bits(cg_flameTime);
+        const int32_t flameTimeSigned = cg_flameTime;
         term->emitArgFlag = (uint32_t)arg4;             /* 0x30025295 */
         term->kind = 1;                          /* 0x3002529e */
         term->emitCounter = info->emitCounter;         /* +0x90; 0x300252ae */
@@ -1282,7 +1282,7 @@ region_c_infoWriteback:
     info->emitDir[1]        = dirCopy[1];    /* +0x38 */
     info->emitDir[2]        = dirCopy[2];    /* +0x3c */
     info->clientFrame        = cg.clientFrame;    /* +0x00 */
-    info->lastEmitTime      = coduo_int32_from_bits(cg_flameTime); /* +0x54 */
+    info->lastEmitTime      = cg_flameTime; /* +0x54 */
 
     /* common epilogue 0x30025556..0x30025560: POP EDI/ESI/EBP/EBX; ADD ESP,0x158; RET. */
     return;

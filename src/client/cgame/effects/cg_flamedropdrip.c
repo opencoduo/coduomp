@@ -154,7 +154,7 @@ flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent /* [esp+4] */,
     // the NEXT slot, 0x3007bcf8.
     chunk->lifeStartTime2 = 0.0;                       // 30027c4a/c50: 0x3007bcf0
     chunk->spawnTime =
-        (double)coduo_int32_from_bits(cg_flameTime); // 30027c56/c5c: FILD timestamp
+        (double)cg_flameTime; // 30027c56/c5c: FILD timestamp
 
     // 30027c5f..30027c85: seed the chunk end timestamp.
     //   field_50 = (rand()*(1/32768) * 2.0f + 1.4f)
@@ -199,7 +199,7 @@ flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent /* [esp+4] */,
             ((long double)chunk->endTime -
              (long double)chunk->spawnTime) *
             (long double)chunk->lifeRate +
-        (long double)coduo_int32_from_bits(cg_flameTime));
+        (long double)cg_flameTime);
 
     // 30027cd1: MOV EAX,EBX — return the new chunk.
     return chunk;

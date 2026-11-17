@@ -88,7 +88,7 @@ void CG_UpdateFlamethrowerSounds(void)
      * flame time snapshot cg_flameTime, also consumed by the per-frame chunk driver
      * CG_UpdateFlameChunk). */
     int32_t now = signedTime;                          /* 0x3002923c MOV EAX,cg.time */
-    cg_flameTime = (uint32_t)flameTime;
+    cg_flameTime = flameTime;
 
     /* 0x30029232/0x30029247..0x3002924d: clampedPrev = (prev == 0) ? now
      *                                                : min(prev, now). */
@@ -360,7 +360,7 @@ void CG_UpdateFlamethrowerSounds(void)
              * rounding the DLL does not perform). */
             long double burn =
                 ((long double)chunk->endTime -
-                 (long double)(int32_t)cg_flameTime) *
+                 (long double)cg_flameTime) *
                 (long double)FLAME_LIFE_SCALE;
             /* 0x300295a2..0x300295c8: clamp burn to [0.0, 1.0].
              *   FCOM 0.0(double 0x3007bcf0); TEST AH,0x5; JP (burn >= 0.0) -> 0x300295b9,

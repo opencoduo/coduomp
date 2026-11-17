@@ -68,7 +68,7 @@ void CG_UpdateCompPointerOrientation(void)
         return;
     }
 
-    int32_t prev = coduo_int32_from_bits(cg_compassSpinPrevTime); /* 0x3001d6ea */
+    int32_t prev = cg_compassSpinPrevTime; /* 0x3001d6ea */
     int32_t now  = cg.time;                /* 0x3001d6ef */
 
     /* 0x3001d6f5/0x3001d6f7: nothing to do if no time has passed this frame. */
@@ -82,7 +82,7 @@ void CG_UpdateCompPointerOrientation(void)
     /* 0x3001d708: if the signed clock appears to run backwards, resync and snap. */
     if (prev > now) {
         /* 0x3001d947 reset path: prevTime := now; refYaw := target; vel := 0. */
-        cg_compassSpinPrevTime = (uint32_t)now;
+        cg_compassSpinPrevTime = now;
         cg.compassRefYaw = target;
         cg.compassRefVel = 0.0f;
         return;
@@ -93,7 +93,7 @@ void CG_UpdateCompPointerOrientation(void)
     /* 0x3001d716..0x3001d725: direct signed FILD; unlike HUD spin, no float spill. */
     if ((long double)elapsed > (long double)COMPASS_MAX_DELTA_MS) {
         /* 0x3001d947 reset path (same as the backwards case). */
-        cg_compassSpinPrevTime = (uint32_t)now;
+        cg_compassSpinPrevTime = now;
         cg.compassRefYaw = target;
         cg.compassRefVel = 0.0f;
         return;
@@ -101,7 +101,7 @@ void CG_UpdateCompPointerOrientation(void)
 
     /* 0x3001d72b retains the target, 0x3001d72d publishes the new time, and only
      * then does 0x3001d733 load the current yaw for AngleSubtract. */
-    cg_compassSpinPrevTime = (uint32_t)now;
+    cg_compassSpinPrevTime = now;
     float currentYaw = cg.compassRefYaw;
 
     /* 0x3001d73b: delta = shortest signed rotation from the current yaw to target.

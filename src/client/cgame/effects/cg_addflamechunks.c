@@ -83,7 +83,7 @@ void CG_AddFlameToScene(flameChunk_t *ownerChunk)
      * spill is modelled by the (double) cast alone. Spelled the same way as the
      * byte-for-byte equivalent chain in cg_addflametoscene.c (0x30026904),
      * which lacks only the spill/reload pair. */
-    cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(
+    cg_flameTime = coduo_fp_to_i32_extended(
         floor((double)cg.time * 2.0));
 
     f = ownerChunk;
@@ -117,7 +117,7 @@ void CG_AddFlameToScene(flameChunk_t *ownerChunk)
         refTime = f->spawnTime;         /* FLD [EDI+0x48] (double) */
         chunkAlive = 1;                /* [ESP+0x2c]=1 */
     } else {
-        refTime = (double)coduo_int32_from_bits(cg_flameTime); /* FILD cg_flameTime (signed) */
+        refTime = (double)cg_flameTime; /* FILD cg_flameTime (signed) */
         chunkAlive = 0;                /* [ESP+0x2c]=0 */
     }
 

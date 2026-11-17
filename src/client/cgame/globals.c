@@ -1693,11 +1693,11 @@ struct cgFlameSoundLoop_s cg_flameSoundLoops[1024];
  * RESOLVED: cg_flameTime — the flame subsystem's per-frame time base, computed as
  * round(2 * cg.time) by CG_UpdateFlameTime (0x30023af0) and inlined at the head of
  * CG_AddFlameToScene (0x300272b0) and CG_AddFlameSpriteToScene (0x300268e0), and written
- * as `(uint32_t)flameTime` by CG_UpdateFlamethrowerSounds (0x30029210). Read via FILD as
+ * as `flameTime` by CG_UpdateFlamethrowerSounds (0x30029210). Read via FILD as
  * an int timestamp by the flame chunk clock consumers (and by the per-frame chunk
  * driver CG_UpdateFlameChunk, which shares this flame clock). The mechanical owner
  * label "cg_playadsanim" was the first-touching function, not the identity. */
-uint32_t cg_flameTime = (uint32_t)0x00000000u;
+int32_t cg_flameTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x300ab71c (.data); refs=5 width=4; first=0x30026dcc; owner=cg_addflamespritetoscene.
  * Example: 30026dcc   bb 1c b7 0a 30               MOV EBX,0x300ab71c | 30026e1a   89 15 1c b7 0a 30            MOV dword ptr [0x300ab71c],EDX | 30026e41   d9 05 1c b7 0a 30            FLD float ptr [0x300ab71c]
  */
@@ -2114,7 +2114,7 @@ int32_t cg_hudSpinPrevTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30134ce4 (.data); refs=3 width=4; first=0x3001d6ea; owner=veh_checkpushclients.
  * Example: 3001d6ea   a1 e4 4c 13 30               MOV EAX,[0x30134ce4] | 3001d72d   89 0d e4 4c 13 30            MOV dword ptr [0x30134ce4],ECX | 3001d94b   89 0d e4 4c 13 30            MOV dword ptr [0x30134ce4],ECX
  */
-uint32_t cg_compassSpinPrevTime = (uint32_t)0x00000000u;
+int32_t cg_compassSpinPrevTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30134ce8 (.data); refs=4 width=4; first=0x30025571; owner=hudelem_destroyall.
  * Resolved from the machine code to a heap-buffer base POINTER (not a scalar):
  * the reader at 0x30025571 loads it into EBP and immediately uses it as the
@@ -4678,7 +4678,7 @@ vmCvar_t bg_nofatigue;
  * here alongside cg.time; effect code FILDs it and subtracts it for elapsed math.
  * Provisional role name (bg_evaluatetrajectory is the mechanical first-toucher). */
 /* Source: uo_cgame_mp_x86.dll 0x3053a030. */
-uint32_t cg_effectTime = (uint32_t)0x00000000u;
+int32_t cg_effectTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3053a034 (.data); refs=5 width=4; first=0x300040f2.
  * cg_effectAnimTime: a third effect-subsystem time value (ms), sibling of cg_effectTime
  * (0x3053a030) and cg_effectFrameTime (0x3053a038). All three are seeded together by the
@@ -4696,7 +4696,7 @@ int32_t cg_effectAnimTime = 0;
  * by effect code (0x300043ca/0x30004442). Superseded from the mechanical dword
  * g_data_bg_setupsharedammoindexes_3053a038 (owner was the first toucher).
  * Provisional role name; see globals.h. Zero-initialized in .data. */
-uint32_t cg_effectFrameTime = (uint32_t)0x00000000u;
+int32_t cg_effectFrameTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3053a040 (.data); refs=3 width=4; first=0x30001509; owner=cmd_veh_freevehicle.
  * RESOLVED: 0x3053a040 is weaponStrings, the 128-entry
  * bg_indexed_string_t value table for bgAnimConditionTypes[ANIM_COND_WEAPON].

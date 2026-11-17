@@ -99,7 +99,7 @@ void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum,
     /* 0x3002665a loads activeUntil before 0x30026661 snapshots cg_flameTime;
      * EBX then carries that one flame-clock dword through the best-source path. */
     int32_t activeUntil = cg_flameInfo[snap->ps.psClientNum].activeUntil;
-    int32_t flameClock = coduo_int32_from_bits(cg_flameTime);
+    int32_t flameClock = cg_flameTime;
     if (activeUntil >= flameClock) {
         return;                                        /* 0x30026669 JGE ret */
     }
