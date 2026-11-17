@@ -187,8 +187,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum,
      * zero engine handle (JZ 0x30048c95) both fail out with no muzzle. */
     if (slot->currentValid != 0) {
         /* 30048c80-0x30048c88: query the entity's DObj handle from the engine. */
-        struct DObj_s *dobj = (struct DObj_s *)(intptr_t)cgame_syscall(
-            CG_DOBJ_GET_HANDLE, (int32_t)slot->currentState.number);
+        struct DObj_s *dobj = trap_GetDObj((int32_t)slot->currentState.number);
 
         if (dobj != NULL) {
             /* 30048ca1-0x30048cb1: build the entity's DObj bone/tag world matrix.

@@ -76,7 +76,7 @@ void CG_ScriptMover(centity_t *cent /* one 32-bit stack arg */)
      * The two anim-tree args are cleaned together with this call's two args by the
      * single ADD ESP,0x10 at 0x3001f2b6. */
     entityNum = cent->currentState.number;
-    dobj = (struct DObj_s *)cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
+    dobj = trap_GetDObj(entityNum);
 
     /* 0x3001f2b9..0x3001f2c7: CMP [cent+0xa0],0xffffff; JZ skips the null-skeleton
      * reject. When solid != SOLID_BMODEL and the DObj

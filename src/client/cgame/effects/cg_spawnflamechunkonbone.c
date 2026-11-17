@@ -103,8 +103,7 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos,
         } else if (boneName != NULL) {          /* 0x30023ddb/de2: TEST ESI,ESI; JZ */
             /* 0x30023de4..0x30023dfb: query the entity's DObj handle then resolve
              * the named bone/tag on it. */
-            dobjSelf = (struct DObj_s *)(uintptr_t)cgame_syscall(
-                CG_DOBJ_GET_HANDLE, entityNum);
+            dobjSelf = trap_GetDObj(entityNum);
             int32_t boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
                 CG_DOBJ_GET_BONE_INDEX, (intptr_t)dobjSelf,
                 (intptr_t)boneName));

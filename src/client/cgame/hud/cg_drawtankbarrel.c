@@ -107,8 +107,7 @@ void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
 
     /* 0x30031e6b..0x30031e81: obtain the entity's live DObj handle from the engine
      * (trap 0xa5, one arg = currentState.number). A zero handle means no model. */
-    void *dobj = (void *)(intptr_t)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, entity->currentState.number);
+    void *dobj = trap_GetDObj(entity->currentState.number);
     if (dobj == NULL)
         return;
 

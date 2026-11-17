@@ -87,8 +87,7 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
     float  interpolatedTimeSeconds; /* [EBP+0xffffff50]: time lerp after *0.001 */
     const vec3_t zeroOrigin = { 0.0f, 0.0f, 0.0f }; /* origin arg for the tag setters */
 
-    self = (struct DObj_s *)(intptr_t)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, veh->currentState.number);
+    self = trap_GetDObj(veh->currentState.number);
 
     /* --- Interpolate the vehicle-part angles (LerpAngle calls) ------------- *
      * cg.frameInterpolation (0x304831a8) is the [0,1) snapshot lerp weight.
@@ -689,10 +688,7 @@ void CG_Vehicle_DoControllers(centity_t *veh, uint32_t *partBits)
                                 (long double)delta[2]);
                             /* 0x300212df reloads the table entry after all three
                              * rand calls instead of carrying the pre-test value. */
-                            cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                                          cgs.media.vehicleTreadEffects[material],
-                                          (intptr_t)effectOrigin,
-                                          (intptr_t)delta);
+                            trap_FX_PlayEffectID(cgs.media.vehicleTreadEffects[material], effectOrigin, delta);
                         }
                     }
                 }

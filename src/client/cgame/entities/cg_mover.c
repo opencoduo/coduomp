@@ -88,8 +88,7 @@ void CG_Mover(centity_t *cent /* one 32-bit stack arg */)
         return;
 
     /* PUSH cent->number; PUSH 0xa5; CALL cgame_syscall; ADD ESP,8. */
-    dobj = (struct DObj_s *)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, cent->currentState.number);
+    dobj = trap_GetDObj(cent->currentState.number);
 
     /* CMP [cent+0xa0],0xffffff; JZ skips this null-skeleton reject.
      * When != 0xffffff and the DObj handle came back 0, there is no model to

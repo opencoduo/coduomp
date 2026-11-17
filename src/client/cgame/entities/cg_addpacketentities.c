@@ -66,7 +66,7 @@ void CG_AddPacketEntities(void)
         int32_t entityNum = cg.nextSnap->entities[i].number;
 
         /* 3001f847: dObjHandle = trap(0xa5, entityNum) (ADD ESP,8). */
-        intptr_t dObjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
+        struct DObj_s *dObjHandle = trap_GetDObj(entityNum);
         if (dObjHandle != 0) {
             /* 3001f85a: advance the animation by cg.frametime seconds. FILD
              * cg.frametime; FMUL 0.001f; trap(0x98, dObjHandle, dtSeconds). */
@@ -184,8 +184,8 @@ void CG_AddPacketEntities(void)
      * ps.playerStateFlags at snapshot+0x18; clientNum is at +0xe0. */
     if ((cg.nextSnap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0) {
         /* 3001fa60: dObjHandle = trap(0xa5, cg.nextSnap->ps.psClientNum). */
-        intptr_t dObjHandle =
-            cgame_syscall(CG_DOBJ_GET_HANDLE, cg.nextSnap->ps.psClientNum);
+        struct DObj_s *dObjHandle =
+            trap_GetDObj(cg.nextSnap->ps.psClientNum);
         /* 3001fa77: JZ 0x3001fab6 — a zero handle skips only the anim-advance and
          * falls into the predicted-entity add. */
         if (dObjHandle != 0) {
@@ -235,8 +235,8 @@ void CG_AddPacketEntities(void)
         cg_dumpAnims_vmCvar.integer < MAX_GENTITIES &&
         cl_paused_vmCvar.integer == 0) {
         /* 3001fb47: handle = trap(0xa5, cg_dumpAnims_vmCvar.integer). */
-        intptr_t dObjHandle =
-            cgame_syscall(CG_DOBJ_GET_HANDLE, cg_dumpAnims_vmCvar.integer);
+        struct DObj_s *dObjHandle =
+            trap_GetDObj(cg_dumpAnims_vmCvar.integer);
         if (dObjHandle != 0) {
             /* 3001fb5a: trap(0x9b, handle) — display the selected DObj's
              * animation diagnostics. */

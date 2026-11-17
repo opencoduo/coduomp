@@ -61,8 +61,7 @@ void CG_WeaponFlash(qboolean selectViewDObj, int32_t weaponIndex,
      * cgame_syscall(0xe3, model, tagName) -> tag index; negative means the tag
      * does not exist (JL 0x30045c8b, signed). */
     boltInfo.entityNum = model;          /* mov [esp+0x14],edi (E-8) */
-    tagIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_RESOLVE_TAG, model, (intptr_t)tagName));
+    tagIndex = trap_FX_GetBoneIndex(model, tagName);
     boltInfo.boneIndex = tagIndex;       /* mov [esp+0xc],eax (E-4) */
     if (tagIndex < 0) {
         return;
@@ -71,9 +70,7 @@ void CG_WeaponFlash(qboolean selectViewDObj, int32_t weaponIndex,
     /* 0x30045c5d..0x30045c7c: play the selected effect on the resolved DObj tag.
      * cgame_syscall(0xe9, effect, effectOrigin, 0, &boltInfo); the return is
      * ignored (mov eax,[esp+0x30] reloads stack arg2 immediately after). */
-    (void)cgame_syscall(CG_PLAY_EFFECT_ON_TAG, (int32_t)effect,
-                        (intptr_t)effectOrigin, 0,
-                        (intptr_t)&boltInfo);
+    (void)trap_FX_PlayEntityEffectID((int32_t)effect, effectOrigin, 0, &boltInfo);
 
     /* 0x30045c7c..0x30045c88: when the gate arg is set, also run the draw helper
      * for this weapon tag. */

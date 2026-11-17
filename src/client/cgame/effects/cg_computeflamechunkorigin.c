@@ -79,7 +79,7 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
         }
 
         /* 0x30025a04: self = trap(CG_DOBJ_GET_HANDLE, entityNum). 0 -> no DObj. */
-        intptr_t self = cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
+        struct DObj_s *self = trap_GetDObj(entityNum);
         if (self == 0) {
             return;
         }
@@ -95,7 +95,7 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
         if ((uint32_t)boneIndex >= (uint32_t)boneCount) {
             return;
         }
-        CG_DObjCalcBone((void *)self, boneIndex,
+        CG_DObjCalcBone(self, boneIndex,
                        (centity_t *)entity);
 
         /* 0x30025a31: boneTable = trap(CG_DOBJ_GET_BONE_MATRICES, self, 0). */

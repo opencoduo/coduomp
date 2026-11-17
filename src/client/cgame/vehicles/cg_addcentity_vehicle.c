@@ -82,8 +82,7 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
     /* 0x3002169e..0x300216b3: handle = (int32_t)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number).
      * A zero handle means no DObj skeleton -> nothing to render, and no head icon. */
     entityNum = cent->currentState.number;
-    struct DObj_s *dobj = (struct DObj_s *)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, entityNum);
+    struct DObj_s *dobj = trap_GetDObj(entityNum);
     if (dobj == NULL)
         return;
 

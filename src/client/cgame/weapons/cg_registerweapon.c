@@ -183,9 +183,7 @@ void CG_RegisterWeapon(int weaponIndex)
         cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)models,
                       CG_WEAPON_DOBJ_MODEL_COUNT, xanimTree,
                       weaponIndex + CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
-        weaponInfo->viewDObjSelf = (struct DObj_s *)(intptr_t)cgame_syscall(
-            CG_DOBJ_GET_HANDLE,
-            weaponIndex + CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
+        weaponInfo->viewDObjSelf = trap_GetDObj(weaponIndex + CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
         /* 0x30043ba0..0x30043bb6: strncpy of 63 bytes (PUSH 0x3f) into the
          * 64-byte name buffer, then a NUL at name[63]. */
         Q_strncpyz(weaponInfo->name, weapon->handModel, sizeof(weaponInfo->name));

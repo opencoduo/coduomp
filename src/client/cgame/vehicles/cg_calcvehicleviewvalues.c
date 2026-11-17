@@ -130,8 +130,8 @@ void CG_CalcVehicleViewValues(void)
     centity_t *vehicle = &cg_entities[entityNum];
 
     /* 0x300405b4: the vehicle's DObj skeleton handle (0 => no skeleton this frame). */
-    intptr_t dobjHandle =
-        cgame_syscall(CG_DOBJ_GET_HANDLE, vehicle->currentState.number);
+    struct DObj_s *dobjHandle =
+        trap_GetDObj(vehicle->currentState.number);
 
     /* 0x300405c4 / 0x300405d6 / 0x300405e3: require the gunner state, a
      * non-transitional vehicle position, and a valid DObj handle. */
@@ -154,7 +154,7 @@ void CG_CalcVehicleViewValues(void)
      * the DObj handle. A prior pass passed `vehicle` as self; every sibling
      * (cg_calcturretviewvalues/cg_calcvehicleviewpos/cg_calcmuzzlepoint) passes the
      * handle. */
-    if (!CG_DObjGetWorldTagMatrix((void *)dobjHandle, "tag_player", vehicle,
+    if (!CG_DObjGetWorldTagMatrix(dobjHandle, "tag_player", vehicle,
                                   &worldMatrix)) {
         return;
     }

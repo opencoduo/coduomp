@@ -153,14 +153,14 @@ void CG_AddPlayerCorpseEntity(centity_t *cent)
 
     /* First DObj handle query; its result and the two sub-objects drive the
      * model-part state (re)bind. trap(0xa5, modelPartIndex) -> handle. */
-    intptr_t dobjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, modelPartIndex);
+    struct DObj_s *dobjHandle = trap_GetDObj(modelPartIndex);
     CG_BuildCorpseDObjModels(corpseInfo, dobjHandle,
                              modelInfo, cent->corpseTagState);
 
     /* Re-query the DObj handle for the render entity; a zero handle means the
      * corpse has no live skeleton this frame, so draw nothing. */
-    intptr_t renderDobjHandle =
-        cgame_syscall(CG_DOBJ_GET_HANDLE, (int32_t)modelInfo->numberBits);
+    struct DObj_s *renderDobjHandle =
+        trap_GetDObj((int32_t)modelInfo->numberBits);
     if (renderDobjHandle == 0)
         return;
 
@@ -221,7 +221,7 @@ void CG_AddPlayerCorpseEntity(centity_t *cent)
 
     re.reType = RT_MODEL;
     re.renderfx = (int32_t)RF_LIGHTING_ORIGIN;
-    re.dobj = (struct DObj_s *)(uintptr_t)renderDobjHandle;
+    re.dobj = renderDobjHandle;
     re.owner = cent;
 
     cgame_syscall(CG_R_ADD_REF_ENTITY_TO_SCENE, &re);

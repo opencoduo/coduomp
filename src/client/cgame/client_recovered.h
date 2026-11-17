@@ -12,6 +12,7 @@
 #include "bg/bg_vehicle.h"
 #include "bg/bg_weapon.h"
 #include "qcommon/com_parse.h"
+#include "qcommon/fx_types.h"
 #include "qcommon/com_sprintf.h"
 #include "qcommon/dobj_types.h"
 #include "qcommon/info.h"
@@ -839,6 +840,10 @@ void CG_PlayClientSoundAliasByName(const char *sound);
 void CG_PlayEntitySoundAliasByName(int clientNum, const char *soundName);
 const char *trap_Com_SoundAliasString(const char *name);
 snd_alias_t *trap_Com_PickSoundAlias(const char *name, const vec3_t origin);
+struct DObj_s *trap_GetDObj(int32_t handle);
+int32_t trap_FX_GetBoneIndex(int32_t objId, const char *tagName);
+void trap_FX_PlayEffectID(int32_t effect, const vec3_t origin, const vec3_t dir);
+void trap_FX_PlayEntityEffectID(int32_t effect, const vec3_t origin, vec3_t axis[3], const sfx_bolt_info_t *bolt);
 int32_t trap_MSS_PlaySoundAlias(snd_alias_t *alias, int32_t entityNum,
                                 const void *soundPosition,
                                 int32_t timeShift);
@@ -4493,7 +4498,7 @@ qhandle_t CG_RegisterModel(const char *name, int category);
  * The mechanical size-guess "G_FreeVehicle" is REJECTED: the machine code registers
  * models, wraps them into DObj objects, and issues the DObj model-set traps; it does
  * not free a vehicle. Provisional decl; superseded by this file's own reconstruction. */
-void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle,
+void CG_BuildCorpseDObjModels(clientInfo_t *info, struct DObj_s *dobjHandle,
                               entityState_t *renderEntity,
                               uint8_t *generationOut);
 
@@ -5804,7 +5809,7 @@ void CG_SetupWeaponLightingOrigin(centity_t *ent, refEntity_t *re);
  * (no cross product / normalize / dot), not plane geometry. */
 /* entityNum arrives in ESI (register); eType/animTreeParam are the two caller-cleaned
  * stack args. Returns the entity's DObj handle (0 on the no-handle early-outs). */
-intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
+struct DObj_s *CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
                                       int32_t animTreeParam);
 
 /*

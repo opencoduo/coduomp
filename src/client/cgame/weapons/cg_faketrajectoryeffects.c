@@ -44,7 +44,7 @@ void CG_FakeTrajectoryEffects(int32_t entityNum, int32_t weaponIndex,
     }
 
     centity_t *cent = &cg_entities[entityNum];
-    intptr_t dobjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
+    struct DObj_s *dobjHandle = trap_GetDObj(entityNum);
     weaponInfo_t *weapon = bg_weaponInfos[weaponIndex];
     float tracerChance = cg_tracerchance_vmCvar.value;
 
@@ -57,7 +57,7 @@ void CG_FakeTrajectoryEffects(int32_t entityNum, int32_t weaponIndex,
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     DObjSkelMat tagMatrix;
-    if (!CG_DObjGetWorldTagMatrix((void *)dobjHandle, tagName, cent,
+    if (!CG_DObjGetWorldTagMatrix(dobjHandle, tagName, cent,
                                   &tagMatrix)) {
         return;
     }

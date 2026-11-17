@@ -42,7 +42,7 @@
  */
 enum { DOBJ_CORPSE_MODEL_SET_MAX = 1 + CLIENT_INFO_ATTACHMENT_COUNT + 1 };
 
-void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle,
+void CG_BuildCorpseDObjModels(clientInfo_t *info, struct DObj_s *dobjHandle,
                               entityState_t *renderEntity,
                               uint8_t *generationOut)
 {

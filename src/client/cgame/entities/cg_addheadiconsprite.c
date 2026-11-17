@@ -76,7 +76,7 @@ void CG_PlayerFloatSprite(centity_t *entity, int32_t sfxOrShaderHandle,
      * (0x30032a4e), so it stays long double. */
     long double originZ;
 
-    intptr_t dobjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, entity->currentState.number); /* push entityNum; push 0xa5 */
+    struct DObj_s *dobjHandle = trap_GetDObj(entity->currentState.number); /* push entityNum; push 0xa5 */
 
     /* Exact DObjSkelMat output record at [ESP+0x18]; its origin row is at
      * +0x30..+0x38. */
@@ -89,7 +89,7 @@ void CG_PlayerFloatSprite(centity_t *entity, int32_t sfxOrShaderHandle,
          * the tagName argument the callee (CG_DObjGetWorldTagMatrix, 0x3001fdf0)
          * forwards to trap(0xb2, self, tagName) — proven from its body; the earlier
          * "EAX is scratch" reading was wrong and the signature is now widened. */
-        haveHeadTag = CG_DObjGetWorldTagMatrix((void *)dobjHandle,
+        haveHeadTag = CG_DObjGetWorldTagMatrix(dobjHandle,
                                                       CG_HEAD_TAG_NAME, entity,
                                                       &boneMatrix);
     }

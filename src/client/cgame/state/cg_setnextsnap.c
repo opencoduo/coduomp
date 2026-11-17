@@ -163,8 +163,7 @@ void CG_SetNextSnap(snapshot_t *snap)
                           entityClientNum);
                 return;
             }
-            intptr_t handle = cgame_syscall(CG_DOBJ_GET_HANDLE,
-                                            entityClientNum);
+            struct DObj_s *handle = trap_GetDObj(entityClientNum);
             clientInfo_t *anim = &bgs.clientinfo[entityClientNum];
             CG_BuildCorpseDObjModels(
                 anim,

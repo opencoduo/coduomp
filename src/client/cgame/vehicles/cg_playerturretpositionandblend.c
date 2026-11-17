@@ -195,8 +195,7 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
     }
 
     /* self = trap(0xa5, vehicle->currentState.number) — the DObj handle for tag resolution. */
-    turretSelf = (struct DObj_s *)(intptr_t)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, vehicle->currentState.number);
+    turretSelf = trap_GetDObj(vehicle->currentState.number);
     if (turretSelf == NULL) {
         return;
     }

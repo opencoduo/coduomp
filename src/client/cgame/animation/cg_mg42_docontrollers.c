@@ -120,8 +120,7 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
 
     /* 0x3001e9f0..0x3001ea08: self = cgame_syscall(CG_DOBJ_GET_HANDLE,
      * part->currentState.number). */
-    intptr_t self = cgame_syscall(
-        CG_DOBJ_GET_HANDLE, part->currentState.number);
+    struct DObj_s *self = trap_GetDObj(part->currentState.number);
 
     /* 0x3001ea0a..0x3001ea2f: aim-tag gate. Take the clamped-aim path only when this
      * predicted-player entity is in the scope/zoom-FOV state (entityStateFlags & 0x6000,
@@ -180,7 +179,7 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
         if (boneIndex >= 0 &&
             cgame_syscall(CG_DOBJ_SET_CONTROL_ROT_TRANS_INDEX, self,
                           (intptr_t)partBits, boneIndex) != 0) {
-            CG_DObjSetLocalTagInternal((void *)(intptr_t)self, boneIndex, aimAngles, *tagOrigin);
+            CG_DObjSetLocalTagInternal(self, boneIndex, aimAngles, *tagOrigin);
         }
 
         /* 0x3001eb68..0x3001eba9: tag_aim_animated — same aim vector and bone-bind flow. */
@@ -190,7 +189,7 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
         if (boneIndex >= 0 &&
             cgame_syscall(CG_DOBJ_SET_CONTROL_ROT_TRANS_INDEX, self,
                           (intptr_t)partBits, boneIndex) != 0) {
-            CG_DObjSetLocalTagInternal((void *)(intptr_t)self, boneIndex, aimAngles, *tagOrigin);
+            CG_DObjSetLocalTagInternal(self, boneIndex, aimAngles, *tagOrigin);
         }
     }
 
@@ -206,7 +205,7 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
         if (boneIndex >= 0 &&
             cgame_syscall(CG_DOBJ_SET_CONTROL_ROT_TRANS_INDEX, self,
                           (intptr_t)partBits, boneIndex) != 0) {
-            CG_DObjSetLocalTagInternal((void *)(intptr_t)self, boneIndex, flashAngles, *tagOrigin);
+            CG_DObjSetLocalTagInternal(self, boneIndex, flashAngles, *tagOrigin);
         }
     }
 

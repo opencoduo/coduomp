@@ -337,9 +337,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
              * cg_muzzleTagNames[0] (0x30085eec -> "tag_flash");
              * bone = trap(0xe3, dobjEntityNum, tagName). */
             muzzleBolt.entityNum = dobjEntityNum;
-            boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
-                CG_RESOLVE_TAG, dobjEntityNum,
-                (intptr_t)cg_muzzleTagNames[0]));
+            boneIndex = trap_FX_GetBoneIndex(dobjEntityNum, cg_muzzleTagNames[0]);
             /* 30046411: the bone is stored next to the entity number before the
              * sign check; 30046415 JL -> return on a negative index. */
             muzzleBolt.boneIndex = boneIndex;
@@ -350,9 +348,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
             /* 30046417..3004646d: trap(0xe9, effect,
              * cg.specialTagPlacement.origin (0x3048b0e4 — the placement
              * committed above), 0, &muzzleBolt). */
-            cgame_syscall(CG_PLAY_EFFECT_ON_TAG, (intptr_t)effect,
-                          (intptr_t)cg.specialTagPlacement.origin,
-                          (intptr_t)NULL, (intptr_t)&muzzleBolt);
+            trap_FX_PlayEntityEffectID(effect, cg.specialTagPlacement.origin, NULL, &muzzleBolt);
         } else {
             /* 30046425..3004642d: world players use worldFlashEffect only — no
              * viewFlashEffect fallback; zero -> return. */
@@ -364,9 +360,8 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
             /* 3004642f..30046442: bone = trap(0xe3, cent->currentState.number,
              * cg_muzzleTagNames[0]); entity number stored at 3004643e. */
             muzzleBolt.entityNum = cent->currentState.number;
-            boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
-                CG_RESOLVE_TAG, cent->currentState.number,
-                (intptr_t)cg_muzzleTagNames[0]));
+            boneIndex = trap_FX_GetBoneIndex(cent->currentState.number,
+                cg_muzzleTagNames[0]);
             muzzleBolt.boneIndex = boneIndex;
             if (boneIndex < 0) {
                 return;
@@ -374,9 +369,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
 
             /* 30046453..3004646d: trap(0xe9, effect, &cent->lerpOrigin
              * (+0x208), 0, &muzzleBolt). */
-            cgame_syscall(CG_PLAY_EFFECT_ON_TAG, (intptr_t)effect,
-                          (intptr_t)cent->lerpOrigin,
-                          (intptr_t)NULL, (intptr_t)&muzzleBolt);
+            trap_FX_PlayEntityEffectID(effect, cent->lerpOrigin, NULL, &muzzleBolt);
         }
     }
     /* 30046470: shared epilogue (i386 /GS cookie check, not modeled). */

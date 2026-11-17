@@ -186,8 +186,7 @@ void CG_Missile(centity_t *cent /* EBX */)
 
     /* 0x3001efbb: handle = (int32_t)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number).
      * A zero handle means no DObj skeleton — nothing to draw, jump to the epilogue. */
-    struct DObj_s *dobj = (struct DObj_s *)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, cent->currentState.number);
+    struct DObj_s *dobj = trap_GetDObj(cent->currentState.number);
     if (dobj == NULL)
         return;
 
@@ -252,16 +251,11 @@ void CG_Missile(centity_t *cent /* EBX */)
      * resolving its bone. The previous raw int[2] reconstruction omitted this
      * machine-code store and left the engine-facing entityNum uninitialized. */
     boltInfo.entityNum = cent->currentState.number;
-    boltInfo.boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_RESOLVE_TAG, cent->currentState.number, (intptr_t)cg_originTagName));
+    boltInfo.boneIndex = trap_FX_GetBoneIndex(cent->currentState.number, cg_originTagName);
     if (boltInfo.boneIndex >= 0) {
         /* 0x3001f0db: cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
          * wi->projectileTrailEffect, &cent->lerpOrigin, 0, &boltInfo). */
-        cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
-                      (int32_t)wi->projectileTrailEffect,
-                      (intptr_t)&cent->lerpOrigin,
-                      0,
-                      (intptr_t)&boltInfo);
+        trap_FX_PlayEntityEffectID((int32_t)wi->projectileTrailEffect, cent->lerpOrigin, 0, &boltInfo);
     }
 
     /* 0x3001f0f8: latch so the tag effect plays exactly once (ESI = 1). */
