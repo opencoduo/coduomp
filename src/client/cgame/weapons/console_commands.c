@@ -58,7 +58,7 @@ void CG_NextWeapon_f(void) /* 0x300474c0 */
     /* IMPROVED (NOT_FROM_ORIGINAL_SOURCE): the default mouse-wheel-up binding
      * selects the next spectator target while following a player. */
     if ((cg.snap->ps.playerStateFlags & PSF_FOLLOWING) != 0) {
-        cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"follownext");
+        trap_SendClientCommand("follownext");
         return;
     }
     if ((cg.predictedPlayerState.playerStateFlags & PMF_FOLLOW) != 0) return;
@@ -95,7 +95,7 @@ void CG_PrevWeapon_f(void) /* 0x30047550 */
     /* IMPROVED (NOT_FROM_ORIGINAL_SOURCE): the default mouse-wheel-down binding
      * selects the previous spectator target while following a player. */
     if ((cg.snap->ps.playerStateFlags & PSF_FOLLOWING) != 0) {
-        cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"followprev");
+        trap_SendClientCommand("followprev");
         return;
     }
     if ((cg.predictedPlayerState.playerStateFlags & PMF_FOLLOW) != 0) return;

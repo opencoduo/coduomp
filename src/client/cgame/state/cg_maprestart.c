@@ -155,9 +155,9 @@ void cgame_compat_demo_rewind(int32_t processedSnapshotNum,
                               int32_t serverCommandSequence,
                               int32_t clientNum)
 {
-    cgame_syscall(CG_MSS_STOP_SOUNDS, 0);
-    cgame_syscall(CG_FX_FREE_SYSTEM);
-    cgame_syscall(CG_MAP_RESTART_RESET_RENDERER);
+    trap_MSS_StopSounds(0);
+    trap_FX_FreeSystem();
+    trap_MapRestartResetRenderer();
     CG_InitLocalEntities();
     CG_InitMarkPolys();
     if (cg_flameChunks != NULL)
@@ -176,7 +176,7 @@ void cgame_compat_demo_rewind(int32_t processedSnapshotNum,
     cg.clientNum = clientNum;
     cgs.processedSnapshotNum = processedSnapshotNum;
     cgs.serverCommandSequence = serverCommandSequence;
-    cgame_syscall(CG_GET_GAME_STATE, (intptr_t)&cgs.gameState);
+    trap_GetGameState(&cgs.gameState);
     CG_ParseServerinfo();
     CG_ParseWolfinfo();
 }
