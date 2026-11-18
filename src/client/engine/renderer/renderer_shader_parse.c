@@ -1531,15 +1531,29 @@ int32_t CompareTexEnvCombine(const shader_texture_combine_t *first,
 int32_t CompareNvTexShaders(const shader_texture_shader_t *first,
                             const shader_texture_shader_t *second)
 {
-    if (first == NULL)
-        return second == NULL ? 0 : 1;
-    if (second == NULL)
-        return -1;
+    /* Records order by address (a missing record first); one shared record
+     * compares its fields in declaration order by difference. */
+    if (first == NULL || second == NULL)
+        return first == second ? 0 : first == NULL ? -1 : 1;
 
-    const ptrdiff_t pointerDistance = second - first;
+    const ptrdiff_t pointerDistance = first - second;
     if (pointerDistance != 0)
         return (int32_t)pointerDistance;
-    return memcmp(first, second, sizeof(*first));
+    if (first->operation != second->operation)
+        return (int32_t)(first->operation - second->operation);
+    if (first->previousTextureInput != second->previousTextureInput)
+        return (int32_t)(first->previousTextureInput -
+                         second->previousTextureInput);
+    if (first->dotProductMapping != second->dotProductMapping)
+        return (int32_t)(first->dotProductMapping -
+                         second->dotProductMapping);
+    for (int32_t mode = 0; mode < 4; ++mode) {
+        if (first->parameters.cullModes[mode] !=
+            second->parameters.cullModes[mode])
+            return (int32_t)(first->parameters.cullModes[mode] -
+                             second->parameters.cullModes[mode]);
+    }
+    return 0;
 }
 
 /* Source: CoDUOMP.exe 0x004f74d0..0x004f7502.
@@ -1549,12 +1563,11 @@ int32_t CompareNvRegisterCombiners(
     const renderer_register_combiners_t *first,
     const renderer_register_combiners_t *second)
 {
-    if (first == NULL)
-        return second == NULL ? 0 : 1;
-    if (second == NULL)
-        return -1;
+    /* Records order by address (a missing record first). */
+    if (first == NULL || second == NULL)
+        return first == second ? 0 : first == NULL ? -1 : 1;
 
-    const ptrdiff_t pointerDistance = second - first;
+    const ptrdiff_t pointerDistance = first - second;
     if (pointerDistance != 0)
         return (int32_t)pointerDistance;
     return memcmp(first, second, sizeof(*first));
@@ -1808,7 +1821,8 @@ qboolean MatchShaderToken(char **text, const char *expected,
                           const char *functionName)
 {
     const char *token = Com_Parse(text);
-    if (strcmp(token, expected) == 0)
+    /* Shader keywords match without regard to case. */
+    if (coduo_crt_stricmp(token, expected) == 0)
         return qtrue;
 
     ri.Printf(
@@ -1825,7 +1839,8 @@ qboolean MatchShaderTokenOnLine(char **text, const char *expected,
                                 const char *functionName)
 {
     const char *token = Com_ParseOnLine(text);
-    if (strcmp(token, expected) == 0)
+    /* Shader keywords match without regard to case. */
+    if (coduo_crt_stricmp(token, expected) == 0)
         return qtrue;
 
     ri.Printf(
