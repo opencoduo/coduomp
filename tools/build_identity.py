@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+import time
 
 
 # NOT_FROM_ORIGINAL_SOURCE: build tooling, independent of runtime behavior.
@@ -30,6 +31,7 @@ def coduomp_main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--coarse-timestamps", action="store_true")
     args = parser.parse_args()
     revision = coduomp_revision(args.source.resolve())
     content = ("/* Generated build metadata; do not edit. */\n"
@@ -40,6 +42,10 @@ def coduomp_main():
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists() and output.read_text(encoding="utf-8") == content:
         return
+    # GNU Make 3.81 compares whole seconds. A changed header must be newer
+    # than objects compiled earlier in this same second, even on fast rebuilds.
+    if args.coarse_timestamps and output.exists():
+        time.sleep(1.01 - time.time() % 1)
     temporary = None
     try:
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n",

@@ -6,4 +6,4 @@ CODUOMP_IDENTITY_HEADER := $(CODUOMP_IDENTITY_DIR)/coduomp_build_identity.h
 .PHONY: coduomp-build-identity-check
 coduomp-build-identity-check:
 $(CODUOMP_IDENTITY_HEADER): coduomp-build-identity-check
-	$(PYTHON) tools/build_identity.py --source . --output "$@"
+	$(PYTHON) tools/build_identity.py --source . --output "$@" --coarse-timestamps
