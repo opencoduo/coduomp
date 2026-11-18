@@ -38,11 +38,12 @@
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004f3c00_004f3c11.mcode and the
  * rb_surfaceTable initializer at 0x005ce970.
  * Name: exact same-module Mac symbol RB_SurfaceBad. Surface-table slot zero
- * calls the renderer fatal-error import with the original diagnostic. */
+ * prints the original diagnostic through the renderer print import and
+ * continues. */
 void RB_SurfaceBad(renderer_surface_t *surface)
 {
     (void)surface;
-    ri.Error(ERR_FATAL, "Bad surface tesselated.\n");
+    ri.Printf(R_PRINT_ALL, "Bad surface tesselated.\n");
 }
 
 /* Source: CoDUOMP.exe 0x004f3c20.

@@ -917,10 +917,10 @@ void RB_CalcSpecularAlpha(uint8_t colors[][4])
 }
 
 /* Source: CoDUOMP.exe 0x004ead60..0x004eae46.
- * Name: exact same-module Mac symbol RB_SetupVertexProgram. Environment
- * parameters 0 and 1 are positions in the current model space; parameter 2
- * is the current light's scaled diffuse color and parameter 3 contains its
- * attenuation coefficients. */
+ * Name: exact same-module Mac symbol RB_SetupVertexProgram. The bound
+ * program's local parameters 0 and 1 are positions in the current model
+ * space; local parameter 2 is the current light's diffuse color and local
+ * parameter 3 contains its attenuation coefficients. */
 void RB_SetupVertexProgram(renderer_vertex_program_t *vertexProgram)
 {
     vec4_t parameter;
@@ -933,14 +933,14 @@ void RB_SetupVertexProgram(renderer_vertex_program_t *vertexProgram)
     GlobalPositionToLocal(
         backEnd.viewParms.orientation.origin, parameter);
     parameter[3] = 1.0f;
-    qglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 0, parameter);
+    qglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 0, parameter);
 
     if (backEnd.currentLight == NULL)
         return;
 
     GlobalPositionToLocal(backEnd.currentLight->position, parameter);
     parameter[3] = 1.0f;
-    qglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 1, parameter);
+    qglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 1, parameter);
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     parameter[0] = backEnd.currentLightScale *
@@ -951,10 +951,10 @@ void RB_SetupVertexProgram(renderer_vertex_program_t *vertexProgram)
                    backEnd.currentLight->diffuse[2];
     parameter[3] = backEnd.currentLightScale *
                    backEnd.currentLight->diffuse[3];
-    qglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 2,
-                                 backEnd.currentLight->diffuse);
+    qglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 2,
+                                   backEnd.currentLight->diffuse);
 
-    qglProgramEnvParameter4fARB(
+    qglProgramLocalParameter4fARB(
         GL_VERTEX_PROGRAM_ARB, 3,
         backEnd.currentLight->constantAttenuation,
         backEnd.currentLight->linearAttenuation,

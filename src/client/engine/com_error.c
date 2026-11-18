@@ -75,7 +75,7 @@ void Com_ErrorCleanup(void)
     case ERR_DROP:
     case ERR_DISCONNECT:
         Com_Printf(
-            "\n********************\nERROR: %s\n********************\n",
+            "********************\nERROR: %s\n********************\n",
             com_errorMessage);
         if (com_errorCode == ERR_DROP &&
             (dedicated == NULL || dedicated->integer == 0)) {
