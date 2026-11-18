@@ -33,6 +33,7 @@ if(CODUOMP_BUILD_MODULES)
 	add_library(uo_ui_mp_x86 SHARED ${CODUOMP_UI_ABSOLUTE})
 	coduomp_target_output(uo_ui_mp_x86 uo)
 	coduomp_apply_common(uo_ui_mp_x86)
+	coduomp_apply_build_identity(uo_ui_mp_x86)
 	set_target_properties(uo_ui_mp_x86 PROPERTIES
 		OUTPUT_NAME "uo_ui_mp_x86"
 		PREFIX ""
@@ -91,6 +92,7 @@ if(CODUOMP_BUILD_CLIENT)
 
 	coduomp_target_output(CoDUOMP)
 	coduomp_apply_common(CoDUOMP)
+	coduomp_apply_build_identity(CoDUOMP)
 	set_target_properties(CoDUOMP PROPERTIES
 		OUTPUT_NAME "CoDUOMP"
 		FOLDER "client"
@@ -149,6 +151,7 @@ if(CODUOMP_BUILD_SERVER)
 
 	coduomp_target_output(coduo_dedicated_recovered)
 	coduomp_apply_common(coduo_dedicated_recovered)
+	coduomp_apply_build_identity(coduo_dedicated_recovered)
 	set_target_properties(coduo_dedicated_recovered PROPERTIES
 		OUTPUT_NAME "coduo_dedicated_recovered"
 		FOLDER "server"
