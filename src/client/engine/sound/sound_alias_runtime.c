@@ -122,7 +122,7 @@ void Com_LoadSoundAliasSounds(sndAliasBank_t bank)
             bank == SND_ALIAS_BANK_COMMON ? ERR_FATAL : ERR_DROP;
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
         Com_Error(errorCode,
-                  "%i sound file(s) are missing or in a bad format\n",
+                  "\x15%i sound file(s) are missing or in a bad format\n",
                   missingSoundCount);
     }
 }

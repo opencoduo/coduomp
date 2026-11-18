@@ -144,7 +144,8 @@ int32_t CL_ConsolePrint_AddLine(
             const float visibleLengthFloat = (float)visibleLength;
             const int32_t lineCount = (int32_t)ceil(
                 (double)visibleLengthFloat / (double)lineWidth);
-            balancedLineWidth = (int32_t)rint(
+            /* The balanced width truncates toward zero. */
+            balancedLineWidth = (int32_t)(
                 (double)visibleLengthFloat / (double)lineCount);
         }
     }
@@ -178,8 +179,8 @@ int32_t CL_ConsolePrint_AddLine(
 
         ++cursor;
         if (character == '\n') {
+            /* An explicit newline does not mark the line as wrapped. */
             Con_Linefeed(destination, messageTime);
-            lineWrapped = qtrue;
             continue;
         }
         if (character == '\r') {
@@ -208,7 +209,7 @@ int32_t CL_ConsolePrint_AddLine(
             Con_Linefeed(destination, messageTime);
         } else {
             Con_UpdateNotifyLine(
-                CON_DEST_MINICONSOLE, qfalse, 0);
+                CON_DEST_MINICONSOLE, qfalse, messageTime);
         }
     }
 
