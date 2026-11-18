@@ -558,7 +558,7 @@ qboolean GLW_CreateWindow(const char *driverName, int32_t width,
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004f4780_004f4807.mcode and the jump
  * table at 0x004f4808. Provisional role name: every recognized value is a
  * ChangeDisplaySettings result and the sole caller passes that API result. */
-void GLW_PrintDisplayChangeError(int32_t result)
+void PrintCDSError(int32_t result)
 {
     switch (result) {
     case R_DISPLAY_CHANGE_BAD_PARAMETER:
@@ -705,7 +705,7 @@ renderer_mode_set_result_t GLW_SetMode(
             } else {
                 ri.Printf(R_PRINT_ALL, "failed, ");
                 ChangeDisplaySettingsA(NULL, 0);
-                GLW_PrintDisplayChangeError(displayResult);
+                PrintCDSError(displayResult);
 
                 --mode;
                 ri.Cvar_Set("r_mode", va("%d", mode));

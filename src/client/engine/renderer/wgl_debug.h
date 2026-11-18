@@ -168,7 +168,7 @@ qboolean GLW_InitDriver(int32_t colorBits);
 qboolean GLW_CreateWindow(const char *driverName, int32_t width,
                           int32_t height, int32_t colorBits,
                           qboolean fullscreen);
-void GLW_PrintDisplayChangeError(int32_t result);
+void PrintCDSError(int32_t result);
 renderer_mode_set_result_t GLW_SetMode(
     const char *driverName, int32_t mode, int32_t colorBits,
     qboolean fullscreen);
