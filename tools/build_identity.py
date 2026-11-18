@@ -14,8 +14,10 @@ def coduomp_revision(root):
     # must not accidentally report the enclosing repository's identity.
     if not (root / ".git").exists():
         return "unknown"
+    # Use a bounded commit identifier so arbitrary tag names cannot expand UI text.
     try:
-        result = subprocess.run(["git", "-C", str(root), "describe", "--always", "--dirty"],
+        result = subprocess.run(["git", "-C", str(root), "describe", "--always", "--dirty",
+                                 "--match", "", "--abbrev=12"],
                                 capture_output=True, text=True, check=True)
         return result.stdout.strip() or "unknown"
     except (OSError, subprocess.CalledProcessError):

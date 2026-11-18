@@ -33,6 +33,9 @@ and Windows.
 Use the maintained Make targets for Linux and macOS clients and their modules,
 and for Windows builds with MinGW.
 
+Python 3 must be available for build metadata generation on all hosts, including
+Windows CMake builds. Git is optional; without it the revision is `unknown`.
+
 Top-level Make targets default to a job budget of one job per detected processor.
 Use `make JOBS=N <target>` to select a budget, or `make JOBS=1 <target>` for a
 serial build. An existing `make -jN` jobserver takes precedence over `JOBS` and
@@ -617,6 +620,7 @@ clearly identified mod.
 Build metadata generation requires Python 3 (`PYTHON` for Make,
 `Python3_EXECUTABLE` for CMake). Both build systems refresh a generated revision
 header on every build, preserving its timestamp when unchanged. Git checkouts,
-including linked worktrees, use `git describe --always --dirty`; source archives
+including linked worktrees, report an abbreviated commit ID (at least 12 hex digits) with `-dirty` for
+uncommitted tracked changes; source archives
 and builds without Git report `unknown`. Generated metadata stays under
 `.workbench/` for Make and the selected build directory for CMake.
