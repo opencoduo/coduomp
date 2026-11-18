@@ -1823,7 +1823,7 @@ void CL_Shutdown(void)
     Cmd_RemoveCommand("cubemapShot");
     Cmd_RemoveCommand("vsay");
 
-    (void)Cvar_Set2("cl_running", "", qtrue);
+    (void)Cvar_Set2("cl_running", "0", qtrue);
     cl_shutdownInProgress = qfalse;
     memset(&cls, 0, sizeof(cls));
 

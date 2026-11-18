@@ -174,8 +174,10 @@ void FS_TouchFile_f(void)
  * FS_AddCommands. */
 void FS_AddCommands(void)
 {
-    Cmd_AddCommand("fullpath", FS_FullPath_f);
-    Cmd_AddCommand("path", FS_Path_f);
+    /* "path" runs the localized-filtering listing and "fullpath" the plain
+     * one, in this registration order. */
+    Cmd_AddCommand("path", FS_FullPath_f);
+    Cmd_AddCommand("fullpath", FS_Path_f);
     Cmd_AddCommand("dir", FS_Dir_f);
     Cmd_AddCommand("fdir", FS_NewDir_f);
     Cmd_AddCommand("touchFile", FS_TouchFile_f);
