@@ -29,7 +29,9 @@
 #define COM_INIT_ZERO "0"
 #define COM_INIT_ONE "1"
 #define COM_INIT_QPORT_MASK 0xffff
-#if UINTPTR_MAX > UINT32_MAX
+#if defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
+#define COM_INIT_ARCH "arm64"
+#elif UINTPTR_MAX > UINT32_MAX
 #define COM_INIT_ARCH "x86_64"
 #else
 #define COM_INIT_ARCH "i386"
@@ -40,6 +42,8 @@
  */
 #if defined(_WIN32)
 #define COM_INIT_PLATFORM "windows-" COM_INIT_ARCH
+#elif defined(__APPLE__)
+#define COM_INIT_PLATFORM "macos-" COM_INIT_ARCH
 #else
 #define COM_INIT_PLATFORM "linux-" COM_INIT_ARCH
 #endif
