@@ -1,10 +1,9 @@
 # NOT_FROM_ORIGINAL_SOURCE: build metadata shared by all supported generators.
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
 set(CODUOMP_IDENTITY_DIR "${CMAKE_BINARY_DIR}/generated/build-identity")
 add_custom_target(coduomp_build_identity
-    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/build_identity.py"
-        --source "${CMAKE_SOURCE_DIR}"
-        --output "${CODUOMP_IDENTITY_DIR}/coduomp_build_identity.h"
+    COMMAND "${CMAKE_COMMAND}" "-DSOURCE_ROOT=${CMAKE_SOURCE_DIR}"
+        "-DOUTPUT_HEADER=${CODUOMP_IDENTITY_DIR}/coduomp_build_identity.h"
+        -P "${CMAKE_SOURCE_DIR}/cmake/GenerateBuildIdentity.cmake"
     BYPRODUCTS "${CODUOMP_IDENTITY_DIR}/coduomp_build_identity.h"
     VERBATIM)
 
