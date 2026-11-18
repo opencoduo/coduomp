@@ -124,7 +124,7 @@ static qboolean coduomp_glw_set_exclusive_active_compat(qboolean active)
     } else {
         ri.Printf(R_PRINT_WARNING, "WARNING: could not %s exclusive display %s: ",
                   active != qfalse ? "activate" : "restore", coduompRendererExclusiveDevice);
-        GLW_PrintDisplayChangeError(result);
+        PrintCDSError(result);
     }
     coduompRendererExclusiveChanging = qfalse;
     return result == DISP_CHANGE_SUCCESSFUL ? qtrue : qfalse;
@@ -856,7 +856,7 @@ static qboolean coduomp_glw_display_mode_available_compat(int32_t width,
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004f4780_004f4807.mcode and the jump
  * table at 0x004f4808. Provisional role name: every recognized value is a
  * ChangeDisplaySettings result and the sole caller passes that API result. */
-void GLW_PrintDisplayChangeError(int32_t result)
+void PrintCDSError(int32_t result)
 {
     switch (result) {
     case R_DISPLAY_CHANGE_BAD_PARAMETER:

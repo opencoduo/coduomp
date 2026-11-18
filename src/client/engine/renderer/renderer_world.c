@@ -14,7 +14,7 @@ mnode_t *R_PointInLeaf(const vec3_t point)
     mnode_t *node;
 
     if (tr.world == NULL)
-        ri.Error(ERR_DROP, "R_PointInLeaf: bad model");
+        ri.Error(ERR_DROP, "\x15R_PointInLeaf: bad model");
 
     node = tr.world->nodes;
     while (node->contents == R_WORLD_NODE_NO_CELL) {
