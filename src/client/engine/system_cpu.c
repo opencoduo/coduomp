@@ -339,10 +339,12 @@ int32_t Sys_GetPhysicalMemoryMB(void)
 
     /* 0x0046912f..0x00469179 and 0x0046921a..0x00469241 compare
      * the signed FISTP result multiplied by one MiB with the unsigned
-     * physical-byte count. A masked-invalid INT32_MIN result cannot match. */
+     * physical-byte count: a count that rounded up or is exact is kept,
+     * one below the physical total (including a negative masked-invalid
+     * result) is capped, as is any count above the cap. */
     if (roundedMegabytes < 0 ||
-        (uint64_t)roundedMegabytes * SYS_BYTES_PER_MEGABYTE !=
-            totalPhysicalBytes ||
+        totalPhysicalBytes >
+            (uint64_t)roundedMegabytes * SYS_BYTES_PER_MEGABYTE ||
         roundedMegabytes > SYS_PHYSICAL_MEMORY_CAP_MB) {
         roundedMegabytes = SYS_PHYSICAL_MEMORY_CAP_MB;
     }
