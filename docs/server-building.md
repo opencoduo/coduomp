@@ -245,8 +245,8 @@ requires a Linux toolchain with i386 support.
 Build products are intentionally ignored. Clean them with ordinary non-forced
 file deletion or by removing the generated build directories manually.
 
-Build metadata generation requires Python 3 (`PYTHON` for Make,
-`Python3_EXECUTABLE` for CMake). Both build systems refresh a generated revision
+Build metadata uses the existing shell for Make and CMake scripting for CMake,
+without an additional interpreter dependency. Both refresh a generated revision
 header on every build, preserving its timestamp when unchanged. Git checkouts,
 including linked worktrees, report an abbreviated commit ID (at least 12 hex digits) with `-dirty` for
 uncommitted tracked changes; source archives
