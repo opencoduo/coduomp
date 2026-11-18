@@ -150,7 +150,8 @@ DEPS := $(OBJS:.o=.d) $(SHARED_OBJS:.o=.d) $(EXE_OBJS:.o=.d) \
         $(EXE_I386_OBJS:.o=.d) $(WINDOWS_I386_OBJS:.o=.d) \
         $(WINDOWS_I686_OBJS:.o=.d) $(WINDOWS_X86_64_OBJS:.o=.d)
 
-CPPFLAGS += -iquote $(STANDALONE_DIR)/bindings \
+CODUOMP_IDENTITY_DIR ?= .workbench/generated/build-identity
+CPPFLAGS += -I$(CODUOMP_IDENTITY_DIR) -iquote $(STANDALONE_DIR)/bindings \
 	-iquote src/qcommon/bindings/default \
 	-Isrc \
 	-DCODUO_ENABLE_PUNKBUSTER=$(CODUO_ENABLE_PUNKBUSTER) \
@@ -178,8 +179,7 @@ MINGW32_CXX ?= i686-w64-mingw32-g++
 MINGW64_CC ?= x86_64-w64-mingw32-gcc
 MINGW64_CXX ?= x86_64-w64-mingw32-g++
 WINDOWS64_DEP_PREFIX ?=
-WINDOWS64_DEP_CODUOMP_IDENTITY_DIR ?= .workbench/generated/build-identity
-CPPFLAGS := -I$(CODUOMP_IDENTITY_DIR) $(if $(strip $(WINDOWS64_DEP_PREFIX)),-I$(WINDOWS64_DEP_PREFIX)/include)
+WINDOWS64_DEP_CPPFLAGS := $(if $(strip $(WINDOWS64_DEP_PREFIX)),-I$(WINDOWS64_DEP_PREFIX)/include)
 WINDOWS64_DEP_LDFLAGS := $(if $(strip $(WINDOWS64_DEP_PREFIX)),-L$(WINDOWS64_DEP_PREFIX)/lib)
 WINDOWS_DEP_PREFIX ?=
 WINDOWS_DEP_CPPFLAGS := $(if $(strip $(WINDOWS_DEP_PREFIX)),-I$(WINDOWS_DEP_PREFIX)/include)
