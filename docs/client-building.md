@@ -613,3 +613,10 @@ Some original edge cases are deliberately preserved for compatibility.
 Bug reports are most useful when they include the module, platform, exact build
 command, and a short reproduction using an unmodified retail installation or a
 clearly identified mod.
+
+Build metadata generation requires Python 3 (`PYTHON` for Make,
+`Python3_EXECUTABLE` for CMake). Both build systems refresh a generated revision
+header on every build, preserving its timestamp when unchanged. Git checkouts,
+including linked worktrees, use `git describe --always --dirty`; source archives
+and builds without Git report `unknown`. Generated metadata stays under
+`.workbench/` for Make and the selected build directory for CMake.

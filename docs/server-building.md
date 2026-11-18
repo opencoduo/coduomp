@@ -244,3 +244,10 @@ requires a Linux toolchain with i386 support.
 
 Build products are intentionally ignored. Clean them with ordinary non-forced
 file deletion or by removing the generated build directories manually.
+
+Build metadata generation requires Python 3 (`PYTHON` for Make,
+`Python3_EXECUTABLE` for CMake). Both build systems refresh a generated revision
+header on every build, preserving its timestamp when unchanged. Git checkouts,
+including linked worktrees, use `git describe --always --dirty`; source archives
+and builds without Git report `unknown`. Generated metadata stays under
+`.workbench/` for Make and the selected build directory for CMake.

@@ -155,7 +155,8 @@ SHARED_C_SOURCES := $(ROOT)/src/qcommon/com_parse.c \
 	$(ROOT)/src/math/q_shared_random.c \
 	$(ROOT)/src/math/vector_projection.c
 ALL_C_SOURCES := $(C_SOURCES) $(SHARED_C_SOURCES)
-INCLUDE_FLAGS := -iquote $(UI_DIR)/bindings \
+CODUOMP_IDENTITY_DIR ?= .workbench/generated/build-identity
+INCLUDE_FLAGS := -I$(CODUOMP_IDENTITY_DIR) -iquote $(UI_DIR)/bindings \
 	-iquote $(ROOT)/src/qcommon/bindings/default \
 	-I$(ROOT)/src
 
@@ -209,3 +210,6 @@ linux-i386-link:
 		-o $(LINUX_I386_LIBRARY)
 
 check: syntax-check native-link
+
+include build-mk/build-identity.mk
+native-link syntax-check windows-cross-link win32-abi-link linux-i386-link: | $(CODUOMP_IDENTITY_HEADER)

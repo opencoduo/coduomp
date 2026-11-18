@@ -51,7 +51,8 @@ MINGW32_COMMON_CFLAGS ?= -g -O0
 MINGW32_ENGINE_CFLAGS := $(filter-out -O%,$(MINGW32_COMMON_CFLAGS))
 MINGW32_FLOAT_FLAGS := -O0 -mfpmath=387 -fexcess-precision=fast
 MINGW32_ARCH_FLAGS := -msse
-MINGW32_CPPFLAGS := -Isrc \
+CODUOMP_IDENTITY_DIR ?= .workbench/generated/build-identity
+MINGW32_CPPFLAGS := -I$(CODUOMP_IDENTITY_DIR) -Isrc \
 	-iquote src/client/engine/bindings \
 	-iquote src/qcommon/bindings/default \
 	-DCURL_STATICLIB \
@@ -211,3 +212,6 @@ help:
 
 -include $(MINGW32_C_OBJECTS:.o=.d)
 -include $(MINGW32_CXX_OBJECTS:.o=.d)
+
+include build-mk/build-identity.mk
+$(MINGW32_C_OBJECTS) $(MINGW32_CXX_OBJECTS): | $(CODUOMP_IDENTITY_HEADER)
