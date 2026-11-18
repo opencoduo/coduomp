@@ -29,6 +29,7 @@ fi
 # than objects compiled earlier in this same second, even on fast rebuilds.
 if [ -e "$output" ]; then
     sleep 1
+    touch "$temporary"
 fi
 # Atomically publish only changed generated content.
 mv "$temporary" "$output"
