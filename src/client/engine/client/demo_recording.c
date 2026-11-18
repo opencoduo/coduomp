@@ -109,7 +109,8 @@ void CL_StopRecord_f(void)
 void CL_DemoFilename(int32_t number, char *fileName)
 {
     if (number < 0 || number > CL_DEMO_MAX_AUTONAME_NUMBER) {
-        Com_sprintf(fileName, CL_DEMO_FILENAME_CAPACITY, "demo9999");
+        /* The out-of-range name keeps the retail ".tga" suffix. */
+        Com_sprintf(fileName, CL_DEMO_FILENAME_CAPACITY, "demo9999.tga");
         return;
     }
 

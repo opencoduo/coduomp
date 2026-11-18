@@ -367,7 +367,7 @@ void SetFarClip(void)
         tr.viewParms.zFar = r_zfar->value;
         R_SetFrameFog();
         if (r_speeds->integer == 5) {
-            ri.Printf(R_PRINT_ALL, "farclip at: %f\n",
+            ri.Printf(R_PRINT_ALL, "r_zfar value forcing farclip at: %f\n",
                       tr.viewParms.zFar);
         }
         return;

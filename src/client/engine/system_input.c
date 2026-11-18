@@ -277,9 +277,9 @@ void IN_Restart(void)
 void IN_Init(void)
 {
     in_midi = Cvar_Get("in_midi", "0", CVAR_ARCHIVE);
-    in_midiport = Cvar_Get("in_midiport", "-1", CVAR_ARCHIVE);
+    in_midiport = Cvar_Get("in_midiport", "1", CVAR_ARCHIVE);
     in_midichannel =
-        Cvar_Get("in_midichannel", "-1", CVAR_ARCHIVE);
+        Cvar_Get("in_midichannel", "1", CVAR_ARCHIVE);
     in_mididevice = Cvar_Get("in_mididevice", "0", CVAR_ARCHIVE);
     Cmd_AddCommand("midiinfo", MidiInfo_f);
 
