@@ -19,6 +19,8 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 
 ### Mods/Server
 
+- Startup banners report the compile date, time, and source revision. Client branding includes the revision and date; network version remains `1.51`.
+
 - Attached models reload correctly when detached
 - Per-map `<map>_<gametype>.cfg` files load by the visible map name even when the map asset name contains color escapes.
 - **Server configuration:** add `set g_allowGlobalChat 0` to the server config or enter it in the server console to disable player general chat while preserving team, squad, private, scripted, and server-console messages. Set it to `1` to enable general chat again; `1` is the default.

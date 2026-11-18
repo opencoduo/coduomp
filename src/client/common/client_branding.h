@@ -4,12 +4,15 @@
 /* INTENTIONAL_OVERRIDE: the improved client uses its own local display
  * identity; the stock source retains the retail labels. These constants are
  * not used for network protocol, server info, or updater requests. */
+#include "coduomp_build_identity.h"
+
 #define CODUOMP_DISPLAY_PRODUCT "Open CoD:UO"
 #define CODUOMP_DISPLAY_VERSION "1.51"
 #define CODUOMP_DISPLAY_BUILD_DATE __DATE__
 #define CODUOMP_DISPLAY_BUILD_TIME __TIME__
 
 #define CODUOMP_DISPLAY_LABEL \
-    CODUOMP_DISPLAY_PRODUCT " " CODUOMP_DISPLAY_VERSION
+    CODUOMP_DISPLAY_PRODUCT " " CODUOMP_DISPLAY_VERSION \
+    " (" CODUOMP_GIT_REVISION " " CODUOMP_DISPLAY_BUILD_DATE ")"
 
 #endif
