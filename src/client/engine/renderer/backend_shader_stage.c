@@ -1118,7 +1118,7 @@ void RB_ChooseSurfaceCountColor(int32_t indexCount, uint8_t color[4])
     if (r_showtris->integer > 6) {
         const int32_t savedRandomValue = coduo_crt_rand();
         const uint32_t surfaceSeed =
-            ((uint32_t)tess.vertexCount + (uint32_t)indexCount) * 31337u;
+            ((uint32_t)tess.shader->sortedIndex + (uint32_t)indexCount) * 31337u;
         vec3_t randomColor;
 
         coduo_crt_srand(surfaceSeed);

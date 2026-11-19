@@ -955,7 +955,7 @@ void set_cl_punkbuster(const char *value)
  * (nominally one third) after adding the height to itself. */
 void CL_DrawLogo(void)
 {
-    const int32_t elapsed = cls.realTime - cls.logoStartTime;
+    const int32_t elapsed = cls.realtime - cls.logoStartTime;
     long double alpha;
 
     if (elapsed < cls.logoFadeInDuration) {
@@ -1065,7 +1065,7 @@ void CL_PlayLogo_f(void)
         va("%s1", imageName), CL_LOGO_SHADER_LOAD_MODE);
     cls.logoShaderBottom = rendererExports.RegisterShaderNoMip(
         va("%s2", imageName), CL_LOGO_SHADER_LOAD_MODE);
-    cls.logoStartTime = cls.realTime + CL_LOGO_START_DELAY_MSEC;
+    cls.logoStartTime = cls.realtime + CL_LOGO_START_DELAY_MSEC;
 }
 
 /* Source: CoDUOMP.exe 0x00411560..0x00411793.

@@ -35,25 +35,26 @@ void DrawTris(shaderCommands_t *tessellation)
         return;
     }
 
-    savedShader = tessellation->shader;
-    savedStageCount = tessellation->activeStageCount;
-    savedStages = tessellation->activeStages;
+    /* Only the entity is read through the argument; the shader swap and the
+     * redraw use the global tessellation state. */
+    savedShader = tess.shader;
+    savedStageCount = tess.activeStageCount;
+    savedStages = tess.activeStages;
 
-    tessellation->shader = tr.showTrisShader;
-    tessellation->activeStages = tr.showTrisShader->stages;
-    tessellation->activeStageCount =
-        tr.showTrisShader->numUnfoggedPasses;
+    tess.shader = tr.showTrisShader;
+    tess.activeStages = tr.showTrisShader->stages;
+    tess.activeStageCount = tr.showTrisShader->numUnfoggedPasses;
 
     if ((r_showtris->integer & 1) != 0) {
         qglDepthRange(RB_DIAGNOSTIC_DEPTH_NEAR,
                       RB_DIAGNOSTIC_TRIS_DEPTH_FAR);
     }
-    qglDepthMask((uint8_t)qfalse);
+    tr.stageIteratorFunc(qfalse);
     qglDepthRange(RB_DIAGNOSTIC_DEPTH_NEAR, RB_DIAGNOSTIC_DEPTH_FAR);
 
-    tessellation->activeStages = savedStages;
-    tessellation->shader = savedShader;
-    tessellation->activeStageCount = savedStageCount;
+    tess.activeStages = savedStages;
+    tess.shader = savedShader;
+    tess.activeStageCount = savedStageCount;
 }
 
 /* Source: CoDUOMP.exe 0x004eb370..0x004eb68c.

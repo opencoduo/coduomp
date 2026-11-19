@@ -314,10 +314,12 @@ void coduomp_console_draw_compat(void)
         if ((cls.keyCatchers & (KEYCATCH_UI | KEYCATCH_CGAME)) == 0)
             fraction = 1.0f;
     } else if (cls.state == CA_LOADING) {
-        if (con_debug->integer != 0 &&
-            (cls.keyCatchers & KEYCATCH_UI) == 0) {
-            fraction = 1.0f;
+        /* The loading state never falls back to the partial console. */
+        if (con_debug->integer == 0 ||
+            (cls.keyCatchers & KEYCATCH_UI) != 0) {
+            return;
         }
+        fraction = 1.0f;
     } else if (cls.state == CA_ACTIVE) {
         if (con.displayFrac == 0.0f)
             return;
