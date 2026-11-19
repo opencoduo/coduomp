@@ -115,8 +115,11 @@ void CL_AddConsoleInfoChar(const char *text, int32_t initialColor)
         if (character == '\n' || character == '\r')
             continue;
 
-        CL_AddConsoleInfoCell(
-            (uint8_t)character, (uint8_t)color);
+        /* 0x0040a512..0x0040a516 ORs the sign-extended byte over the color
+         * tag, so bytes at or above 0x80 replace the tag with 0xff. This looks
+         * like an original-source defect and is kept. */
+        (void)coduomp_console_add_encoded_cell((uint16_t)(
+            ((uint32_t)(uint8_t)color << 8) | (uint32_t)character));
     }
 }
 
