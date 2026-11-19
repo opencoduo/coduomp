@@ -3918,13 +3918,13 @@ qboolean ParseNVRC_ConstColor(
         constantColors[constantIndex][component] = (float)componentRaw;
 
         /* The original accepts any nonzero atof result and also accepts a
-         * zero result whose token begins alphabetically. This deliberately
-         * preserves that permissive legacy test rather than substituting a
-         * stricter modern number parser. */
+         * zero result whose token begins with a decimal digit. This
+         * deliberately preserves that permissive legacy test rather than
+         * substituting a stricter modern number parser. */
         /* 0x004fac3d stores the float component but compares the retained
          * atof result with zero. */
         if (componentRaw == 0.0L &&
-            coduo_crt_isalpha(
+            coduo_crt_isdigit(
                 (int32_t)(int8_t)(uint8_t)token[0]) == 0) {
             ri.Printf(
                 R_PRINT_WARNING,

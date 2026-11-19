@@ -835,7 +835,7 @@ static void MidiInfo_f(void)
         cvar_t *const selectedDevice = Cvar_FindVar("in_mididevice");
         const float selectedValue =
             selectedDevice != NULL ? selectedDevice->value : 0.0f;
-        Com_Printf(device == selectedValue ? "***" : "");
+        Com_Printf(device == selectedValue ? "***" : "...");
         Com_Printf("device %2d:       %s\n", device,
                    midiDeviceCaps[device].szPname);
         Com_Printf("...manufacturer ID: 0x%hx\n",

@@ -152,7 +152,7 @@ void RE_AddPlume(const vec3_t origin, int32_t labelValue,
     memcpy(plume->origin, origin, sizeof(plume->origin));
     memcpy(plume->color, color, sizeof(vec3_t));
     plume->labelValue = labelValue;
-    plume->startTime = backEnd.refdef.time;
+    plume->startTime = tr.refdef.time;
     plume->duration = duration;
     ++rendererDebugState.plumeCount;
 }
@@ -161,7 +161,8 @@ void RE_AddPlume(const vec3_t origin, int32_t labelValue,
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004e70e0_004e7212.mcode.
  * Name: exact same-module Mac symbol RB_AddPlumeStrings. Active plumes sway
  * four units along the view-right axis, rise at approximately 64 units per
- * second, and fade through the second half of their lifetime. */
+ * second, and fade through the second half of their lifetime. Plume timing and
+ * the sway axis come from the front-end tr.refdef, as in RE_AddPlume. */
 void RB_AddPlumeStrings(void)
 {
     int32_t plumeIndex = 0;
@@ -170,7 +171,7 @@ void RB_AddPlumeStrings(void)
         renderer_plume_t *plume =
             &rendererDebugState.plumes[plumeIndex];
         const int32_t elapsed = (int32_t)(
-            (uint32_t)backEnd.refdef.time -
+            (uint32_t)tr.refdef.time -
             (uint32_t)plume->startTime);
         const int32_t doubledElapsed =
             (int32_t)((uint32_t)elapsed * 2U);
@@ -197,11 +198,11 @@ void RB_AddPlumeStrings(void)
                    (float)plumeIndex) *
                R_PLUME_SWAY_DISTANCE;
         labelOrigin[0] = plume->origin[0] +
-                         backEnd.refdef.viewaxis[1][0] * sway;
+                         tr.refdef.viewaxis[1][0] * sway;
         labelOrigin[1] = plume->origin[1] +
-                         backEnd.refdef.viewaxis[1][1] * sway;
+                         tr.refdef.viewaxis[1][1] * sway;
         labelOrigin[2] = plume->origin[2] +
-                         backEnd.refdef.viewaxis[1][2] * sway +
+                         tr.refdef.viewaxis[1][2] * sway +
                          (float)elapsed *
                              R_PLUME_RISE_UNITS_PER_MILLISECOND;
 
@@ -347,7 +348,7 @@ void RB_DrawDebugPolys(void)
         return;
 
     RB_SelectStorage(R_STATIC_VERTEX_MEMORY_HUNK);
-    GL_Bind(tr.defaultImage);
+    GL_Bind(tr.whiteImage);
     GL_ClientState(GLS_CLIENT_VERTEX_ARRAY);
     qglVertexPointer(3, GL_FLOAT, 0,
                      rendererDebugState.polygonVertices);
@@ -410,7 +411,7 @@ void RB_DrawDebugLines(const renderer_debug_line_t *lines,
     if (lineCount == 0)
         return;
 
-    GL_Bind(tr.defaultImage);
+    GL_Bind(tr.whiteImage);
     RB_BeginImmediateMode();
     qglLoadMatrixf(tr.viewParms.world.modelMatrix);
     qglMatrixMode(GL_PROJECTION);

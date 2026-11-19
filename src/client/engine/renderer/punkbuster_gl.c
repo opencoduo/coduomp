@@ -18,14 +18,15 @@ typedef enum pb_gl_query_e {
  * The five-entry switch table is preserved separately as compiler-emitted
  * data at 0x004c5544..0x004c5557. The same-module Mac PbGlQuery symbol proves
  * the source name and pointer return ABI; Windows independently proves each
- * query result, including the qglReadPixels dispatch pointer at 0x048993ac.
+ * query result, including the qglReadPixels function pointer loaded from
+ * 0x048993ac.
  * Pointer/integer conversions are intentional at this legacy PunkBuster ABI
  * boundary. */
 void *PbGlQuery(int32_t query)
 {
     switch ((pb_gl_query_t)query) {
     case PB_GL_QUERY_READ_PIXELS:
-        return (void *)(uintptr_t)&qglReadPixels;
+        return (void *)(uintptr_t)qglReadPixels;
     case PB_GL_QUERY_VIDEO_WIDTH:
         return (void *)(uintptr_t)(uint32_t)glConfig.vidWidth;
     case PB_GL_QUERY_VIDEO_HEIGHT:
