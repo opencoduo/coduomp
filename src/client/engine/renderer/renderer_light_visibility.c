@@ -662,7 +662,7 @@ void R_LightVisHistoryFilename(char *filename)
     if ((size_t)(write - filename) + sizeof(suffix) >
         R_WORLD_NAME_SIZE) {
         ri.Error(ERR_DROP,
-                 "light vis cache log filename '%s.vclog' is too long\n",
+                 "\x15" "light vis cache log filename '%s.vclog' is too long\n",
                  filename);
     }
 
@@ -733,8 +733,10 @@ void R_InitLightVisHistory(void)
         for (uint32_t entryIndex = 0;
              entryIndex < loadEntryCount;
              ++entryIndex) {
-            renderer_light_vis_history_entry_t *historyEntry =
-                &rendererLightVisHistory[entryIndex];
+            /* Each record is replayed from the loaded file buffer. */
+            const renderer_light_vis_history_entry_t *historyEntry =
+                &((const renderer_light_vis_history_entry_t *)fileBuffer)
+                    [entryIndex];
             mnode_t *leaf =
                 R_PointInLeaf(historyEntry->traceTarget);
 
@@ -1066,7 +1068,7 @@ void R_PrecalcLightVisCache(int32_t *checksum)
 
     if (tr.world->lightIndexCount == 0) {
         ri.Error(ERR_DROP,
-                 "cannot precalculate light vis cache; no lights compiled "
+                 "\x15" "cannot precalculate light vis cache; no lights compiled "
                  "into map '%s'\n",
                  tr.world->name);
     }
@@ -1075,7 +1077,7 @@ void R_PrecalcLightVisCache(int32_t *checksum)
     fileSize = ri.FS_ReadFile(filename, &fileBuffer);
     if (fileSize <= 0) {
         ri.Error(ERR_DROP,
-                 "light vis cache file '%s' is missing or empty\n",
+                 "\x15" "light vis cache file '%s' is missing or empty\n",
                  filename);
     }
 
@@ -1083,11 +1085,13 @@ void R_PrecalcLightVisCache(int32_t *checksum)
         (uint32_t)fileSize / sizeof(renderer_light_vis_history_entry_t);
     if ((uint32_t)fileSize %
             sizeof(renderer_light_vis_history_entry_t) != 0U) {
-        ri.Error(ERR_DROP, "light vis cache has funny size\n");
+        ri.Error(ERR_DROP, "\x15" "light vis cache has funny size\n");
     }
 
     savedDiffuseSunSteps = tr.diffuseSunSteps;
-    cache = ri.Hunk_AllocateTempMemory(
+    /* The cache is a zero-filled zone allocation; untouched entries stay empty
+     * in the saved lump. */
+    cache = ri.Z_Malloc(
         sizeof(renderer_light_vis_disk_entry_t) *
         R_LIGHT_VIS_BUCKET_COUNT * R_LIGHT_VIS_ENTRIES_PER_BUCKET);
 
@@ -1111,7 +1115,7 @@ void R_PrecalcLightVisCache(int32_t *checksum)
                   R_LIGHT_VIS_BUCKET_COUNT *
                   R_LIGHT_VIS_ENTRIES_PER_BUCKET),
         checksum);
-    ri.Hunk_FreeTempMemory(cache);
+    ri.Z_Free(cache);
 
     if (r_vc_compile->integer == 2)
         ri.Cmd_ExecuteText(EXEC_NOW, "quit");

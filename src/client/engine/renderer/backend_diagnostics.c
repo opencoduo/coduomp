@@ -71,7 +71,7 @@ void DrawNormals(shaderCommands_t *tessellation)
     RB_BeginImmediateMode();
     qglDepthRange(RB_DIAGNOSTIC_DEPTH_NEAR,
                   RB_DIAGNOSTIC_NORMAL_DEPTH_FAR);
-    GL_Bind(tr.defaultImage);
+    GL_Bind(tr.whiteImage);
     RB_glColor3f(1.0f, 1.0f, 1.0f);
 
     if (tessellation->stageTangentsValid == qfalse ||
@@ -155,7 +155,7 @@ void DrawColoredNormals(shaderCommands_t *tessellation)
     int32_t vertexIndex;
 
     RB_BeginImmediateMode();
-    GL_Bind(tr.defaultImage);
+    GL_Bind(tr.whiteImage);
     RB_glColor3f(1.0f, 1.0f, 1.0f);
     GL_State(GLS_DEPTHMASK_TRUE | GLS_POLYMODE_LINE);
     RB_glBegin(GL_LINES);

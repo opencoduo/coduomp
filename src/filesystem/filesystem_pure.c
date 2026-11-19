@@ -55,7 +55,7 @@ int32_t FS_FileIsInPAK(const char *path, int32_t *checksumOut)
 {
     if (path == NULL) {
         Com_Error(0, "\x15"
-                     "FS_FOpenFileRead: NULL 'filename' parameter passed");
+                     "FS_FOpenFileRead: NULL 'filename' parameter passed\n");
     }
 
     if (path[0] == '/' || path[0] == '\\')

@@ -40,9 +40,9 @@ void Con_DrawInput(void)
         con.visiblePixelHeight - CON_INPUT_BOTTOM_OFFSET;
 
     rendererExports.SetColor(con_miniconColor);
-    SCR_DrawSmallChar(FastRound(con.xAdjust), y, ']');
+    SCR_DrawSmallChar((int32_t)con.xAdjust, y, ']');
     Field_Draw(&con_inputField,
-               FastRound(con.xAdjust) + CON_SMALL_CHAR_WIDTH, y);
+               (int32_t)con.xAdjust + CON_SMALL_CHAR_WIDTH, y);
 }
 
 /* Source: CoDUOMP.exe 0x0040afa0..0x0040b290.

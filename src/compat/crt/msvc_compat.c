@@ -100,6 +100,12 @@ int32_t coduo_crt_isalpha(int32_t character)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: MSVC C-locale byte classification with the original result bits. */
+int32_t coduo_crt_isdigit(int32_t character)
+{
+    return (character >= '0' && character <= '9') ? CODUO_CRT_CTYPE_DIGIT : 0;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: MSVC C-locale byte classification with the original result bits. */
 int32_t coduo_crt_isalnum(int32_t character)
 {
     return coduo_crt_isalpha(character) |

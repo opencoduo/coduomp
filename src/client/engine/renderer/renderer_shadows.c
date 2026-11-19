@@ -294,7 +294,7 @@ void RB_ShadowTessEnd(void)
                      rendererShadowTriangleFacing[triangleIndex]);
     }
 
-    GL_Bind(tr.defaultImage);
+    GL_Bind(tr.whiteImage);
     /* 0x004e8496 MOV EAX,0x12 = GLS_SRCBLEND_ONE(0x02) | GLS_DSTBLEND_ZERO(0x10),
      * i.e. blend func (GL_ONE, GL_ZERO). A prior pass used GLS_DSTBLEND_ONE (0x20 ->
      * 0x22), an additive dest factor that over-brightens the shadow fill. */
@@ -331,7 +331,7 @@ void RB_ShadowFinish(void)
     qglStencilFunc(GL_NOTEQUAL, 0, UINT8_MAX);
     qglDisable(GL_CLIP_PLANE0);
     GL_Cull(CT_TWO_SIDED);
-    GL_Bind(tr.defaultImage);
+    GL_Bind(tr.whiteImage);
     qglLoadIdentity();
 
     RB_BeginImmediateMode();

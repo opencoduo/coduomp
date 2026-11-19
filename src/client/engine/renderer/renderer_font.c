@@ -172,33 +172,37 @@ glyphInfo_t *R_GetCharacterGlyph(int32_t character,
             pageRowCount = rendererAsianFontPageDimension / 2;
         }
 
+        /* Atlas s coordinates use the page dimension's cell size; t coordinates
+         * use the page row count's, so a half-height last page has taller cells. */
         if (cl_language->integer == LANGUAGE_TAIWANESE) {
             const int32_t cellPixels =
                 R_ASIAN_FONT_ATLAS_SIZE /
                 rendererAsianFontPageDimension;
+            const int32_t cellRowPixels = R_ASIAN_FONT_ATLAS_SIZE / pageRowCount;
 
             rendererAsianGlyph.s =
                 (float)(cellPixels * column + 1) * 0.0009765625f;
             rendererAsianGlyph.t =
-                (float)(cellPixels * row + 1) * 0.0009765625f;
+                (float)(cellRowPixels * row + 1) * 0.0009765625f;
             rendererAsianGlyph.s2 =
                 (float)(cellPixels * (column + 1)) * 0.0009765625f;
             rendererAsianGlyph.t2 =
-                (float)(cellPixels * (row + 1)) * 0.0009765625f;
+                (float)(cellRowPixels * (row + 1)) * 0.0009765625f;
         } else if (cl_language->integer == LANGUAGE_JAPANESE ||
                    cl_language->integer == LANGUAGE_CHINESE) {
             const int32_t cellPixels =
                 R_ASIAN_FONT_ATLAS_SIZE /
                 rendererAsianFontPageDimension;
+            const int32_t cellRowPixels = R_ASIAN_FONT_ATLAS_SIZE / pageRowCount;
 
             rendererAsianGlyph.s =
                 (float)(cellPixels * column) * 0.0009765625f;
             rendererAsianGlyph.t =
-                (float)(cellPixels * row) * 0.0009765625f;
+                (float)(cellRowPixels * row) * 0.0009765625f;
             rendererAsianGlyph.s2 =
                 (float)(cellPixels * (column + 1) - 1) * 0.0009765625f;
             rendererAsianGlyph.t2 =
-                (float)(cellPixels * (row + 1) - 1) * 0.0009765625f;
+                (float)(cellRowPixels * (row + 1) - 1) * 0.0009765625f;
         } else {
             rendererAsianGlyph.s =
                 (float)column / (float)rendererAsianFontPageDimension;
