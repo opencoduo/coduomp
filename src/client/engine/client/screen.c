@@ -179,7 +179,7 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
         case CA_CHALLENGING:
         case CA_CONNECTED:
             (void)VM_Call(
-                coduo_uiVm, UIVM_REFRESH, cls.realTime,
+                coduo_uiVm, UIVM_REFRESH, cls.realtime,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             (void)VM_Call(
                 coduo_uiVm, UIVM_DRAW_CONNECT_SCREEN, qfalse,
@@ -190,7 +190,7 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
         case CA_PRIMED:
             CL_CGameRendering(stereoFrame, qtrue);
             (void)VM_Call(
-                coduo_uiVm, UIVM_REFRESH, cls.realTime,
+                coduo_uiVm, UIVM_REFRESH, cls.realtime,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             /* 0x00419eca pushes the overlay flag 1 after rendering the
              * loading/primed cgame frame. */
@@ -227,7 +227,7 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
 
     if ((cls.keyCatchers & KEYCATCH_UI) != 0) {
         (void)VM_Call(
-            coduo_uiVm, UIVM_REFRESH, cls.realTime,
+            coduo_uiVm, UIVM_REFRESH, cls.realtime,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 

@@ -1990,5 +1990,5 @@ qboolean LAN_ServerIsDirty(lan_server_source_t source, int32_t serverIndex)
 
     if (serverIndex < 0 || serverIndex >= serverCount)
         return qfalse;
-    return servers[serverIndex].dirty != 0 ? qtrue : qfalse;
+    return servers[serverIndex].dirty;
 }

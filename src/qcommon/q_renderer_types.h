@@ -231,16 +231,12 @@ typedef struct refEntity_s {
         } electricity;
     };
     DObj *dobj;                              /* original +0x90 */
-    union {
-        /* Animated entities use the owner passed to CG_DObjCalcPose. Static
-         * entities retain their renderer registration in the same word. */
-        void *owner;                         /* original +0x94 */
-        struct renderer_registered_static_model_s
-            *staticModelRegistration;
-    };
-    /* Copied at the scene, FX, and archive boundaries, but otherwise unused
-     * by CoDUOMP.exe. */
-    uint8_t rendererPrivateState98[4];       /* original +0x98 */
+    /* Animated entities use the owner passed to CG_DObjCalcPose. */
+    void *owner;                             /* original +0x94 */
+    /* Static world entities keep their renderer registration here; the word
+     * is copied at the scene, FX, and archive boundaries. */
+    struct renderer_registered_static_model_s
+        *staticModelRegistration;            /* original +0x98 */
 } refEntity_t;
 
 enum { GLYPHS_PER_FONT = 256 };
@@ -441,10 +437,8 @@ Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->dobj) == 0x04,
                          "i386 refEntity_t DObj pointer widened");
 Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, owner) == 0x94,
                          "i386 refEntity_t.owner moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, staticModelRegistration) == 0x94,
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, staticModelRegistration) == 0x98,
                          "i386 refEntity_t static registration moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, rendererPrivateState98) == 0x98,
-                         "i386 refEntity_t private tail moved");
 Q_RENDERER_STATIC_ASSERT(sizeof(refEntity_t) == 0x9c,
                          "i386 refEntity_t size changed");
 #elif UINTPTR_MAX == UINT64_MAX
@@ -454,10 +448,8 @@ Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->dobj) == 0x08,
                          "64-bit refEntity_t DObj pointer narrowed");
 Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, owner) == 0x98,
                          "64-bit refEntity_t.owner moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, staticModelRegistration) == 0x98,
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, staticModelRegistration) == 0xa0,
                          "64-bit refEntity_t static registration moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, rendererPrivateState98) == 0xa0,
-                         "64-bit refEntity_t private tail moved");
 Q_RENDERER_STATIC_ASSERT(sizeof(refEntity_t) == 0xa8,
                          "64-bit refEntity_t size changed");
 #endif

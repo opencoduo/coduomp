@@ -43,11 +43,12 @@ void Con_DrawConsole(void)
             return;
         }
     } else if (cls.state == CA_LOADING) {
+        /* The loading state never reaches the partial-console draw below. */
         if (con_debug->integer != 0 &&
             (cls.keyCatchers & KEYCATCH_UI) == 0) {
             Con_DrawSolidConsole(1.0f);
-            return;
         }
+        return;
     } else if (cls.state == CA_ACTIVE) {
         if (con.displayFrac == 0.0f)
             return;
