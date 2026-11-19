@@ -1264,6 +1264,8 @@ void RB_AddQuadStampExtFade(const vec3_t origin, const vec3_t left,
         (uint32_t)tess.indexCount + 12u);
 }
 
+#define R_QUAD_STAMP_CORNER_STRIDE 3u
+
 /* Source: CoDUOMP.exe 0x004f10f0..0x004f13d8.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004f10f0_004f13d9.mcode.
  * Name: exact same-module Mac symbol RB_AddQuadStampExt.
@@ -1304,6 +1306,9 @@ void RB_AddQuadStampExt(const vec3_t origin, const vec3_t left,
     tess.indexes[tess.indexCount + 4] = (uint16_t)(baseVertex + 1);
     tess.indexes[tess.indexCount + 5] = (uint16_t)(baseVertex + 2);
 
+    /* 0x004f1166 scales only the base by tess.vertexComponentCount; the
+     * four corners then follow at a fixed three-float stride. This looks like
+     * an original-source defect for four-component storage and is kept. */
     xyzOffset =
         (uint32_t)baseVertex *
         (uint32_t)tess.vertexComponentCount;
@@ -1311,17 +1316,17 @@ void RB_AddQuadStampExt(const vec3_t origin, const vec3_t left,
     tess.xyz[xyzOffset + 1] = (left[1] + origin[1]) + up[1];
     tess.xyz[xyzOffset + 2] = (left[2] + origin[2]) + up[2];
 
-    xyzOffset += tess.vertexComponentCount;
+    xyzOffset += R_QUAD_STAMP_CORNER_STRIDE;
     tess.xyz[xyzOffset + 0] = (origin[0] - left[0]) + up[0];
     tess.xyz[xyzOffset + 1] = (origin[1] - left[1]) + up[1];
     tess.xyz[xyzOffset + 2] = (origin[2] - left[2]) + up[2];
 
-    xyzOffset += tess.vertexComponentCount;
+    xyzOffset += R_QUAD_STAMP_CORNER_STRIDE;
     tess.xyz[xyzOffset + 0] = (origin[0] - left[0]) - up[0];
     tess.xyz[xyzOffset + 1] = (origin[1] - left[1]) - up[1];
     tess.xyz[xyzOffset + 2] = (origin[2] - left[2]) - up[2];
 
-    xyzOffset += tess.vertexComponentCount;
+    xyzOffset += R_QUAD_STAMP_CORNER_STRIDE;
     tess.xyz[xyzOffset + 0] = (left[0] + origin[0]) - up[0];
     tess.xyz[xyzOffset + 1] = (left[1] + origin[1]) - up[1];
     tess.xyz[xyzOffset + 2] = (left[2] + origin[2]) - up[2];
