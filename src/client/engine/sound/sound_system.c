@@ -1827,8 +1827,7 @@ int32_t MSS_Save3DChannel(uint8_t *buffer, int32_t offset,
     /* NOT_FROM_ORIGINAL_SOURCE: zero is a normal user-selectable group gain;
      * retain a finite logical value rather than dividing a silent handle by
      * zero while preparing the original save representation. */
-    if (outputGain == MSS_SILENT_VOLUME ||
-        outputGain == MSS_FULL_VOLUME) {
+    if (outputGain == MSS_SILENT_VOLUME) {
         savedState.logicalVolume = channel->logicalVolume;
     } else {
         savedState.logicalVolume =
@@ -1942,8 +1941,7 @@ int32_t MSS_Save2DChannel(uint8_t *buffer, int32_t offset,
         sample, &savedState.logicalVolume, &savedState.pan);
     const float outputGain = audio_sound_gain(channel->alias, channelIndex);
     /* NOT_FROM_ORIGINAL_SOURCE: avoid a zero-gain normalization divide. */
-    if (outputGain == MSS_SILENT_VOLUME ||
-        outputGain == MSS_FULL_VOLUME) {
+    if (outputGain == MSS_SILENT_VOLUME) {
         savedState.logicalVolume = channel->logicalVolume;
     } else {
         savedState.logicalVolume /= outputGain;
@@ -2079,8 +2077,7 @@ int32_t MSS_SaveStreamChannel(uint8_t *buffer, int32_t offset,
         stream, &savedState.relativeVolume, &savedState.pan);
     const float outputGain = audio_sound_gain(channel->alias, channelIndex);
     /* NOT_FROM_ORIGINAL_SOURCE: avoid a zero-gain normalization divide. */
-    if (outputGain == MSS_SILENT_VOLUME ||
-        outputGain == MSS_FULL_VOLUME) {
+    if (outputGain == MSS_SILENT_VOLUME) {
         savedState.relativeVolume = channel->logicalVolume;
     } else {
         savedState.relativeVolume /= outputGain;
@@ -2415,8 +2412,7 @@ int32_t MSS_GetSoundOverlay2D(mss_sound_overlay_t *overlay,
         entry->relativeVolume *= MSS_OVERLAY_VOLUME_SCALE;
         const float outputGain =
             audio_sound_gain(channel->alias, channelIndex);
-        if (outputGain != MSS_SILENT_VOLUME &&
-            outputGain != MSS_FULL_VOLUME) {
+        if (outputGain != MSS_SILENT_VOLUME) {
             entry->relativeVolume /= outputGain;
         }
         entry->basePlaybackRate = channel->basePlaybackRate;
@@ -2463,8 +2459,7 @@ int32_t MSS_GetSoundOverlay3D(mss_sound_overlay_t *overlay,
             audio_3D_sample_volume(sample) * MSS_OVERLAY_VOLUME_SCALE;
         const float outputGain =
             audio_sound_gain(channel->alias, channelIndex);
-        if (outputGain != MSS_SILENT_VOLUME &&
-            outputGain != MSS_FULL_VOLUME) {
+        if (outputGain != MSS_SILENT_VOLUME) {
             entry->relativeVolume /= outputGain;
         }
         entry->basePlaybackRate = channel->basePlaybackRate;
@@ -2509,8 +2504,7 @@ int32_t MSS_GetSoundOverlayStream(mss_sound_overlay_t *overlay,
         entry->relativeVolume *= MSS_OVERLAY_VOLUME_SCALE;
         const float outputGain =
             audio_sound_gain(channel->alias, channelIndex);
-        if (outputGain != MSS_SILENT_VOLUME &&
-            outputGain != MSS_FULL_VOLUME) {
+        if (outputGain != MSS_SILENT_VOLUME) {
             entry->relativeVolume /= outputGain;
         }
         entry->basePlaybackRate = channel->basePlaybackRate;

@@ -3496,7 +3496,7 @@ void LoadDDS(const char *name, uint8_t **pixels,
     if (loadMode == R_IMAGE_LOAD_METADATA) {
         int32_t fileHandle;
 
-        fileSize = ri.FS_FOpenFileRead(name, &fileHandle, qfalse);
+        fileSize = ri.FS_FOpenFileByMode(name, &fileHandle, FS_READ);
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (fileSize <= R_DDS_DATA_OFFSET) {
             if (fileSize >= 0)
@@ -3633,7 +3633,7 @@ void LoadTGA(const char *name, uint8_t **pixels,
 
     if (loadMode == R_IMAGE_LOAD_METADATA) {
         int32_t fileHandle;
-        fileSize = ri.FS_FOpenFileRead(name, &fileHandle, qfalse);
+        fileSize = ri.FS_FOpenFileByMode(name, &fileHandle, FS_READ);
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
         if (fileSize < (int32_t)sizeof(localHeader)) {

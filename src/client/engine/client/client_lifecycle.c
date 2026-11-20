@@ -901,7 +901,7 @@ void CL_InitRef(void)
         .FS_FreeFileList = FS_FreeFileList,
         .FS_WriteFile = FS_WriteFile,
         .FS_FileExists = FS_FileExists,
-        .FS_FOpenFileRead = FS_FOpenFileRead,
+        .FS_FOpenFileByMode = FS_FOpenFileByMode,
         .FS_FCloseFile = FS_FCloseFile,
         .FS_Read = FS_Read,
         .FS_Write = FS_Write,

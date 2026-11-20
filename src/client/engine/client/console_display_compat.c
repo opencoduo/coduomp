@@ -290,7 +290,7 @@ static void coduomp_console_draw_solid_compat(float fraction)
             text = &con.text[textRow * con.lineWidth];
             rendererExports.TextConsolePaint(
                 (float)CODUOMP_CONSOLE_GLYPH_WIDTH,
-                (float)(y + CODUOMP_CONSOLE_GLYPH_WIDTH),
+                (float)(y + CODUOMP_CONSOLE_GLYPH_HEIGHT),
                 CODUOMP_CONSOLE_TEXT_FONT, CODUOMP_CONSOLE_TEXT_SCALE,
                 color, text, (float)CODUOMP_CONSOLE_GLYPH_WIDTH,
                 con.lineWidth, CODUOMP_CONSOLE_TEXT_STYLE);
