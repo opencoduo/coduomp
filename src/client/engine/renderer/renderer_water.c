@@ -5,6 +5,7 @@
 #include "../platform/crt_boundary.h"
 #include "gl_api.h"
 #include "gl_state.h"
+#include "math/q_math.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -75,8 +76,9 @@ void FFT_Init(void)
         rendererWaterFftBitReverse[value] = reversed;
 
         const float angle = (float)value * R_WATER_FFT_ANGLE_STEP_F;
-        rendererWaterFftTrig[value].real = cosf(angle);
-        rendererWaterFftTrig[value].imaginary = sinf(angle);
+        /* One sine/cosine evaluation fills both lanes, as at 0x0051bf3c. */
+        BG_SinCos(angle, &rendererWaterFftTrig[value].imaginary,
+                  &rendererWaterFftTrig[value].real);
     }
 }
 

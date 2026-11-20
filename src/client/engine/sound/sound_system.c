@@ -1771,7 +1771,7 @@ int32_t MSS_Save3DChannel(uint8_t *buffer, int32_t offset,
         (long double)sampleOffset / (long double)sampleLength);
     savedState.aliasPitchScale = channel->aliasPitchScale;
     const float sampleVolume = audio_3D_sample_volume(sample);
-    if (mss_effectVolume == MSS_FULL_VOLUME) {
+    if (mss_effectVolume == MSS_SILENT_VOLUME) {
         savedState.logicalVolume = channel->logicalVolume;
     } else {
         savedState.logicalVolume =
@@ -1883,7 +1883,7 @@ int32_t MSS_Save2DChannel(uint8_t *buffer, int32_t offset,
     savedState.aliasPitchScale = channel->aliasPitchScale;
     audio_sample_volume_pan(
         sample, &savedState.logicalVolume, &savedState.pan);
-    if (mss_effectVolume == MSS_FULL_VOLUME) {
+    if (mss_effectVolume == MSS_SILENT_VOLUME) {
         savedState.logicalVolume = channel->logicalVolume;
     } else {
         savedState.logicalVolume /= mss_effectVolume;
@@ -2015,7 +2015,7 @@ int32_t MSS_SaveStreamChannel(uint8_t *buffer, int32_t offset,
     savedState.logicalVolume = channel->logicalVolume;
     audio_stream_volume_pan(
         stream, &savedState.relativeVolume, &savedState.pan);
-    if (mss_effectVolume == MSS_FULL_VOLUME) {
+    if (mss_effectVolume == MSS_SILENT_VOLUME) {
         savedState.relativeVolume = channel->logicalVolume;
     } else {
         savedState.relativeVolume /= mss_effectVolume;
@@ -2346,7 +2346,7 @@ int32_t MSS_GetSoundOverlay2D(mss_sound_overlay_t *overlay,
             channel->logicalVolume * MSS_OVERLAY_VOLUME_SCALE;
         audio_sample_volume_pan(sample, &entry->relativeVolume, NULL);
         entry->relativeVolume *= MSS_OVERLAY_VOLUME_SCALE;
-        if (mss_effectVolume != MSS_FULL_VOLUME)
+        if (mss_effectVolume != MSS_SILENT_VOLUME)
             entry->relativeVolume /= mss_effectVolume;
         entry->basePlaybackRate = channel->basePlaybackRate;
         entry->pitchScale = (float)(
@@ -2390,7 +2390,7 @@ int32_t MSS_GetSoundOverlay3D(mss_sound_overlay_t *overlay,
             channel->logicalVolume * MSS_OVERLAY_VOLUME_SCALE;
         entry->relativeVolume =
             audio_3D_sample_volume(sample) * MSS_OVERLAY_VOLUME_SCALE;
-        if (mss_effectVolume != MSS_FULL_VOLUME)
+        if (mss_effectVolume != MSS_SILENT_VOLUME)
             entry->relativeVolume /= mss_effectVolume;
         entry->basePlaybackRate = channel->basePlaybackRate;
         /* Unlike the 2D and stream bodies, this path stores both integer
@@ -2432,7 +2432,7 @@ int32_t MSS_GetSoundOverlayStream(mss_sound_overlay_t *overlay,
             channel->logicalVolume * MSS_OVERLAY_VOLUME_SCALE;
         audio_stream_volume_pan(stream, &entry->relativeVolume, NULL);
         entry->relativeVolume *= MSS_OVERLAY_VOLUME_SCALE;
-        if (mss_effectVolume != MSS_FULL_VOLUME)
+        if (mss_effectVolume != MSS_SILENT_VOLUME)
             entry->relativeVolume /= mss_effectVolume;
         entry->basePlaybackRate = channel->basePlaybackRate;
         entry->pitchScale = (float)(

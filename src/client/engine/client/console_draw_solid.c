@@ -128,7 +128,7 @@ void Con_DrawSolidConsole(float fraction)
             &con.text[textRow * con.lineWidth];
         rendererExports.TextConsolePaint(
             (float)(int32_t)con.xAdjust * inverseXScale,
-            (float)(y + CON_SMALL_CHAR_WIDTH) * inverseYScale,
+            (float)(y + CON_SMALL_CHAR_HEIGHT) * inverseYScale,
             CON_TEXT_FONT, inverseYScale * CONSOLE_TEXT_SCALE,
             color, text, inverseXScale * (float)CON_SMALL_CHAR_WIDTH,
             con.lineWidth, CON_TEXT_STYLE);

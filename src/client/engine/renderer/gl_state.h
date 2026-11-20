@@ -609,9 +609,8 @@ typedef struct refimport_s {
     void (*FS_WriteFile)(const char *filename, const void *buffer,
                          int32_t size);
     qboolean (*FS_FileExists)(const char *filename); /* original +0x60 */
-    int32_t (*FS_FOpenFileRead)(const char *filename,
-                                int32_t *fileHandle,
-                                qboolean uniqueFile); /* original +0x64 */
+    int32_t (*FS_FOpenFileByMode)(const char *qpath, int32_t *fileHandle,
+                                  fsMode_t mode); /* original +0x64 */
     void (*FS_FCloseFile)(int32_t fileHandle);       /* original +0x68 */
     int32_t (*FS_Read)(void *buffer, int32_t size,
                        int32_t fileHandle);           /* original +0x6c */
@@ -814,7 +813,7 @@ RENDERER_ASSERT_I386_IMPORT_SLOT(FS_ListFiles, 21);
 RENDERER_ASSERT_I386_IMPORT_SLOT(FS_FreeFileList, 22);
 RENDERER_ASSERT_I386_IMPORT_SLOT(FS_WriteFile, 23);
 RENDERER_ASSERT_I386_IMPORT_SLOT(FS_FileExists, 24);
-RENDERER_ASSERT_I386_IMPORT_SLOT(FS_FOpenFileRead, 25);
+RENDERER_ASSERT_I386_IMPORT_SLOT(FS_FOpenFileByMode, 25);
 RENDERER_ASSERT_I386_IMPORT_SLOT(FS_FCloseFile, 26);
 RENDERER_ASSERT_I386_IMPORT_SLOT(FS_Read, 27);
 RENDERER_ASSERT_I386_IMPORT_SLOT(FS_Write, 28);

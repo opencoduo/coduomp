@@ -55,7 +55,7 @@ void BeginShaderSurfaces(shader_t *shader, int32_t vertexCount,
 {
     if (vertexCount >= UINT16_MAX + 1) {
         ri.Error(ERR_DROP,
-                 "\x15surface with shader %s has more than 65,536 vertices",
+                 "\x15surface with shader %s has more than 65,536 vertices\n",
                  shader->name);
     }
 

@@ -31,7 +31,7 @@ void DrawTris(shaderCommands_t *tessellation)
 
     if (r_showtris->integer <= 2 &&
         (tessellation->entity == &backEnd.entity2D ||
-         tessellation->entity == &tr.worldEntity)) {
+         tessellation->entity == &backEnd.debugEntity)) {
         return;
     }
 
