@@ -6,6 +6,7 @@
 #include "compat/coduo_ctype_compat.h"
 #include "compat/coduo_fp_conversion.h"
 #include "compat/crt/format_compat.h"
+#include "compat/crt/msvc_compat.h"
 #include "com_parse.h"
 #include "com_sprintf.h"
 #include "info.h"
@@ -198,9 +199,11 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue,
     cvar->integer = coduo_compat_atoi(cvar->string);
     cvar->resetString = CopyStringInternal(defaultValue);
 
+    /* The Windows client orders the list with the C-locale _stricmp, which
+     * folds letters to lower case before comparing. */
     cvar_t **sortedLink = &cvar_vars;
     while (*sortedLink != NULL &&
-           Q_stricmp(cvar->name, (*sortedLink)->name) >= 0) {
+           coduo_crt_stricmp(cvar->name, (*sortedLink)->name) >= 0) {
         sortedLink = &(*sortedLink)->next;
     }
     cvar->next = *sortedLink;
@@ -807,6 +810,8 @@ qboolean Com_LoadCvarsFromBuffer(const char *const *cvarNames,
             found[index] = 1;
             ++foundCount;
         }
+        /* Tokens after a cvar's value are ignored up to the end of the line. */
+        Com_SkipRestOfLine(&buffer);
     }
 
     Com_EndParseSession();

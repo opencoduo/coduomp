@@ -183,7 +183,6 @@ void Sys_ListFilteredFiles(const char *directory, const char *subdirectory,
                            int32_t *numFiles)
 {
     char searchPath[MAX_OSPATH];
-    char childSubdirectory[MAX_OSPATH];
     char relativePath[MAX_OSPATH];
 
     if (*numFiles >= SYS_LISTFILES_MAX_COUNT)
@@ -205,18 +204,12 @@ void Sys_ListFilteredFiles(const char *directory, const char *subdirectory,
         return;
 
     do {
+        /* The Windows listing does not descend into subdirectories: the
+         * managed directory names are skipped and every other directory is
+         * filtered and listed like a file. */
         if ((findData.attrib & _A_SUBDIR) != 0 &&
-            Sys_IsManagedDirectoryName(findData.name) == qfalse) {
-            if (subdirectory != NULL) {
-                Com_sprintf(childSubdirectory, sizeof(childSubdirectory),
-                            "%s\\%s", subdirectory, findData.name);
-            } else {
-                Com_sprintf(childSubdirectory, sizeof(childSubdirectory),
-                            "%s", findData.name);
-            }
-            Sys_ListFilteredFiles(directory, childSubdirectory, filter, list,
-                                  numFiles);
-        }
+            Sys_IsManagedDirectoryName(findData.name) != qfalse)
+            continue;
 
         if (*numFiles >= SYS_LISTFILES_MAX_COUNT)
             break;
@@ -254,18 +247,11 @@ void Sys_ListFilteredFiles(const char *directory, const char *subdirectory,
 
         if (entry == NULL)
             break;
+        /* Same listing rule as the Windows path: no descent into
+         * subdirectories, managed directory names skipped. */
         if (Sys_PosixPathIsDirectory(searchPath, entry->d_name) != qfalse &&
-            Sys_IsManagedDirectoryName(entry->d_name) == qfalse) {
-            if (subdirectory[0] != '\0') {
-                Com_sprintf(childSubdirectory, sizeof(childSubdirectory),
-                            "%s/%s", subdirectory, entry->d_name);
-            } else {
-                Com_sprintf(childSubdirectory, sizeof(childSubdirectory),
-                            "%s", entry->d_name);
-            }
-            Sys_ListFilteredFiles(directory, childSubdirectory, filter, list,
-                                  numFiles);
-        }
+            Sys_IsManagedDirectoryName(entry->d_name) != qfalse)
+            continue;
 
         if (*numFiles >= SYS_LISTFILES_MAX_COUNT)
             break;

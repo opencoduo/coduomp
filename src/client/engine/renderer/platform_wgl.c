@@ -299,7 +299,12 @@ renderer_wgl_setup_result_t GLW_SetPFD(
             ri.Printf(R_PRINT_ALL, "succeeded\n");
             if (GLW_ValidateOpenGLStrings() != qfalse)
                 return R_WGL_SETUP_SUCCESS;
+            /* A context without its identity strings is released without the
+             * "failed" status line; the validator has already reported it. */
             qwglMakeCurrent(NULL, NULL);
+            qwglDeleteContext(rendererWin32RenderContext);
+            rendererWin32RenderContext = NULL;
+            return R_WGL_SETUP_CONTEXT_FAILED;
         }
 
         qwglDeleteContext(rendererWin32RenderContext);
@@ -356,7 +361,7 @@ qboolean GLW_InitDriver(int32_t colorBits)
             GLW_SetPFD(&rendererWin32PixelFormat);
         if (result != R_WGL_SETUP_SUCCESS) {
             if (result == R_WGL_SETUP_CONTEXT_FAILED) {
-                ri.Printf(R_PRINT_ALL, "...failed hard\n");
+                ri.Printf(R_PRINT_WARNING, "...failed hard\n");
                 return qfalse;
             }
 

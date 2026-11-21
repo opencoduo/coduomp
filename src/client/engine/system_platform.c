@@ -295,13 +295,15 @@ void Sys_CreateSplashWindow(void)
         (HINSTANCE)sysApplicationInstance,
         MAKEINTRESOURCEA(SYS_SPLASH_ICON_RESOURCE));
     windowClass.hCursor = LoadCursorA(NULL, IDC_ARROW);
+    windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     windowClass.lpszClassName = "CoD Splash Screen";
     if (RegisterClassA(&windowClass) == 0)
         return;
     sysSplashClassRegistered = qtrue;
 
-    const int32_t screenWidth = GetSystemMetrics(SM_CXSCREEN);
-    const int32_t screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    /* Centred in the full-screen client area (excluding the task bar). */
+    const int32_t screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
+    const int32_t screenHeight = GetSystemMetrics(SM_CYFULLSCREEN);
     HBITMAP bitmap = (HBITMAP)LoadImageA(
         NULL, "coduo.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     if (bitmap == NULL) {

@@ -1513,9 +1513,9 @@ static void R_AddModelToCell(trRefEntity_t *entity,
      * 0x5b77b0 begins with the color code "^1" (0x5e 0x31), not a \x15 control byte. */
     if (rendererDpvsCellEntityLinkCount ==
         R_DPVS_MAX_CELL_ENTITY_LINKS) {
-        ri.Error(ERR_DROP,
-                 "^1Max xmodel refs (%i) exceeded\n",
-                 rendererDpvsCellEntityLinkCount);
+        ri.Printf(R_PRINT_DEVELOPER,
+                  "^1Max xmodel refs (%i) exceeded\n",
+                  rendererDpvsCellEntityLinkCount);
         return;
     }
 
