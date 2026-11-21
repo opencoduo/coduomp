@@ -563,7 +563,8 @@ void R_AddCoronas(const renderer_dpvs_plane_t *planes, int32_t planeCount)
                            corona->origin[2];
         (void)VectorNormalize(viewDirection);
 
-        if (!(viewDirection[2] >= corona->zCutoff))
+        /* Draw only below the cutoff height; an unordered compare draws. */
+        if (viewDirection[2] >= corona->zCutoff)
             continue;
 
         const long double boundsRadiusRaw =
@@ -589,7 +590,9 @@ void R_AddCoronas(const renderer_dpvs_plane_t *planes, int32_t planeCount)
         entity.shaderRGBA[2] = corona->color[2];
         entity.radius = corona->scale;
 
-        if (viewDirection[2] > corona->zFadeOut) {
+        /* Full alpha at or below the fade-out height (and when unordered);
+         * the alpha fades to zero between there and the cutoff. */
+        if (!(viewDirection[2] > corona->zFadeOut)) {
             entity.shaderRGBA[3] = corona->color[3];
         } else {
             const long double fadedAlphaRaw =

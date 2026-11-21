@@ -415,9 +415,10 @@ const void *RB_SwapBuffers(const swapBuffersCommand_t *command)
         if (r_measureOverdraw->integer != 2) {
             RB_SetGL2D();
             RB_BeginImmediateMode();
+            /* The overdraw tint replaces the frame (destination factor zero). */
             GL_State(GLS_DEPTHTEST_DISABLE |
                      GLS_SRCBLEND_ONE |
-                     GLS_DSTBLEND_ONE);
+                     GLS_DSTBLEND_ZERO);
             GL_Bind(tr.dlightImage);
             GL_Cull(CT_TWO_SIDED);
             qglLoadIdentity();

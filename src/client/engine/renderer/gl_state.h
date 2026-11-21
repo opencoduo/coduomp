@@ -234,8 +234,8 @@ typedef struct frontEndCounters_s {
 } frontEndCounters_t;
 
 /* Map-authored flare/corona record built by R_LoadCorona. scale becomes the
- * sprite radius, zCutoff rejects low view directions, and zFadeOut starts the
- * alpha fade toward that cutoff. The final four bytes are RGBA, including the
+ * sprite radius, zCutoff rejects view directions at or above it, and zFadeOut
+ * starts the alpha fade toward that cutoff. The final four bytes are RGBA, including the
  * loader-supplied constant alpha; there is no ABI gap in this 32-byte record. */
 typedef struct renderer_world_corona_s {
     struct shader_s *shader; /* original +0x00 */
