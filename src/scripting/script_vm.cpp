@@ -108,6 +108,8 @@ enum script_interpreter_opcode_e {
 };
 
 enum {
+    SCRIPT_INTERPRETER_WATCHDOG_PRINT_CHANNEL = 0,
+    SCRIPT_INTERPRETER_WATCHDOG_SOURCE_OFFSET = 0,
     SCRIPT_INTERPRETER_MAX_CALL_DEPTH = 32,
     SCRIPT_INTERPRETER_TIME_MASK = 0x00ffffff,
     SCRIPT_INTERPRETER_MAX_WAIT_SECONDS = 16777,
@@ -1292,14 +1294,14 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                     } else if (script_loopWatchdogWarningFlag != 0) {
                         Com_Printf(
                             "script runtime warning: potential infinite loop in script.\n");
-                        RuntimeError(0, 0, NULL, NULL);
+                        Scr_PrintPrevCodePos(SCRIPT_INTERPRETER_WATCHDOG_PRINT_CHANNEL, codePos, SCRIPT_INTERPRETER_WATCHDOG_SOURCE_OFFSET);
                         script_loopWatchdogTick =
                             rdtsc();
                         codePos += offset;
                     } else if (script_runtimeDeveloperFlag == 0) {
                         Com_Printf(
                             "script runtime error: potential infinite loop in script - killing thread.\n");
-                        RuntimeError(0, 0, NULL, NULL);
+                        Scr_PrintPrevCodePos(SCRIPT_INTERPRETER_WATCHDOG_PRINT_CHANNEL, codePos, SCRIPT_INTERPRETER_WATCHDOG_SOURCE_OFFSET);
                         script_loopWatchdogTick =
                             rdtsc();
                         while (true) {
@@ -1333,13 +1335,13 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 } else if (script_loopWatchdogWarningFlag != 0) {
                     Com_Printf(
                         "script runtime warning: potential infinite loop in script.\n");
-                    RuntimeError(0, 0, NULL, NULL);
+                    Scr_PrintPrevCodePos(SCRIPT_INTERPRETER_WATCHDOG_PRINT_CHANNEL, codePos, SCRIPT_INTERPRETER_WATCHDOG_SOURCE_OFFSET);
                     script_loopWatchdogTick = rdtsc();
                     codePos += ScriptInterpreter_ReadI32(codePos);
                 } else if (script_runtimeDeveloperFlag == 0) {
                     Com_Printf(
                         "script runtime error: potential infinite loop in script - killing thread.\n");
-                    RuntimeError(0, 0, NULL, NULL);
+                    Scr_PrintPrevCodePos(SCRIPT_INTERPRETER_WATCHDOG_PRINT_CHANNEL, codePos, SCRIPT_INTERPRETER_WATCHDOG_SOURCE_OFFSET);
                     script_loopWatchdogTick = rdtsc();
                     while (true) {
                         KillThread(thread);
