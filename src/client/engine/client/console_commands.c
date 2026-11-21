@@ -441,9 +441,10 @@ void Message_Key(int32_t key)
             Com_sprintf(command, sizeof(command),
                         "say_team \"\x15%s\"\n", chatField.buffer);
         } else if (chat_squad != qfalse) {
-            /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
+            /* The original format has no space between the command name
+             * and the quoted message; this is preserved as shipped. */
             Com_sprintf(command, sizeof(command),
-                        "say_squad \"\x15%s\"\n", chatField.buffer);
+                        "say_squad\"\x15%s\"\n", chatField.buffer);
         } else {
             Com_sprintf(command, sizeof(command),
                         "say \"\x15%s\"\n", chatField.buffer);
