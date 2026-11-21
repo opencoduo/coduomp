@@ -238,7 +238,7 @@ void GL_State(uint32_t stateBits)
 
     if ((diff & GLS_LIGHTING) != 0) {
         if ((stateBits & GLS_LIGHTING) != 0 &&
-            tr.world->lightIndexCount != 0 && r_fullbright->integer == 0) {
+            tr.world->lightIndexCount != 0 && r_entFullbright->integer == 0) {
             qglEnable(GL_LIGHTING);
         } else {
             qglDisable(GL_LIGHTING);

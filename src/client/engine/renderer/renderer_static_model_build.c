@@ -22,8 +22,8 @@ renderer_registered_static_model_t *R_SetupDObjToStaticModel(
     XModel *model = NULL;
     int32_t lodCount = 0;
 
-    if (r_optimizeBackend->integer != 0 &&
-        r_optimizeXModels->integer != 0) {
+    if (r_optimize->integer != 0 &&
+        r_optimizeSModels->integer != 0) {
         model = obj->models[0];
         lodCount = model->info->lodCount;
     }

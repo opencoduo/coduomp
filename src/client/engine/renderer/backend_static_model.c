@@ -22,7 +22,7 @@ typedef enum rb_static_model_show_color_e {
 static void RB_SetStaticModelStageColor(const shaderStage_t *stage)
 {
     if (stage->rgbGen == CGEN_LIGHTING_PRECALC) {
-        if (r_fullbright->integer != 0) {
+        if (r_entFullbright->integer != 0) {
             qglColor3f(tr.identityLight, tr.identityLight,
                        tr.identityLight);
         } else {
