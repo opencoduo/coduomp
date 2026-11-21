@@ -671,6 +671,14 @@ void EmitMethod(scr_ast_node_t *object, scr_ast_node_t *call,
  * at key 2; child 0 holds the count and child 1 holds the definition. */
 void AdjustFunctionAddresses(void)
 {
+    /* The definition value is cleared once, before the loop. A function with
+     * no definition keeps the previous definition's type for the developer
+     * code-position test below. */
+    VariableValue definitionValue = {
+        .payload = 0,
+        .type = SCRIPT_VAR_UNDEFINED
+    };
+
     for (uint16_t functionSlot =
              FindNextSibling(script_currentFunctionRoot);
          functionSlot != 0;
@@ -679,10 +687,6 @@ void AdjustFunctionAddresses(void)
             FindObject(functionSlot);
         const uint16_t definitionSlot = FindVariable(
             functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
-        VariableValue definitionValue = {
-            .payload = 0,
-            .type = SCRIPT_VAR_UNDEFINED
-        };
 
         if (definitionSlot != 0) {
             GetVariableValue(definitionSlot, &definitionValue);
