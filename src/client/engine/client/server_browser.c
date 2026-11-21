@@ -2005,6 +2005,10 @@ int32_t LAN_CompareServers(lan_server_source_t source,
         return 0;
     }
 
+    /* Tie breakers keep the requested direction only for the ping key;
+     * for every other key they are ascending. */
+    if (comparison == 0 && sortKey != LAN_SERVER_SORT_PING)
+        sortDescending = qfalse;
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): keep equal primary keys
      * stable under the complete user-facing server identity. */
     if (comparison == 0)
