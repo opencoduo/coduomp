@@ -5,8 +5,6 @@
 
 #include <string.h>
 
-uint32_t rendererCurrentFragmentShader;
-renderer_vertex_program_t *rendererCurrentVertexProgram;
 renderer_vertex_program_t rendererVertexPrograms[R_MAX_VERTEX_PROGRAMS];
 int32_t rendererVertexProgramCount;
 
@@ -108,7 +106,7 @@ void R_DeleteVertexPrograms(void)
 
     if (glConfig.vertexProgramAvailable != qfalse) {
         qglBindProgramARB(GL_VERTEX_PROGRAM_ARB, 0);
-        rendererCurrentVertexProgram = NULL;
+        glState.currentVertexProgram = NULL;
 
         for (programIndex = 0;
              programIndex < rendererVertexProgramCount;
@@ -137,11 +135,11 @@ void R_InitVertexPrograms(void)
  * instance at 0x004c5089..0x004c50a3. */
 void GL_BindFragmentShaderATI(uint32_t shader)
 {
-    if (shader == rendererCurrentFragmentShader)
+    if (shader == glState.currentFragmentShader)
         return;
 
     qglBindFragmentShaderATI(shader);
-    rendererCurrentFragmentShader = shader;
+    glState.currentFragmentShader = shader;
 }
 
 /* Source: CoDUOMP.exe 0x004c5080..0x004c50d9.
@@ -163,5 +161,5 @@ void R_DeleteFragmentShaders(void)
     }
 
     tr.fragmentShaderCount = 0;
-    rendererCurrentFragmentShader = 0;
+    glState.currentFragmentShader = 0;
 }

@@ -227,8 +227,11 @@ void CL_UpdateLevelHunkUsage(void)
         Z_FreeInternal(outputBuffer);
     }
 
-    if (FS_FOpenFileByMode(
-            hunkUsagePath, &fileHandle, FS_APPEND) < 0) {
+    /* The original tests the handle, not the open result. A failed append
+     * open leaves handle 0, which FS_Write and FS_FCloseFile ignore, so the
+     * error is not raised and the usage line is dropped. */
+    (void)FS_FOpenFileByMode(hunkUsagePath, &fileHandle, FS_APPEND);
+    if (fileHandle < 0) {
         Com_Error(ERR_DROP,
                   "EXE_ERR_HUNKUSAGE_CANT_WRITE");
     }

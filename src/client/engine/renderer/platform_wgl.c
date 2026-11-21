@@ -491,9 +491,9 @@ qboolean GLW_CreateWindow(const char *driverName, int32_t width,
         AdjustWindowRect(&windowRect, style, FALSE);
 
         cvar_t *xPosition =
-            ri.Cvar_Get("vid_xpos", "0", CVAR_NONE);
+            ri.Cvar_Get("vid_xpos", "", CVAR_NONE);
         cvar_t *yPosition =
-            ri.Cvar_Get("vid_ypos", "0", CVAR_NONE);
+            ri.Cvar_Get("vid_ypos", "", CVAR_NONE);
         windowX = xPosition->integer;
         windowY = yPosition->integer;
         if (windowX < 0)

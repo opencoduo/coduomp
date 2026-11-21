@@ -229,7 +229,7 @@ void KillThread(uint16_t objectHandle)
                                          objectHandle);
     }
 
-    if (GetVariableName(objectHandle) != 0) {
+    if ((uint16_t)GetVariableName(objectHandle) != 0) {
         uint16_t parentPauseSlot =
             FindObjectVariable(script_pauseArrayHandle,
                                            parentHandle);
@@ -242,6 +242,10 @@ void KillThread(uint16_t objectHandle)
             GetVariableValueAddress(waitingSlot)->payload;
 
         VM_CancelNotify(waitObject, objectHandle);
+        /* Cancelling the notify can change the pause array, so the parent's
+         * bucket is looked up again before the thread entry is removed. */
+        parentPauseBucket = FindObject(
+            FindObjectVariable(script_pauseArrayHandle, parentHandle));
         RemoveObjectVariable(parentPauseBucket,
                                          objectHandle);
         if (GetArraySize(parentPauseBucket) == 0) {

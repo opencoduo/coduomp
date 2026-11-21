@@ -924,9 +924,9 @@ void RB_SetupVertexProgram(renderer_vertex_program_t *vertexProgram)
 {
     vec4_t parameter;
 
-    if (rendererCurrentVertexProgram != vertexProgram) {
+    if (glState.currentVertexProgram != vertexProgram) {
         qglBindProgramARB(GL_VERTEX_PROGRAM_ARB, vertexProgram->glProgramName);
-        rendererCurrentVertexProgram = vertexProgram;
+        glState.currentVertexProgram = vertexProgram;
     }
 
     GlobalPositionToLocal(
