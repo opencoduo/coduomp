@@ -23,6 +23,8 @@ enum {
     R_INTERNAL_SHADER_TEXCOORD_COMPONENTS = 2,
     R_MAX_TEXTURE_MODIFIERS = 4,
     R_SHADER_TOKEN_COMPARE_LIMIT = 99999,
+    /* constantColor channels compared under the colour generator. */
+    SHADER_CONSTANT_COLOR_RGB_COUNT = 3,
     R_PARSE_IMAGE_COLOR_SOURCE_FLAG = 0x10,
     R_PARSE_IMAGE_LIGHTMAP_SOURCE_FLAG = 0x20,
     R_PARSE_IMAGE_16_BIT_COLOR_DEPTH = 16,
@@ -1489,8 +1491,8 @@ int32_t CompareTexEnvCombineArgs(
 /* Source: CoDUOMP.exe 0x004f73c0..0x004f746c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004f73c0_004f746c.mcode.
  * Name: exact same-module Mac symbol CompareTexEnvCombine. The original first
- * compares the typed-pointer distance; all recovered consumers use only its
- * zero/nonzero result. */
+ * compares the typed-pointer distance; through CompareTextureBundles the
+ * result reaches the shader-merge qsort, where only its sign matters. */
 int32_t CompareTexEnvCombine(const shader_texture_combine_t *first,
                              const shader_texture_combine_t *second)
 {
@@ -1599,23 +1601,36 @@ int32_t CompareWaveForms(const waveForm_t *first,
  *
  * The designated image pair permits one image substitution at animation frame
  * zero. Every later frame must retain pointer identity. The original returns
- * typed pointer distances for pointer mismatches; its sole consumer tests only
- * zero/nonzero, which is represented portably here by 1. */
+ * typed pointer distances for pointer mismatches. Mismatches return the signed record order, field difference, or byte
+ * comparison sign: the result orders the qsort in
+ * R_MergeShadersForImageSheets, so its sign must be consistent. */
+/* NOT_FROM_ORIGINAL_SOURCE: portable sign of the Windows typed-record
+ * distance; a missing record orders first. */
+static int32_t coduomp_record_order(const void *first, const void *second)
+{
+    if (first == second)
+        return 0;
+    return (uintptr_t)first < (uintptr_t)second ? -1 : 1;
+}
+
 int32_t CompareTextureBundles(
     const textureBundle_t *first,
     const textureBundle_t *second,
     const image_t *firstEquivalentImage,
     const image_t *secondEquivalentImage)
 {
+    const int32_t imageOrder =
+        coduomp_record_order(first->image[0], second->image[0]);
+
     if (first->image[0] != second->image[0]) {
         if (first->image[0] != firstEquivalentImage ||
             second->image[0] != secondEquivalentImage) {
-            return 1;
+            return imageOrder;
         }
     }
 
     if (first->image[0] == NULL || second->image[0] == NULL)
-        return first->image[0] == second->image[0] ? 0 : 1;
+        return imageOrder;
 
     if (first->numImageAnimations > 1 ||
         second->numImageAnimations > 1) {
@@ -1631,18 +1646,21 @@ int32_t CompareTextureBundles(
                        ? -1
                        : 1;
         }
+        /* The Windows client loads the second bundle's frame one once and
+         * compares every later frame of the first bundle against it; this
+         * appears to be an original-source slip and is kept as shipped. */
         for (int32_t imageIndex = 1;
              imageIndex < first->numImageAnimations;
              ++imageIndex) {
-            if (first->image[imageIndex] !=
-                second->image[imageIndex]) {
-                return 1;
-            }
+            const int32_t frameOrder =
+                coduomp_record_order(first->image[imageIndex], second->image[1]);
+            if (frameOrder != 0)
+                return frameOrder;
         }
     }
 
     if (first->waterMap != second->waterMap)
-        return 1;
+        return coduomp_record_order(first->waterMap, second->waterMap);
     if (first->texCoordComponentCount !=
         second->texCoordComponentCount) {
         return first->texCoordComponentCount -
@@ -1657,11 +1675,12 @@ int32_t CompareTextureBundles(
                (int32_t)second->tcGen;
 
     if (first->tcGen != TCGEN_TEXTURE) {
-        if (first->tcGen == TCGEN_VECTOR &&
-            memcmp(first->tcGenVectors,
-                   second->tcGenVectors,
-                   sizeof(first->tcGenVectors)) != 0) {
-            return 1;
+        if (first->tcGen == TCGEN_VECTOR) {
+            const int32_t vectorComparison =
+                memcmp(first->tcGenVectors, second->tcGenVectors,
+                       sizeof(first->tcGenVectors));
+            if (vectorComparison != 0)
+                return vectorComparison;
         }
 
         if (first->numTexMods != second->numTexMods)
@@ -1670,16 +1689,17 @@ int32_t CompareTextureBundles(
         for (int32_t texModIndex = 0;
              texModIndex < first->numTexMods;
              ++texModIndex) {
-            if (memcmp(&first->texMods[texModIndex],
+            const int32_t texModComparison =
+                memcmp(&first->texMods[texModIndex],
                        &second->texMods[texModIndex],
-                       sizeof(first->texMods[texModIndex])) != 0) {
-                return 1;
-            }
+                       sizeof(first->texMods[texModIndex]));
+            if (texModComparison != 0)
+                return texModComparison;
         }
 
         const int32_t textureShaderComparison =
-            CompareNvTexShaders(second->textureShader,
-                                first->textureShader);
+            CompareNvTexShaders(first->textureShader,
+                                second->textureShader);
         if (textureShaderComparison != 0)
             return textureShaderComparison;
     }
@@ -1777,7 +1797,9 @@ int32_t CompareMergableShaders(const shader_t *left,
 
         if (leftStage->rgbGen == CGEN_WAVEFORM ||
             leftStage->rgbGen == CGEN_CONSTANT) {
-            for (int32_t component = 0; component < 4; ++component) {
+            /* The colour generator gates the three colour channels; the alpha
+             * channel is compared under the alpha generator below. */
+            for (int32_t component = 0; component < SHADER_CONSTANT_COLOR_RGB_COUNT; ++component) {
                 if (leftStage->constantColor[component] !=
                     rightStage->constantColor[component]) {
                     return (int32_t)leftStage->constantColor[component] -
@@ -4289,7 +4311,8 @@ qboolean ParseNVRC_GeneralMappedRegister(
         return qfalse;
     }
 
-    if (ParseNVRC_FinalRegister(
+    /* General-combiner inputs read only the ordinary registers. */
+    if (ParseNVRC_ReadRegister(
             text, &input->input, &input->componentUsage,
             defaultComponentUsage) == qfalse) {
         return qfalse;
@@ -6640,29 +6663,32 @@ void UpdateRequiresCondition(
         (long double)coduo_compat_atof(literalOperand->value);
     literalValue = (float)literalValueRaw;
     if (!isfinite(literalValueRaw) ||
-        literalValueRaw < -2147483648.0L ||
-        literalValueRaw >= 2147483648.0L) {
+        literalValueRaw <= (long double)INT32_MIN - 1.0L ||
+        literalValueRaw >= (long double)INT32_MAX + 1.0L) {
         return;
     }
     integerValue = (int32_t)literalValueRaw;
-    if ((float)integerValue != literalValue)
+    /* The truncated integer is compared exactly with the stored float. */
+    if ((long double)integerValue != (long double)literalValue)
         return;
 
     if (dependencyOperand->dependency !=
         SHADER_REQUIREMENT_MAX_TEXTURE_UNITS_ARB) {
-        const qboolean literalIsOne = literalValue == 1.0f;
+        /* The literal is tested against zero: a nonzero literal under ==, or a
+         * zero literal under !=, names the dependency. */
+        const qboolean literalIsZero = literalValue == 0.0f;
         const qboolean dependencyIsNegated =
             (dependencyOperand->leadingNotCount & 1) != 0;
         qboolean recordDependency = qfalse;
 
         if (operatorKind == SHADER_REQUIREMENT_NOT_EQUAL) {
             recordDependency = dependencyIsNegated
-                                   ? !literalIsOne
-                                   : literalIsOne;
+                                   ? !literalIsZero
+                                   : literalIsZero;
         } else if (operatorKind == SHADER_REQUIREMENT_EQUAL) {
             recordDependency = dependencyIsNegated
-                                   ? literalIsOne
-                                   : !literalIsOne;
+                                   ? literalIsZero
+                                   : !literalIsZero;
         }
 
         if (recordDependency != qfalse) {

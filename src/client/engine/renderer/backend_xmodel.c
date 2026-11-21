@@ -113,7 +113,7 @@ static void coduomp_draw_optimized_xmodel_passes(
     if ((r_showtris->integer & 1) != 0)
         qglDepthRange(0.0, 0.1);
 
-    shaderStage_t *stage = tr.defaultShader->stages[0];
+    shaderStage_t *stage = tr.showTrisShader->stages[0];
     GL_State(stage->stateBits);
     RB_SetupMultitexture(stage, baseTexCoords,
                          (int32_t)sizeof(XSurfaceARBVert));
@@ -592,7 +592,7 @@ void RB_SurfaceXModelRigidATI(renderer_surface_t *surfaceData)
         if ((r_showtris->integer & 1) != 0)
             qglDepthRange(0.0, 0.1);
 
-        RB_BindOptimizedXModelStage(tr.defaultShader->stages[0]);
+        RB_BindOptimizedXModelStage(tr.showTrisShader->stages[0]);
         if (r_showtris->integer >= 5) {
             uint8_t color[4];
             RB_ChooseSurfaceCountColor(indexCount, color);

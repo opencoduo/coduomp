@@ -181,8 +181,9 @@ void SCR_DrawDebugGraph(void)
 
         const int32_t barHeight =
             (int32_t)value % graphHeight;
+        /* Newest sample on the right: column x draws at width - 1 - x. */
         rendererExports.StretchPic(
-            (float)x, (float)(screenHeight - barHeight),
+            (float)(width - 1 - x), (float)(screenHeight - barHeight),
             1.0f, (float)barHeight,
             0.0f, 0.0f, 0.0f, 0.0f, cls.whiteShader);
     }

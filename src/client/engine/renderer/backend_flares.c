@@ -884,6 +884,7 @@ void RB_RenderFlares(void)
         qglDisable(GL_CLIP_PLANE0);
 
     qglPushMatrix();
+    qglLoadIdentity();
     qglMatrixMode(GL_PROJECTION);
     qglPushMatrix();
     qglLoadIdentity();
@@ -901,6 +902,7 @@ void RB_RenderFlares(void)
         GL_State(GLS_DEPTHTEST_DISABLE |
                  GLS_SRCBLEND_ONE |
                  GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
+        GL_TexEnv(GL_MODULATE);
         RB_glColor4f(glareFraction, glareFraction, glareFraction,
                      blindFraction);
         RB_glBegin(GL_QUADS);

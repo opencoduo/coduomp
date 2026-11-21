@@ -47,7 +47,7 @@ static void RB_SetStaticModelShowColor(
 
     if (colorType == RB_STATIC_MODEL_SHOW_COLOR_T2V3) {
         qglColor3f(tr.identityLight * 0.5f,
-                   tr.identityLight * 0.21875f,
+                   tr.identityLight * 0.75f,
                    tr.identityLight);
     } else {
         qglColor3f(tr.identityLight * 0.25f,

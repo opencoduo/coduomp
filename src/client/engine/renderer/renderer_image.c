@@ -2,6 +2,7 @@
 #include "platform_gamma.h"
 
 #include "../math/vector_math.h"
+#include "math/q_math.h"
 #include "../platform/crt_boundary.h"
 #include "gl_api.h"
 #include "gl_state.h"
@@ -29,6 +30,8 @@ enum {
     R_CUBE_FACE_COUNT = 6,
     R_RENORMALIZE_CUBE_SIZE = 64,
     R_PIXEL_COMPONENT_COUNT = 4,
+    /* A registered cvar starts at modification count 1; a change raises it. */
+    R_DLIGHT_CVAR_INITIAL_MODIFICATION_COUNT = 1,
     /* Original storage 0x038878c0..0x038879bf: 32 eight-byte i386 allocation
      * records. The following 0x100 bytes belong to rendererGammaTable; the
      * active allocation count is discontiguous at 0x0389fec0. */
@@ -673,7 +676,9 @@ static void R_CreateDlightImage(void)
         IMAGE_FLAG_CLAMP_S | IMAGE_FLAG_CLAMP_T,
         R_IMAGE_TRACK_MISC, NULL);
 
-    if (radius->integer > 1 || shift->integer > 1) {
+    /* The diagnostic image is written once either cvar has been changed. */
+    if (radius->modificationCount > R_DLIGHT_CVAR_INITIAL_MODIFICATION_COUNT ||
+        shift->modificationCount > R_DLIGHT_CVAR_INITIAL_MODIFICATION_COUNT) {
         memset(&tga.header, 0, sizeof(tga.header));
         tga.header.imageType = 2;
         tga.header.width[0] = R_DLIGHT_IMAGE_SIZE;
@@ -1726,9 +1731,11 @@ image_t *R_LoadCubeMapImage(const char *name, uint32_t flags,
                         &facePixels[face][
                             (row * R_RENORMALIZE_CUBE_SIZE + column) *
                             R_PIXEL_COMPONENT_COUNT];
-                    pixel[0] = (uint8_t)((normal[0] + 1.0f) * encodeScale);
-                    pixel[1] = (uint8_t)((normal[1] + 1.0f) * encodeScale);
-                    pixel[2] = (uint8_t)((normal[2] + 1.0f) * encodeScale);
+                    /* Stored as float and rounded by FastRound
+                     * (0x00508219..0x0050828c). */
+                    pixel[0] = (uint8_t)FastRound((float)(((long double)normal[0] + 1.0L) * (long double)encodeScale));
+                    pixel[1] = (uint8_t)FastRound((float)(((long double)normal[1] + 1.0L) * (long double)encodeScale));
+                    pixel[2] = (uint8_t)FastRound((float)(((long double)normal[2] + 1.0L) * (long double)encodeScale));
                     pixel[3] = UINT8_MAX;
                 }
             }
@@ -3170,13 +3177,17 @@ void R_HeightmapImage(uint8_t *pixels, int32_t width, int32_t height,
                 (long double)normalZSquared);
             const float inverseLength = (float)inverseLengthRaw;
 
-            normalPixels[pixel] =
-                (uint8_t)((normalXRaw * inverseLengthRaw + 1.0L) *
-                          (long double)encodeScale);
-            normalPixels[pixel + 1] =
-                (uint8_t)((normalY * inverseLength + 1.0f) * encodeScale);
-            normalPixels[pixel + 2] =
-                (uint8_t)((normalZ * inverseLength + 1.0f) * encodeScale);
+            /* Each channel is stored as float and rounded by FastRound
+             * (0x00507b68..0x00507bd5); the low byte is kept. */
+            normalPixels[pixel] = (uint8_t)FastRound(
+                (float)((normalXRaw * inverseLengthRaw + 1.0L) *
+                        (long double)encodeScale));
+            normalPixels[pixel + 1] = (uint8_t)FastRound(
+                (float)(((long double)normalY * inverseLength + 1.0L) *
+                        (long double)encodeScale));
+            normalPixels[pixel + 2] = (uint8_t)FastRound(
+                (float)(((long double)normalZ * inverseLength + 1.0L) *
+                        (long double)encodeScale));
             normalPixels[pixel + 3] = pixels[pixel + 3];
         }
     }

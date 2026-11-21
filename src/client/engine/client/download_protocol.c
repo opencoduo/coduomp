@@ -176,8 +176,7 @@ qboolean CL_WWWBadChecksum(const char *pakName)
  * telling the server "donedl"; a no-download path enters map loading. */
 void CL_DownloadsComplete(void)
 {
-    (void)Cvar_Set2(
-        "cl_downloadName", "", qtrue);
+    (void)Cvar_Set2("ui_dl_running", "0", qtrue);
 
     if (cl_updateStarted != qfalse) {
         if (strlen(cl_updateFileName) >=
