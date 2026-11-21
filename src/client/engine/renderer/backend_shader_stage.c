@@ -3318,7 +3318,7 @@ void RB_SingleStageGeneric(shaderStage_t *stage, int32_t indexCount,
 
     image_t *image;
     if ((tess.shader->stages[0]->stateBits & GLS_LIGHTING) != 0 &&
-        r_lightmap->integer != 0) {
+        r_debugEntLight->integer != 0) {
         image = tr.whiteImage;
     } else {
         image = RB_GetAnimatedImage(&stage->bundle[0],

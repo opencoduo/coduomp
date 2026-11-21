@@ -18,7 +18,7 @@ void R_BeginDelayedImageGroup(const char *modelName)
         return;
     }
 
-    if (r_highLodDist->integer != 0 &&
+    if (r_errorOnConflicts->integer != 0 &&
         tr.ignorePrecacheErrorCount == 0) {
         ri.Error(ERR_DROP, "\x15model '%s' not precached\n", modelName);
     }

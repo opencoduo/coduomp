@@ -3659,21 +3659,12 @@ qboolean ParseNVTextureInput(
                     GL_DOT_PRODUCT_DIFFUSE_CUBE_MAP_NV) {
                 break;
             }
-            if (bundleIndex >= 2) {
-                shader_texture_shader_t *twoBundlesBack =
-                    stage->bundle[bundleIndex - 2].textureShader;
-                if (twoBundlesBack != NULL &&
-                    twoBundlesBack->operation == GL_DOT_PRODUCT_NV) {
-                    break;
-                }
-            }
-
             ri.Printf(
                 R_PRINT_WARNING,
                 "WARNING: bundle %i (from 0) must use "
                 "'nvTexShader dot3' or "
                 "'nvTexShader dot3_diffuse_cubemap' in shader %s\n",
-                bundleIndex - 2, rendererParsedShader.name);
+                bundleIndex - 1, rendererParsedShader.name);
             return qfalse;
 
         default:
@@ -3682,6 +3673,25 @@ qboolean ParseNVTextureInput(
                 "WARNING: bundle %i (from 0) must use "
                 "'nvTexShader dot3' in shader %s\n",
                 bundleIndex - 1, rendererParsedShader.name);
+            return qfalse;
+        }
+    }
+
+    /* The reflect operations also need dot3 two bundles back, whichever of
+     * dot3 or dot3_diffuse_cubemap the previous bundle uses. */
+    if (textureShader->operation == GL_DOT_PRODUCT_REFLECT_CUBE_MAP_NV ||
+        textureShader->operation ==
+            GL_DOT_PRODUCT_CONST_EYE_REFLECT_CUBE_MAP_NV) {
+        const shader_texture_shader_t *twoBundlesBack =
+            bundleIndex >= 2 ? stage->bundle[bundleIndex - 2].textureShader
+                             : NULL;
+        if (twoBundlesBack == NULL ||
+            twoBundlesBack->operation != GL_DOT_PRODUCT_NV) {
+            ri.Printf(
+                R_PRINT_WARNING,
+                "WARNING: bundle %i (from 0) must use "
+                "'nvTexShader dot3' in shader %s\n",
+                bundleIndex - 2, rendererParsedShader.name);
             return qfalse;
         }
     }

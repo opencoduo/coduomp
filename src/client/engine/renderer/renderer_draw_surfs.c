@@ -987,7 +987,7 @@ void R_GenerateDrawSurfs(void)
     R_AddPolygonSurfaces();
     R_AddEntitySurfaces();
 
-    if (r_vc_showlog->integer != 0)
+    if (r_vc_makelog->integer != 0)
         R_ShowLightVisCachePoints();
 }
 
