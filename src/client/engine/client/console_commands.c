@@ -483,10 +483,11 @@ void Message_Key(int32_t key)
             Com_sprintf(command, sizeof(command),
                         "say_team \"\x15%s\"\n", chatField.buffer);
         } else if (chat_squad != qfalse) {
-            /* The original format has no space between the command name
-             * and the quoted message; this is preserved as shipped. */
+            /* NOT_FROM_ORIGINAL_SOURCE: the original format omits the space
+             * between the command name and the quoted message, so the server
+             * tokenizer does not see say_squad as its own command. */
             Com_sprintf(command, sizeof(command),
-                        "say_squad\"\x15%s\"\n", chatField.buffer);
+                        "say_squad \"\x15%s\"\n", chatField.buffer);
         } else {
             Com_sprintf(command, sizeof(command),
                         "say \"\x15%s\"\n", chatField.buffer);
