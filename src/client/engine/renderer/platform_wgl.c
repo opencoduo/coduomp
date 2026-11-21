@@ -145,7 +145,7 @@ int32_t GLW_ChoosePFD(
 
         if ((candidate->dwFlags & R_PFD_GENERIC_FORMAT) != 0 &&
             r_allowSoftwareGL->integer == 0) {
-            if (r_logFile->integer != 0) {
+            if (r_verbose->integer != 0) {
                 ri.Printf(R_PRINT_ALL,
                           "...PFD %d rejected, software acceleration\n",
                           index);
@@ -153,7 +153,7 @@ int32_t GLW_ChoosePFD(
             continue;
         }
 
-        if (r_logFile->integer != 0) {
+        if (r_verbose->integer != 0) {
             ri.Printf(R_PRINT_ALL,
                       "ChoosePFD: format %i: %i color %i depth %i stencil\n",
                       index, candidate->cColorBits, candidate->cDepthBits,
@@ -161,13 +161,13 @@ int32_t GLW_ChoosePFD(
         }
 
         if (candidate->iPixelType != R_PFD_TYPE_RGBA) {
-            if (r_logFile->integer != 0)
+            if (r_verbose->integer != 0)
                 ri.Printf(R_PRINT_ALL,
                           "...PFD %d rejected, not RGBA\n", index);
             continue;
         }
         if ((candidate->dwFlags & preferred->dwFlags) != preferred->dwFlags) {
-            if (r_logFile->integer != 0) {
+            if (r_verbose->integer != 0) {
                 ri.Printf(R_PRINT_ALL,
                           "...PFD %d rejected, improper flags (%x instead of %x)\n",
                           index, (unsigned int)candidate->dwFlags, (unsigned int)preferred->dwFlags);
@@ -175,7 +175,7 @@ int32_t GLW_ChoosePFD(
             continue;
         }
         if (candidate->cDepthBits < R_MIN_DEPTH_BITS) {
-            if (r_logFile->integer != 0) {
+            if (r_verbose->integer != 0) {
                 ri.Printf(R_PRINT_ALL,
                           "...PFD %d rejected, insufficient depth bits (%d instead of %d)\n",
                           index, candidate->cDepthBits, preferred->cDepthBits);
@@ -184,7 +184,7 @@ int32_t GLW_ChoosePFD(
         }
         if (candidate->cStencilBits < R_MIN_STENCIL_BITS &&
             preferred->cStencilBits > 0) {
-            if (r_logFile->integer != 0) {
+            if (r_verbose->integer != 0) {
                 ri.Printf(R_PRINT_ALL,
                           "...PFD %d rejected, insufficient stencil bits (%d instead of %d)\n",
                           index, candidate->cStencilBits,

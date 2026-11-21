@@ -895,9 +895,11 @@ void XAnimUpdateServerInfoInternal(uint32_t nodeIndex, float delta,
             }
         }
 
-        if ((long double)secondary->time - currentTimeRaw <=
-            (long double)((int32_t)currentFrame -
-                          (int32_t)secondary->cycleCount)) {
+        /* An unordered comparison takes the update path, as in the shipped
+         * fcompp/test ah,0x41 sequence. */
+        if (!((long double)secondary->time - currentTimeRaw >
+              (long double)((int32_t)currentFrame -
+                            (int32_t)secondary->cycleCount))) {
             float currentTime = (float)currentTimeRaw;
             if (allowNotify) {
                 xanim_evalCurrentTime = currentTime;
@@ -946,9 +948,10 @@ void XAnimUpdateServerInfoInternal(uint32_t nodeIndex, float delta,
         return;
     }
 
-    if ((long double)secondary->time - currentTimeRaw <=
-        (long double)((int32_t)currentFrame -
-                      (int32_t)secondary->cycleCount)) {
+    /* An unordered comparison takes the update path here as well. */
+    if (!((long double)secondary->time - currentTimeRaw >
+          (long double)((int32_t)currentFrame -
+                        (int32_t)secondary->cycleCount))) {
         float currentTime = (float)currentTimeRaw;
         xanim_evalCurrentTime = currentTime;
         if (allowNotify) {
