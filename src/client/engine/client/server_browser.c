@@ -1357,7 +1357,7 @@ void CL_ServerStatus_f(void)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004162e0_00416451.mcode.
  * Name and command behavior: exact same-module Mac symbol CL_LocalServers_f.
  * The two four-port broadcast passes cover 28960..28963. Resetting each local
- * record deliberately preserves its dirty byte, ping, and trailing strings. */
+ * record clears all of it except its dirty byte. */
 void CL_LocalServers_f(void)
 {
     enum {
@@ -1388,7 +1388,7 @@ void CL_LocalServers_f(void)
     for (int32_t index = 0; index < LAN_LOCAL_SERVER_CAPACITY; ++index) {
         const uint8_t dirty = cls.localServers[index].dirty;
         memset(&cls.localServers[index], 0,
-               offsetof(lan_server_info_t, ping));
+               sizeof(cls.localServers[index]));
         cls.localServers[index].dirty = dirty;
     }
 

@@ -533,7 +533,8 @@ typedef enum cullType_e {
 } cullType_t;
 
 /* Q3 supplies the inherited glstate_t identity and still-valid member names;
- * the two shipped CoD clients prove this expanded and reordered 0xd0 form. */
+ * the two shipped CoD clients prove this expanded and reordered form, and
+ * CoDUOMP.exe 0x004f70b6 clears all 0xd8 bytes of it in GLimp_Shutdown. */
 typedef struct glstate_s {
     int32_t currenttmu;                      /* original +0x00 */
     int32_t currentClientTmu;                   /* original +0x04 */
@@ -557,6 +558,8 @@ typedef struct glstate_s {
     trRefEntity_t *currentLightingEntity; /* original +0xc4 */
     uint32_t currentLightingFlags;             /* original +0xc8 */
     uint32_t normalizeTarget;                   /* original +0xcc */
+    uint32_t currentFragmentShader;             /* original +0xd0: ATI shader */
+    struct renderer_vertex_program_s *currentVertexProgram; /* original +0xd4 */
 } glstate_t;
 
 #if defined(_MSC_VER)
@@ -1359,7 +1362,11 @@ _Static_assert(offsetof(glstate_t, normalizeTarget) == 0xcc,
                "i386 GL-state normalization target moved");
 _Static_assert(sizeof(((glstate_t *)0)->normalizeTarget) == 0x04,
                "i386 GL-state normalization-target extent changed");
-_Static_assert(sizeof(glstate_t) == 0xd0,
+_Static_assert(offsetof(glstate_t, currentFragmentShader) == 0xd0,
+               "i386 GL-state current fragment shader moved");
+_Static_assert(offsetof(glstate_t, currentVertexProgram) == 0xd4,
+               "i386 GL-state current vertex program moved");
+_Static_assert(sizeof(glstate_t) == 0xd8,
                "original i386 GL-state size changed");
 _Static_assert(_Alignof(glconfig_t) == 0x04,
                "i386 renderer GL-config alignment changed");

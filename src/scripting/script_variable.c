@@ -358,9 +358,9 @@ uint16_t GetArrayVariableUnsigned(uint16_t parent, uint32_t name)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004843a0_004844bb.mcode. */
 uint16_t GetVariableField(uint16_t parent, uint16_t name)
 {
-    uint16_t child = FindVariable(parent, name);
-    if (child != 0) {
-        return child;
+    uint16_t index = FindVariableIndexInternal(parent, name);
+    if (index != 0) {
+        return script_variableIndirections[index].valueIndex;
     }
 
     script_variable_node_t *parentNode =

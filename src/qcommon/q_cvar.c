@@ -1034,7 +1034,7 @@ void Cvar_DumpToChannel(int32_t channel)
     Com_PrintMessage(
         channel,
         "=============================== END CVAR DUMP "
-        "====================================\n");
+        "=====================================\n");
 }
 
 /* Source: CoDUOMP.exe 0x0043ec60..0x0043ece7, recovered from the executable

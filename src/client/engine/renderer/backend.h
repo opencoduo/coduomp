@@ -1975,7 +1975,6 @@ extern shaderStage_t
     rendererParsedShaderStages[R_MAX_SHADER_STAGES];
 extern glyphInfo_t rendererAsianGlyph;
 extern renderer_sun_state_t rendererSunState;
-extern renderer_vertex_program_t *rendererCurrentVertexProgram;
 extern renderer_vertex_program_t
     rendererVertexPrograms[R_MAX_VERTEX_PROGRAMS];
 extern int32_t rendererVertexProgramCount;
@@ -1995,7 +1994,6 @@ extern uint8_t rendererGammaOverbrightTable[256];
 extern uint8_t rendererOverbrightTable[256];
 extern uint8_t rendererInverseOverbrightTable[256];
 extern uint8_t rendererIntensityTable[256];
-extern uint32_t rendererCurrentFragmentShader;
 extern plane_t rendererMarkProjectionPlane;
 extern int32_t rendererRegisteredFontCount;
 extern qboolean rendererAsianFontLoaded;
