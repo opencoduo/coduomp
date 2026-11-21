@@ -124,11 +124,11 @@ void Field_KeyDownEvent(console_input_field_t *field, int32_t key)
             ++field->cursor;
 
         if (keyStates[K_CTRL].down != qfalse) {
-            while (field->cursor < length && coduo_crt_isspace(
+            while (field->cursor < length && coduo_crt_isalnum(
                        (int32_t)(signed char)field->buffer[field->cursor])) {
                 ++field->cursor;
             }
-            while (field->cursor < length && !coduo_crt_isspace(
+            while (field->cursor < length && !coduo_crt_isalnum(
                        (int32_t)(signed char)field->buffer[field->cursor])) {
                 ++field->cursor;
             }
@@ -138,11 +138,7 @@ void Field_KeyDownEvent(console_input_field_t *field, int32_t key)
             --field->cursor;
 
         if (keyStates[K_CTRL].down != qfalse) {
-            while (field->cursor > 0 && coduo_crt_isspace(
-                       (int32_t)(signed char)field->buffer[field->cursor - 1])) {
-                --field->cursor;
-            }
-            while (field->cursor > 0 && !coduo_crt_isspace(
+            while (field->cursor > 0 && coduo_crt_isalnum(
                        (int32_t)(signed char)field->buffer[field->cursor - 1])) {
                 --field->cursor;
             }

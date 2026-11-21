@@ -295,7 +295,7 @@ void CL_BeginDownload(const char *localName, const char *remoteName)
         "cl_downloadSize", "0", qtrue);
     (void)Cvar_Set2(
         "cl_downloadCount", "0", qtrue);
-    Cvar_SetValue("cl_downloadTime", (float)cls.realtime);
+    Cvar_SetValue("cl_downloadTime", (float)cls.realTime);
 
     clc.downloadBlock = 0;
     clc.downloadCount = 0;

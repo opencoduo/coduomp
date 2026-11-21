@@ -1370,7 +1370,7 @@ qboolean MergableShader(shader_t *shader)
             }
 
             if (image == tr.whiteImage &&
-                bundle->numImageAnimations > 1) {
+                bundle->numImageAnimations <= 1) {
                 continue;
             }
 
