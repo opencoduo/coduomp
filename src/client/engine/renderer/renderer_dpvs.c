@@ -555,11 +555,11 @@ void R_AddCoronas(const renderer_dpvs_plane_t *planes, int32_t planeCount)
         vec3_t viewDirection;
         vec3_t bounds[2];
 
-        viewDirection[0] = tr.viewParms.orientation.origin[0] -
+        viewDirection[0] = tr.refdef.vieworg[0] -
                            corona->origin[0];
-        viewDirection[1] = tr.viewParms.orientation.origin[1] -
+        viewDirection[1] = tr.refdef.vieworg[1] -
                            corona->origin[1];
-        viewDirection[2] = tr.viewParms.orientation.origin[2] -
+        viewDirection[2] = tr.refdef.vieworg[2] -
                            corona->origin[2];
         (void)VectorNormalize(viewDirection);
 
@@ -589,6 +589,7 @@ void R_AddCoronas(const renderer_dpvs_plane_t *planes, int32_t planeCount)
         entity.shaderRGBA[1] = corona->color[1];
         entity.shaderRGBA[2] = corona->color[2];
         entity.radius = corona->scale;
+        entity.radius2 = corona->scale;
 
         /* Full alpha at or below the fade-out height (and when unordered);
          * the alpha fades to zero between there and the cutoff. */
