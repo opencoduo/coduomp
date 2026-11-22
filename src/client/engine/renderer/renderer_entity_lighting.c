@@ -522,12 +522,22 @@ void R_PickFinalLights(const trRefdef_t *refdef,
              dynamicIndex < refdef->entityDlightCount;
              ++dynamicIndex) {
             renderer_light_t *light = &refdef->dlights[dynamicIndex];
-            const float distanceSquared =
-                VectorDistanceSquared(point, light->position);
-            const float radiusSquared = light->radius * light->radius;
+            vec3_t delta;
 
-            if (distanceSquared <=
-                radiusSquared * R_DYNAMIC_LIGHT_RADIUS_SQUARED_SCALE) {
+            delta[0] = point[0] - light->position[0];
+            delta[1] = point[1] - light->position[1];
+            delta[2] = point[2] - light->position[2];
+            /* The squared distance sums z, y, x and is compared unrounded
+             * with radius^2 * 4; an unordered compare keeps the light. */
+            const long double distanceSquared =
+                ((long double)delta[2] * delta[2] +
+                 (long double)delta[1] * delta[1]) +
+                (long double)delta[0] * delta[0];
+            const long double radiusSquaredScaled =
+                (long double)light->radius * light->radius *
+                R_DYNAMIC_LIGHT_RADIUS_SQUARED_SCALE;
+
+            if (!(radiusSquaredScaled < distanceSquared)) {
                 lights[lightCount] = light;
                 contributions[lightCount] = 1.0f;
                 ++lightCount;
