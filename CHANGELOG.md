@@ -16,6 +16,8 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - Server and map names are fitted to their columns by rendered pixel width, preventing wide or colored text from overlapping neighboring fields.
 - Server-name sorting follows visible names, ignoring color escapes and ordering digits consistently. Equal primary sort keys use deterministic tie-breaking.
 - Favorites retain their last known or user-supplied hostname when a refresh times out instead of falling back to the numeric address.
+- Server-browser hostnames retain up to 127 raw bytes, with complete color escapes at the storage boundary. Find-player retains its separate 63-byte limit.
+- Server lists and favorites use `opencoduo-servercache.dat`. When that file is absent, the client imports `uoservercache.dat` without modifying it, preserving the retail favorites for switching back. Later changes to the two caches are independent.
 
 ### Mods/Server
 

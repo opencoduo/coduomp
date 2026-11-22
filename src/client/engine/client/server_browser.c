@@ -26,7 +26,14 @@ static char cl_serverIPAddress[128];
 enum {
     LAN_SERVER_INFO_STRING_SIZE = MAX_STRING_CHARS,
     LAN_SERVER_PRINT_MESSAGE_CAPACITY = LAN_SERVER_INFO_STRING_SIZE + 1,
-    LAN_SERVER_CACHE_VERSION = 1,
+    LAN_SERVER_CACHE_VERSION = 2,
+    CODUOMP_LEGACY_CACHE_VERSION = 1,
+    CODUOMP_LEGACY_SERVER_BYTES = 152,
+    CODUOMP_LEGACY_HOSTNAME_OFFSET = 0x2e,
+    CODUOMP_LEGACY_HOSTNAME_SIZE = 32,
+    CODUOMP_LEGACY_MAPNAME_OFFSET = 0x4e,
+    CODUOMP_LEGACY_GAME_OFFSET = 0x6e,
+    CODUOMP_LEGACY_GAMETYPE_OFFSET = 0x86,
     LAN_ADD_SERVER_DUPLICATE = 0,
     LAN_ADD_SERVER_ADDED = 1,
     LAN_ADD_SERVER_LIST_FULL = -1,
@@ -47,7 +54,9 @@ char cl_cdkey[CL_CDKEY_STRING_SIZE] =
 char cl_cdkeyChecksums[CL_CDKEY_CHECKSUM_STORAGE_SIZE] =
     {' ', ' ', ' ', ' '}; /* original 0x005c51f0 */
 
-static const char lan_serverCacheFileName[] = "uoservercache.dat";
+/* NOT_FROM_ORIGINAL_SOURCE: keep the retail cache intact for stock clients. */
+static const char lan_serverCacheFileName[] = "opencoduo-servercache.dat";
+static const char coduomp_legacyServerCacheFileName[] = "uoservercache.dat";
 
 /* The cache compatibility marker is the combined byte count of the two
  * serialized arrays. It is 0x2eaf00 in the original build: 0x2e6300 bytes of
@@ -381,6 +390,27 @@ void CL_ServersResponsePacket(msg_t *message)
                parsedCount, globalServerCount);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: retain complete color escapes at the storage
+ * boundary. Literal carets advance individually, so ^^1 is a literal caret
+ * followed by ^1, not an escaped pair of carets. Match browser name sorting's
+ * digit colors and extended ^# convention. */
+static void coduomp_copy_hostname(char *destination, size_t capacity, const char *source)
+{
+    if (capacity == 0)
+        return;
+    size_t output = 0;
+    while (*source != '\0' && output < capacity - 1) {
+        const size_t width = source[0] == '^' &&
+            ((source[1] >= '0' && source[1] <= '9') || source[1] == '#') ? 2u : 1u;
+        if (width > capacity - 1 - output)
+            break;
+        memcpy(destination + output, source, width);
+        output += width;
+        source += width;
+    }
+    destination[output] = '\0';
+}
+
 /* Source: CoDUOMP.exe 0x00415180..0x0041537e.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00415180_0041537f.mcode and the exact
  * key strings at 0x0058e7e0/0x00593334..0x005933dc.
@@ -396,9 +426,7 @@ void CL_SetServerInfo(lan_server_info_t *server, const char *info,
     if (info != NULL) {
         server->clients = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "clients"));
 
-        strncpy(server->hostName, Info_ValueForKey(info, "hostname"),
-                sizeof(server->hostName) - 1);
-        server->hostName[sizeof(server->hostName) - 1] = '\0';
+        coduomp_copy_hostname(server->hostName, sizeof(server->hostName), Info_ValueForKey(info, "hostname"));
 
         strncpy(server->mapName, Info_ValueForKey(info, "mapname"),
                 sizeof(server->mapName) - 1);
@@ -670,12 +698,35 @@ void CL_ServerInfoPacket(netadr_t address, msg_t *message,
         "%s: %s", NET_AdrToString(address), printMessage);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: version-1 caches contain pointer-free, little-
+ * endian 152-byte records. Copy their unchanged scalar prefix and individual
+ * string fields into the wider native record; never interpret them with the
+ * version-2 stride. String validation below also covers imported records. */
+static qboolean coduomp_import_server_array(int32_t fileHandle, lan_server_info_t *servers, size_t count)
+{
+    for (size_t index = 0; index < count; ++index) {
+        unsigned char record[CODUOMP_LEGACY_SERVER_BYTES];
+        if (FS_Read(record, (int32_t)sizeof(record), fileHandle) != (int32_t)sizeof(record))
+            return qfalse;
+        lan_server_info_t *server = &servers[index];
+        if (memchr(record + CODUOMP_LEGACY_HOSTNAME_OFFSET, '\0', CODUOMP_LEGACY_HOSTNAME_SIZE) == NULL)
+            return qfalse;
+        memset(server, 0, sizeof(*server));
+        memcpy(server, record, CODUOMP_LEGACY_HOSTNAME_OFFSET);
+        memcpy(server->hostName, record + CODUOMP_LEGACY_HOSTNAME_OFFSET, CODUOMP_LEGACY_HOSTNAME_SIZE);
+        memcpy(server->mapName, record + CODUOMP_LEGACY_MAPNAME_OFFSET, sizeof(server->mapName));
+        memcpy(server->game, record + CODUOMP_LEGACY_GAME_OFFSET, sizeof(server->game));
+        memcpy(server->gameType, record + CODUOMP_LEGACY_GAMETYPE_OFFSET, sizeof(server->gameType));
+    }
+    return qtrue;
+}
+
 /* Source: CoDUOMP.exe 0x0041a4e0..0x0041a5a3.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0041a4e0_0041a5a4.mcode.
  * Name and file-handle argument: exact same-module Mac symbol
  * LAN_LoadCachedServersInternal. Every read must return its complete byte
- * count. The original unsigned bounds reject a cache containing exactly the
- * nominal array capacity as well as corrupt negative counts. */
+ * count. NOT_FROM_ORIGINAL_SOURCE: accept the version-1 serialized layout
+ * during migration and allow full arrays as well as partially filled arrays. */
 qboolean LAN_LoadCachedServersInternal(int32_t fileHandle)
 {
     int32_t cacheVersion;
@@ -683,32 +734,39 @@ qboolean LAN_LoadCachedServersInternal(int32_t fileHandle)
 
     if (FS_Read(&cacheVersion, (int32_t)sizeof(cacheVersion), fileHandle) !=
             (int32_t)sizeof(cacheVersion) ||
-        cacheVersion != LAN_SERVER_CACHE_VERSION) {
+        (cacheVersion != LAN_SERVER_CACHE_VERSION && cacheVersion != CODUOMP_LEGACY_CACHE_VERSION)) {
         return qfalse;
     }
 
     if (FS_Read(&cls.numGlobalServers,
                 (int32_t)sizeof(cls.numGlobalServers), fileHandle) !=
             (int32_t)sizeof(cls.numGlobalServers) ||
-        (uint32_t)cls.numGlobalServers >= LAN_GLOBAL_SERVER_CAPACITY) {
+        (uint32_t)cls.numGlobalServers > LAN_GLOBAL_SERVER_CAPACITY) {
         return qfalse;
     }
 
     if (FS_Read(&cls.numFavoriteServers,
                 (int32_t)sizeof(cls.numFavoriteServers), fileHandle) !=
             (int32_t)sizeof(cls.numFavoriteServers) ||
-        (uint32_t)cls.numFavoriteServers >= LAN_FAVORITE_SERVER_CAPACITY) {
+        (uint32_t)cls.numFavoriteServers > LAN_FAVORITE_SERVER_CAPACITY) {
         return qfalse;
     }
 
+    const int32_t expectedArrayBytes = cacheVersion == CODUOMP_LEGACY_CACHE_VERSION
+        ? CODUOMP_LEGACY_SERVER_BYTES * (LAN_GLOBAL_SERVER_CAPACITY + LAN_FAVORITE_SERVER_CAPACITY)
+        : lan_serverCacheArrayBytes;
     if (FS_Read(&serializedArrayBytes,
                 (int32_t)sizeof(serializedArrayBytes), fileHandle) !=
             (int32_t)sizeof(serializedArrayBytes) ||
-        serializedArrayBytes != lan_serverCacheArrayBytes) {
+        serializedArrayBytes != expectedArrayBytes) {
         return qfalse;
     }
 
-    if (FS_Read(cls.globalServers, (int32_t)sizeof(cls.globalServers),
+    if (cacheVersion == CODUOMP_LEGACY_CACHE_VERSION) {
+        if (!coduomp_import_server_array(fileHandle, cls.globalServers, LAN_GLOBAL_SERVER_CAPACITY) ||
+            !coduomp_import_server_array(fileHandle, cls.favoriteServers, LAN_FAVORITE_SERVER_CAPACITY))
+            return qfalse;
+    } else if (FS_Read(cls.globalServers, (int32_t)sizeof(cls.globalServers),
                 fileHandle) != (int32_t)sizeof(cls.globalServers) ||
         FS_Read(cls.favoriteServers,
                 (int32_t)sizeof(cls.favoriteServers), fileHandle) !=
@@ -751,8 +809,13 @@ void LAN_LoadCachedServers(void)
 {
     int32_t fileHandle;
 
-    if (FS_SV_FOpenFileRead(
-            lan_serverCacheFileName, &fileHandle) == 0) {
+    /* NOT_FROM_ORIGINAL_SOURCE: import only when the new cache cannot be
+     * opened. An empty or invalid new cache must not resurrect old favorites.
+     * Check the handle, not length: an empty file still has an open handle. */
+    (void)FS_SV_FOpenFileRead(lan_serverCacheFileName, &fileHandle);
+    if (fileHandle == 0)
+        (void)FS_SV_FOpenFileRead(coduomp_legacyServerCacheFileName, &fileHandle);
+    if (fileHandle == 0) {
         cls.numGlobalServers = 0;
         cls.numFavoriteServers = 0;
         return;
@@ -1620,8 +1683,7 @@ int32_t LAN_AddServer(lan_server_source_t source, const char *name,
 
     lan_server_info_t *server = &servers[*serverCount];
     server->address = parsedAddress;
-    strncpy(server->hostName, name, sizeof(server->hostName) - 1);
-    server->hostName[sizeof(server->hostName) - 1] = '\0';
+    coduomp_copy_hostname(server->hostName, sizeof(server->hostName), name);
     server->dirty = 1;
     ++*serverCount;
 
