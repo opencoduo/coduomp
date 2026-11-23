@@ -28,6 +28,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - **Server configuration:** add `set g_allowGlobalChat 0` to the server config or enter it in the server console to disable player general chat while preserving team, squad, private, scripted, and server-console messages. Set it to `1` to enable general chat again; `1` is the default.
 - Dedicated and listen servers skip external CD-key authorization by default.
 - Redirect downloads join `sv_wwwBaseURL` and the pak path with one separator and normalize pak-path backslashes. Empty or oversized redirect URLs fall back to direct downloads.
+- Server configuration samples are available in `misc/`: complete per-gametype configs, a general server, and optional gameplay, weapons, physics and map-rotation includes.
 
 ### Platforms and display
 
