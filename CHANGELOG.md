@@ -17,7 +17,8 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - Server-name sorting follows visible names, ignoring color escapes and ordering digits consistently. Equal primary sort keys use deterministic tie-breaking.
 - Favorites retain their last known or user-supplied hostname when a refresh times out instead of falling back to the numeric address.
 - Server-browser hostnames retain up to 127 raw bytes, with complete color escapes at the storage boundary. Find-player retains its separate 63-byte limit.
-- Server lists and favorites use `opencoduo-servercache.dat`. When that file is absent, the client imports `uoservercache.dat` without modifying it, preserving the retail favorites for switching back. Later changes to the two caches are independent.
+- Favorites use the stable versioned `opencoduo-favorites.dat` format, saved through a flushed temporary file and replacement. The disposable `opencoduo-browsercache.dat` stores only global-server metadata.
+- When the favorites file is absent, favorites migrate from `opencoduo-servercache.dat`, or from retail `uoservercache.dat` if the former is absent. Neither source is modified. An existing empty list is authoritative; unreadable, invalid, or unsupported favorites disable saving instead of overwriting user data.
 
 ### Mods/Server
 

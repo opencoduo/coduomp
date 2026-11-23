@@ -623,3 +623,33 @@ including linked worktrees, report an abbreviated commit ID (at least 12 hex dig
 uncommitted tracked changes; source archives
 and builds without Git report `unknown`. Generated metadata stays under
 `.workbench/` for Make and the selected build directory for CMake.
+
+## Favorites and browser cache on master
+
+`opencoduo-favorites.dat` stores favorite addresses and their last known or
+user-supplied names. It uses an explicitly versioned, byte-encoded format,
+independent of native structure sizes and browser capacities. The separate
+`opencoduo-browsercache.dat` holds disposable global-server metadata; removing
+or invalidating it does not remove favorites.
+
+When the favorites file is absent, the client imports the previous improved
+`opencoduo-servercache.dat`, falling back to retail `uoservercache.dat` only
+when the improved file is also absent. Reads search the profile, installation,
+and CD roots in that order. Imported favorites are saved immediately under
+`fs_homepath`; neither migration source is modified. Stock and improved clients
+keep independent lists after migration.
+
+An empty valid favorites file is authoritative. An unreadable, malformed, or
+unsupported file, including a list too large for this client, disables favorite
+saving for that load and reports the problem in the console. It is not silently
+replaced or used as a reason to import an older list. Preserve the file when
+moving between client versions.
+
+Saves use an exclusively created temporary file in the destination directory,
+check writes, flush and synchronize the contents, close it, then replace the
+previous file without a delete/copy fallback. POSIX hosts also synchronize the
+parent directory. Failed saves report an error; a directory-sync failure after
+replacement reports that the new file is visible but power-loss durability is
+uncertain. Actual power-loss guarantees depend on the host filesystem and
+storage device. An interrupted save may leave a uniquely named `.tmp` file;
+these files are never imported automatically.

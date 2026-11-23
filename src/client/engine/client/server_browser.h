@@ -32,8 +32,9 @@ enum {
 };
 
 /* NOT_FROM_ORIGINAL_SOURCE: the server-browser hostname is enlarged to 128
- * bytes. The version-2 cache stores this 248-byte record. The original
- * 152-byte record is accepted only by the legacy cache importer.
+ * bytes. The disposable browser cache stores this 248-byte record. Favorites
+ * use a separate stable format; old 152/248-byte combined caches are imported
+ * only by the favorites migration code.
  * LAN_GetServerInfo at 0x0041ab80 proves every named field below by pairing its exact load width
  * with the info-string key written for that value. The four trailing strings
  * occupy the record without gaps. */
@@ -131,7 +132,7 @@ _Static_assert(sizeof(cl_server_status_t) == 0x2028,
 
 #endif
 
-/* Both cache layouts are pointer-free serialized records on every host. */
+/* The disposable cache record is pointer-free on every supported host. */
 _Static_assert(_Alignof(lan_server_info_t) == 4,
                "i386 LAN server-record alignment changed");
 _Static_assert(offsetof(lan_server_info_t, address) == 0x00,
@@ -181,21 +182,21 @@ _Static_assert(offsetof(lan_server_info_t, tanksAllowed) == 0x2c,
 _Static_assert(offsetof(lan_server_info_t, hostName) == 0x2e,
                "original LAN server hostname offset");
 _Static_assert(sizeof(((lan_server_info_t *)0)->hostName) == 0x80,
-               "version-2 LAN server hostname extent");
+               "disposable-cache LAN server hostname extent");
 _Static_assert(offsetof(lan_server_info_t, mapName) == 0xae,
-               "version-2 LAN server map-name offset");
+               "disposable-cache LAN server map-name offset");
 _Static_assert(sizeof(((lan_server_info_t *)0)->mapName) == 0x20,
                "original LAN server map-name extent");
 _Static_assert(offsetof(lan_server_info_t, game) == 0xce,
-               "version-2 LAN server game offset");
+               "disposable-cache LAN server game offset");
 _Static_assert(sizeof(((lan_server_info_t *)0)->game) == 0x18,
                "original LAN server game extent");
 _Static_assert(offsetof(lan_server_info_t, gameType) == 0xe6,
-               "version-2 LAN server game-type offset");
+               "disposable-cache LAN server game-type offset");
 _Static_assert(sizeof(((lan_server_info_t *)0)->gameType) == 0x12,
                "original LAN server game-type extent");
 _Static_assert(sizeof(lan_server_info_t) == 0xf8,
-               "version-2 LAN server record extent");
+               "disposable-cache LAN server record extent");
 
 extern cl_ping_t cl_pingList[CL_MAX_PING_REQUESTS];
 extern qboolean cls_autoupdateServerResolved;

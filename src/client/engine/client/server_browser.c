@@ -1,4 +1,5 @@
 #include "server_browser.h"
+#include "server_favorites.h"
 
 #include "cgame.h"
 #include "../networking/net_address.h"
@@ -26,14 +27,7 @@ static char cl_serverIPAddress[128];
 enum {
     LAN_SERVER_INFO_STRING_SIZE = MAX_STRING_CHARS,
     LAN_SERVER_PRINT_MESSAGE_CAPACITY = LAN_SERVER_INFO_STRING_SIZE + 1,
-    LAN_SERVER_CACHE_VERSION = 2,
-    CODUOMP_LEGACY_CACHE_VERSION = 1,
-    CODUOMP_LEGACY_SERVER_BYTES = 152,
-    CODUOMP_LEGACY_HOSTNAME_OFFSET = 0x2e,
-    CODUOMP_LEGACY_HOSTNAME_SIZE = 32,
-    CODUOMP_LEGACY_MAPNAME_OFFSET = 0x4e,
-    CODUOMP_LEGACY_GAME_OFFSET = 0x6e,
-    CODUOMP_LEGACY_GAMETYPE_OFFSET = 0x86,
+    LAN_SERVER_CACHE_VERSION = 3,
     LAN_ADD_SERVER_DUPLICATE = 0,
     LAN_ADD_SERVER_ADDED = 1,
     LAN_ADD_SERVER_LIST_FULL = -1,
@@ -54,15 +48,10 @@ char cl_cdkey[CL_CDKEY_STRING_SIZE] =
 char cl_cdkeyChecksums[CL_CDKEY_CHECKSUM_STORAGE_SIZE] =
     {' ', ' ', ' ', ' '}; /* original 0x005c51f0 */
 
-/* NOT_FROM_ORIGINAL_SOURCE: keep the retail cache intact for stock clients. */
-static const char lan_serverCacheFileName[] = "opencoduo-servercache.dat";
-static const char coduomp_legacyServerCacheFileName[] = "uoservercache.dat";
-
-/* The cache compatibility marker is the combined byte count of the two
- * serialized arrays. It is 0x2eaf00 in the original build: 0x2e6300 bytes of
- * global-server records followed by 0x4c00 bytes of favorite records. */
-static const int32_t lan_serverCacheArrayBytes =
-    (int32_t)(sizeof(cls.globalServers) + sizeof(cls.favoriteServers));
+/* NOT_FROM_ORIGINAL_SOURCE: disposable version-3 cache holds global server
+ * metadata only. Favorites and both older combined caches are separate files. */
+static const char lan_serverCacheFileName[] = "opencoduo-browsercache.dat";
+static const int32_t lan_serverCacheArrayBytes = (int32_t)sizeof(cls.globalServers);
 
 /* Source: CoDUOMP.exe 0x00412500..0x0041250c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00412500_0041250d.mcode.
@@ -698,35 +687,12 @@ void CL_ServerInfoPacket(netadr_t address, msg_t *message,
         "%s: %s", NET_AdrToString(address), printMessage);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: version-1 caches contain pointer-free, little-
- * endian 152-byte records. Copy their unchanged scalar prefix and individual
- * string fields into the wider native record; never interpret them with the
- * version-2 stride. String validation below also covers imported records. */
-static qboolean coduomp_import_server_array(int32_t fileHandle, lan_server_info_t *servers, size_t count)
-{
-    for (size_t index = 0; index < count; ++index) {
-        unsigned char record[CODUOMP_LEGACY_SERVER_BYTES];
-        if (FS_Read(record, (int32_t)sizeof(record), fileHandle) != (int32_t)sizeof(record))
-            return qfalse;
-        lan_server_info_t *server = &servers[index];
-        if (memchr(record + CODUOMP_LEGACY_HOSTNAME_OFFSET, '\0', CODUOMP_LEGACY_HOSTNAME_SIZE) == NULL)
-            return qfalse;
-        memset(server, 0, sizeof(*server));
-        memcpy(server, record, CODUOMP_LEGACY_HOSTNAME_OFFSET);
-        memcpy(server->hostName, record + CODUOMP_LEGACY_HOSTNAME_OFFSET, CODUOMP_LEGACY_HOSTNAME_SIZE);
-        memcpy(server->mapName, record + CODUOMP_LEGACY_MAPNAME_OFFSET, sizeof(server->mapName));
-        memcpy(server->game, record + CODUOMP_LEGACY_GAME_OFFSET, sizeof(server->game));
-        memcpy(server->gameType, record + CODUOMP_LEGACY_GAMETYPE_OFFSET, sizeof(server->gameType));
-    }
-    return qtrue;
-}
-
 /* Source: CoDUOMP.exe 0x0041a4e0..0x0041a5a3.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0041a4e0_0041a5a4.mcode.
  * Name and file-handle argument: exact same-module Mac symbol
  * LAN_LoadCachedServersInternal. Every read must return its complete byte
- * count. NOT_FROM_ORIGINAL_SOURCE: accept the version-1 serialized layout
- * during migration and allow full arrays as well as partially filled arrays. */
+ * count. NOT_FROM_ORIGINAL_SOURCE: version 3 stores only disposable globals,
+ * accepts full arrays, and never changes the persistent favorites list. */
 qboolean LAN_LoadCachedServersInternal(int32_t fileHandle)
 {
     int32_t cacheVersion;
@@ -734,7 +700,7 @@ qboolean LAN_LoadCachedServersInternal(int32_t fileHandle)
 
     if (FS_Read(&cacheVersion, (int32_t)sizeof(cacheVersion), fileHandle) !=
             (int32_t)sizeof(cacheVersion) ||
-        (cacheVersion != LAN_SERVER_CACHE_VERSION && cacheVersion != CODUOMP_LEGACY_CACHE_VERSION)) {
+        cacheVersion != LAN_SERVER_CACHE_VERSION) {
         return qfalse;
     }
 
@@ -745,34 +711,16 @@ qboolean LAN_LoadCachedServersInternal(int32_t fileHandle)
         return qfalse;
     }
 
-    if (FS_Read(&cls.numFavoriteServers,
-                (int32_t)sizeof(cls.numFavoriteServers), fileHandle) !=
-            (int32_t)sizeof(cls.numFavoriteServers) ||
-        (uint32_t)cls.numFavoriteServers > LAN_FAVORITE_SERVER_CAPACITY) {
-        return qfalse;
-    }
-
-    const int32_t expectedArrayBytes = cacheVersion == CODUOMP_LEGACY_CACHE_VERSION
-        ? CODUOMP_LEGACY_SERVER_BYTES * (LAN_GLOBAL_SERVER_CAPACITY + LAN_FAVORITE_SERVER_CAPACITY)
-        : lan_serverCacheArrayBytes;
     if (FS_Read(&serializedArrayBytes,
                 (int32_t)sizeof(serializedArrayBytes), fileHandle) !=
             (int32_t)sizeof(serializedArrayBytes) ||
-        serializedArrayBytes != expectedArrayBytes) {
+        serializedArrayBytes != lan_serverCacheArrayBytes) {
         return qfalse;
     }
 
-    if (cacheVersion == CODUOMP_LEGACY_CACHE_VERSION) {
-        if (!coduomp_import_server_array(fileHandle, cls.globalServers, LAN_GLOBAL_SERVER_CAPACITY) ||
-            !coduomp_import_server_array(fileHandle, cls.favoriteServers, LAN_FAVORITE_SERVER_CAPACITY))
-            return qfalse;
-    } else if (FS_Read(cls.globalServers, (int32_t)sizeof(cls.globalServers),
-                fileHandle) != (int32_t)sizeof(cls.globalServers) ||
-        FS_Read(cls.favoriteServers,
-                (int32_t)sizeof(cls.favoriteServers), fileHandle) !=
-            (int32_t)sizeof(cls.favoriteServers)) {
+    if (FS_Read(cls.globalServers, (int32_t)sizeof(cls.globalServers), fileHandle) !=
+            (int32_t)sizeof(cls.globalServers))
         return qfalse;
-    }
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     for (size_t serverIndex = 0;
@@ -786,38 +734,23 @@ qboolean LAN_LoadCachedServersInternal(int32_t fileHandle)
             return qfalse;
         }
     }
-    for (size_t serverIndex = 0;
-         serverIndex < LAN_FAVORITE_SERVER_CAPACITY; ++serverIndex) {
-        const lan_server_info_t *const server =
-            &cls.favoriteServers[serverIndex];
-        if (memchr(server->hostName, '\0', sizeof(server->hostName)) == NULL ||
-            memchr(server->mapName, '\0', sizeof(server->mapName)) == NULL ||
-            memchr(server->game, '\0', sizeof(server->game)) == NULL ||
-            memchr(server->gameType, '\0', sizeof(server->gameType)) == NULL) {
-            return qfalse;
-        }
-    }
     return qtrue;
 }
 
 /* Source: CoDUOMP.exe 0x0041a5b0..0x0041a617.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0041a5b0_0041a618.mcode.
- * Name: exact same-module Mac symbol LAN_LoadCachedServers. A failed open or
- * malformed/truncated cache discards both active counts but deliberately does
- * not clear the backing arrays. */
+ * Name: exact same-module Mac symbol LAN_LoadCachedServers. Originally a
+ * failed cache discarded both counts without clearing the arrays.
+ * NOT_FROM_ORIGINAL_SOURCE: favorites now load independently, so a discarded
+ * browser cache cannot discard user data. */
 void LAN_LoadCachedServers(void)
 {
     int32_t fileHandle;
 
-    /* NOT_FROM_ORIGINAL_SOURCE: import only when the new cache cannot be
-     * opened. An empty or invalid new cache must not resurrect old favorites.
-     * Check the handle, not length: an empty file still has an open handle. */
+    coduomp_load_favorites(cls.favoriteServers, &cls.numFavoriteServers);
     (void)FS_SV_FOpenFileRead(lan_serverCacheFileName, &fileHandle);
-    if (fileHandle == 0)
-        (void)FS_SV_FOpenFileRead(coduomp_legacyServerCacheFileName, &fileHandle);
     if (fileHandle == 0) {
         cls.numGlobalServers = 0;
-        cls.numFavoriteServers = 0;
         return;
     }
 
@@ -825,7 +758,6 @@ void LAN_LoadCachedServers(void)
     FS_FCloseFile(fileHandle);
     if (loaded == qfalse) {
         cls.numGlobalServers = 0;
-        cls.numFavoriteServers = 0;
         return;
     }
 
@@ -841,11 +773,16 @@ void LAN_LoadCachedServers(void)
  * active prefix is then restored to address order. */
 void LAN_SaveServersToCache(void)
 {
+    /* NOT_FROM_ORIGINAL_SOURCE: favorite saves are checked and independent of
+     * the disposable cache, including when opening that cache fails. */
+    coduomp_save_favorites(cls.favoriteServers, cls.numFavoriteServers);
     const int32_t fileHandle =
         FS_SV_FOpenFileWrite(lan_serverCacheFileName);
     int32_t cacheVersion = LAN_SERVER_CACHE_VERSION;
     int32_t serializedArrayBytes = lan_serverCacheArrayBytes;
 
+    if (fileHandle == 0)
+        return;
     (void)FS_Write(&cacheVersion, (int32_t)sizeof(cacheVersion), fileHandle);
 
     for (int32_t serverIndex = cls.numGlobalServers - 1;
@@ -874,14 +811,10 @@ void LAN_SaveServersToCache(void)
                         sizeof(cls.globalServers[0]), CL_CompareAdrSigned);
     (void)FS_Write(&cls.numGlobalServers,
                    (int32_t)sizeof(cls.numGlobalServers), fileHandle);
-    (void)FS_Write(&cls.numFavoriteServers,
-                   (int32_t)sizeof(cls.numFavoriteServers), fileHandle);
     (void)FS_Write(&serializedArrayBytes,
                    (int32_t)sizeof(serializedArrayBytes), fileHandle);
     (void)FS_Write(cls.globalServers, (int32_t)sizeof(cls.globalServers),
                    fileHandle);
-    (void)FS_Write(cls.favoriteServers,
-                   (int32_t)sizeof(cls.favoriteServers), fileHandle);
     FS_FCloseFile(fileHandle);
 }
 

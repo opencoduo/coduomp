@@ -35,6 +35,7 @@ CLIENT_ENGINE_C_SOURCES := \
 	src/client/engine/client/reliable_commands.c \
 	src/client/engine/client/screen.c \
 	src/client/engine/client/server_browser.c \
+	src/client/engine/client/server_favorites.c \
 	src/client/engine/client/server_commands.c \
 	src/client/engine/client/server_message_entities.c \
 	src/client/engine/client/snapshots.c \
