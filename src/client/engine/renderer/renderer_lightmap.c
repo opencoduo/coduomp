@@ -213,11 +213,17 @@ int32_t R_BuildLightmapMergability(
                 lightmapScratch[bestLightmap] = 1;
             }
         } else {
-            int32_t lightmapIndex = 0;
-            while (lightmapScratch[lightmapIndex] != 0)
-                ++lightmapIndex;
-            lightmapOrder[assignedCount++] = lightmapIndex;
-            lightmapScratch[lightmapIndex] = 1;
+            /* The scan is bounded by the lightmap count; when no lightmap
+             * is free, nothing is assigned. */
+            for (int32_t lightmapIndex = 0;
+                 lightmapIndex < originalLightmapCount;
+                 ++lightmapIndex) {
+                if (lightmapScratch[lightmapIndex] == 0) {
+                    lightmapOrder[assignedCount++] = lightmapIndex;
+                    lightmapScratch[lightmapIndex] = 1;
+                    break;
+                }
+            }
         }
 
         atlasDimensions[atlasCount][0] = atlasWidth;

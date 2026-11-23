@@ -18,7 +18,6 @@ enum {
     R_WATER_WAVE_TABLE_MASK = R_WATER_WAVE_TABLE_SIZE - 1,
     R_WATER_MAX_MAPS = 16,
     R_WATER_IMAGE_TRACK = 8,
-    R_WATER_I386_MAP_BYTES = 52,
     R_WATER_MAX_TEXTURE_DIMENSION = 256,
     R_WATER_MAX_TEXELS =
         R_WATER_MAX_TEXTURE_DIMENSION * R_WATER_MAX_TEXTURE_DIMENSION,
@@ -512,8 +511,6 @@ shader_water_map_t *R_GetWaterTexture(
         (uint32_t)texelCount * 12u;
     const uint32_t normalPixelBytes =
         (uint32_t)texelCount * 4u;
-    const int32_t mapByteOffset = (int32_t)(
-        (uint32_t)mapIndex * R_WATER_I386_MAP_BYTES);
 
     /* ORIGINAL_BINARY_BEHAVIOR: 0x0051c814..0x0051c81b copies all thirteen
      * dwords (0x34 bytes) from the partially initialized parser temporary.
@@ -532,7 +529,7 @@ shader_water_map_t *R_GetWaterTexture(
         ri.Hunk_AllocateTempMemory((size_t)normalPixelBytes);
     memset(normalPixels, UINT8_MAX, (size_t)normalPixelBytes);
     waterMap->image = R_CreateImage(
-        va("*water%i", mapByteOffset), normalPixels,
+        va("*water%i", mapIndex), normalPixels,
         configuration->textureWidth, configuration->textureHeight,
         GL_RGBA, 0, R_WATER_IMAGE_TRACK, NULL);
     ri.Hunk_FreeTempMemory(normalPixels);

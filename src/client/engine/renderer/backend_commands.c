@@ -419,7 +419,7 @@ const void *RB_SwapBuffers(const swapBuffersCommand_t *command)
             GL_State(GLS_DEPTHTEST_DISABLE |
                      GLS_SRCBLEND_ONE |
                      GLS_DSTBLEND_ZERO);
-            GL_Bind(tr.dlightImage);
+            GL_Bind(tr.whiteImage);
             GL_Cull(CT_TWO_SIDED);
             qglLoadIdentity();
             qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
