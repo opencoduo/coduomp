@@ -529,12 +529,12 @@ void R_PickFinalLights(const trRefdef_t *refdef,
             delta[2] = point[2] - light->position[2];
             /* The squared distance sums z, y, x and is compared unrounded
              * with radius^2 * 4; an unordered compare keeps the light. */
-            const long double distanceSquared =
-                ((long double)delta[2] * delta[2] +
-                 (long double)delta[1] * delta[1]) +
-                (long double)delta[0] * delta[0];
-            const long double radiusSquaredScaled =
-                (long double)light->radius * light->radius *
+            const WIDE_FLOAT distanceSquared =
+                ((WIDE_FLOAT)delta[2] * delta[2] +
+                 (WIDE_FLOAT)delta[1] * delta[1]) +
+                (WIDE_FLOAT)delta[0] * delta[0];
+            const WIDE_FLOAT radiusSquaredScaled =
+                (WIDE_FLOAT)light->radius * light->radius *
                 R_DYNAMIC_LIGHT_RADIUS_SQUARED_SCALE;
 
             if (!(radiusSquaredScaled < distanceSquared)) {
