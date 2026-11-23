@@ -221,7 +221,7 @@ _Noreturn void Com_Error(errorParm_t errorCode, const char *format, ...)
     }
 
     CL_Shutdown();
-    SV_Shutdown(va("EXE_SERVER_FATAL_CRASHED\x15 %s",
+    SV_Shutdown(va("EXE_SERVER_FATAL_CRASHED\x15 \x14%s",
                    originalMessage));
     Hunk_Clear();
     Com_Close();

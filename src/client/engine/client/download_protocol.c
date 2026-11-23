@@ -93,7 +93,7 @@ void CL_WWWDownload(void)
                 sizeof(clc.redirectedList)) {
                 Com_Printf(
                     "ERROR: redirectedList overflow (%s)\n",
-                    cls.staticDownload.originalDownloadName);
+                    clc.redirectedList);
                 clc.wwwDownloadActive = qfalse;
                 CL_NextDownload();
                 return;
