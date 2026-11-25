@@ -1519,6 +1519,19 @@ void SpectatorThink(gentity_t *ent, const usercmd_t *command)
     }
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: mouse or joystick look is player activity even
+ * when no movement key and no attack button is held. The engine already stores
+ * the previous usercmd beside the current one, so a changed absolute view
+ * angle is a reliable per-command activity signal; identical commands (packet
+ * repeats) do not reset the timer. */
+static qboolean ClientCommandChangedViewAngles(const usercmd_t *command,
+                                               const usercmd_t *previous)
+{
+    return command->angles[0] != previous->angles[0] ||
+           command->angles[1] != previous->angles[1] ||
+           command->angles[2] != previous->angles[2] ? qtrue : qfalse;
+}
+
 /* 0x4013c ClientInactivityTimer */
 /* VERIFIED_DECOMPILER(0x4013c, 5013c_ClientInactivityTimer.c, VERIFY-WAVE4-CLIENT-FRAME-LOCAL-2026-06-17): DATAFLOW_VERIFIED - inactivity cvar zero path, movement/button activity reset, no-kick gate, drop command, warning timing, and server-command arguments checked. */
 qboolean ClientInactivityTimer(gclient_t *client)
@@ -1536,7 +1549,9 @@ qboolean ClientInactivityTimer(gclient_t *client)
                client->command.rightmove != 0 ||
                client->command.upmove != 0 ||
                (client->command.buttons &
-                INACTIVITY_INPUT_BUTTON_MASK) != 0) {
+                INACTIVITY_INPUT_BUTTON_MASK) != 0 ||
+               ClientCommandChangedViewAngles(
+                   &client->command, &client->oldPmoveCommand) != 0) {
         client->inactivityTime = coduo_int32_from_bits(
             (uint32_t)level.time +
             (uint32_t)g_inactivity.integer *
@@ -1589,7 +1604,9 @@ qboolean ClientSpectatorInactivityTimer(gclient_t *client)
                client->command.upmove != 0 ||
                (client->command.buttons &
                 INACTIVITY_INPUT_BUTTON_MASK) != 0 ||
-               client->spectatorActivityState != 0) {
+               client->spectatorActivityState != 0 ||
+               ClientCommandChangedViewAngles(
+                   &client->command, &client->oldPmoveCommand) != 0) {
         client->spectatorInactivityTime = coduo_int32_from_bits(
             (uint32_t)level.time +
             (uint32_t)g_inactivityspectator.integer *
